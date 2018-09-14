@@ -1,0 +1,27 @@
+Hello, {{ user_name }}
+Looks like you have registered to join {{ org_name }} on Tola Data.
+
+Now you need to verify your email address.
+
+To do this, simply click on the button below:
+
+Verify Email
+"{{ protocol }}://{{ host }}{% url 'activate' uidb64=uid token=token %}"
+
+Once you have verified your email address, you will be redirected to the login page. To see specific programs, request access from your program administrator.
+
+You can access the TolaData knowledge base with training materials, FAQs and other useful information at knowledgebase page.
+
+If you are having technical trouble with the registration process, reply to this email to reach support.
+
+
+
+
+Best regards from all of us at TolaData!
+
+
+TolaData GmbH
+Wöhlerstraße 12-13, 10115 Berlin, Germany
+
+Have any questions or thoughts on TolaData?
+Reach us anytime at support@toladata.com

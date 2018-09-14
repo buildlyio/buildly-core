@@ -1,0 +1,18 @@
+@include font-face("icons", fonts/tolaactivity-icons);
+
+[class^="icon-"],
+[class*=" icon-"] {
+  @include icon;
+}
+
+// Listing all the icons§
+$icons: (
+        google : "\61",
+        microsoft : "\62"
+);
+// Setup a class name for each icon
+@each $name, $char in $icons {
+  .icon-#{$name}:before {
+    content: $char;
+  }
+}

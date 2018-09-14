@@ -1,0 +1,33 @@
+// ==========================
+// Icons
+// ==========================
+@mixin icon($name: 'icons',$position: before, $icon: false, $styles: true) {
+  @if $styles {
+    // Supportive icon styles required
+    display: inline-block;
+    font: normal normal normal 14px/1 $name;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-transform: none !important;
+    background-repeat: no-repeat;
+  }
+
+  @if $position == both {
+    $position: 'before, &:after';
+  }
+  // Either a :before or :after pseudo-element, or both, defaulting to :before
+  @if $position == none {
+    content: "#{map-get($icons, $icon)}";
+  } @else{
+    &:#{$position} {
+      @if $icon {
+        // A particular icon has been specified
+        content: "#{map-get($icons, $icon)}";
+      }
+      // Include any extra rules supplied for the pseudo-element
+      @content;
+    }
+  }
+}

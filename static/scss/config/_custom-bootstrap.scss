@@ -1,0 +1,55 @@
+// Start with assigning color names to specific hex values.
+$red:    #C94456 !default;
+$orange: #DD6E42 !default;
+$green:  #4A968A !default;
+$blue:   #15A0B2 !default;
+
+$theme-colors: (
+        primary: $orange,
+        secondary: $gray-600,
+        success: $green,
+        info: blue,
+        warning: $yellow,
+        danger: $red,
+        light: $gray-100,
+        dark: $gray-800
+) !default;
+
+// Body
+$body-bg:       $body-bg-color !default;
+$body-color:    $gray !default;
+
+
+// Typography
+$link-color:            $blue-darker !default;
+$headings-color:         $blue-very-dark !default;
+
+// Components
+$border-radius:          0 !default;
+$border-radius-lg:       0 !default;
+$border-radius-sm:       0 !default;
+
+
+// Buttons
+$btn-padding-x:                  1rem !default;
+$btn-padding-y:                  .5rem !default;
+$btn-line-height:                1.25 !default;
+$btn-border-radius:              0 !default;
+$btn-box-shadow:              none;
+
+
+// Forms
+$form-check-margin-bottom:  0 !default;
+
+$custom-control-indicator-size:       rem-calc(17) !default;
+$custom-control-focus-indicator-box-shadow: none !default;
+$custom-control-indicator-bg:         #fff !default;
+$input-border-color: $gray-light-200 !default;
+$input-focus-border-color: $gray-light !default;
+$input-box-shadow:                      none !default;
+
+// Cards
+
+$card-spacer-y:                     .75rem !default;
+$card-spacer-x:                     1.25rem !default;
+$card-border-color:                 transparent !default;

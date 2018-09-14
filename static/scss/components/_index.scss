@@ -1,0 +1,38 @@
+.logo-app{
+  display: block;
+  &__image{
+    margin-bottom: 15px;
+  }
+  &__caption{
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    width: 120px;
+    padding: rem-calc(4);
+    background-color: #021d52;
+    border-radius: 13px 13px 13px 13px;
+    color: #737581;
+  }
+  &:hover{
+    text-decoration: none;
+  }
+}
+.app-description{
+  margin-top: rem-calc(20);
+}
+
+.card{
+
+}
+.app-page{
+  &__card{
+    margin-top: 20px;
+    padding: rem-calc(40 25 30 25);
+    transition: transform .3s, box-shadow .3s;
+
+    &:hover{
+      transform: translateY(-10px);
+      box-shadow: rgba(0, 0, 0, 0.1) -2px 2px 6px;
+    }
+  }
+}

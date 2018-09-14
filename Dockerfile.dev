@@ -1,0 +1,16 @@
+FROM python:2.7
+
+ARG NGINX=false
+ENV nginx=${NGINX}
+
+WORKDIR /code
+
+COPY ./requirements/base.txt requirements/base.txt
+COPY ./requirements/dev.txt requirements/dev.txt
+COPY ./requirements/production.txt requirements/production.txt
+
+RUN if $NGINX -eq "true"; then pip install -r requirements/production.txt; else pip install -r requirements/dev.txt; fi
+
+ADD . /code
+
+ENTRYPOINT ["/code/docker-entrypoint-dev.sh"]

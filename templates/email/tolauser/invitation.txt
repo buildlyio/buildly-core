@@ -1,0 +1,18 @@
+Invitation from Organization Admin
+
+You have been invited to join {{ organization_name }} on TolaData!
+Click the button below to create your user profile.
+{{ invitation_link }}
+
+Next steps
+Once you have registered, you will be within {{ organization_name }}'s portfolio. To see specific programs, you must request access.
+You can access the TolaData knowledge base with training materials, FAQs and other useful information at our TolaData
+Knowledgebase: https://help.toladata.com
+If you have any questions about this invitation please contact {{ org_admin_name }} from {{ organization_name }}.
+
+
+TolaData GmbH
+Wöhlerstraße 12-13, 10115 Berlin, Germany
+
+Have any questions or thoughts on TolaData?
+Reach out to us at anytime at support@toladata.com

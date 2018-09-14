@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="">
+            <div class="main__panel__top">
+            </div>
+            <div class="app-page">
+                <img src="{{ STATIC_URL }}img/future.svg" alt="" class="mx-auto login__logo">
+            </div>
+            <div class="main__panel__content">
+                <ul>
+                    <li><a href="{{ api_url }}">API</a></li>
+                    <li><a href="{{ documentation_url }}">Documentation</a></li>
+                </ul>
+            </div>
+        </div>
+{% endblock content %}
