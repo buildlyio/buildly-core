@@ -11,8 +11,8 @@ else
     echo $(date -u) " - Running the server in branch '$branch'"
     service nginx restart
     if [ "$branch" == "dev" ]; then
-        gunicorn -b 0.0.0.0:8080 activity-api.wsgi --reload
+        gunicorn -b 0.0.0.0:8080 bifrost-api.wsgi --reload
     else
-        gunicorn -b 0.0.0.0:8080 activity-api.wsgi
+        gunicorn -b 0.0.0.0:8080 bifrost-api.wsgi
     fi
 fi

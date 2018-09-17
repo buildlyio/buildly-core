@@ -102,7 +102,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'activity-api.wsgi.application'
+WSGI_APPLICATION = 'bifrost-api.wsgi.application'
 
 
 # Database

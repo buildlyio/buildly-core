@@ -6,7 +6,7 @@ WORKDIR /code
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install nginx -y
 
-ADD docker/etc/nginx/activity-api.conf /etc/nginx/conf.d/activity-api.conf
+ADD docker/etc/nginx/bifrost-api.conf /etc/nginx/conf.d/bifrost-api.conf
 
 RUN pip install -r requirements/production.txt
 

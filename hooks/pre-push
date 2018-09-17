@@ -59,7 +59,7 @@ is_protected_branch=`echo ${protected_branches[*]} | grep "$branch"`
 if [[ "${is_protected_branch}" != "" && "$push_command" =~ force|delete|-f ]]; then
     if [ "$remote" == "origin" ]; then
         origin_url=`git remote get-url origin`
-        if [ "$origin_url" != "git@github.com:toladata/ActivityAPI.git" ]; then
+        if [ "$origin_url" != "git@github.com:humanitec/bifrost.git" ]; then
             exit 0
         fi
     fi
@@ -72,14 +72,14 @@ fi
 
 if [ "$remote" == "origin" ]; then
     origin_url=`git remote get-url origin`
-    if [ "$origin_url" != "git@github.com:toladata/ActivityAPI.git" ]; then
+    if [ "$origin_url" != "git@github.com:humanitec/bifrost.git" ]; then
         exit 0
     fi
 fi
 
 
 echo >&2 "pre-push hook: running flake8..."
-docker-compose -f docker-compose-dev.yml run --entrypoint 'flake8 --exclude=settings,migrations' activity_api
+docker-compose -f docker-compose-dev.yml run --entrypoint 'flake8 --exclude=settings,migrations' bifrost_api
 
 if [[ $? -ne 0 ]]; then
     echo >&2 "pre-push hook: you have some error when passing flake8."

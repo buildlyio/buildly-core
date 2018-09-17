@@ -11,9 +11,9 @@ services:
     expose:
       - "8080"
     environment:
-      - ALLOWED_HOSTS=localhost,127.0.0.1,activity-api
+      - ALLOWED_HOSTS=localhost,127.0.0.1,bifrost-api
       - CORS_ORIGIN_WHITELIST=
-      - DJANGO_SETTINGS_MODULE=activity-api.settings.production
+      - DJANGO_SETTINGS_MODULE=bifrost-api.settings.production
   nginx:
     image: nginx:latest
     container_name: nginx

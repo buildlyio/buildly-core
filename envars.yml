@@ -1,6 +1,6 @@
 CHARGEBEE_SITE=toladata-test
 CHARGEBEE_SITE_API_KEY=test_31lcdE7L3grqdkGcvy24ik3lmlJrnA0Ez
-CORS_ORIGIN_WHITELIST=dev-activity.toladata.io,localhost:4200
+CORS_ORIGIN_WHITELIST=bifrost.humanitec.io,localhost:4200
 DATABASE_NAME=bifrost
 DATABASE_ENGINE=postgresql
 DATABASE_HOST=35.205.227.218
@@ -12,7 +12,7 @@ DEFAULT_FROM_EMAIL=support@example.com
 DEFAULT_OAUTH_DOMAINS=toladata.com,humanitec.com
 DEFAULT_ORG=Humanitec
 DEFAULT_REPLY_TO=noreply@example.com
-DJANGO_SETTINGS_MODULE=activity-api.settings.production
+DJANGO_SETTINGS_MODULE=bifrost-api.settings.production
 DOCKER_LOG_DRIVER=syslog
 ELASTICSEARCH_ENABLED=True
 ELASTICSEARCH_INDEX_PREFIX=activity_api_dev

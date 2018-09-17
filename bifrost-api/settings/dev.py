@@ -4,7 +4,7 @@ from .base import *
 # https://docs.djangoproject.com/en/1.11/topics/email/
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/tmp/tola-messages'
+EMAIL_FILE_PATH = '/tmp/bifrost-messages'
 DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
 DEFAULT_REPLY_TO = os.environ['DEFAULT_REPLY_TO']
 EMAIL_SUBJECT_PREFIX = os.getenv('EMAIL_SUBJECT_PREFIX', '')

@@ -43,7 +43,7 @@ LOGGING = {
         'file': {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'class': 'logging.FileHandler',
-            'filename': '/var/log/activity_api.log',
+            'filename': '/var/log/bifrost_api.log',
         },
     },
     'loggers': {

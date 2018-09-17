@@ -16,7 +16,7 @@ python manage.py loadinitialdata
 
 echo "Running the server"
 if [ "$nginx" == "true" ]; then
-    PYTHONUNBUFFERED=1 gunicorn -b 0.0.0.0:8080 activity-api.wsgi --reload
+    PYTHONUNBUFFERED=1 gunicorn -b 0.0.0.0:8080 bifrost-api.wsgi --reload
 else
     PYTHONUNBUFFERED=1 python manage.py runserver 0.0.0.0:8080
 fi

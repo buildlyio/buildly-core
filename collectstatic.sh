@@ -10,6 +10,6 @@ export DEFAULT_FROM_EMAIL=nothing
 export DEFAULT_REPLY_TO=nothing
 
 export DATABASE_ENGINE=postgresql
-export DJANGO_SETTINGS_MODULE=activity-api.settings.production
+export DJANGO_SETTINGS_MODULE=bifrost-api.settings.production
 
 python manage.py collectstatic --no-input
