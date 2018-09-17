@@ -1,6 +1,6 @@
-# Activity API
+# BiFrost - Humanitec Platform Core Service
 
-[![Build Status](http://drone.humanitec.io/api/badges/Humanitec/ActivityAPI/status.svg)](http://drone.humanitec.io/Humanitec/ActivityAPI)
+[![Build Status](http://drone.humanitec.io/api/badges/Humanitec/bifrost/status.svg)](http://drone.humanitec.io/Humanitec/bifrost)
 
 
 ## Development notes
@@ -120,14 +120,14 @@ application there.
 
 ### Configure Elasticsearch (search function)
 
-In order to make Elasticsearch work, refer to 
-[TolaActivity search README](https://github.com/toladata/TolaActivity/blob/dev-v2/search/Readme.md)
+Search Function is configured through connected search service.
+https://github.com/humanitec/search_service
 
 
 ### Configure other services
 
 There are many other services and behaviours determined by the
-application's configuration. Revise `activity-api/settings/base.py` and
+application's configuration. Revise `bifrost/settings/base.py` and
 configure your environment variables so all services work without failures.
 
 ### Generating RSA keys
@@ -155,7 +155,7 @@ step:
 
 - With the container running, go into it with this command:
 
-  `docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm activity_api bash`
+  `docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm bifrost bash`
 
 - Install the `social-core` lib again:
 
@@ -166,9 +166,9 @@ step:
 ## Creating PRs and Issues
 The following templates were created to easy the way to create tickets and help the developer.
 
-- Bugs and Issues [[+]](https://github.com/Humanitec/ActivityAPI/issues/new)
-- New features [[+]](https://github.com/Humanitec/ActivityAPI/issues/new?template=new_features.md)
-- Pull requests [[+]](https://github.com/Humanitec/ActivityAPI/compare/dev-v2?expand=1)
+- Bugs and Issues [[+]](https://github.com/Humanitec/bifrost/issues/new)
+- New features [[+]](https://github.com/Humanitec/bifrost/issues/new?template=new_features.md)
+- Pull requests [[+]](https://github.com/Humanitec/bifrost/compare/master?expand=1)
 
 Use the following template to create tickets for E-Mail:
 ```
