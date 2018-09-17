@@ -2,6 +2,10 @@
 
 [![Build Status](http://drone.humanitec.io/api/badges/Humanitec/bifrost/status.svg)](http://drone.humanitec.io/Humanitec/bifrost)
 
+## Additional Documentation
+
+User Docs - https://github.com/Humanitec/StandardizationDocs/blob/master/BiFrost.md
+Platform Standerdization - https://github.com/Humanitec/StandardizationDocs/
 
 ## Development notes
 
@@ -10,7 +14,6 @@ It is recommended to enable hooks first, to avoid dangerous code pushes.
 ```
 $ bash hooks/create-hooks
 ```
-
 
 ## Deploy locally via Docker
 
