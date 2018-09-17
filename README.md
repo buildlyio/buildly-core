@@ -4,8 +4,8 @@
 
 ## Additional Documentation
 
-User Docs - https://github.com/Humanitec/StandardizationDocs/blob/master/BiFrost.md
-Platform Standerdization - https://github.com/Humanitec/StandardizationDocs/
+* User Docs - https://github.com/Humanitec/StandardizationDocs/blob/master/BiFrost.md
+* Platform Standerdization - https://github.com/Humanitec/StandardizationDocs/
 
 ## Development notes
 
