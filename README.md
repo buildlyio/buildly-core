@@ -5,7 +5,9 @@
 ## Additional Documentation
 
 * User Docs - https://github.com/Humanitec/StandardizationDocs/blob/master/BiFrost.md
-* Platform Standerdization - https://github.com/Humanitec/StandardizationDocs/
+* Platform Standardization - https://github.com/Humanitec/StandardizationDocs/
+
+The partner front end service for BiFrost is [Midgard (Angular) and Midgard Core]:https://github.com/Humanitec/midgard and is configured to connect to the BiFrost core automatically and facilitate connections to addtional platform frontend and backend services.
 
 ## Development notes
 
