@@ -1,0 +1,80 @@
+---
+pipeline:
+  test:
+    image: python:${PYTHON_VERSION}
+    commands:
+      - pip install -r requirements/ci.txt
+      - flake8 --exclude=settings,migrations
+      - ./tcp-port-wait.sh postgres 5432
+      - coverage run --source='.' manage.py test -v 2
+      - coverage report -m
+    when:
+      event: [pull_request, push, tag]
+    environment:
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=bifrost_api
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DEFAULT_ORG=Humanitec
+      - TOLA_TRACK_SYNC_ENABLED=False
+      - DEFAULT_FROM_EMAIL=dev@example.com
+      - DEFAULT_REPLY_TO=noreply@example.com
+      - EMAIL_SUBJECT_PREFIX="[Test]"
+
+  bandit:
+    image: python:${PYTHON_VERSION}
+    commands:
+      - pip install bandit
+      - bandit -x tests/ -r -lll .
+    when:
+      event: [pull_request, push, tag]
+
+  build-docker-image-tag:
+    image: plugins/docker
+    insecure: true
+    registry: registry.tola.io
+    repo: registry.tola.io/humanitec/bifrost
+    file: Dockerfile
+    auto_tag: true
+    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
+    when:
+      event: [tag]
+      status: [success]
+
+  trigger-dev-deployment:
+    image: quay.io/ukhomeofficedigital/drone-trigger:latest
+    verbose: true
+    drone_server: http://drone.humanitec.io
+    drone_token: $DRONE_TOKEN
+    secrets: [DRONE_TOKEN]
+    repo: Humanitec/deployment
+    branch: master
+    deploy_to: marathon
+    params: "APP_BRANCH=dev,APP_COMMIT=${DRONE_COMMIT_SHA},APP_GROUP=humanitec,APP_ID=/bifrost,APP_IMAGE=registry.tola.io/humanitec/bifrost:${DRONE_TAG##v},APP_NAME=bifrost,APP_TAG=${DRONE_TAG##v}"
+    when:
+      event: [tag]
+      status: [success]
+
+  notify:
+    image: plugins/slack
+    channel: drone-ci
+    username: Drone-CI
+    secrets: [SLACK_WEBHOOK]
+    when:
+      event: [push, tag]
+      branch: [master]
+      status: [failure]
+
+services:
+  postgres:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_DB=bifrost_api
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+matrix:
+  PYTHON_VERSION:
+    - 2.7
