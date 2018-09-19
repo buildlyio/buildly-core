@@ -2,11 +2,11 @@ version: "2.0"
 
 services:
 
-  postgres_activity_api:
-    container_name: postgres_activity_api
+  postgres_bifrost_api:
+    container_name: postgres_bifrost_api
     image: postgres:9.6
     environment:
-      POSTGRES_DB: activity_api
+      POSTGRES_DB: bifrost_api
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     volumes:
@@ -15,44 +15,35 @@ services:
       - "5432:5432"
     restart: always
 
-  elasticsearch_activity_api:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.0.0-alpha2
-    ports:
-      - "9200:9200"
-    environment:
-      - xpack.security.enabled=false
-
-  activity_api:
+  bifrost_api:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: activity_api
-    image: activity_api
+    container_name: bifrost_api
+    image: bifrost_api
     volumes:
       - .:/code
     ports:
       - "8080:8080"
     depends_on:
-      - postgres_activity_api
-      - elasticsearch_activity_api
+      - postgres_bifrost_api
     environment:
       CHARGEBEE_SITE: "toladata-test"
       CHARGEBEE_SITE_API_KEY: "test_31lcdE7L3grqdkGcvy24ik3lmlJrnA0Ez"
       DATABASE_ENGINE: "postgresql"
-      DATABASE_NAME: "activity_api"
+      DATABASE_NAME: "bifrost_api"
       DATABASE_USER: "root"
       DATABASE_PASSWORD: "root"
-      DATABASE_HOST: "postgres_activity_api"
-      DATABASE_PORT: "5432"dock
+      DATABASE_HOST: "postgres_bifrost_api"
+      DATABASE_PORT: "5432"
       DEFAULT_FROM_EMAIL: "dev@example.com"
       DEFAULT_OAUTH_DOMAINS: "toladata.com,humanitec.com"
       DEFAULT_ORG: "Humanitec"
       DEFAULT_REPLY_TO: "noreply@example.com"
-      ELASTICSEARCH_URL: "http://elasticsearch_activity_api:9200/"
       DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
       API_URL: "/api/docs"
       EMAIL_SUBJECT_PREFIX: "[Test]"
-      JWT_ISSUER: "activityapi"
+      JWT_ISSUER: "bifrostapi"
       JWT_PRIVATE_KEY_RSA_ACTIVITYAPI: |-
         -----BEGIN RSA PRIVATE KEY-----
         MIIBOwIBAAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRBqhqvJu1hKPYn9HYd75c0

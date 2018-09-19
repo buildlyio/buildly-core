@@ -30,8 +30,8 @@ class CoreSites(models.Model):
     whitelisted_domains = models.TextField("Whitelisted Domains", null=True, blank=True)
 
     class Meta:
-        verbose_name = "Tola Site"
-        verbose_name_plural = "Tola Sites"
+        verbose_name = "Core Site"
+        verbose_name_plural = "Core Sites"
 
     def __unicode__(self):
         return self.name
