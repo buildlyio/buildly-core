@@ -11,7 +11,7 @@ ADD docker/etc/nginx/bifrost-api.conf /etc/nginx/conf.d/bifrost-api.conf
 RUN pip install -r requirements/production.txt
 
 # Collecting static files
-RUN ./collectstatic.sh
+# RUN ./collectstatic.sh
 
 EXPOSE 8080
 
