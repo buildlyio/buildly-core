@@ -6,7 +6,6 @@ djangorestframework==3.8.2
 psycopg2-binary==2.7.5
 chargebee>=2,<3
 coreapi==2.3.3
-django-crispy-forms==1.6.1
 django-guardian==1.4.9
 pytz==2018.3
 git+https://github.com/toladata/social-core#egg=social-core

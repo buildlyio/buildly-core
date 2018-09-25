@@ -27,7 +27,6 @@ INSTALLED_APPS_DJANGO = [
 ]
 
 INSTALLED_APPS_THIRD_PARTIES = [
-    'crispy_forms',
     'django_filters',
     'guardian',
     'rest_framework',
@@ -48,10 +47,6 @@ INSTALLED_APPS_LOCAL = [
 INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + \
                  INSTALLED_APPS_LOCAL
 
-MIDDLEWARE_CSRF = [
-    'web.middleware.DisableCsrfCheck',
-]
-
 MIDDLEWARE_DJANGO = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -67,13 +62,8 @@ MIDDLEWARE_THIRD_PARTIES = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
-MIDDLEWARE_LOCAL = [
-    'web.middleware.TolaSecurityMiddleware',
-    'web.middleware.TolaRedirectMiddleware',
-]
 
-
-MIDDLEWARE = MIDDLEWARE_CSRF + MIDDLEWARE_DJANGO + MIDDLEWARE_THIRD_PARTIES + MIDDLEWARE_LOCAL
+MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_THIRD_PARTIES
 
 ROOT_URLCONF = 'web.urls'
 
