@@ -1,21 +1,18 @@
-FROM python:2.7
+FROM python:3.6
 
-COPY . /code
 WORKDIR /code
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install nginx -y
+# Install tcp-port-wait.sh requirements
+RUN apt-get update && apt-get install -y netcat
 
-ADD docker/etc/nginx/bifrost-api.conf /etc/nginx/conf.d/bifrost-api.conf
+COPY ./requirements/base.txt requirements/base.txt
+RUN pip install -r requirements/base.txt
 
-RUN pip install -r requirements/production.txt
+ADD . /code
 
-# Collecting static files
-# RUN ./collectstatic.sh
+ARG environment=production
+ENV environment=${environment}
+RUN echo "Environment: $environment"
 
 EXPOSE 8080
-
-ARG BRANCH=None
-ENV branch=${BRANCH}
-
-ENTRYPOINT ["/code/docker-entrypoint.sh"]
+ENTRYPOINT ["bash", "/code/docker-entrypoint.sh"]
