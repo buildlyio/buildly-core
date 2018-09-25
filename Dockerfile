@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y netcat
 COPY ./requirements/base.txt requirements/base.txt
 COPY ./requirements/production.txt requirements/production.txt
 RUN pip install -r requirements/production.txt
+# Collect static files
+RUN python manage.py collectestatic
 
 ADD . /code
 
