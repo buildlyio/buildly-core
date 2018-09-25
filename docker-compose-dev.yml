@@ -30,6 +30,8 @@ services:
     environment:
       ENVIRONMENT: "localhost"
       CHARGEBEE_SITE: "toladata-test"
+      ALLOWED_HOSTS: "*"
+      CORS_ORIGIN_WHITELIST: "*"
       CHARGEBEE_SITE_API_KEY: "test_31lcdE7L3grqdkGcvy24ik3lmlJrnA0Ez"
       DATABASE_ENGINE: "postgresql"
       DATABASE_NAME: "bifrost_api"

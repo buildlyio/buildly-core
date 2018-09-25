@@ -33,7 +33,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'rest_framework',
     'rest_framework.authtoken',
     'social_django',
-    'import_export',
     'oauth2_provider',
     'graphene_django',
 
