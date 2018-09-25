@@ -13,7 +13,7 @@ pytz==2018.3
 git+https://github.com/toladata/social-core#egg=social-core
 social-auth-app-django==2.1.0
 django-oauth-toolkit==1.1.2
-django-simple-history==1.9.0
+django-simple-history==2.4.0
 voluptuous==0.11.1
 futures==3.1.1
 graphene-django==2.1.0
