@@ -23,7 +23,7 @@ DEFAULT_PROGRAM_NAME = 'Default program'
 
 class CoreSites(models.Model):
     name = models.CharField(blank=True, null=True, max_length=255)
-    site = models.ForeignKey(Site, on_delete=None)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
     privacy_disclaimer = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now=False, blank=True, null=True)
     updated = models.DateTimeField(auto_now=False, blank=True, null=True)
@@ -139,7 +139,7 @@ class CoreUser(models.Model):
     name = models.CharField("Given Name", blank=True, null=True, max_length=100)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     user = models.OneToOneField(User, unique=True, related_name='core_user')
-    organization = models.ForeignKey(Organization, default=1, blank=True, null=True, on_delete=None)
+    organization = models.ForeignKey(Organization, default=1, blank=True, null=True, on_delete=models.CASCADE)
     countries = models.ManyToManyField(Country, verbose_name="Accessible Countries", related_name='countries', blank=True)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     filter = JSONField(blank=True, null=True)
@@ -197,7 +197,7 @@ class Internationalization(models.Model):
 class Portfolio(models.Model):
     name = models.CharField(max_length=255, help_text="Portfolio/folder label displayed in list views")
     description = models.TextField(null=True, blank=True, help_text="Describe the purpose or use case for this Portfolio collection")
-    organization = models.ForeignKey(Organization, blank=True, on_delete=None, null=True, help_text="Related Organization that created portfolio")
+    organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text="Related Organization that created portfolio")
     country = models.ManyToManyField(Country, blank=True, help_text="Country Location if needed")
     is_global = models.BooleanField(default=0, help_text="A Global appears for all organizations")
     create_date = models.DateTimeField(null=True, blank=True)
@@ -219,13 +219,13 @@ class Portfolio(models.Model):
 class Milestone(models.Model):
     name = models.CharField(max_length=255, help_text="A Milestone can be associated with a workflow level as time marked goal")
     description = models.TextField(null=True, blank=True, help_text="Purpose of the Milestone")
-    organization = models.ForeignKey(Organization, blank=True, on_delete=None, null=True, help_text="Related Organization that created portfolio")
+    organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text="Related Organization that created portfolio")
     milestone_start_date = models.DateTimeField(null=True, blank=True, help_text="Milestone can have a single date associated with start date or a start and end date")
     milestone_end_date = models.DateTimeField(null=True, blank=True, help_text="Optional End of milestone period")
     is_global = models.BooleanField(default=0, help_text="A Global appears for all organizations")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey('auth.User', related_name='milestones', on_delete=None, null=True, blank=True)
+    created_by = models.ForeignKey('auth.User', related_name='milestones', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ('name',)
@@ -244,8 +244,8 @@ class WorkflowLevel1(models.Model):
     level1_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel1 UUID', default=uuid.uuid4, unique=True)
     unique_id = models.CharField("ID", max_length=255, blank=True, null=True, help_text="User facing unique ID field if needed")
     name = models.CharField("Name", max_length=255, blank=True, help_text="Top level workflow can have child workflowleves, name it according to it's grouping of children")
-    organization = models.ForeignKey(Organization, blank=True, on_delete=None, null=True, help_text='Related Org to associate with')
-    portfolio = models.ForeignKey(Portfolio, blank=True, on_delete=None, null=True, help_text='Combine with a set or other level 1s for folder like structure')
+    organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text='Related Org to associate with')
+    portfolio = models.ForeignKey(Portfolio, blank=True, on_delete=models.CASCADE, null=True, help_text='Combine with a set or other level 1s for folder like structure')
     description = models.TextField("Description", max_length=765, null=True, blank=True, help_text='Describe how this collection of related workflows are used')
     country = models.ManyToManyField(Country, blank=True, help_text='Optional Country location')
     milestone = models.ManyToManyField(Milestone, blank=True, help_text='Set of milestones or stated goals and dates for work')
@@ -286,12 +286,12 @@ class WorkflowLevel1(models.Model):
 
 
 class WorkflowTeam(models.Model):
-    workflow_user = models.ForeignKey(CoreUser, blank=True, null=True, on_delete=None, related_name="auth_approving", help_text='User with access/permissions to related workflowlevels')
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=None, blank=True, help_text='Related workflowlevel 1')
+    workflow_user = models.ForeignKey(CoreUser, blank=True, null=True, on_delete=models.CASCADE, related_name="auth_approving", help_text='User with access/permissions to related workflowlevels')
+    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True, help_text='Related workflowlevel 1')
     start_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level access')
     end_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level access expiration')
     status = models.CharField(max_length=255, null=True, blank=True, help_text='Active status of access')
-    role = models.ForeignKey(Group, null=True, blank=True, on_delete=None, help_text='Type of access via related group')
+    role = models.ForeignKey(Group, null=True, blank=True, on_delete=models.CASCADE, help_text='Type of access via related group')
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -324,10 +324,10 @@ class WorkflowLevel2(models.Model):
     notes = models.TextField(blank=True, null=True)
     parent_workflowlevel2 = models.IntegerField("Parent", default=0, blank=True, help_text="Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships")
     short_name = models.CharField("Code", max_length=20, blank=True, null=True, help_text="Shortened name autogenerated")
-    milestone = models.ForeignKey("Milestone", null=True, on_delete=None, blank=True, on_delete=models.SET_NULL, help_text="Association with a Milestone")
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, verbose_name="Program", on_delete=None, related_name="workflowlevel2", help_text="Primary or parent Workflow")
+    milestone = models.ForeignKey("Milestone", null=True, blank=True, on_delete=models.SET_NULL, help_text="Association with a Milestone")
+    workflowlevel1 = models.ForeignKey(WorkflowLevel1, verbose_name="Program", on_delete=models.CASCADE, related_name="workflowlevel2", help_text="Primary or parent Workflow")
     create_date = models.DateTimeField("Date Created", null=True, blank=True)
-    created_by = models.ForeignKey('auth.User', related_name='workflowlevel2', on_delete=None, null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey('auth.User', related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
     edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
     history = HistoricalRecords()
 
@@ -353,8 +353,8 @@ class WorkflowLevel2(models.Model):
 
 
 class WorkflowLevel2Sort(models.Model):
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=None, blank=True)
-    workflowlevel2_parent_id = models.ForeignKey(WorkflowLevel2, on_delete=None, null=True, blank=True)
+    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True)
+    workflowlevel2_parent_id = models.ForeignKey(WorkflowLevel2, on_delete=models.CASCADE, null=True, blank=True)
     workflowlevel2_id = models.IntegerField("ID to be Sorted", default=0)
     sort_array = JSONField(null=True, blank=True, help_text="Sorted JSON array of workflow levels")
     create_date = models.DateTimeField(null=True, blank=True)
