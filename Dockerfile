@@ -6,7 +6,8 @@ WORKDIR /code
 RUN apt-get update && apt-get install -y netcat
 
 COPY ./requirements/base.txt requirements/base.txt
-RUN pip install -r requirements/base.txt
+COPY ./requirements/production.txt requirements/production.txt
+RUN pip install -r requirements/production.txt
 
 ADD . /code
 
