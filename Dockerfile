@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y netcat
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install nginx -y
 
-ADD docker/etc/nginx/activity-api.conf /etc/nginx/conf.d/activity-api.conf
+ADD docker/etc/nginx/bifrost-api.conf /etc/nginx/conf.d/bifrost-api.conf
 
 COPY ./requirements/base.txt requirements/base.txt
 COPY ./requirements/production.txt requirements/production.txt
