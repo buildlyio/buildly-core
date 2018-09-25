@@ -18,7 +18,7 @@ services:
   bifrost_api:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: bifrost_api
     image: bifrost_api
     volumes:
@@ -28,6 +28,7 @@ services:
     depends_on:
       - postgres_bifrost_api
     environment:
+      ENVIRONMENT: "localhost"
       CHARGEBEE_SITE: "toladata-test"
       CHARGEBEE_SITE_API_KEY: "test_31lcdE7L3grqdkGcvy24ik3lmlJrnA0Ez"
       DATABASE_ENGINE: "postgresql"

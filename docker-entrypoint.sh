@@ -20,5 +20,5 @@ if [ "$environment" == "localhost" ]; then
     fi
 else
     echo $(date -u) "- Running the server"
-    gunicorn -b 0.0.0.0:8080 rules_service.wsgi
+    gunicorn -b 0.0.0.0:8080 bifrost-api.wsgi
 fi
