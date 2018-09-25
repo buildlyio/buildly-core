@@ -138,7 +138,7 @@ class CoreUser(models.Model):
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     name = models.CharField("Given Name", blank=True, null=True, max_length=100)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
-    user = models.OneToOneField(User, unique=True, related_name='core_user')
+    user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, default=1, blank=True, null=True, on_delete=models.CASCADE)
     countries = models.ManyToManyField(Country, verbose_name="Accessible Countries", related_name='countries', blank=True)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
