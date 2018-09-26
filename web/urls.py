@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from .views import (IndexView, OAuthUserEndpoint)
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 admin.autodiscover()
 admin.site.site_header = 'Humanitec Administration'
@@ -16,3 +17,5 @@ urlpatterns = [
     url(r'^oauth/',
         include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
