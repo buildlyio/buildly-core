@@ -209,12 +209,12 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         if role_org:
             qs = wfm.WorkflowLevel1.objects.\
                 values_list('id', 'level1_uuid').\
-                filter(organization=user.tola_user.organization).order_by('id')
+                filter(organization=user.core_user.organization).order_by('id')
         else:
             qs = wfm.WorkflowTeam.objects.\
                 values_list('workflowlevel1_id',
                             'workflowlevel1__level1_uuid', 'role__name').\
-                filter(workflow_user=user.tola_user).\
+                filter(workflow_user=user.core_user).\
                 order_by('workflowlevel1_id')
 
         for wflvl1_info in qs:
@@ -259,7 +259,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         wflvl1 = wfm.WorkflowLevel1.objects.get(
             level1_uuid=serializer.data['level1_uuid'])
         wfm.WorkflowTeam.objects.create(
-            workflow_user=request.user.tola_user, workflowlevel1=wflvl1,
+            workflow_user=request.user.core_user, workflowlevel1=wflvl1,
             role=group_program_admin)
 
         headers = self.get_success_headers(serializer.data)
@@ -267,9 +267,9 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
                         headers=headers)
 
     def perform_create(self, serializer):
-        organization = self.request.user.tola_user.organization
+        organization = self.request.user.core_user.organization
         obj = serializer.save(organization=organization)
-        obj.user_access.add(self.request.user.tola_user)
+        obj.user_access.add(self.request.user.core_user)
 
     def destroy(self, request, pk):
         workflowlevel1 = self.get_object()
@@ -403,7 +403,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         reg_location = reverse('register')
         email_addresses = serializer.validated_data.get('emails')
         organization = wfm.Organization.objects.values(
-            'organization_uuid', 'name').get(tolauser__user=self.request.user)
+            'organization_uuid', 'name').get(coreuser__user=self.request.user)
 
         registered_emails = User.objects.filter(email__in=email_addresses)\
             .values_list('email', flat=True)
@@ -423,7 +423,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
-                    'org_admin_name': self.request.user.tola_user.name,
+                    'org_admin_name': self.request.user.core_user.name,
                     'organization_name': organization['name']
                 }
                 text_content = loader.render_to_string(
@@ -453,7 +453,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def get_permissions(self):
         # different permissions for the invitation process
         if self.request.method == 'POST':
-            invitation_path = reverse('tolauser-invite')
+            invitation_path = reverse('coreuser-invite')
             if self.request.path == invitation_path:
                 return [AllowOnlyOrgAdmin()]
 
@@ -725,7 +725,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     filter_fields = ('workflowlevel1__organization__id',
-                     'workflow_user__tola_user_uuid')
+                     'workflow_user__core_user_uuid')
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (AllowTolaRoles,)
     queryset = wfm.WorkflowTeam.objects.all()
@@ -807,7 +807,7 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)  # inherited from CreateModelMixin
 
         portfolio = wfm.Portfolio.objects.get(pk=serializer.data['id'])
-        portfolio.organization = request.user.tola_user.organization
+        portfolio.organization = request.user.core_user.organization
         portfolio.save()
 
         headers = self.get_success_headers(serializer.data)
