@@ -4,7 +4,6 @@ import urllib
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.mail import EmailMultiAlternatives
-from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.utils.encoding import force_bytes
@@ -12,9 +11,8 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import django_filters
-import requests
-from rest_framework import mixins, permissions, status, viewsets, filters
-from rest_framework.decorators import detail_route, list_route
+from rest_framework import mixins, status, viewsets, filters
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
@@ -236,7 +234,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
 
         return permissions
 
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def permissions(self, request):
         data = {}
 
@@ -381,7 +379,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         serializer.save(user=user, organization=organization)
 
-    @list_route(methods=['POST'])
+    @action(methods=['POST'], detail=False)
     def invite(self, request):
         """
         This endpoint is used to invite multiple user at the same time.
@@ -453,7 +451,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def get_permissions(self):
         # different permissions for the invitation process
         if self.request.method == 'POST':
-            invitation_path = reverse('tolauser-invite')
+            invitation_path = reverse('coreuser-invite')
             if self.request.path == invitation_path:
                 return [AllowOnlyOrgAdmin()]
 
@@ -498,7 +496,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @detail_route()
+    @action(detail=True)
     def subscription(self, request, pk):
         instance = self.get_object()
         try:
@@ -601,8 +599,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
 
     filter_fields = ('workflowlevel1__country__country', 'level2_uuid',
-                     'workflowlevel1__name', 'workflowlevel1__id',
-                     'progress', 'staff_responsible',)
+                     'workflowlevel1__name', 'workflowlevel1__id')
     ordering = ('name',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
@@ -724,8 +721,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    filter_fields = ('workflowlevel1__organization__id',
-                     'workflow_user__tola_user_uuid')
+    filter_fields = ('workflowlevel1__organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (AllowTolaRoles,)
     queryset = wfm.WorkflowTeam.objects.all()
