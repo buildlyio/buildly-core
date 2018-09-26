@@ -1,8 +1,7 @@
 import json
 import logging
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from oauth2_provider.views.generic import ProtectedResourceView
 
@@ -17,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class IndexView(TemplateView):
     template_name = 'index.html'
+
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         extra_context = {
@@ -25,6 +25,7 @@ class IndexView(TemplateView):
         }
         context.update(extra_context)
         return context
+
 
 class OAuthUserEndpoint(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
@@ -35,10 +36,9 @@ class OAuthUserEndpoint(ProtectedResourceView):
             'id': user.id,
             'first_name': user.first_name,
             'last_name': user.last_name,
-
         }
         core_user = CoreUser.objects.all().filter(user=user)
-        if len(tola_user) == 1:
+        if len(core_user) == 1:
             body["core_user"] = CoreUserSerializer(
                 instance=core_user[0], context={'request': request}).data
             body["organization"] = OrganizationSerializer(
