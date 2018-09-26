@@ -40,7 +40,7 @@ PERMISSIONS_VIEW_ONLY = {
 class IsSuperUserBrowseableAPI(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             if view.__class__.__name__ == 'SchemaView':
                 return request.user.is_superuser
             else:
@@ -65,7 +65,7 @@ class IsSuperUserOrReadOnly(permissions.BasePermission):
 class AllowAuthenticatedRead(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
-            if request.user.is_anonymous():
+            if request.user.is_anonymous:
                 return False
             if not (request.user and request.user.is_authenticated):
                 return False
@@ -74,7 +74,7 @@ class AllowAuthenticatedRead(permissions.BasePermission):
 
 class AllowOnlyOrgAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_anonymous() and not request.user.is_authenticated:
+        if request.user.is_anonymous and not request.user.is_authenticated:
             return False
 
         if request.user.is_superuser:
@@ -89,7 +89,7 @@ class AllowOnlyOrgAdmin(permissions.BasePermission):
 
 class IsOrgMember(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_anonymous():
+        if request.user.is_anonymous:
             return False
 
         if request.user.is_superuser:
@@ -177,7 +177,7 @@ class AllowTolaRoles(permissions.BasePermission):
             return workflowlevel2.workflowlevel1
 
     def has_permission(self, request, view):
-        if request.user.is_anonymous():
+        if request.user.is_anonymous:
             return False
 
         if request.user.is_superuser:
@@ -256,7 +256,7 @@ class AllowTolaRoles(permissions.BasePermission):
         Object level permissions are used to determine if a user
         should be allowed to act on a particular object
         """
-        if request.user and request.user.is_authenticated():
+        if request.user and request.user.is_authenticated:
             if request.user.is_superuser:
                 return True
 
