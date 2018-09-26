@@ -77,8 +77,8 @@ class Organization(models.Model):
     level_4_label = models.CharField("Workflow Level 4 label", default="Activity", max_length=255, blank=True, help_text="Label to display if needed for workflow i.e. Fourth Level Navigation, Sub,  Sub-Activity, etc. ")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    chargebee_subscription_id = models.CharField(blank=True, null=True, max_length=50)
-    chargebee_used_seats = models.IntegerField(blank=True, null=True, default=0)
+    subscription_id = models.CharField(blank=True, null=True, max_length=50)
+    used_seats = models.IntegerField(blank=True, null=True, default=0)
     oauth_domains = fields.ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -93,6 +93,29 @@ class Organization(models.Model):
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Organization, self).save()
+
+    def __unicode__(self):
+        return self.name
+
+
+class LogicModule(models.Model):
+    module_uuid = models.CharField(max_length=255, verbose_name='Logic Module UUID', default=uuid.uuid4, unique=True)
+    name = models.CharField("Logic Module Name", max_length=255, blank=True)
+    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
+    endpoint = models.CharField(blank=True, null=True, max_length=255)
+    github_repo = models.CharField(blank=True, null=True, max_length=500)
+    create_date = models.DateTimeField(null=True, blank=True)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name_plural = "Logic Modules"
+
+    def save(self, *args, **kwargs):
+        if self.create_date is None:
+            self.create_date = timezone.now()
+        self.edit_date = timezone.now()
+        super(LogicModule, self).save()
 
     def __unicode__(self):
         return self.name

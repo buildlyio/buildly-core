@@ -259,3 +259,11 @@ GRAPHENE = {
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORE_WEBSITE = "https://humanitec.com"
+
+# RabbitMQ configuration
+RABBIT_USER = os.getenv('RABBIT_USER')
+RABBIT_PASS = os.getenv('RABBIT_PASS')
+RABBIT_HOST = os.getenv('RABBIT_HOST')
+RABBIT_PORT = os.getenv('RABBIT_PORT')
+RABBIT_VHOST = os.getenv('RABBIT_VHOST')
+RABBIT_WALHALL_QUEUE = os.getenv('RABBIT_WALHALL_QUEUE')
