@@ -173,27 +173,20 @@ class CoreUser(models.Model):
         ordering = ('name',)
 
     def __unicode__(self):
-        if (settings.CORE_OBFUSCATED_NAME and
-                    self.name == settings.CORE_OBFUSCATED_NAME):
-            if self.user.first_name and self.user.last_name:
-                return u'{} {}'.format(self.user.first_name,
-                                       self.user.last_name)
-            else:
-                return u'-'
+        if self.user.first_name and self.user.last_name:
+            return u'{} {}'.format(self.user.first_name,
+                                   self.user.last_name)
         else:
-            return self.name if self.name else u'-'
+            return u'-'
 
     @property
     def countries_list(self):
         return ', '.join([x.code for x in self.countries.all()])
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
-
-        if settings.CORE_OBFUSCATED_NAME:
-            self.name = settings.CORE_OBFUSCATED_NAME
 
         super(CoreUser, self).save()
 
