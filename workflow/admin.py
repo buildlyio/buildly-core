@@ -11,12 +11,11 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
-    list_display = ('workflow_user', 'budget_limit', 'workflowlevel1',
-                    'country')
+    list_display = ('workflow_user', 'workflowlevel1')
     display = 'Workflow Team'
     search_fields = ('workflow_user__user__username', 'workflowlevel1__name',
-                     'workflow_user__user__last_name', 'country__country')
-    list_filter = ('create_date', 'country')
+                     'workflow_user__user__last_name')
+    list_filter = ('create_date',)
 
 
 class CoreSitesAdmin(admin.ModelAdmin):
