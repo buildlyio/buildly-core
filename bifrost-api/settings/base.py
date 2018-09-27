@@ -253,7 +253,7 @@ CREATE_DEFAULT_PROGRAM = True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' e
 # graphene schema
 
 GRAPHENE = {
-    'SCHEMA': 'api.graph-schema.schema' # Where your Graphene schema lives
+    'SCHEMA': 'workflow.graph-schema.schema' # Where your Graphene schema lives
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
