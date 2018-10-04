@@ -45,41 +45,6 @@ class GroupSerializer(serializers.ModelSerializer):
 class WorkflowLevel1Serializer(serializers.HyperlinkedModelSerializer):
     workflow_key = serializers.UUIDField(read_only=True)
     id = serializers.ReadOnlyField()
-    status = serializers.SerializerMethodField()
-    budget = serializers.ReadOnlyField()
-    actuals = serializers.ReadOnlyField()
-    difference = serializers.SerializerMethodField()
-
-    def get_status(self, obj):
-        get_projects = wfm.WorkflowLevel2.objects.all().filter(
-            workflowlevel1=obj)
-        score = []
-        red = ""
-        yellow = ""
-        green = ""
-
-        for project_status in get_projects:
-            if project_status.status == "red":
-                score.append(red)
-            if project_status.status == "yellow":
-                score.append(yellow)
-            if project_status.status == "green":
-                score.append(green)
-        if score:
-            calculated_status = max(score)
-        else:
-            calculated_status = "green"
-
-        return calculated_status
-
-    def get_difference(self, obj):
-        try:
-            if obj.budget:
-                return obj.budget - obj.actuals
-            else:
-                return 0
-        except AttributeError:
-            return None
 
     class Meta:
         model = wfm.WorkflowLevel1
