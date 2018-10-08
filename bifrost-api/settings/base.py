@@ -145,11 +145,6 @@ STATICFILES_DIRS = [
 ]
 
 
-# Templates styling
-
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
-
 # Sites
 # https://docs.djangoproject.com/en/1.11/ref/contrib/sites/
 
