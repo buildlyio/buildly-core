@@ -75,3 +75,10 @@ services:
       SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "https://localhost:8000/complete/microsoft-graph"
       SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET: "w8zgk5dz5JVErCNzc8Jz7EM"
       TOLA_TRACK_SYNC_ENABLED: "False"
+      RABBIT_USER: "celery_user"
+      RABBIT_PASS: "Y0tGekI2eGUzQlc4"
+      RABBIT_HOST: "35.233.76.75"
+      RABBIT_PORT: "5672"
+      RABBIT_VHOST: "celery_vhost"
+      RABBIT_WALHALL_QUEUE: "walhall_queue"
+
