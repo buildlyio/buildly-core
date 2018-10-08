@@ -23,6 +23,7 @@ services:
     image: bifrost_api
     volumes:
       - .:/code
+      - static-content:/static
     ports:
       - "8080:8080"
     depends_on:
@@ -82,3 +83,17 @@ services:
       RABBIT_VHOST: "celery_vhost"
       RABBIT_WALHALL_QUEUE: "walhall_queue"
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+    - "8000:8000"
+    volumes:
+    - .:/code
+    - ./docker/etc/nginx:/etc/nginx/conf.d
+    - static-content:/static
+    depends_on:
+    - bifrost_api
+
+volumes:
+  static-content:
