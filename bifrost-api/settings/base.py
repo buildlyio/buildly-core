@@ -41,6 +41,8 @@ INSTALLED_APPS_THIRD_PARTIES = [
 ]
 
 INSTALLED_APPS_LOCAL = [
+    'gateway',
+    'web',
     'workflow',
 ]
 
