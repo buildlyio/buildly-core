@@ -86,14 +86,6 @@ class CountrySerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class LogicModuleSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField()
-
-    class Meta:
-        model = wfm.LogicModule
-        fields = '__all__'
-
-
 class RegisterCoreUserSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     user = UserSerializer(read_only=True)

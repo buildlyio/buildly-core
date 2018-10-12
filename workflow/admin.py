@@ -5,6 +5,7 @@ from .models import (Country, CoreUser, CoreSites,
                      Organization,  WorkflowLevel1,
                      WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam)
 
+
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('country', 'code', 'create_date', 'edit_date')
     list_filter = ('country',)
@@ -70,4 +71,5 @@ admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
+admin.site.register(CoreSites, CoreSitesAdmin)
 
