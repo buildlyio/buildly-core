@@ -1,3 +1,5 @@
+import requests
+
 from . import exceptions
 from . import models as gtm
 
@@ -40,3 +42,12 @@ def get_swagger_urls(service: str=None) -> dict:
 
     return module_urls
 
+
+def get_swagger_from_url(api_url: str):
+    """
+    Get the swagger file of the service at the given url
+
+    :param api_url:
+    :return: dictionary representing the swagger definition
+    """
+    return requests.get(api_url).json()
