@@ -34,6 +34,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'social_django',
     'oauth2_provider',
     'graphene_django',
+    'drf_yasg',
 
     # health check
     'health_check',                             # required
