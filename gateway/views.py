@@ -83,13 +83,13 @@ class APIGatewayView(views.APIView):
 
         # load Swagger resource file and init swagger client
         try:
-            schema_url = utils.get_openapi_schema_url_by_service(
-                kwargs['service'])
+            schema_urls = utils.get_swagger_urls(kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
             return HttpResponse(content=e.content,
                                 status=e.status,
                                 content_type=e.content_type)
-        app = App._create_(schema_url)
+
+        app = App._create_(schema_urls[kwargs['service']])
         client = Client()
 
         # create and perform a service request
