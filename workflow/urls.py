@@ -1,10 +1,10 @@
-from django.conf.urls import url, include
+from django.conf.urls import url
 from rest_framework import routers
-from rest_framework.documentation import include_docs_urls
 from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from web import views as views_web
 from . import views
+
 
 router = routers.SimpleRouter()
 
@@ -22,7 +22,6 @@ router.register(r'milestone', views.MilestoneViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 
 urlpatterns = [
-    url(r'^docs/', include_docs_urls(title='BiFrost API')),
     url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True))),
     url(r'^oauthuser', views_web.OAuthUserEndpoint.as_view())
 ]
