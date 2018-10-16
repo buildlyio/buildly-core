@@ -1,7 +1,6 @@
 from django.http import HttpResponse
-from rest_framework import views, viewsets
+from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
-from rest_framework.permissions import IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -40,7 +39,7 @@ class LogicModuleViewSet(viewsets.ModelViewSet):
 
     filter_fields = ('name',)
     filter_backends = (DjangoFilterBackend,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = gtm.LogicModule.objects.all()
     serializer_class = serializers.LogicModuleSerializer
 
@@ -52,7 +51,8 @@ class APIGatewayView(views.APIView):
     response back to the requester
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
+    schema = None
 
     def get(self, request, *args, **kwargs):
         return self.make_service_request(request, *args, **kwargs)
