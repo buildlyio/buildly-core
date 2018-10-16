@@ -128,16 +128,22 @@ class APIGatewayView(views.APIView):
         data = request.data if hasattr(request, 'data') else dict()
 
         if pk is None:
+            # resolve the path
             path = '/%s/' % model
             path_item = app.resolve(jp_compose(path, base='#/paths'))
+
+            # call operation
             if method == 'post':
                 return path_item.__getattribute__(method).__call__(
                     data=data)
             elif method == 'get':
                 return path_item.__getattribute__(method).__call__()
         elif pk is not None:
+            # resolve the path
             path = '/%s/{id}/' % model
             path_item = app.resolve(jp_compose(path, base='#/paths'))
+
+            # call operation
             if method in ['put', 'patch']:
                 return path_item.__getattribute__(method).__call__(
                     id=kwargs['pk'], data=data)
