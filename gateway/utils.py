@@ -27,10 +27,6 @@ def get_swagger_urls(service: str=None) -> dict:
         msg = 'Service "{}" not found.'.format(service)
         raise exceptions.ServiceDoesNotExist(msg, 404)
 
-    if len(modules) == 0 and service is None:
-        msg = 'No service Found.'
-        raise exceptions.GatewayError(msg, 404)
-
     module_urls = dict()
     for module in modules:
         swagger_url = '{}/{}/{}.{}'.format(
