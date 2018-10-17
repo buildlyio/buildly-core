@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 import uuid
 
 from django.db import models
-from django.conf import settings
 from django.contrib.postgres import fields
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import JSONField
@@ -119,6 +118,13 @@ class LogicModule(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+TITLE_CHOICES = (
+    ('mr', 'Mr.'),
+    ('mrs', 'Mrs.'),
+    ('ms', 'Ms.'),
+)
 
 
 class CoreUser(models.Model):

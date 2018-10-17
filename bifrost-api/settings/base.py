@@ -35,6 +35,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'oauth2_provider',
     'oauth2_provider_jwt',
     'graphene_django',
+    'drf_yasg',
 
     # health check
     'health_check',                             # required
@@ -42,6 +43,8 @@ INSTALLED_APPS_THIRD_PARTIES = [
 ]
 
 INSTALLED_APPS_LOCAL = [
+    'gateway',
+    'web',
     'workflow',
 ]
 
@@ -144,11 +147,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
-
-# Templates styling
-
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 
 # Sites
