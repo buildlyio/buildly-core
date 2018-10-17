@@ -121,38 +121,6 @@ class LogicModule(models.Model):
         return self.name
 
 
-class Country(models.Model):
-    country = models.CharField("Country Name", max_length=255, blank=True, help_text="ISO Country Name")
-    code = models.CharField("2 Letter Country Code", max_length=4, blank=True, help_text="ISO Country Code")
-    description = models.TextField("Description/Notes", max_length=765,blank=True, help_text="Description of use for country")
-    latitude = models.CharField("Latitude", max_length=255, null=True, blank=True, help_text="Mapping data Y axis")
-    longitude = models.CharField("Longitude", max_length=255, null=True, blank=True, help_text="Mapping data X axis")
-    zoom = models.IntegerField("Zoom", default=5, help_text="Zoom level for mapping services")
-    create_date = models.DateTimeField(null=True, blank=True)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ('country',)
-        verbose_name_plural = "Countries"
-        app_label = 'workflow'
-
-    def save(self, *args, **kwargs):
-        if self.create_date == None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-        super(Country, self).save()
-
-    def __unicode__(self):
-        return self.country
-
-
-TITLE_CHOICES = (
-    ('mr', 'Mr.'),
-    ('mrs', 'Mrs.'),
-    ('ms', 'Ms.'),
-)
-
-
 class CoreUser(models.Model):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
@@ -163,7 +131,6 @@ class CoreUser(models.Model):
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, default=1, blank=True, null=True, on_delete=models.CASCADE)
-    countries = models.ManyToManyField(Country, verbose_name="Accessible Countries", related_name='countries', blank=True)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     filter = JSONField(blank=True, null=True)
     create_date = models.DateTimeField(null=True, blank=True)
@@ -178,10 +145,6 @@ class CoreUser(models.Model):
                                    self.user.last_name)
         else:
             return u'-'
-
-    @property
-    def countries_list(self):
-        return ', '.join([x.code for x in self.countries.all()])
 
     def save(self, *args, **kwargs):
         if self.create_date is None:
@@ -214,7 +177,6 @@ class Portfolio(models.Model):
     name = models.CharField(max_length=255, help_text="Portfolio/folder label displayed in list views")
     description = models.TextField(null=True, blank=True, help_text="Describe the purpose or use case for this Portfolio collection")
     organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text="Related Organization that created portfolio")
-    country = models.ManyToManyField(Country, blank=True, help_text="Country Location if needed")
     is_global = models.BooleanField(default=0, help_text="A Global appears for all organizations")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -263,7 +225,6 @@ class WorkflowLevel1(models.Model):
     organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text='Related Org to associate with')
     portfolio = models.ForeignKey(Portfolio, blank=True, on_delete=models.CASCADE, null=True, help_text='Combine with a set or other level 1s for folder like structure')
     description = models.TextField("Description", max_length=765, null=True, blank=True, help_text='Describe how this collection of related workflows are used')
-    country = models.ManyToManyField(Country, blank=True, help_text='Optional Country location')
     milestone = models.ManyToManyField(Milestone, blank=True, help_text='Set of milestones or stated goals and dates for work')
     user_access = models.ManyToManyField(CoreUser, blank=True)
     start_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level')
@@ -288,11 +249,6 @@ class WorkflowLevel1(models.Model):
 
     def delete(self, *args, **kwargs):
         super(WorkflowLevel1, self).delete(*args, **kwargs)
-
-
-    @property
-    def countries(self):
-        return ', '.join([x.country for x in self.country.all()])
 
     def __unicode__(self):
         if self.organization:

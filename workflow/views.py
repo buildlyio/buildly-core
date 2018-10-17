@@ -281,43 +281,15 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         else:
             return serializers.WorkflowLevel1Serializer
 
-    ordering_fields = ('country__country', 'name')
+    ordering_fields = ('name',)
     ordering = ('name',)
-    filter_fields = ('country__country', 'name', 'level1_uuid')
+    filter_fields = ('name', 'level1_uuid')
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
 
     queryset = wfm.WorkflowLevel1.objects.all()
     permission_classes = (AllowTolaRoles, IsOrgMember)
     pagination_class = DefaultCursorPagination
-
-
-class CountryViewSet(viewsets.ModelViewSet):
-    """
-    Country is related to workflow level one as a way of associating it with a specific country location if needed.
-    Countries can then be used in a web mapping service, or as a way of associating users via the Workflow Team location with a
-    specific location.
-
-    title:
-    Country is related to workflow level one as a way of associating it with a specific country location if needed.
-
-    description:
-    Countries can then be used in a web mapping service, or as a way of associating users via the Workflow Team location with a
-    specific location.
-
-    retrieve:
-    Return the given country.
-
-    list:
-    Return a list of all the existing countries.
-
-    create:
-    Create a new country instance.
-    """
-
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    queryset = wfm.Country.objects.all()
-    serializer_class = serializers.CountrySerializer
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -598,7 +570,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
-    filter_fields = ('workflowlevel1__country__country', 'level2_uuid',
+    filter_fields = ('level2_uuid',
                      'workflowlevel1__name', 'workflowlevel1__id')
     ordering = ('name',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,

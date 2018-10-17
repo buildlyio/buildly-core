@@ -33,6 +33,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'rest_framework.authtoken',
     'social_django',
     'oauth2_provider',
+    'oauth2_provider_jwt',
     'graphene_django',
 
     # health check
@@ -174,6 +175,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',  # TODO check if disable, and also delete CSRF
         'rest_framework.authentication.TokenAuthentication',
+        'oauth2_provider_jwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'workflow.permissions.IsSuperUserBrowseableAPI',
@@ -239,10 +241,14 @@ if os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'):
     SOCIAL_AUTH_GOOGLE_MICROSOFT_DOMAINS = os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS').split(',')
 
 
-# search specific settings TODO: Move to search service
-ELASTICSEARCH_ENABLED = True if os.getenv('ELASTICSEARCH_ENABLED') == 'True' else False
-ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL')
-ELASTICSEARCH_INDEX_PREFIX = os.getenv('ELASTICSEARCH_INDEX_PREFIX')
+# JWT Authentication settings
+JWT_ISSUER = os.getenv('JWT_ISSUER', '')
+JWT_PAYLOAD_ENRICHER = 'api.jwt_utils.payload_enricher'
+JWT_AUTH_DISABLED = False
+JWT_PRIVATE_KEY_RSA_ACTIVITYAPI = os.getenv('JWT_PRIVATE_KEY_RSA_ACTIVITYAPI')
+JWT_PUBLIC_KEY_RSA_ACTIVITYAPI = os.getenv('JWT_PUBLIC_KEY_RSA_ACTIVITYAPI')
+JWT_PUBLIC_KEY_RSA_COLLECTIONSERVICE = os.getenv('JWT_PUBLIC_KEY_RSA_COLLECTIONSERVICE')
+
 
 DOCUMENTATION_URL = os.getenv('DOCUMENTATION_URL')
 API_URL = os.getenv('API_URL')

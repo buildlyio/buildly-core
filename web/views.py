@@ -44,8 +44,5 @@ class OAuthUserEndpoint(ProtectedResourceView):
             body["organization"] = OrganizationSerializer(
                 instance=core_user[0].organization,
                 context={'request': request}).data
-            body["country"] = CountrySerializer(
-                instance=core_user[0].country,
-                context={'request': request}).data
 
         return HttpResponse(json.dumps(body))

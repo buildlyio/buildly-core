@@ -54,24 +54,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Country',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('country', models.CharField(blank=True, help_text='ISO Country Name', max_length=255, verbose_name='Country Name')),
-                ('code', models.CharField(blank=True, help_text='ISO Country Code', max_length=4, verbose_name='2 Letter Country Code')),
-                ('description', models.TextField(blank=True, help_text='Description of use for country', max_length=765, verbose_name='Description/Notes')),
-                ('latitude', models.CharField(blank=True, help_text='Mapping data Y axis', max_length=255, null=True, verbose_name='Latitude')),
-                ('longitude', models.CharField(blank=True, help_text='Mapping data X axis', max_length=255, null=True, verbose_name='Longitude')),
-                ('zoom', models.IntegerField(default=5, help_text='Zoom level for mapping services', verbose_name='Zoom')),
-                ('create_date', models.DateTimeField(blank=True, null=True)),
-                ('edit_date', models.DateTimeField(blank=True, null=True)),
-            ],
-            options={
-                'verbose_name_plural': 'Countries',
-                'ordering': ('country',),
-            },
-        ),
-        migrations.CreateModel(
             name='HistoricalWorkflowLevel2',
             fields=[
                 ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
@@ -194,7 +176,6 @@ class Migration(migrations.Migration):
                 ('is_global', models.BooleanField(default=0, help_text='A Global appears for all organizations')),
                 ('create_date', models.DateTimeField(blank=True, null=True)),
                 ('edit_date', models.DateTimeField(blank=True, null=True)),
-                ('country', models.ManyToManyField(blank=True, help_text='Country Location if needed', to='workflow.Country')),
                 ('organization', models.ForeignKey(blank=True, help_text='Related Organization that created portfolio', null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.Organization')),
             ],
             options={
@@ -214,7 +195,6 @@ class Migration(migrations.Migration):
                 ('create_date', models.DateTimeField(blank=True, null=True)),
                 ('edit_date', models.DateTimeField(blank=True, null=True)),
                 ('sort', models.IntegerField(default=0)),
-                ('country', models.ManyToManyField(blank=True, help_text='Optional Country location', to='workflow.Country')),
                 ('milestone', models.ManyToManyField(blank=True, help_text='Set of milestones or stated goals and dates for work', to='workflow.Milestone')),
                 ('organization', models.ForeignKey(blank=True, help_text='Related Org to associate with', null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.Organization')),
                 ('portfolio', models.ForeignKey(blank=True, help_text='Combine with a set or other level 1s for folder like structure', null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.Portfolio')),
@@ -298,11 +278,6 @@ class Migration(migrations.Migration):
             model_name='historicalworkflowlevel2',
             name='workflowlevel1',
             field=models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='workflow.WorkflowLevel1'),
-        ),
-        migrations.AddField(
-            model_name='coreuser',
-            name='countries',
-            field=models.ManyToManyField(blank=True, related_name='countries', to='workflow.Country', verbose_name='Accessible Countries'),
         ),
         migrations.AddField(
             model_name='coreuser',

@@ -1,13 +1,8 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import (Country, CoreUser, CoreSites,
-                     Organization,  WorkflowLevel1,
+from .models import (CoreUser, Organization, WorkflowLevel1,
                      WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam)
-
-class CountryAdmin(admin.ModelAdmin):
-    list_display = ('country', 'code', 'create_date', 'edit_date')
-    list_filter = ('country',)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
@@ -64,7 +59,6 @@ class PortfolioAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Organization, OrganizationAdmin)
-admin.site.register(Country, CountryAdmin)
 admin.site.register(WorkflowLevel2, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)

@@ -26,11 +26,6 @@ class Milestone(DjangoObjectType):
         model = wfm.Milestone
 
 
-# GraphQL Currency
-class Country(DjangoObjectType):
-    class Meta:
-        model = wfm.Country
-
 
 
 #Query each class
@@ -46,10 +41,6 @@ class Query(graphene.ObjectType):
     @graphene.resolve_only_args
     def resolve_milestone(self):
         return wfm.Milestone.objects.all()
-
-    @graphene.resolve_only_args
-    def resolve_country(self):
-        return wfm.Country.objects.all()
 
     @graphene.resolve_only_args
     def resolve_workflowlevel1s(self):

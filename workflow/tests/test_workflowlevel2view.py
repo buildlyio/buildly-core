@@ -739,28 +739,6 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.factory = APIRequestFactory()
         self.tola_user = factories.CoreUser()
 
-    def test_filter_workflowlevel2_wkflvl1_country_superuser(self):
-        self.tola_user.user.is_staff = True
-        self.tola_user.user.is_superuser = True
-        self.tola_user.user.save()
-
-        country1 = factories.Country(country='Brazil', code='BR')
-        country2 = factories.Country(country='Germany', code='DE')
-        wkflvl1_1 = factories.WorkflowLevel1(country=[country1])
-        wkflvl1_2 = factories.WorkflowLevel1(country=[country2])
-        wkflvl2 = factories.WorkflowLevel2(workflowlevel1=wkflvl1_1)
-        factories.WorkflowLevel2(
-            name='Develop brief survey', workflowlevel1=wkflvl1_2)
-
-        request = self.factory.get(
-            '/api/workflowlevel2/?workflowlevel1__country__country=%s'
-            % country1.country)
-        request.user = self.tola_user.user
-        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
-        response = view(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], wkflvl2.name)
 
     def test_filter_workflowlevel2_wkflvl1_name_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
