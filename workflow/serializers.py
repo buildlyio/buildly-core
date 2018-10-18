@@ -71,7 +71,6 @@ class WorkflowLevel1PermissionsSerializer(serializers.Serializer):
 class WorkflowLevel2Serializer(serializers.HyperlinkedModelSerializer):
     agreement_key = serializers.UUIDField(read_only=True)
     id = serializers.ReadOnlyField()
-    contact = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = wfm.WorkflowLevel2
