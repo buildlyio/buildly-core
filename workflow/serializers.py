@@ -77,14 +77,6 @@ class WorkflowLevel2Serializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class CountrySerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField()
-
-    class Meta:
-        model = wfm.Country
-        fields = '__all__'
-
-
 class RegisterCoreUserSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     user = UserSerializer(read_only=True)

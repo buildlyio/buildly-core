@@ -8,7 +8,7 @@ from oauth2_provider.views.generic import ProtectedResourceView
 
 from workflow.models import (CoreUser, CoreSites)
 
-from workflow.serializers import (CoreUserSerializer, CountrySerializer,
+from workflow.serializers import (CoreUserSerializer,
                                   OrganizationSerializer)
 
 logger = logging.getLogger(__name__)
