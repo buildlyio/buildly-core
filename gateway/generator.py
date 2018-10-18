@@ -25,6 +25,7 @@ class OpenAPISchemaGenerator(drf_gen.OpenAPISchemaGenerator):
         components = openapi.ReferenceResolver(openapi.SCHEMA_DEFINITIONS)
         paths, prefix = self.get_paths(endpoints, components, request, public)
         paths.update(swagger_spec['paths'])
+        components['definitions'].update(swagger_spec['definitions'])
 
         url = self.url
         if url is None and request is not None:
@@ -38,8 +39,8 @@ class OpenAPISchemaGenerator(drf_gen.OpenAPISchemaGenerator):
             security_definitions=swagger_spec.get(
                 'security_definitions', None),
             security=swagger_spec.get('security', None),
-            definitions=swagger_spec['definitions'],
             _url=url,
             _version=self.version,
-            _prefix=prefix
+            _prefix=prefix,
+            **dict(components)
         )
