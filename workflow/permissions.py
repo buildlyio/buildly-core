@@ -100,7 +100,7 @@ class IsOrgMember(permissions.BasePermission):
                 'organization_id', flat=True).get(user=request.user)
 
             if 'organization' in request.data:
-                org_serializer = view.serializer_class().get_fields()[
+                org_serializer = view.get_serializer_class()().get_fields()[
                     'organization']
                 primitive_value = request.data.get('organization')
                 org = org_serializer.run_validation(primitive_value)
