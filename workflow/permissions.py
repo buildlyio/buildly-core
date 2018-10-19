@@ -188,7 +188,7 @@ class AllowTolaRoles(permissions.BasePermission):
         queryset = self._queryset(view)
         model_cls = queryset.model
         if view.action == 'create':
-            user_org = request.user.tola_user.organization
+            user_org = request.user.core_user.organization
             data = request.data
 
             if data.get('workflowlevel1') or data.get('workflowlevel2_uuid'):
@@ -205,7 +205,7 @@ class AllowTolaRoles(permissions.BasePermission):
                     wflvl1 = [wflvl1]
 
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.tola_user,
+                    workflow_user=request.user.core_user,
                     workflowlevel1__in=wflvl1).values_list(
                     'role__name', flat=True)
 
@@ -269,7 +269,7 @@ class AllowTolaRoles(permissions.BasePermission):
 
             if model_cls is Portfolio:
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.tola_user,
+                    workflow_user=request.user.core_user,
                     workflowlevel1__portfolio=obj).values_list(
                     'role__name', flat=True)
                 if ROLE_PROGRAM_ADMIN in team_groups or ROLE_PROGRAM_TEAM in \
@@ -277,7 +277,7 @@ class AllowTolaRoles(permissions.BasePermission):
                     return view.action == 'retrieve'
             elif model_cls is WorkflowTeam:
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.tola_user,
+                    workflow_user=request.user.core_user,
                     workflowlevel1=obj.workflowlevel1).values_list(
                     'role__name', flat=True)
                 if ROLE_PROGRAM_ADMIN in team_groups:
@@ -286,7 +286,7 @@ class AllowTolaRoles(permissions.BasePermission):
                     return view.action == 'retrieve'
             elif model_cls is WorkflowLevel1:
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.tola_user,
+                    workflow_user=request.user.core_user,
                     workflowlevel1=obj).values_list(
                     'role__name', flat=True)
                 if ROLE_PROGRAM_ADMIN in team_groups:
@@ -297,7 +297,7 @@ class AllowTolaRoles(permissions.BasePermission):
             elif model_cls in [WorkflowLevel2]:
                 workflowlevel1 = obj.workflowlevel1
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.tola_user,
+                    workflow_user=request.user.core_user,
                     workflowlevel1=workflowlevel1).values_list(
                     'role__name', flat=True)
                 if ROLE_PROGRAM_ADMIN in team_groups:
