@@ -98,6 +98,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bifrost-api.wsgi.application'
 
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.11/howto/static-files/#deployment
+
+STATIC_ROOT = '/static/'
+
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
