@@ -66,8 +66,11 @@ MIDDLEWARE_THIRD_PARTIES = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
+MIDDLEWARE_CSRF = [
+    'web.middleware.DisableCsrfCheck',
+]
 
-MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_THIRD_PARTIES
+MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_THIRD_PARTIES + MIDDLEWARE_CSRF
 
 ROOT_URLCONF = 'web.urls'
 
