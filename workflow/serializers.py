@@ -42,7 +42,7 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class WorkflowLevel1Serializer(serializers.HyperlinkedModelSerializer):
+class WorkflowLevel1Serializer(serializers.ModelSerializer):
     workflow_key = serializers.UUIDField(read_only=True)
     id = serializers.ReadOnlyField()
 
@@ -68,7 +68,7 @@ class WorkflowLevel1PermissionsSerializer(serializers.Serializer):
         return value
 
 
-class WorkflowLevel2Serializer(serializers.HyperlinkedModelSerializer):
+class WorkflowLevel2Serializer(serializers.ModelSerializer):
     agreement_key = serializers.UUIDField(read_only=True)
     id = serializers.ReadOnlyField()
 
@@ -119,7 +119,7 @@ class RegisterCoreUserSerializer(serializers.ModelSerializer):
                   'password', 'title', 'organization')
 
 
-class CoreUserSerializer(serializers.HyperlinkedModelSerializer):
+class CoreUserSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     user = UserSerializer()
 
@@ -134,7 +134,7 @@ class CoreUserInvitationSerializer(serializers.Serializer):
                                    min_length=1, max_length=10)
 
 
-class OrganizationSerializer(serializers.HyperlinkedModelSerializer):
+class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -142,7 +142,7 @@ class OrganizationSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class InternationalizationSerializer(serializers.HyperlinkedModelSerializer):
+class InternationalizationSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -158,7 +158,7 @@ class WorkflowLevel2NameSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
-class WorkflowLevel2SortSerializer(serializers.HyperlinkedModelSerializer):
+class WorkflowLevel2SortSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -166,7 +166,7 @@ class WorkflowLevel2SortSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class WorkflowTeamSerializer(serializers.HyperlinkedModelSerializer):
+class WorkflowTeamSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -174,7 +174,7 @@ class WorkflowTeamSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class WorkflowTeamListFullSerializer(serializers.HyperlinkedModelSerializer):
+class WorkflowTeamListFullSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     workflowlevel1 = WorkflowLevel1Serializer()
 
@@ -183,7 +183,7 @@ class WorkflowTeamListFullSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class MilestoneSerializer(serializers.HyperlinkedModelSerializer):
+class MilestoneSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
@@ -191,7 +191,7 @@ class MilestoneSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class PortfolioSerializer(serializers.HyperlinkedModelSerializer):
+class PortfolioSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:
