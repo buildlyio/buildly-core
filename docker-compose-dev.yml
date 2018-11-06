@@ -15,12 +15,12 @@ services:
       - "5432:5432"
     restart: always
 
-  bifrost_api:
+  bifrost:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: bifrost_api
-    image: bifrost_api
+    container_name: bifrost
+    image: bifrost
     volumes:
       - .:/code
       - static-content:/static
@@ -29,7 +29,7 @@ services:
     depends_on:
       - postgres_bifrost_api
     environment:
-      ENVIRONMENT: "localhost"
+      DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
       CHARGEBEE_SITE: "toladata-test"
       ALLOWED_HOSTS: "*"
       CORS_ORIGIN_WHITELIST: "*"
@@ -47,8 +47,8 @@ services:
       DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
       API_URL: "/api/docs"
       EMAIL_SUBJECT_PREFIX: "[Test]"
-      JWT_ISSUER: "bifrostapi"
-      JWT_PRIVATE_KEY_RSA_ACTIVITYAPI: |-
+      JWT_ISSUER: "bifrost"
+      JWT_PRIVATE_KEY_RSA_BIFROST: |-
         -----BEGIN RSA PRIVATE KEY-----
         MIIBOwIBAAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRBqhqvJu1hKPYn9HYd75c0
         gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQJAe5z5096oyeqGX6J+RGGx
@@ -58,15 +58,10 @@ services:
         Ulqap+MNh7hJZQIgZNaM+wqhlFtbx8aO2SrioJI4XqVHrjojpaSgOM3cdY0CIQDB
         Q6ckOaDV937acmWuiZhxuG2euNLwNbMldtCV5ADo/g==
         -----END RSA PRIVATE KEY-----
-      JWT_PUBLIC_KEY_RSA_ACTIVITYAPI: |-
+      JWT_PUBLIC_KEY_RSA_BIFROST: |-
         -----BEGIN PUBLIC KEY-----
         MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
         qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
-        -----END PUBLIC KEY-----]
-      JWT_PUBLIC_KEY_RSA_COLLECTIONSERVICE: |-
-        -----BEGIN PUBLIC KEY-----
-        MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJK5QEbwUn9XG1Bxzd3FuOMwuMMvNHEV
-        gupZjv0QYh0ZK5LuZkekPEMTd0T3xj1+b0h7Gc+WKcn8Xw3oAp2266MCAwEAAQ==
         -----END PUBLIC KEY-----
       SOCIAL_AUTH_GOOGLE_OAUTH2_KEY: "1090285679254-ep8e9kh2p2juqq8u169fqr5ijfnuaihm.apps.googleusercontent.com"
       SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: "kfy1DGJ3POZYtWMGX0l1yoMi"
