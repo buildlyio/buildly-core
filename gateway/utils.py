@@ -5,7 +5,7 @@ from . import models as gtm
 
 SWAGGER_LOOKUP_FIELD = 'swagger'
 SWAGGER_LOOKUP_FORMAT = 'json'
-SWAGGER_LOOKUP_PATH = 'api/docs'
+SWAGGER_LOOKUP_PATH = 'docs'
 
 
 def get_swagger_urls(service: str=None) -> dict:

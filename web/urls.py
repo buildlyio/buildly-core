@@ -11,8 +11,8 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^oauthuser', OAuthUserEndpoint.as_view()),
     url(r'^health_check/', include('health_check.urls')),
-    url(r'^api/', include('workflow.urls')),
-    url(r'^api/', include('gateway.urls')),
+    url(r'^', include('workflow.urls')),
+    url(r'^', include('gateway.urls')),
     # Auth backend URL's
     url('', include('social_django.urls', namespace='social')),
     url(r'^oauth/',
