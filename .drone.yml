@@ -29,7 +29,7 @@ pipeline:
     auto_tag: true
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
-      event: [push, tag]
+      event: [tag]
       status: [success]
 
   notify:
