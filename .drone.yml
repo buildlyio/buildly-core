@@ -4,7 +4,6 @@ pipeline:
     image: python:${PYTHON_VERSION}
     commands:
       - pip install -r requirements/ci.txt
-      - flake8 --exclude=settings,migrations
       - ./tcp-port-wait.sh postgres 5432
       - coverage run --source='.' manage.py test -v 2
       - coverage report -m
