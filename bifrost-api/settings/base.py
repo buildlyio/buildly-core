@@ -1,5 +1,4 @@
 import os
-import chargebee
 
 # Base dir path
 BASE_DIR = os.path.dirname(
@@ -14,6 +13,18 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.11/howto/static-files/#deployment
+
+STATIC_ROOT = '/static/'
+
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
 
 INSTALLED_APPS_DJANGO = [
     'django.contrib.admin',
@@ -101,12 +112,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bifrost-api.wsgi.application'
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/#deployment
-
-STATIC_ROOT = '/static/'
-
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -148,16 +153,6 @@ USE_L10N = False
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
-
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
-
-
 # Sites
 # https://docs.djangoproject.com/en/1.11/ref/contrib/sites/
 
@@ -188,10 +183,6 @@ REST_FRAMEWORK = {
         'workflow.permissions.IsSuperUserBrowseableAPI',
     )
 }
-
-# Chargebee
-PAYMENT_PORTAL_URL = os.getenv('PAYMENT_PORTAL_URL', '')
-chargebee.configure(os.getenv('CHARGEBEE_SITE_API_KEY'), os.getenv('CHARGEBEE_SITE'))
 
 
 # Auth
@@ -230,6 +221,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
 LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
@@ -261,7 +253,6 @@ DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')
 CREATE_DEFAULT_PROGRAM = True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
 
 # graphene schema
-
 GRAPHENE = {
     'SCHEMA': 'workflow.graph-schema.schema' # Where your Graphene schema lives
 }
