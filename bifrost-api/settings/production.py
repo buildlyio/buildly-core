@@ -27,12 +27,6 @@ ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/#deployment
-
-STATIC_ROOT = '/static/'
-
-
 # Logging
 # https://docs.djangoproject.com/en/1.11/topics/logging/#configuring-logging
 

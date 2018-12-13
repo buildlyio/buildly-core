@@ -4,10 +4,7 @@ pipeline:
     image: python:${PYTHON_VERSION}
     commands:
       - pip install -r requirements/ci.txt
-      - flake8 --exclude=settings,migrations
       - ./tcp-port-wait.sh postgres 5432
-      - coverage run --source='.' manage.py test -v 2
-      - coverage report -m
     when:
       event: [pull_request, push, tag]
     environment:
@@ -23,14 +20,6 @@ pipeline:
       - DEFAULT_REPLY_TO=noreply@example.com
       - EMAIL_SUBJECT_PREFIX="[Test]"
 
-  bandit:
-    image: python:${PYTHON_VERSION}
-    commands:
-      - pip install bandit
-      - bandit -x tests/ -r -lll .
-    when:
-      event: [pull_request, push, tag]
-
   build-docker-image-tag:
     image: plugins/docker
     insecure: true
@@ -39,20 +28,6 @@ pipeline:
     file: Dockerfile
     auto_tag: true
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
-    when:
-      event: [tag]
-      status: [success]
-
-  trigger-dev-deployment:
-    image: quay.io/ukhomeofficedigital/drone-trigger:latest
-    verbose: true
-    drone_server: http://drone.humanitec.io
-    drone_token: $DRONE_TOKEN
-    secrets: [DRONE_TOKEN]
-    repo: Humanitec/deployment
-    branch: master
-    deploy_to: marathon
-    params: "APP_BRANCH=dev,APP_COMMIT=${DRONE_COMMIT_SHA},APP_GROUP=humanitec,APP_ID=/bifrost,APP_IMAGE=registry.tola.io/humanitec/bifrost:${DRONE_TAG##v},APP_NAME=bifrost,APP_TAG=${DRONE_TAG##v}"
     when:
       event: [tag]
       status: [success]
