@@ -17,5 +17,8 @@ RUN pip install -r requirements/production.txt
 
 ADD . /code
 
+# Collecting static files
+RUN ./collectstatic.sh
+
 EXPOSE 8080
 ENTRYPOINT ["bash", "/code/docker-entrypoint.sh"]
