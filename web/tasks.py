@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from workflow.models import LogicModule
-from workflow.serializers import LogicModuleSerializer
+from gateway.models import LogicModule
+from gateway.serializers import LogicModuleSerializer
 
 from .celery import app
 
