@@ -6,6 +6,9 @@ python manage.py migrate
 echo $(date -u) "- Collect Static"
 python manage.py collectstatic --no-input
 
+echo "Starting celery worker"
+celery_cmd="celery -A web worker -l info -f celery.log"
+$celery_cmd &
+
 echo $(date -u) "- Running the server"
 gunicorn -b 0.0.0.0:8080 bifrost-api.wsgi
-
