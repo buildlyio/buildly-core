@@ -1,8 +1,7 @@
-from django.conf.urls import url
+from django.urls import path
 from rest_framework import routers
 from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
-from web import views as views_web
 from . import views
 
 
@@ -19,8 +18,7 @@ router.register(r'milestone', views.MilestoneViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 
 urlpatterns = [
-    url(r'^graphql', csrf_exempt(GraphQLView.as_view(graphiql=True))),
-    url(r'^oauthuser', views_web.OAuthUserEndpoint.as_view())
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
 ]
 
 urlpatterns += router.urls

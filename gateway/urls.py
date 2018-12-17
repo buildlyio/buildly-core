@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import path, re_path
 from rest_framework import permissions, routers
 
 from . import views
@@ -28,8 +28,8 @@ urlpatterns = [
             views.APIGatewayView.as_view(), name='api-gateway'),
     re_path(r'^docs/swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    re_path(r'^docs/$', schema_view.with_ui('swagger', cache_timeout=0),
-            name='schema-swagger-ui'),
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
 ]
 
 urlpatterns += router.urls
