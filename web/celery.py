@@ -1,9 +1,8 @@
 from __future__ import absolute_import
-from celery import Celery
-from kombu import Exchange, Queue
-
 from django.conf import settings
 
+from celery import Celery
+from kombu import Exchange, Queue
 
 broker_url = 'amqp://{}:{}@{}:{}/{}'.format(
     settings.RABBIT_USER, settings.RABBIT_PASS, settings.RABBIT_HOST,
@@ -13,8 +12,6 @@ broker_url = 'amqp://{}:{}@{}:{}/{}'.format(
 app = Celery(
     'celery_bifrost',
     broker=broker_url,
-    backend='rpc://',
-    include=['web.tasks'],
     task_serializer='json',
     result_serializer='json',
     accept_content=['application/json'],
