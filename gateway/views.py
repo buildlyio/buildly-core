@@ -89,7 +89,11 @@ class APIGatewayView(views.APIView):
                                 status=e.status,
                                 content_type=e.content_type)
 
-        app = App._create_(schema_urls[kwargs['service']])
+        # load swagger json as a raw App and prepare it
+        app = App.load(schema_urls[kwargs['service']])
+        if app.raw.basePath == '/':
+            getattr(app, 'raw').update_field('basePath', '')
+        app.prepare()
         client = Client()
 
         # create and perform a service request
@@ -129,8 +133,8 @@ class APIGatewayView(views.APIView):
 
         if pk is None:
             # resolve the path
-            path = '%s/' % model
             path_item = app.resolve(jp_compose(path, base='#/paths'))
+            path = '/%s/' % model
 
             # call operation
             if method == 'post':
@@ -140,8 +144,8 @@ class APIGatewayView(views.APIView):
                 return path_item.__getattribute__(method).__call__()
         elif pk is not None:
             # resolve the path
-            path = '%s/{id}/' % model
             path_item = app.resolve(jp_compose(path, base='#/paths'))
+            path = '/%s/{id}/' % model
 
             # call operation
             if method in ['put', 'patch']:
