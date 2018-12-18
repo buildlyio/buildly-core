@@ -6,7 +6,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from pyswagger import App
 from pyswagger.contrib.client.requests import Client
-from pyswagger.utils import jp_compose
 
 from . import exceptions
 from . import models as gtm
@@ -133,8 +132,8 @@ class APIGatewayView(views.APIView):
 
         if pk is None:
             # resolve the path
-            path_item = app.resolve(jp_compose(path, base='#/paths'))
             path = '/%s/' % model
+            path_item = app.s(path)
 
             # call operation
             if method == 'post':
@@ -144,8 +143,8 @@ class APIGatewayView(views.APIView):
                 return path_item.__getattribute__(method).__call__()
         elif pk is not None:
             # resolve the path
-            path_item = app.resolve(jp_compose(path, base='#/paths'))
             path = '/%s/{id}/' % model
+            path_item = app.s(path)
 
             # call operation
             if method in ['put', 'patch']:
