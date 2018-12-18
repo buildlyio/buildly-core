@@ -129,7 +129,7 @@ class APIGatewayView(views.APIView):
 
         if pk is None:
             # resolve the path
-            path = '/%s/' % model
+            path = '%s/' % model
             path_item = app.resolve(jp_compose(path, base='#/paths'))
 
             # call operation
@@ -140,7 +140,7 @@ class APIGatewayView(views.APIView):
                 return path_item.__getattribute__(method).__call__()
         elif pk is not None:
             # resolve the path
-            path = '/%s/{id}/' % model
+            path = '%s/{id}/' % model
             path_item = app.resolve(jp_compose(path, base='#/paths'))
 
             # call operation
