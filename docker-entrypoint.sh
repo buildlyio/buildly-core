@@ -7,7 +7,7 @@ echo $(date -u) "- Collect Static"
 python manage.py collectstatic --no-input
 
 echo "Starting celery worker"
-celery_cmd="celery -A web worker -l info -f celery.log"
+celery_cmd="celery -A gateway worker -l info -f celery.log"
 $celery_cmd &
 
 echo $(date -u) "- Running the server"
