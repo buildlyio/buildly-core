@@ -137,10 +137,9 @@ class APIGatewayView(views.APIView):
 
             # call operation
             if method == 'post':
-                return path_item.__getattribute__(method).__call__(
-                    data=data)
+                return getattr(path_item, method).__call__(data=data)
             elif method == 'get':
-                return path_item.__getattribute__(method).__call__()
+                return getattr(path_item, method).__call__()
         elif pk is not None:
             # resolve the path
             path = '/%s/{id}/' % model
@@ -148,11 +147,10 @@ class APIGatewayView(views.APIView):
 
             # call operation
             if method in ['put', 'patch']:
-                return path_item.__getattribute__(method).__call__(
+                return getattr(path_item, method).__call__(
                     id=kwargs['pk'], data=data)
             elif method in ['get', 'delete']:
-                return path_item.__getattribute__(method).__call__(
-                    id=kwargs['pk'])
+                return getattr(path_item, method).__call__(id=kwargs['pk'])
 
     def _get_service_request_headers(self, request):
         """
