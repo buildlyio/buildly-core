@@ -2,13 +2,14 @@ from graphene_django import DjangoObjectType
 import graphene
 from workflow import models as wfm
 
-#GraphQL CoreUser
+
+# GraphQL CoreUser
 class CoreUser(DjangoObjectType):
     class Meta:
         model = wfm.CoreUser
 
 
-#GraphQL WORKFLOWLEVEL1
+# GraphQL WORKFLOWLEVEL1
 class WorkflowLevel1(DjangoObjectType):
     class Meta:
         model = wfm.WorkflowLevel1
@@ -26,9 +27,7 @@ class Milestone(DjangoObjectType):
         model = wfm.Milestone
 
 
-
-
-#Query each class
+# Query each class
 class Query(graphene.ObjectType):
     users = graphene.List(CoreUser)
     workflowlevel1s = graphene.List(WorkflowLevel1)
@@ -51,6 +50,5 @@ class Query(graphene.ObjectType):
         return wfm.WorkflowLevel2.objects.all()
 
 
-#export schema
+# export schema
 schema = graphene.Schema(query=Query)
-
