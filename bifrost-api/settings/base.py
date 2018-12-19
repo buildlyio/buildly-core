@@ -54,6 +54,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
 ]
 
 INSTALLED_APPS_LOCAL = [
+    'bifrost-api',
     'gateway',
     'web',
     'workflow',
@@ -186,6 +187,8 @@ REST_FRAMEWORK = {
 
 
 # Auth
+OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
+
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
@@ -200,7 +203,7 @@ SOCIAL_AUTH_PIPELINE = (
 
 # JWT Authentication settings
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
-JWT_AUTH_DISABLED = False
+JWT_AUTH_DISABLED = True
 JWT_PRIVATE_KEY_RSA_ACTIVITYAPI = os.getenv('JWT_PRIVATE_KEY_RSA_ACTIVITYAPI')
 JWT_PUBLIC_KEY_RSA_ACTIVITYAPI = os.getenv('JWT_PUBLIC_KEY_RSA_ACTIVITYAPI')
 

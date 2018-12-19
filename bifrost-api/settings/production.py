@@ -1,4 +1,3 @@
-import warnings
 from .base import *
 
 # CORS to allow external apps auth through OAuth 2

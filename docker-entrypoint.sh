@@ -3,6 +3,9 @@
 echo $(date -u) "- Migrating"
 python manage.py migrate
 
+echo $(date -u) "- Load Initial Data"
+python manage.py loadinitialdata
+
 echo $(date -u) "- Collect Static"
 python manage.py collectstatic --no-input
 
