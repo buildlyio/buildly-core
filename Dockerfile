@@ -1,24 +1,22 @@
-FROM python:3.6
+FROM python:3.6-alpine3.7
+
+RUN apk update
 
 WORKDIR /code
 
-# Install tcp-port-wait.sh requirements
-RUN apt-get update && apt-get install -y netcat
-
-# NginX config
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install nginx -y
-
-ADD docker/etc/nginx/bifrost-api.conf /etc/nginx/conf.d/bifrost-api.conf
+RUN apk add --no-cache postgresql-libs bash
+RUN apk add --no-cache --virtual .build-deps git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
 
 COPY ./requirements/base.txt requirements/base.txt
 COPY ./requirements/production.txt requirements/production.txt
-RUN pip install -r requirements/production.txt
+RUN pip install -r requirements/production.txt --no-cache-dir
 
 ADD . /code
 
 # Collecting static files
 RUN ./collectstatic.sh
+
+RUN apk del .build-deps
 
 EXPOSE 8080
 ENTRYPOINT ["bash", "/code/docker-entrypoint.sh"]

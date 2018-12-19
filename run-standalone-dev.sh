@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script must not be used for production. Migrating, collecting static
 # data, check database connection should be done by different jobs in
 # at a different layer.

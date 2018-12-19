@@ -79,17 +79,5 @@ services:
       RABBIT_VHOST: "celery_vhost"
       RABBIT_WALHALL_QUEUE: "walhall_queue"
 
-  nginx_bifrost:
-    image: nginx:latest
-    container_name: nginx_bifrost
-    ports:
-    - "8001:8000"
-    volumes:
-    - .:/code
-    - ./docker/etc/nginx:/etc/nginx/conf.d
-    - static-content:/static
-    depends_on:
-    - bifrost
-
 volumes:
   static-content:
