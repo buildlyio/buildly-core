@@ -293,7 +293,8 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                      mixins.CreateModelMixin, viewsets.GenericViewSet):
+                      mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                      viewsets.GenericViewSet):
     """
     A core user is an extension of the default User object.  A core user is also the primary relationship for identity
     and access to a logged in user. They are associated with an organization, Group (for permission though WorkflowTeam)
