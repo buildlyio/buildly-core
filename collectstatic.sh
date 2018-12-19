@@ -9,9 +9,6 @@ export DATABASE_USER=nothing
 export DATABASE_PASSWORD=nothing
 export DATABASE_HOST=nothing
 export DATABASE_PORT=nothing
-export DEFAULT_ORG=nothing
-export DEFAULT_REPLY_TO=nothing
-export DEFAULT_FROM_EMAIL=nothing
 export DJANGO_SETTINGS_MODULE=bifrost-api.settings.production
 
 python manage.py collectstatic --no-input

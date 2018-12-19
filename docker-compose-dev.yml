@@ -31,23 +31,17 @@ services:
       - postgres_bifrost_api
     environment:
       DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
-      CHARGEBEE_SITE: "toladata-test"
       ALLOWED_HOSTS: "*"
       CORS_ORIGIN_WHITELIST: "*"
-      CHARGEBEE_SITE_API_KEY: "test_31lcdE7L3grqdkGcvy24ik3lmlJrnA0Ez"
       DATABASE_ENGINE: "postgresql"
       DATABASE_NAME: "bifrost_api"
       DATABASE_USER: "root"
       DATABASE_PASSWORD: "root"
       DATABASE_HOST: "postgres_bifrost_api"
       DATABASE_PORT: "5432"
-      DEFAULT_FROM_EMAIL: "dev@example.com"
       DEFAULT_OAUTH_DOMAINS: "toladata.com,humanitec.com"
-      DEFAULT_ORG: "Humanitec"
-      DEFAULT_REPLY_TO: "noreply@example.com"
       DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
       API_URL: "/api/docs"
-      EMAIL_SUBJECT_PREFIX: "[Test]"
       JWT_ISSUER: "bifrost"
       JWT_PRIVATE_KEY_RSA_BIFROST: |-
         -----BEGIN RSA PRIVATE KEY-----

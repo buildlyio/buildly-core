@@ -14,11 +14,6 @@ pipeline:
       - DATABASE_PASSWORD=root
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
-      - DEFAULT_ORG=Humanitec
-      - TOLA_TRACK_SYNC_ENABLED=False
-      - DEFAULT_FROM_EMAIL=dev@example.com
-      - DEFAULT_REPLY_TO=noreply@example.com
-      - EMAIL_SUBJECT_PREFIX="[Test]"
 
   build-docker-image-tag:
     image: plugins/docker
