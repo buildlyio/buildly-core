@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from gateway.models import LogicModule
-from gateway.serializers import LogicModuleSerializer
+from .models import LogicModule
+from .serializers import LogicModuleSerializer
 
 from .celery import app
 
