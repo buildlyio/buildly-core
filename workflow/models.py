@@ -241,6 +241,7 @@ class WorkflowLevel1(models.Model):
 
 
 class WorkflowTeam(models.Model):
+    team_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel1 UUID', default=uuid.uuid4, unique=True)
     workflow_user = models.ForeignKey(CoreUser, blank=True, null=True, on_delete=models.CASCADE, related_name="auth_approving", help_text='User with access/permissions to related workflowlevels')
     workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True, help_text='Related workflowlevel 1')
     start_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level access')
