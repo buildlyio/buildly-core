@@ -24,8 +24,9 @@ router = routers.SimpleRouter()
 router.register(r'logicmodule', views.LogicModuleViewSet)
 
 urlpatterns = [
-    re_path(r'^(?!admin|oauthuser|health_check|oauth|graphql)(?P<service>['
-            r'a-zA-Z]+)/(?P<model>[a-zA-Z]+)/(?:(?P<pk>\d+)/)?',
+    re_path(r'^(?!admin|oauthuser|health_check|docs|complete|disconnect|oauth'
+            r'|static|graphql)(?P<service>[a-zA-Z]+)/(?P<model>[a-zA-Z]+)/'
+            r'(?:(?P<pk>\d+)/)?',
             views.APIGatewayView.as_view(), name='api-gateway'),
     re_path(r'^docs/swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0), name='schema-json'),
