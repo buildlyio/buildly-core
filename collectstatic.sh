@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # All this environment variables need to be defined to run collectstatic
 export ALLOWED_HOSTS=nothing
