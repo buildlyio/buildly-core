@@ -1,12 +1,13 @@
 ---
 pipeline:
   test:
-    image: python:${PYTHON_VERSION}
+    image: python:${PYTHON_VERSION}-alpine3.7
     commands:
-      - pip install -r requirements/ci.txt
+      - apk add --no-cache bash git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
+      - pip install -r requirements/ci.txt --no-cache-dir
       - ./tcp-port-wait.sh postgres 5432
     when:
-      event: [pull_request, push, tag]
+      event: [push, tag]
     environment:
       - DATABASE_ENGINE=postgresql
       - DATABASE_NAME=bifrost_api
