@@ -33,7 +33,7 @@ def get_swagger_urls(service: str=None) -> dict:
             module['endpoint'], SWAGGER_LOOKUP_PATH,
             SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT
         )
-        module_name = module['name'].lower()
+        module_name = module['name'].lower().split('_')[0]
         module_urls[module_name] = swagger_url
 
     return module_urls
