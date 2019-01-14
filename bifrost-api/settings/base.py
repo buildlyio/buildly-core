@@ -202,6 +202,7 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 # JWT Authentication settings
+JWT_PAYLOAD_ENRICHER = 'workflow.jwt_utils.payload_enricher'
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_AUTH_DISABLED = False
 JWT_PRIVATE_KEY_RSA_BIFROST = os.getenv('JWT_PRIVATE_KEY_RSA_BIFROST')
