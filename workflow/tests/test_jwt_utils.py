@@ -4,7 +4,7 @@ from django.test.client import RequestFactory
 import factories
 
 from ..jwt_utils import payload_enricher
-from workflow.models import ROLE_SUPER_USER, ROLE_ORGANIZATION_ADMIN
+from workflow.models import ROLE_ORGANIZATION_ADMIN
 
 
 class JWTUtilsTest(TestCase):
@@ -37,7 +37,6 @@ class JWTUtilsTest(TestCase):
         expected_payload = {
             'user_uuid': str(tola_user.tola_user_uuid),
             'organization_uuid': str(tola_user.organization.organization_uuid),
-            'role': ROLE_SUPER_USER
         }
         self.assertEqual(payload, expected_payload)
 
