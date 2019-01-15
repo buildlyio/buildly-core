@@ -97,17 +97,10 @@ class APIGatewayView(views.APIView):
 
         # create and perform a service request
         req, resp = self._get_req_and_rep(app, request, **kwargs)
+        response = self._perform_service_request(request, client, req, resp)
 
-        if resp.raw:
-            response = self._perform_service_request(request, client, req,
-                                                     resp)
-            content = response.raw
-            status = response.status
-        else:
-            content = []
-            status = 200
-        return HttpResponse(content=content,
-                            status=status,
+        return HttpResponse(content=response.raw,
+                            status=response.status,
                             content_type='application/json')
 
     def _validate_incoming_request(self, request, **kwargs):
