@@ -9,7 +9,7 @@ class URLPatternsTest(TestCase):
             match = resolve(url)
             self.assertEquals(match.url_name, 'api-gateway')
             self.assertDictContainsSubset(
-                {'service': 'crm', 'model': 'appointment', 'pk': '',
+                {'service': 'crm', 'model': 'appointment', 'pk': None,
                  'fragment': 'some-section'},
                 match.kwargs, f'Failing URL: {url}')
 
@@ -19,7 +19,7 @@ class URLPatternsTest(TestCase):
             match = resolve(url)
             self.assertEquals(match.url_name, 'api-gateway')
             self.assertDictContainsSubset(
-                {'service': 'crm', 'model': 'appointment', 'pk': '',
+                {'service': 'crm', 'model': 'appointment', 'pk': None,
                  'query': 'k1=v1&k2=v2'},
                 match.kwargs, f'Failing URL: {url}')
 
@@ -44,13 +44,13 @@ class URLPatternsTest(TestCase):
         match = resolve('/crm/appointment/')
         self.assertEquals(match.url_name, 'api-gateway')
         self.assertDictContainsSubset(
-            {'service': 'crm', 'model': 'appointment', 'pk': ''},
+            {'service': 'crm', 'model': 'appointment', 'pk': None},
             match.kwargs)
 
         match = resolve('/crm/appointment')
         self.assertEquals(match.url_name, 'api-gateway')
         self.assertDictContainsSubset(
-            {'service': 'crm', 'model': 'appointment', 'pk': ''},
+            {'service': 'crm', 'model': 'appointment', 'pk': None},
             match.kwargs)
 
     def test_admin_url(self):
