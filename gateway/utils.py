@@ -48,4 +48,8 @@ def get_swagger_from_url(api_url: str):
     :param api_url:
     :return: dictionary representing the swagger definition
     """
-    return requests.get(api_url).json()
+    try:
+        return requests.get(api_url).json()
+    except requests.exceptions.ConnectionError as error:
+        raise requests.exceptions.ConnectionError(
+            f'Please, check that {api_url} is accessible.') from error
