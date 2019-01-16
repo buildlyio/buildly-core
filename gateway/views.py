@@ -147,16 +147,26 @@ class APIGatewayView(views.APIView):
             elif method == 'get':
                 return getattr(path_item, method).__call__()
         elif pk is not None:
-            # resolve the path
-            path = '/%s/{id}/' % model
+            try:
+                int(pk)
+            except ValueError:
+                pk_name = 'uuid'
+            else:
+                pk_name = 'id'
+
+            path = '/{0}/{{{1}}}/'.format(model, pk_name)
             path_item = app.s(path)
 
             # call operation
             if method in ['put', 'patch']:
-                return getattr(path_item, method).__call__(
-                    id=kwargs['pk'], data=data)
+                kwargs = {
+                    'data': data,
+                    pk_name: pk,
+                }
+                return getattr(path_item, method).__call__(**kwargs)
             elif method in ['get', 'delete']:
-                return getattr(path_item, method).__call__(id=kwargs['pk'])
+                kwargs = {pk_name: pk}
+                return getattr(path_item, method).__call__(**kwargs)
 
     def _get_service_request_headers(self, request):
         """
