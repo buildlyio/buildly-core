@@ -1,5 +1,8 @@
 FROM python:3.6-alpine3.7
 
+# Do not buffer log messages in memory; some messages can be lost otherwise
+ENV PYTHONUNBUFFERED 1
+
 RUN apk update
 
 WORKDIR /code

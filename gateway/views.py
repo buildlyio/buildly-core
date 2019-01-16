@@ -1,3 +1,5 @@
+from urllib.error import URLError
+
 from django.http import HttpResponse
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
@@ -89,7 +91,11 @@ class APIGatewayView(views.APIView):
                                 content_type=e.content_type)
 
         # load swagger json as a raw App and prepare it
-        app = App.load(schema_urls[kwargs['service']])
+        try:
+            app = App.load(schema_urls[kwargs['service']])
+        except URLError as error:
+            raise URLError(f'Make sure that {schema_urls[kwargs["service"]]} '
+                           'is accessible.') from error
         if app.raw.basePath == '/':
             getattr(app, 'raw').update_field('basePath', '')
         app.prepare()
