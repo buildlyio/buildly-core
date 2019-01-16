@@ -28,7 +28,7 @@ urlpatterns = [
         r'^(?!admin|oauthuser|health_check|docs|complete|disconnect|oauth|static|graphql)'  # noqa - Reject any of these
         r'(?P<service>[^/?#]+)/'  # service (timetracking)
         r'(?P<model>[^/?#]+)/?'  # model (timeevent)
-        r'((?P<pk>[^?#/]*)/?)?'  # pk (numeric or UUID)
+        r'((?P<pk>[^?#/]+)/?)?'  # pk (numeric or UUID)
         r'(?:\?(?P<query>[^#]*))?'  # queryparams (?key1=value1&key2=value2)
         r'(?:#(?P<fragment>.*))?',  # fragment (#some-anchor)
         views.APIGatewayView.as_view(), name='api-gateway'),
