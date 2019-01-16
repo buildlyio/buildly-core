@@ -178,4 +178,10 @@ class APIGatewayView(views.APIView):
 
     def _perform_service_request(self, request, client, req, resp):
         headers = self._get_service_request_headers(request)
-        return client.request((req, resp), headers=headers)
+        try:
+            return client.request((req, resp), headers=headers)
+        except Exception as e:
+            error_msg = (f'An error occurred when redirecting the request to '
+                         f'or receiving the response from the service.\n'
+                         f'Origin: ({e.__class__.__name__}: {e})')
+            raise exceptions.PySwaggerError(error_msg)
