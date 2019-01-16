@@ -37,55 +37,55 @@ Password: `admin`.
 To run the tests:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm activity_api python manage.py test # --keepdb to run faster or --debug-mode to DEBUG=True
+docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm bifrost python manage.py test # --keepdb to run faster or --debug-mode to DEBUG=True
 ```
 
 To run the webserver with pdb support:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --rm --service-ports activity_api
+docker-compose -f docker-compose-dev.yml run --rm --service-ports bifrost
 ```
 
 To run flake8:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'flake8 --exclude=settings,migrations' activity_api
+docker-compose -f docker-compose-dev.yml run --entrypoint 'flake8 --exclude=settings,migrations' bifrost
 ```
 
 To run bandit:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'bandit -x tests/ -r .' activity_api
+docker-compose -f docker-compose-dev.yml run --entrypoint 'bandit -x tests/ -r .' bifrost
 ```
 To run bash:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm activity_api bash
+docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm bifrost bash
 ```
 
 or if you initialized already a container:
 
 ```bash
-docker exec -it activity_api bash
+docker exec -it bifrost bash
 ```
 
 To connect to the database when the container is running:
 
 ```bash
-docker exec -it postgres_activity_api psql -U root activity_api
+docker exec -it postgres_bifrost psql -U root bifrost
 ```
 
 If the database is empty, you may want to populate extra demo data to play
-around with Activity:
+around:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'python manage.py loadinitialdata --demo' activity_api
+docker-compose -f docker-compose-dev.yml run --entrypoint 'python manage.py loadinitialdata --demo' bifrost
 ```
 
 Or if you want to restore the demo data keeping the users:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'python manage.py loadinitialdata --restore' activity_api
+docker-compose -f docker-compose-dev.yml run --entrypoint 'python manage.py loadinitialdata --restore' bifrost
 ```
 
 
@@ -141,7 +141,7 @@ For using JWT as authentication method, we need to configure public and
 private RSA keys.
 
 The following commands will generate a public and private key. The private
-key will stay in ActivityAPI and the public one will be supplied to
+key will stay in BiFrost and the public one will be supplied to
 microservices in order to verify the authenticity of the message:
 
 ```bash
