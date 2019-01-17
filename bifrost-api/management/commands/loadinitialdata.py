@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
 import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from oauth2_provider.models import Application
+import factories
+from workflow.models import (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
+                             ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM)
 
 logger = logging.getLogger(__name__)
 
@@ -15,20 +16,44 @@ class Command(BaseCommand):
     Loads initial data for Bifrost.
     """
 
-    def _create_oauth_application(self):
-        application = None
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
 
+        # Note: for the lists we fill the first element with an empty value for
+        # development readability (id == position).
+        self._application = None
+        self._groups = ['']
+
+    def _create_oauth_application(self):
         if settings.OAUTH_CLIENT_ID is not None:
-            application = Application.objects.get_or_create(
+            self._application = factories.Application(
+                id=1,
                 name='bifrost',
                 client_id=settings.OAUTH_CLIENT_ID,
-                client_type=Application.CLIENT_PUBLIC,
-                authorization_grant_type=Application.GRANT_PASSWORD,
-                skip_authorization=True,
             )
 
-        return application
+    def _create_groups(self):
+        self._groups.append(factories.Group(
+            id=1,
+            name=ROLE_VIEW_ONLY,
+        ))
+
+        self._groups.append(factories.Group(
+            id=2,
+            name=ROLE_ORGANIZATION_ADMIN,
+        ))
+
+        self._groups.append(factories.Group(
+            id=3,
+            name=ROLE_PROGRAM_ADMIN,
+        ))
+
+        self._groups.append(factories.Group(
+            id=4,
+            name=ROLE_PROGRAM_TEAM,
+        ))
 
     @transaction.atomic
     def handle(self, *args, **options):
+        self._create_groups()
         self._create_oauth_application()
