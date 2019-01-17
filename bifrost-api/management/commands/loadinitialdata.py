@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from oauth2_provider.models import Application
+import factories
 
 logger = logging.getLogger(__name__)
 
@@ -15,19 +14,21 @@ class Command(BaseCommand):
     Loads initial data for Bifrost.
     """
 
-    def _create_oauth_application(self):
-        application = None
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
 
+        # Note: for the lists we fill the first element with an empty value for
+        # development readability (id == position).
+        self._application = None
+
+    def _create_oauth_application(self):
         if settings.OAUTH_CLIENT_ID is not None:
-            application = Application.objects.get_or_create(
+            self._application = factories.Application(
+                id=1,
                 name='bifrost',
                 client_id=settings.OAUTH_CLIENT_ID,
-                client_type=Application.CLIENT_PUBLIC,
-                authorization_grant_type=Application.GRANT_PASSWORD,
-                skip_authorization=True,
             )
 
-        return application
 
     @transaction.atomic
     def handle(self, *args, **options):

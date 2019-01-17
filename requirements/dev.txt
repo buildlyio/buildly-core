@@ -1,6 +1,5 @@
 -r base.txt
 
-factory_boy==2.9.2
 flake8==3.5.0
 mock==2.0.0
 bandit
