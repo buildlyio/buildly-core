@@ -9,6 +9,10 @@ class GatewayError(Exception):
         self.content_type = 'application/json'
 
 
+class EndpointNotFound(Exception):
+    pass
+
+
 class PySwaggerError(GatewayError):
     def __init__(self, msg):
         super(PySwaggerError, self).__init__(msg)

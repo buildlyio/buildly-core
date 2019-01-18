@@ -1,6 +1,6 @@
 from urllib.error import URLError
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
 
@@ -102,12 +102,17 @@ class APIGatewayView(views.APIView):
         client = Client()
 
         # create and perform a service request
-        req, resp = self._get_req_and_rep(app, request, **kwargs)
-        response = self._perform_service_request(request, client, req, resp)
+        try:
+            req, resp = self._get_req_and_rep(app, request, **kwargs)
+        except exceptions.EndpointNotFound:
+            raise Http404()
+        else:
+            response = self._perform_service_request(request, client, req,
+                                                     resp)
 
-        return HttpResponse(content=response.raw,
-                            status=response.status,
-                            content_type='application/json')
+            return HttpResponse(content=response.raw,
+                                status=response.status,
+                                content_type='application/json')
 
     def _validate_incoming_request(self, request, **kwargs):
         """
@@ -155,7 +160,10 @@ class APIGatewayView(views.APIView):
                 pk_name = 'id'
 
             path = '/{0}/{{{1}}}/'.format(model, pk_name)
-            path_item = app.s(path)
+            try:
+                path_item = app.s(path)
+            except KeyError:
+                raise exceptions.EndpointNotFound(path)
 
             # call operation
             if method in ['put', 'patch']:
