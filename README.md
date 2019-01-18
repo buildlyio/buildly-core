@@ -22,13 +22,13 @@ $ bash hooks/create-hooks
 Build first the images:
 
 ```bash
-docker-compose -f docker-compose-dev.yml build # --no-cache to force deps installation
+docker-compose build # --no-cache to force deps installation
 ```
 
 To run the webserver (go to 127.0.0.1:8080):
 
 ```bash
-docker-compose -f docker-compose-dev.yml up # -d for detached
+docker-compose up # -d for detached
 ```
 
 User: `admin`
@@ -37,30 +37,30 @@ Password: `admin`.
 To run the tests:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm bifrost python manage.py test # --keepdb to run faster or --debug-mode to DEBUG=True
+docker-compose run --entrypoint '/usr/bin/env' --rm bifrost python manage.py test # --keepdb to run faster or --debug-mode to DEBUG=True
 ```
 
 To run the webserver with pdb support:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --rm --service-ports bifrost
+docker-compose run --rm --service-ports bifrost
 ```
 
 To run flake8:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'flake8 --exclude=settings,migrations' bifrost
+docker-compose run --entrypoint 'flake8 --exclude=settings,migrations' bifrost
 ```
 
 To run bandit:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'bandit -x tests/ -r .' bifrost
+docker-compose run --entrypoint 'bandit -x tests/ -r .' bifrost
 ```
 To run bash:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm bifrost bash
+docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash
 ```
 
 or if you initialized already a container:
@@ -79,32 +79,13 @@ If the database is empty, you may want to populate extra demo data to play
 around:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'python manage.py loadinitialdata --demo' bifrost
+docker-compose run --entrypoint 'python manage.py loadinitialdata --demo' bifrost
 ```
 
 Or if you want to restore the demo data keeping the users:
 
 ```bash
-docker-compose -f docker-compose-dev.yml run --entrypoint 'python manage.py loadinitialdata --restore' bifrost
-```
-
-
-## Deploy with NGINX reverse proxy + static server + Gunicorn
-
-It is possible as well to have a really similar setup than our production
-server. The main difference here is that we are not using the Django webserver
-anymore and we are using NGINX to serve static files.
-
-Build first the images:
-
-```bash
-docker-compose -f docker-compose-dev.yml -f docker-compose-dev-nginx.yml build # --no-cache to force deps installation
-```
-
-To run the webserver (go to 127.0.0.1:8000):
-
-```bash
-docker-compose -f docker-compose-dev.yml -f docker-compose-dev-nginx.yml up # -d for detached
+docker-compose run --entrypoint 'python manage.py loadinitialdata --restore' bifrost
 ```
 
 
@@ -160,7 +141,7 @@ step:
 
 - With the container running, go into it with this command:
 
-  `docker-compose -f docker-compose-dev.yml run --entrypoint '/usr/bin/env' --rm bifrost bash`
+  `docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash`
 
 - Install the `social-core` lib again:
 
