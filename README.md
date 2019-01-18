@@ -34,29 +34,12 @@ docker-compose up # -d for detached
 User: `admin`
 Password: `admin`.
 
-To run the tests:
-
-```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm bifrost python manage.py test # --keepdb to run faster or --debug-mode to DEBUG=True
-```
-
 To run the webserver with pdb support:
 
 ```bash
 docker-compose run --rm --service-ports bifrost
 ```
 
-To run flake8:
-
-```bash
-docker-compose run --entrypoint 'flake8 --exclude=settings,migrations' bifrost
-```
-
-To run bandit:
-
-```bash
-docker-compose run --entrypoint 'bandit -x tests/ -r .' bifrost
-```
 To run bash:
 
 ```bash
@@ -88,6 +71,11 @@ Or if you want to restore the demo data keeping the users:
 docker-compose run --entrypoint 'python manage.py loadinitialdata --restore' bifrost
 ```
 
+If you would like to clean the database and start the application, do:
+
+```bash
+docker-compose up --renew-anon-volumes --force-recreate --build
+```
 
 ## Set up
 
