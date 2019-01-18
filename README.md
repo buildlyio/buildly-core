@@ -2,6 +2,7 @@
 
 [![Build Status](http://drone.humanitec.io/api/badges/Humanitec/bifrost/status.svg)](http://drone.humanitec.io/Humanitec/bifrost)
 
+
 ## Additional Documentation
 
 * User Docs - https://github.com/Humanitec/StandardizationDocs/blob/master/BiFrost.md
@@ -9,13 +10,6 @@
 
 The partner front end service for BiFrost is [Midgard (Angular) and Midgard Core]:https://github.com/Humanitec/midgard and is configured to connect to the BiFrost core automatically and facilitate connections to addtional platform frontend and backend services.
 
-## Development notes
-
-It is recommended to enable hooks first, to avoid dangerous code pushes.
-
-```
-$ bash hooks/create-hooks
-```
 
 ## Deploy locally via Docker
 
