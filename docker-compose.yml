@@ -2,11 +2,11 @@ version: "2.0"
 
 services:
 
-  postgres_bifrost_api:
-    container_name: postgres_bifrost_api
+  postgres_bifrost:
+    container_name: postgres_bifrost
     image: postgres:9.6
     environment:
-      POSTGRES_DB: bifrost_api
+      POSTGRES_DB: bifrost
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     volumes:
@@ -28,16 +28,16 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres_bifrost_api
+      - postgres_bifrost
     environment:
       DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
       ALLOWED_HOSTS: "*"
       CORS_ORIGIN_WHITELIST: "*"
       DATABASE_ENGINE: "postgresql"
-      DATABASE_NAME: "bifrost_api"
+      DATABASE_NAME: "bifrost"
       DATABASE_USER: "root"
       DATABASE_PASSWORD: "root"
-      DATABASE_HOST: "postgres_bifrost_api"
+      DATABASE_HOST: "postgres_bifrost"
       DATABASE_PORT: "5432"
       DEFAULT_OAUTH_DOMAINS: "toladata.com,humanitec.com"
       DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
