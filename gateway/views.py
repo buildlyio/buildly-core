@@ -144,7 +144,7 @@ class APIGatewayView(views.APIView):
         payload = request.data if hasattr(request, 'data') else dict()
         data = payload.dict() if isinstance(payload, QueryDict) else payload
 
-        if request.content_type == 'application/json':
+        if request.content_type == 'application/json' and data:
             data = {
                 'data': data
             }
