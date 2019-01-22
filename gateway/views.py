@@ -187,10 +187,9 @@ class APIGatewayView(views.APIView):
         # get the authorization header from current request
         authorization = get_authorization_header(request).decode('utf-8')
 
-        # create headers
+        # Add only Authorization header, PySwaager will handle the rest of it
         headers = {
             'Authorization': authorization,
-            'Content-Type': 'application/json'
         }
         return headers
 
