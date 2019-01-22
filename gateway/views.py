@@ -1,6 +1,8 @@
 from urllib.error import URLError
 
 from django.http import HttpResponse, Http404
+from django.http import HttpResponse
+from django.http.request import QueryDict
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
 
@@ -139,7 +141,24 @@ class APIGatewayView(views.APIView):
         pk = kwargs['pk']
         model = kwargs['model'] if kwargs.get('model') else ''
         method = request.META['REQUEST_METHOD'].lower()
-        data = request.data if hasattr(request, 'data') else dict()
+        payload = request.data if hasattr(request, 'data') else dict()
+        data = payload.dict() if isinstance(payload, QueryDict) else payload
+
+        if request.content_type == 'application/json':
+            data = {
+                'data': data
+            }
+
+        # handle uploaded files
+        if request.FILES:
+            for key, value in request.FILES.items():
+                data[key] = {
+                    'header': {
+                        'Content-Type': value.content_type,
+                    },
+                    'data': value,
+                    'filename': value.name,
+                }
 
         if pk is None:
             # resolve the path
@@ -148,7 +167,7 @@ class APIGatewayView(views.APIView):
 
             # call operation
             if method == 'post':
-                return getattr(path_item, method).__call__(data=data)
+                return getattr(path_item, method).__call__(**data)
             elif method == 'get':
                 return getattr(path_item, method).__call__()
         elif pk is not None:
@@ -164,17 +183,15 @@ class APIGatewayView(views.APIView):
                 path_item = app.s(path)
             except KeyError:
                 raise exceptions.EndpointNotFound(path)
+            data.update({
+                pk_name: pk,
+            })
 
             # call operation
             if method in ['put', 'patch']:
-                kwargs = {
-                    'data': data,
-                    pk_name: pk,
-                }
-                return getattr(path_item, method).__call__(**kwargs)
+                return getattr(path_item, method).__call__(**data)
             elif method in ['get', 'delete']:
-                kwargs = {pk_name: pk}
-                return getattr(path_item, method).__call__(**kwargs)
+                return getattr(path_item, method).__call__(**data)
 
     def _get_service_request_headers(self, request):
         """
