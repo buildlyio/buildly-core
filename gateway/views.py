@@ -120,11 +120,51 @@ class APIGatewayView(views.APIView):
         """
         Do certain validations to the request before starting to create a
         new request to services
+
+        :param rest_framework.Request request: request info
+        :param kwargs: info about request like obj's PK, service and model
         """
         if (request.META['REQUEST_METHOD'] in ['PUT', 'PATCH', 'DELETE'] and
                 kwargs['pk'] is None):
             raise exceptions.RequestValidationError(
                 'The object ID is missing.', 400)
+
+
+    def _get_swagger_data(self, request):
+        """
+        Create the data structure to be used in PySwagger. GET and  DELETE
+        requests don't required body, so the data structure will have just
+        query parameter if passed.
+
+        :param rest_framework.Request request: request info
+        :return dict: request body structured for PySwagger
+        """
+        method = request.META['REQUEST_METHOD'].lower()
+        data = request.query_params.dict()
+
+        if method in ['post', 'put', 'patch']:
+            qd_body = request.data if hasattr(request, 'data') else dict()
+            body = (qd_body.dict() if isinstance(qd_body, QueryDict) else
+                    qd_body)
+            data.update(body)
+
+            if request.content_type == 'application/json' and data:
+                data = {
+                    'data': data
+                }
+
+            # handle uploaded files
+            if request.FILES:
+                for key, value in request.FILES.items():
+                    data[key] = {
+                        'header': {
+                            'Content-Type': value.content_type,
+                        },
+                        'data': value,
+                        'filename': value.name,
+                    }
+
+        return data
 
     def _get_req_and_rep(self, app, request, **kwargs):
         """
@@ -133,32 +173,14 @@ class APIGatewayView(views.APIView):
         and response object
 
         :param app: App object from pyswagger
-        :param method: the method name of request
-        :param data: a dictionary with data
+        :param rest_framework.Request request: request info
         :param kwargs: info about request like obj's PK, service and model
         :return: a tuple with pyswagger Request and Response obj
         """
         pk = kwargs['pk']
         model = kwargs['model'] if kwargs.get('model') else ''
         method = request.META['REQUEST_METHOD'].lower()
-        payload = request.data if hasattr(request, 'data') else dict()
-        data = payload.dict() if isinstance(payload, QueryDict) else payload
-
-        if request.content_type == 'application/json' and data:
-            data = {
-                'data': data
-            }
-
-        # handle uploaded files
-        if request.FILES:
-            for key, value in request.FILES.items():
-                data[key] = {
-                    'header': {
-                        'Content-Type': value.content_type,
-                    },
-                    'data': value,
-                    'filename': value.name,
-                }
+        data = self._get_swagger_data(request)
 
         if pk is None:
             # resolve the path
@@ -166,10 +188,7 @@ class APIGatewayView(views.APIView):
             path_item = app.s(path)
 
             # call operation
-            if method == 'post':
-                return getattr(path_item, method).__call__(**data)
-            elif method == 'get':
-                return getattr(path_item, method).__call__()
+            return getattr(path_item, method).__call__(**data)
         elif pk is not None:
             try:
                 int(pk)
@@ -185,23 +204,14 @@ class APIGatewayView(views.APIView):
                 raise exceptions.EndpointNotFound(path)
 
             # call operation
-            if method in ['put', 'patch']:
-                data.update({
-                    pk_name: pk,
-                })
-                return getattr(path_item, method).__call__(**data)
-            elif method in ['get', 'delete']:
-                data = {
-                    pk_name: pk,
-                }
-                return getattr(path_item, method).__call__(**data)
+            return getattr(path_item, method).__call__(**data)
 
     def _get_service_request_headers(self, request):
         """
         Get all the headers that are necessary to redirect the request to
         the needed service
 
-        :param request:
+        :param rest_framework.Request request: request info
         :return: a dictionary with all the needed headers
         """
         # get the authorization header from current request
@@ -214,6 +224,15 @@ class APIGatewayView(views.APIView):
         return headers
 
     def _perform_service_request(self, request, client, req, resp):
+        """
+        Perform request to the service using the PySwagger client.
+
+        :param rest_framework.Request request: incoming request info
+        :param pyswagger.Client client: client based on requests
+        :param pyswagger.Request req: outgoing request info
+        :param pyswagger.Response resp: response validation info
+        :return: a dictionary with all the needed headers
+        """
         headers = self._get_service_request_headers(request)
         try:
             return client.request((req, resp), headers=headers)

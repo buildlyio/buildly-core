@@ -15,8 +15,12 @@ class OpenAPISchemaGenerator(drf_gen.OpenAPISchemaGenerator):
                 'version': '1.0'
             },
             'apis': schema_urls,
-            'produces': ['application/json'],
-            'consumes': ['application/json']
+            'produces': ['application/json',
+                         'application/x-www-form-urlencoded',
+                         'multipart/form-data'],
+            'consumes': ['application/json',
+                         'application/x-www-form-urlencoded',
+                         'multipart/form-data'],
         }
         sw_aggregator = aggregator.SwaggerAggregator(config_aggregator)
         swagger_spec = sw_aggregator.generate_swagger()
