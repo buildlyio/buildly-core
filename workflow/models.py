@@ -110,17 +110,15 @@ class CoreUser(models.Model):
     """
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
-    name = models.CharField("Given Name", blank=True, null=True, max_length=100)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, default=1, blank=True, null=True, on_delete=models.CASCADE)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
-    filter = JSONField(blank=True, null=True)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('user__first_name',)
 
     def __str__(self):
         if self.user.first_name and self.user.last_name:
