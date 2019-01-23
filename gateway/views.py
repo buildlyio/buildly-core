@@ -183,14 +183,17 @@ class APIGatewayView(views.APIView):
                 path_item = app.s(path)
             except KeyError:
                 raise exceptions.EndpointNotFound(path)
-            data.update({
-                pk_name: pk,
-            })
 
             # call operation
             if method in ['put', 'patch']:
+                data.update({
+                    pk_name: pk,
+                })
                 return getattr(path_item, method).__call__(**data)
             elif method in ['get', 'delete']:
+                data = {
+                    pk_name: pk,
+                }
                 return getattr(path_item, method).__call__(**data)
 
     def _get_service_request_headers(self, request):
