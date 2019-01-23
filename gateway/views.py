@@ -180,24 +180,7 @@ class APIGatewayView(views.APIView):
         pk = kwargs['pk']
         model = kwargs['model'] if kwargs.get('model') else ''
         method = request.META['REQUEST_METHOD'].lower()
-        payload = request.data if hasattr(request, 'data') else dict()
-        data = payload.dict() if isinstance(payload, QueryDict) else payload
-
-        if request.content_type == 'application/json' and data:
-            data = {
-                'data': data
-            }
-
-        # handle uploaded files
-        if request.FILES:
-            for key, value in request.FILES.items():
-                data[key] = {
-                    'header': {
-                        'Content-Type': value.content_type,
-                    },
-                    'data': value,
-                    'filename': value.name,
-                }
+        data = self._get_swagger_data(request)
 
         if pk is None:
             # resolve the path
@@ -205,10 +188,7 @@ class APIGatewayView(views.APIView):
             path_item = app.s(path)
 
             # call operation
-            if method == 'post':
-                return getattr(path_item, method).__call__(**data)
-            elif method == 'get':
-                return getattr(path_item, method).__call__()
+            return getattr(path_item, method).__call__(**data)
         elif pk is not None:
             try:
                 int(pk)
@@ -224,16 +204,7 @@ class APIGatewayView(views.APIView):
                 raise exceptions.EndpointNotFound(path)
 
             # call operation
-            if method in ['put', 'patch']:
-                data.update({
-                    pk_name: pk,
-                })
-                return getattr(path_item, method).__call__(**data)
-            elif method in ['get', 'delete']:
-                data = {
-                    pk_name: pk,
-                }
-                return getattr(path_item, method).__call__(**data)
+            return getattr(path_item, method).__call__(**data)
 
     def _get_service_request_headers(self, request):
         """
