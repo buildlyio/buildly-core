@@ -129,6 +129,43 @@ class APIGatewayView(views.APIView):
             raise exceptions.RequestValidationError(
                 'The object ID is missing.', 400)
 
+
+    def _get_swagger_data(self, request):
+        """
+        Create the data structure to be used in PySwagger. GET and  DELETE
+        requests don't required body, so the data structure will have just
+        query parameter if passed.
+
+        :param rest_framework.Request request: request info
+        :return dict: request body structured for PySwagger
+        """
+        method = request.META['REQUEST_METHOD'].lower()
+        data = request.query_params.dict()
+
+        if method in ['post', 'put', 'patch']:
+            qd_body = request.data if hasattr(request, 'data') else dict()
+            body = (qd_body.dict() if isinstance(qd_body, QueryDict) else
+                    qd_body)
+            data.update(body)
+
+            if request.content_type == 'application/json' and data:
+                data = {
+                    'data': data
+                }
+
+            # handle uploaded files
+            if request.FILES:
+                for key, value in request.FILES.items():
+                    data[key] = {
+                        'header': {
+                            'Content-Type': value.content_type,
+                        },
+                        'data': value,
+                        'filename': value.name,
+                    }
+
+        return data
+
     def _get_req_and_rep(self, app, request, **kwargs):
         """
         It resolves the path that should be used by the gateway in the
