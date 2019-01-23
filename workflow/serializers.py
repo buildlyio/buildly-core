@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
@@ -83,28 +83,47 @@ class CoreUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email')
     username = serializers.CharField(source='user.username', write_only=True)
     password = serializers.CharField(source='user.password', write_only=True)
-
-    def validate_organization(self, value):
-        if not wfm.Organization.objects.filter(name=value).exists():
-            raise serializers.ValidationError(
-                'The Organization "{}" does not exist'.format(value))
-        return value
+    organization_name = serializers.CharField(source='organization.name',
+                                              write_only=True)
 
     def create(self, validated_data):
+        # get or create organization
+        organization = validated_data.pop('organization')
+        try:
+            organization = wfm.Organization.objects.get(**organization)
+            is_new_org = False
+        except wfm.Organization.DoesNotExist:
+            organization = wfm.Organization.objects.create(**organization)
+            is_new_org = True
+
         # create user
         user_data = validated_data.pop('user')
         user = User.objects.create(**user_data)
+
+        # add org admin role to user if org is new
+        if is_new_org:
+            group_org_admin = Group.objects.get(
+                name=wfm.ROLE_ORGANIZATION_ADMIN)
+            user.groups.add(group_org_admin)
+
+        # set user password
         user.set_password(user_data['password'])
         user.save()
 
         # create core user
-        coreuser = wfm.CoreUser(user=user, **validated_data)
-        coreuser.save()
+        coreuser = wfm.CoreUser.objects.create(
+            user=user,
+            organization=organization,
+            **validated_data
+        )
+
         return coreuser
 
     class Meta:
         model = wfm.CoreUser
+        read_only_fields = ('organization',)
         exclude = ('core_user_uuid', 'create_date', 'edit_date', 'user')
+        depth = 1
 
 
 class CoreUserInvitationSerializer(serializers.Serializer):
