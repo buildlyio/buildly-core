@@ -120,6 +120,9 @@ class APIGatewayView(views.APIView):
         """
         Do certain validations to the request before starting to create a
         new request to services
+
+        :param rest_framework.Request request: request info
+        :param kwargs: info about request like obj's PK, service and model
         """
         if (request.META['REQUEST_METHOD'] in ['PUT', 'PATCH', 'DELETE'] and
                 kwargs['pk'] is None):
@@ -133,8 +136,7 @@ class APIGatewayView(views.APIView):
         and response object
 
         :param app: App object from pyswagger
-        :param method: the method name of request
-        :param data: a dictionary with data
+        :param rest_framework.Request request: request info
         :param kwargs: info about request like obj's PK, service and model
         :return: a tuple with pyswagger Request and Response obj
         """
@@ -201,7 +203,7 @@ class APIGatewayView(views.APIView):
         Get all the headers that are necessary to redirect the request to
         the needed service
 
-        :param request:
+        :param rest_framework.Request request: request info
         :return: a dictionary with all the needed headers
         """
         # get the authorization header from current request
@@ -214,6 +216,15 @@ class APIGatewayView(views.APIView):
         return headers
 
     def _perform_service_request(self, request, client, req, resp):
+        """
+        Perform request to the service using the PySwagger client.
+
+        :param rest_framework.Request request: incoming request info
+        :param pyswagger.Client client: client based on requests
+        :param pyswagger.Request req: outgoing request info
+        :param pyswagger.Response resp: response validation info
+        :return: a dictionary with all the needed headers
+        """
         headers = self._get_service_request_headers(request)
         try:
             return client.request((req, resp), headers=headers)
