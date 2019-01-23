@@ -336,22 +336,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                          context={'request': request})
         return Response(serializer.data)
 
-    def perform_create(self, serializer):
-        validated_data = serializer.validated_data
-        organization = wfm.Organization.objects.get(
-            name=validated_data['organization'])
-
-        user = User.objects.create(
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            email=validated_data['email'],
-            username=validated_data['username'],
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-
-        serializer.save(user=user, organization=organization)
-
     @action(methods=['POST'], detail=False)
     def invite(self, request):
         """
@@ -417,9 +401,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             invitation_path = reverse('coreuser-invite')
             if self.request._request.path == invitation_path:
                 return serializers.CoreUserInvitationSerializer
-            return serializers.RegisterCoreUserSerializer
-        else:
-            return serializers.CoreUserSerializer
+
+        return serializers.CoreUserSerializer
 
     def get_permissions(self):
         # different permissions for the invitation process
