@@ -197,7 +197,11 @@ class APIGatewayView(views.APIView):
             else:
                 pk_name = 'id'
 
+            # evaluates to '/siteprofiles/uuid/' or '/siteprofiles/id/'
             path = '/{0}/{{{1}}}/'.format(model, pk_name)
+
+            data.update({pk_name: pk})
+
             try:
                 path_item = app.s(path)
             except KeyError:
