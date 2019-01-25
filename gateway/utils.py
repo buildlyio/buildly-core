@@ -1,3 +1,4 @@
+import datetime
 import re
 import requests
 
@@ -53,3 +54,12 @@ def get_swagger_from_url(api_url: str):
     except requests.exceptions.ConnectionError as error:
         raise requests.exceptions.ConnectionError(
             f'Please, check that {api_url} is accessible.') from error
+
+
+def datetime_handler(obj):
+    """
+    JSON doesn't have a default datetime type, so this is why Python can't
+    handle it automatically. So you need to make the datetime into a string.
+    """
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()

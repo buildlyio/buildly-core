@@ -1,7 +1,9 @@
 import json
+import logging
 
 from urllib.error import URLError
 
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, Http404
 from django.http.request import QueryDict
 from rest_framework import permissions, views, viewsets
@@ -19,6 +21,10 @@ from . import exceptions
 from . import models as gtm
 from . import serializers
 from . import utils
+
+from workflow import models as wfm
+
+logger = logging.getLogger(__name__)
 
 
 class LogicModuleViewSet(viewsets.ModelViewSet):
@@ -111,7 +117,9 @@ class APIGatewayView(views.APIView):
                 **kwargs
             )
 
-        content = json.dumps(response.data, cls=PrimJSONEncoder)
+        content = json.dumps(response.data,
+                             cls=PrimJSONEncoder,
+                             default=utils.datetime_handler)
         return HttpResponse(content=content,
                             status=response.status,
                             content_type='application/json')
@@ -143,7 +151,6 @@ class APIGatewayView(views.APIView):
 
         # TODO: Implement for multiple objects
         # TODO: Implement depth validation
-        # TODO: Implement bifrost lookup (database instead)
         if isinstance(res_data, dict):
             extend_models = self._get_extension_map(
                 service_name=kwargs['service'],
@@ -152,18 +159,36 @@ class APIGatewayView(views.APIView):
             )
 
             for extend_model in extend_models:
-                app = self._load_swagger_resource(
-                    extend_model['service']
-                )
+                data = None
+                if extend_model['service'].lower() == 'bifrost':
+                    if hasattr(wfm, extend_model['model']):
+                        cls = getattr(wfm, extend_model['model'])
+                        pk_name = cls._meta.pk.attname
+                        lookup = {
+                            pk_name: extend_model['pk']
+                        }
+                        try:
+                            obj = cls.objects.get(**lookup)
+                        except cls.DoesNotExist as e:
+                            logger.info(e)
+                        else:
+                            data = model_to_dict(obj)
+                else:
+                    app = self._load_swagger_resource(
+                        extend_model['service']
+                    )
 
-                # create and perform a service request
-                res = self._perform_service_request(
-                    app=app,
-                    request=request,
-                    client=client,
-                    **extend_model
-                )
-                res_data[extend_model['relationship_key']] = res.data
+                    # create and perform a service request
+                    res = self._perform_service_request(
+                        app=app,
+                        request=request,
+                        client=client,
+                        **extend_model
+                    )
+                    data = res.data
+
+                if data is not None:
+                    res_data[extend_model['relationship_key']] = data
 
             response.data.update(**res_data)
 
