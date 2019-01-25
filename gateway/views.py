@@ -12,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from pyswagger import App
 from pyswagger.contrib.client.requests import Client
+from pyswagger.io import Response as PySwaggerResponse
 from pyswagger.primitives.comm import PrimJSONEncoder
 
 from . import exceptions
@@ -101,49 +102,70 @@ class APIGatewayView(views.APIView):
             **kwargs
         )
 
+        # aggregate data if requested
         if request.query_params.get('aggregate', None) == 'true':
-            if isinstance(response.data, dict):
-                if 'results' in response.data:
-                    # DRF API payload structure
-                    res_data = response.data.get('results', None)
-                elif 'data' in response.data:
-                    # JSON API payload structure
-                    res_data = response.data.get('data', None)
-                else:
-                    res_data = response.data
-            else:
-                res_data = response.data
-
-            # TODO: Implement for multiple objects
-            # TODO: Implement depth validation
-            # TODO: Implement bifrost lookup (database instead)
-            if isinstance(res_data, dict):
-                extend_models = self._get_extension_map(
-                    service_name=kwargs['service'],
-                    model_name=kwargs['model'],
-                    data=res_data
-                )
-
-                for extend_model in extend_models:
-                    app = self._load_swagger_resource(
-                        extend_model['service']
-                    )
-
-                    # create and perform a service request
-                    res = self._perform_service_request(
-                        app=app,
-                        request=request,
-                        client=client,
-                        **extend_model
-                    )
-                    res_data[extend_model['relationship_key']] = res.data
-
-                response.data.update(**res_data)
+            self._aggregate_response_data(
+                request=request,
+                response=response,
+                client=client,
+                **kwargs
+            )
 
         content = json.dumps(response.data, cls=PrimJSONEncoder)
         return HttpResponse(content=content,
                             status=response.status,
                             content_type='application/json')
+
+    def _aggregate_response_data(self, request: Request,
+                                 response: PySwaggerResponse,
+                                 client: Client,
+                                 **kwargs):
+        """
+        Aggregate data from first response
+
+        :param rest_framework.Request request: incoming request info
+        :param PySwaggerResponse response: fist response
+        :param pyswagger.Client client: client based on requests
+        :param kwargs: extra arguments
+        :return PySwaggerResponse: response with expanded data
+        """
+        if isinstance(response.data, dict):
+            if 'results' in response.data:
+                # DRF API payload structure
+                res_data = response.data.get('results', None)
+            elif 'data' in response.data:
+                # JSON API payload structure
+                res_data = response.data.get('data', None)
+            else:
+                res_data = response.data
+        else:
+            res_data = response.data
+
+        # TODO: Implement for multiple objects
+        # TODO: Implement depth validation
+        # TODO: Implement bifrost lookup (database instead)
+        if isinstance(res_data, dict):
+            extend_models = self._get_extension_map(
+                service_name=kwargs['service'],
+                model_name=kwargs['model'],
+                data=res_data
+            )
+
+            for extend_model in extend_models:
+                app = self._load_swagger_resource(
+                    extend_model['service']
+                )
+
+                # create and perform a service request
+                res = self._perform_service_request(
+                    app=app,
+                    request=request,
+                    client=client,
+                    **extend_model
+                )
+                res_data[extend_model['relationship_key']] = res.data
+
+            response.data.update(**res_data)
 
     def _get_extension_map(self, service_name: str, model_name: str,
                               data: dict):
