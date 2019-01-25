@@ -26,3 +26,9 @@ class RequestValidationError(GatewayError):
 class ServiceDoesNotExist(GatewayError):
     def __init__(self, msg, status):
         super(ServiceDoesNotExist, self).__init__(msg, status)
+
+
+class PermissionDenied(Exception):
+    def __init__(self, msg):
+        self.status = 403
+        self.content = {'detail': msg}
