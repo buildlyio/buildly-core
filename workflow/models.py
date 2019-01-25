@@ -32,7 +32,7 @@ class CoreSites(models.Model):
         verbose_name = "Core Site"
         verbose_name_plural = "Core Sites"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
@@ -60,7 +60,7 @@ class Industry(models.Model):
         self.edit_date = timezone.now()
         super(Industry, self).save()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -93,7 +93,7 @@ class Organization(models.Model):
         self.edit_date = timezone.now()
         super(Organization, self).save()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -122,7 +122,7 @@ class CoreUser(models.Model):
     class Meta:
         ordering = ('name',)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.user.first_name and self.user.last_name:
             return u'{} {}'.format(self.user.first_name,
                                    self.user.last_name)
@@ -146,7 +146,7 @@ class Internationalization(models.Model):
     class Meta:
         ordering = ('language',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.language
 
     def save(self, *args, **kwargs):
@@ -173,7 +173,7 @@ class Portfolio(models.Model):
         self.edit_date = timezone.now()
         super(Portfolio, self).save()
 
-    def __unicode__(self):
+    def __str__(self):
         return unicode(self.name)
 
 
@@ -197,7 +197,7 @@ class Milestone(models.Model):
         self.edit_date = timezone.now()
         super(Milestone, self).save()
 
-    def __unicode__(self):
+    def __str__(self):
         return unicode(self.name)
 
 
@@ -233,7 +233,7 @@ class WorkflowLevel1(models.Model):
     def delete(self, *args, **kwargs):
         super(WorkflowLevel1, self).delete(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.organization:
             return u"{} <{}>".format(self.name, self.organization.name)
         else:
@@ -268,7 +268,7 @@ class WorkflowTeam(models.Model):
         self.edit_date = timezone.now()
         super(WorkflowTeam, self).save()
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{} - {} <{}>".format(self.workflow_user, self.role,
                                       self.workflowlevel1)
 
@@ -299,13 +299,11 @@ class WorkflowLevel2(models.Model):
 
         super(WorkflowLevel2, self).save(*args, **kwargs)
 
-
     def delete(self, *args, **kwargs):
         super(WorkflowLevel2, self).delete(*args, **kwargs)
 
-
-    def __unicode__(self):
-        return unicode(self.name)
+    def __str__(self):
+        return self.name
 
 
 class WorkflowLevel2Sort(models.Model):
@@ -327,5 +325,5 @@ class WorkflowLevel2Sort(models.Model):
         self.edit_date = timezone.now()
         super(WorkflowLevel2Sort, self).save()
 
-    def __unicode__(self):
-        return unicode(self.workflowlevel1)
+    def __str__(self):
+        return self.workflowlevel1
