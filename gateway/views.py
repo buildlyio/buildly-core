@@ -6,6 +6,7 @@ from django.http import HttpResponse, Http404
 from django.http.request import QueryDict
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
+from rest_framework.request import Request
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -87,8 +88,100 @@ class APIGatewayView(views.APIView):
                                 content_type=e.content_type)
 
         # load Swagger resource file and init swagger client
+        app = self._load_swagger_resource(
+            kwargs['service']
+        )
+        client = Client()
+
+        # create and perform a service request
+        response = self._perform_service_request(
+            app=app,
+            request=request,
+            client=client,
+            **kwargs
+        )
+
+        if request.query_params.get('aggregate', None) == 'true':
+            if isinstance(response.data, dict):
+                if 'results' in response.data:
+                    # DRF API payload structure
+                    res_data = response.data.get('results', None)
+                elif 'data' in response.data:
+                    # JSON API payload structure
+                    res_data = response.data.get('data', None)
+                else:
+                    res_data = response.data
+            else:
+                res_data = response.data
+
+            # TODO: Implement for multiple objects
+            # TODO: Implement depth validation
+            # TODO: Implement bifrost lookup (database instead)
+            if isinstance(res_data, dict):
+                extend_models = self._get_extension_map(
+                    service_name=kwargs['service'],
+                    model_name=kwargs['model'],
+                    data=res_data
+                )
+
+                for extend_model in extend_models:
+                    app = self._load_swagger_resource(
+                        extend_model['service']
+                    )
+
+                    # create and perform a service request
+                    res = self._perform_service_request(
+                        app=app,
+                        request=request,
+                        client=client,
+                        **extend_model
+                    )
+                    res_data[extend_model['relationship_key']] = res.data
+
+                response.data.update(**res_data)
+
+        content = json.dumps(response.data, cls=PrimJSONEncoder)
+        return HttpResponse(content=content,
+                            status=response.status,
+                            content_type='application/json')
+
+    def _get_extension_map(self, service_name: str, model_name: str,
+                              data: dict):
+        """
+        Get a list of relationship map of a model from a specific
+        service.
+
+        :param str service_name: Service name that should expand the
+        relationships
+        :param str model_name: Model name that should expand the relationships
+        :param dict data: response data from first request
+        :return list: list of dicts with relationships info
+        """
+        logic_module = gtm.LogicModule.objects.get(name=service_name)
+        extend_models = []
+        for k, v in logic_module.relationships[model_name].items():
+            value = v.split('.')
+            collection_args = {
+                'service': value[0],
+                'model': value[1],
+                'pk': data[k],
+                'relationship_key': k
+            }
+            extend_models.append(collection_args)
+
+        return extend_models
+
+    def _load_swagger_resource(self, service_name: str):
+        """
+        Get Swagger spec of specified service and create an app instance to
+        be able to validate requests/responses and perform request.
+
+        :param service_name: name of the service that data will be retrieved
+        :return PySwagger.App: an app instance
+        """
+        # load Swagger resource file
         try:
-            schema_urls = utils.get_swagger_urls(kwargs['service'])
+            schema_urls = utils.get_swagger_urls(service_name)
         except exceptions.ServiceDoesNotExist as e:
             return HttpResponse(content=e.content,
                                 status=e.status,
@@ -96,95 +189,15 @@ class APIGatewayView(views.APIView):
 
         # load swagger json as a raw App and prepare it
         try:
-            app = App.load(schema_urls[kwargs['service']])
-        except URLError as error:
-            raise URLError(f'Make sure that {schema_urls[kwargs["service"]]} '
-                           'is accessible.') from error
+            app = App.load(schema_urls[service_name])
+        except URLError:
+            raise URLError(
+                f'Make sure that {schema_urls[service_name]} is accessible.')
         if app.raw.basePath == '/':
             getattr(app, 'raw').update_field('basePath', '')
         app.prepare()
-        client = Client()
 
-        # create and perform a service request
-        try:
-            req, resp = self._get_req_and_rep(app, request, **kwargs)
-        except exceptions.EndpointNotFound:
-            raise Http404()
-        else:
-            response = self._perform_service_request(request, client, req,
-                                                     resp)
-            if request.query_params.get('aggregate', None) == 'true':
-                if isinstance(response.data, dict):
-                    if 'results' in response.data:
-                        # DRF API payload structure
-                        res_data = response.data.get('results', None)
-                    elif 'data' in response.data:
-                        # JSON API payload structure
-                        res_data = response.data.get('data', None)
-                    else:
-                        res_data = response.data
-                else:
-                    res_data = response.data
-
-                # TODO: Implement for multiple objects
-                # TODO: Implement depth validation
-                # TODO: Implement bifrost lookup (database instead)
-                if isinstance(res_data, dict):
-                    logic_module = gtm.LogicModule.objects.get(
-                        name=kwargs.get('service', ''))
-                    req_model = kwargs.get('model', '')
-                    extend_models = []
-                    for k, v in logic_module.relationships[req_model].items():
-                        value = v.split('.')
-                        collection_args = {
-                            'service': value[0],
-                            'model': value[1],
-                            'pk': res_data[k],
-                            'relationship_key': k
-                        }
-                        extend_models.append(collection_args)
-
-                    for extend_model in extend_models:
-                        # load Swagger resource file and init swagger client
-                        try:
-                            schema_urls = utils.get_swagger_urls(extend_model['service'])
-                        except exceptions.ServiceDoesNotExist as e:
-                            return HttpResponse(content=e.content,
-                                                status=e.status,
-                                                content_type=e.content_type)
-
-                        # load swagger json as a raw App and prepare it
-                        try:
-                            app = App.load(schema_urls[extend_model['service']])
-                        except URLError as error:
-                            raise URLError(
-                                f'Make sure that {schema_urls[extend_model["service"]]} is accessible.') from error
-                        if app.raw.basePath == '/':
-                            getattr(app, 'raw').update_field('basePath', '')
-                        app.prepare()
-
-                        # create and perform a service request
-                        try:
-                            req, resp = self._get_req_and_rep(app, request,
-                                                              **extend_model)
-                        except exceptions.EndpointNotFound:
-                            raise Http404()
-                        else:
-                            res = self._perform_service_request(
-                                request, client, req, resp
-                            )
-                            res_data[extend_model['relationship_key']] = res.data
-
-                    response.data.update(**res_data)
-
-                return HttpResponse(content=json.dumps(response.data,
-                                                       cls=PrimJSONEncoder),
-                                    status=response.status,
-                                    content_type='application/json')
-            else:
-                return HttpResponse(content=response.raw,
-                                    status=response.status,
-                                    content_type='application/json')
+        return app
 
     def _validate_incoming_request(self, request, **kwargs):
         """
@@ -301,16 +314,21 @@ class APIGatewayView(views.APIView):
         }
         return headers
 
-    def _perform_service_request(self, request, client, req, resp):
+    def _perform_service_request(self, app: App, request: Request,
+                                 client: Client, **kwargs):
         """
         Perform request to the service using the PySwagger client.
 
+        :param pyswagger.App app: an instance of App
         :param rest_framework.Request request: incoming request info
         :param pyswagger.Client client: client based on requests
-        :param pyswagger.Request req: outgoing request info
-        :param pyswagger.Response resp: response validation info
-        :return: a dictionary with all the needed headers
+        :return pyswagger.Response: response from the service
         """
+        try:
+            req, resp = self._get_req_and_rep(app, request, **kwargs)
+        except exceptions.EndpointNotFound:
+            raise Http404()
+
         headers = self._get_service_request_headers(request)
         try:
             return client.request((req, resp), headers=headers)
