@@ -7,7 +7,6 @@ from . import views
 
 router = routers.SimpleRouter()
 
-router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'coreuser', views.CoreUserViewSet)
 router.register(r'workflowlevel1', views.WorkflowLevel1ViewSet)

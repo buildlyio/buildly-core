@@ -134,6 +134,10 @@ class CoreUser(models.Model):
 
         super(CoreUser, self).save()
 
+    @property
+    def is_active(self):
+        return self.user.is_active
+
 
 class Internationalization(models.Model):
     language = models.CharField("Language", blank=True, null=True, max_length=100)

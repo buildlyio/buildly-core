@@ -31,7 +31,7 @@ class MilestoneAdmin(admin.ModelAdmin):
 
 
 class CoreUserAdmin(admin.ModelAdmin):
-    list_display = ('user', 'organization')
+    list_display = ('user', 'organization', 'is_active')
     display = 'Core User'
     list_filter = ('user__is_staff', 'organization')
     search_fields = ('user__first_name', 'title')

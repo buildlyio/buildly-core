@@ -5,30 +5,6 @@ from rest_framework.reverse import reverse
 from workflow import models as wfm
 
 
-class UserSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
-    is_superuser = serializers.ReadOnlyField()
-    username = serializers.ReadOnlyField()
-    first_name = serializers.ReadOnlyField()
-    last_name = serializers.ReadOnlyField()
-    email = serializers.ReadOnlyField()
-    is_staff = serializers.ReadOnlyField()
-    groups = serializers.SerializerMethodField()
-
-    def get_groups(self, obj):
-        request = self.context['request']
-        groups = obj.groups.all()
-        urls_groups = []
-        for group in groups:
-            urls_groups.append(reverse('group-detail', kwargs={'pk': group.id},
-                               request=request))
-        return urls_groups
-
-    class Meta:
-        model = wfm.User
-        exclude = ('password', 'last_login', 'date_joined', 'user_permissions')
-
-
 class GroupSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField('get_self')
 
@@ -83,6 +59,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email')
     username = serializers.CharField(source='user.username', write_only=True)
     password = serializers.CharField(source='user.password', write_only=True)
+    is_active = serializers.BooleanField(source='user.is_active',
+                                         required=False, write_only=True)
     organization_name = serializers.CharField(source='organization.name',
                                               write_only=True)
 
@@ -98,6 +76,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
         # create user
         user_data = validated_data.pop('user')
+        user_data['is_active'] = is_new_org
         user = User.objects.create(**user_data)
 
         # add org admin role to user if org is new
