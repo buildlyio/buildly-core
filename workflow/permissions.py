@@ -48,6 +48,15 @@ class IsSuperUserBrowseableAPI(permissions.BasePermission):
         return False
 
 
+class IsSuperUser(permissions.BasePermission):
+    """
+    Only superusers are allowed to access.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.is_superuser
+
+
 class IsSuperUserOrReadOnly(permissions.BasePermission):
     """
     The request is authenticated as a superuser, or is a read-only request.
