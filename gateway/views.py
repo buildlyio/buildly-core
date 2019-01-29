@@ -110,12 +110,15 @@ class APIGatewayView(views.APIView):
 
         # aggregate data if requested
         if request.query_params.get('aggregate', None) == 'true':
-            self._aggregate_response_data(
-                request=request,
-                response=response,
-                client=client,
-                **kwargs
-            )
+            try:
+                self._aggregate_response_data(
+                    request=request,
+                    response=response,
+                    client=client,
+                    **kwargs
+                )
+            except exceptions.ServiceDoesNotExist as e:
+                logger.error(e.content)
 
         content = json.dumps(response.data,
                              cls=PrimJSONEncoder,
@@ -134,78 +137,103 @@ class APIGatewayView(views.APIView):
         :param rest_framework.Request request: incoming request info
         :param PySwaggerResponse response: fist response
         :param pyswagger.Client client: client based on requests
-        :param kwargs: extra arguments
+        :param kwargs: extra arguments ['service', 'model', 'pk']
         :return PySwaggerResponse: response with expanded data
         """
+        service_name = kwargs['service']
+
         if isinstance(response.data, dict):
             if 'results' in response.data:
                 # DRF API payload structure
-                res_data = response.data.get('results', None)
-            elif 'data' in response.data:
-                # JSON API payload structure
-                res_data = response.data.get('data', None)
+                resp_data = response.data.get('results', None)
             else:
-                res_data = response.data
+                resp_data = response.data
         else:
-            res_data = response.data
+            resp_data = response.data
 
-        # TODO: Implement for multiple objects
+        try:
+            logic_module = gtm.LogicModule.objects.get(name=service_name)
+        except gtm.LogicModule.DoesNotExist:
+            msg = 'Service "{}" not found.'.format(service_name)
+            raise exceptions.ServiceDoesNotExist(msg)
+
         # TODO: Implement depth validation
-        if isinstance(res_data, dict):
-            extend_models = self._get_extension_map(
-                service_name=kwargs['service'],
+        # TODO: Implement authorization when retrieve Bifrost data
+        if isinstance(resp_data, list):
+            for data in resp_data:
+                extension_map = self._generate_extension_map(
+                    logic_module=logic_module,
+                    model_name=kwargs['model'],
+                    data=data
+                )
+                r = self._expand_data(request, client, extension_map)
+                data.update(**r)
+        elif isinstance(resp_data, dict):
+            extension_map = self._generate_extension_map(
+                logic_module=logic_module,
                 model_name=kwargs['model'],
-                data=res_data
+                data=resp_data
             )
+            r = self._expand_data(request, client, extension_map)
+            resp_data.update(**r)
 
-            for extend_model in extend_models:
-                data = None
-                if extend_model['service'].lower() == 'bifrost':
-                    if hasattr(wfm, extend_model['model']):
-                        cls = getattr(wfm, extend_model['model'])
-                        pk_name = cls._meta.pk.attname
-                        lookup = {
-                            pk_name: extend_model['pk']
-                        }
-                        try:
-                            obj = cls.objects.get(**lookup)
-                        except cls.DoesNotExist as e:
-                            logger.info(e)
-                        else:
-                            data = model_to_dict(obj)
-                else:
-                    app = self._load_swagger_resource(
-                        extend_model['service']
-                    )
-
-                    # create and perform a service request
-                    res = self._perform_service_request(
-                        app=app,
-                        request=request,
-                        client=client,
-                        **extend_model
-                    )
-                    data = res.data
-
-                if data is not None:
-                    res_data[extend_model['relationship_key']] = data
-
-            response.data.update(**res_data)
-
-    def _get_extension_map(self, service_name: str, model_name: str,
-                              data: dict):
+    def _expand_data(self, request: Request, client: Client,
+                     extend_models: list):
         """
-        Get a list of relationship map of a model from a specific
-        service.
+        Use extension maps to fetch data from different services and
+        replace the relationship key by real data.
 
-        :param str service_name: Service name that should expand the
-        relationships
+        :param Resquest request: incoming request
+        :param Client client: client based on requests
+        :param list extend_models: list of dicts with relationships info
+        :return dict: relations with their data
+        """
+        result = dict()
+        for extend_model in extend_models:
+            data = None
+            if extend_model['service'] == 'bifrost':
+                if hasattr(wfm, extend_model['model']):
+                    cls = getattr(wfm, extend_model['model'])
+                    pk_name = cls._meta.pk.attname
+                    lookup = {
+                        pk_name: extend_model['pk']
+                    }
+                    try:
+                        obj = cls.objects.get(**lookup)
+                    except cls.DoesNotExist as e:
+                        logger.info(e)
+                    else:
+                        data = model_to_dict(obj)
+            else:
+                app = self._load_swagger_resource(
+                    extend_model['service']
+                )
+
+                # create and perform a service request
+                res = self._perform_service_request(
+                    app=app,
+                    request=request,
+                    client=client,
+                    **extend_model
+                )
+                data = res.data
+
+            if data is not None:
+                result[extend_model['relationship_key']] = data
+
+        return result
+
+    def _generate_extension_map(self, logic_module: gtm.LogicModule,
+                                model_name: str, data: dict):
+        """
+        Generate a list of relationship map of a specific service model.
+
+        :param LogicModule logic_module: a logic module instance
         :param str model_name: Model name that should expand the relationships
         :param dict data: response data from first request
         :return list: list of dicts with relationships info
         """
-        logic_module = gtm.LogicModule.objects.get(name=service_name)
-        extend_models = []
+        extension_map = []
         for k, v in logic_module.relationships[model_name].items():
             value = v.split('.')
             collection_args = {
@@ -214,9 +242,9 @@ class APIGatewayView(views.APIView):
                 'pk': data[k],
                 'relationship_key': k
             }
-            extend_models.append(collection_args)
+            extension_map.append(collection_args)
 
-        return extend_models
+        return extension_map
 
     def _load_swagger_resource(self, service_name: str):
         """
@@ -314,7 +342,7 @@ class APIGatewayView(views.APIView):
         :return: a tuple with pyswagger Request and Response obj
         """
         pk = kwargs['pk']
-        model = kwargs['model'] if kwargs.get('model') else ''
+        model = kwargs['model'].lower() if kwargs.get('model') else ''
         method = request.META['REQUEST_METHOD'].lower()
         data = self._get_swagger_data(request)
 
