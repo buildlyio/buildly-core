@@ -1,13 +1,10 @@
 import logging
-import urllib
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
 from django.template import loader
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import django_filters
@@ -16,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
+from rest_framework.exceptions import PermissionDenied
 
 
 from workflow import models as wfm
@@ -306,33 +304,45 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             'detail': 'The invitations were sent successfully.'},
             status=status.HTTP_200_OK)
 
-    # WE MIGHT NEED TO MOVE THIS # TODO RESEARCH WHERE INVITE SHOULD LIVE
     def perform_invite(self, serializer):
-        reg_location = reverse('register')
+        # TODO: to get FE invitation link (settings or request?)
+        reg_location = '/some-frontend-url/{}/'
         email_addresses = serializer.validated_data.get('emails')
-        organization = wfm.Organization.objects.values(
-            'organization_uuid', 'name').get(coreuser__user=self.request.user)
+        user = self.request.user
+
+        organization = None
+        if hasattr(user, 'coreuser'):
+            organization = wfm.Organization.objects\
+                .values('organization_uuid', 'name').get(coreuser__user=user)
+        elif not user.is_superuser:
+            # only superuser can invite Org's first user
+            raise PermissionDenied
 
         registered_emails = User.objects.filter(email__in=email_addresses)\
             .values_list('email', flat=True)
 
         for email_address in email_addresses:
             if email_address not in registered_emails:
+                # create or update an invitation
+                invitation, created = wfm.Invitation.objects.get_or_create(
+                    email=email_address,
+                    organization=organization
+                )
+                if not created:
+                    invitation.renew()
+
                 # build the invitation link
-                invitation_link = self.request.build_absolute_uri(reg_location)
-                query_params = {
-                    'organization_uuid': organization['organization_uuid'],
-                    'email': urlsafe_base64_encode
-                    (force_bytes(email_address)).decode()
-                }
-                qp = urllib.urlencode(query_params)
-                invitation_link += '?{}'.format(qp)
+                invitation_link = self.request.build_absolute_uri(
+                    reg_location.format(invitation.token)
+                )
 
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
-                    'org_admin_name': self.request.user.core_user.name,
+                    'org_admin_name': user.coreuser.name
+                    if hasattr(user, 'coreuser') else '',
                     'organization_name': organization['name']
+                    if organization else ''
                 }
                 text_content = loader.render_to_string(
                     'email/coreuser/invitation.txt', context, using=None)
@@ -344,7 +354,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     subject='Application Access', # TODO we need to make this dynamic
                     body=text_content,
                     to=[email_address],
-                    reply_to=[settings.DEFAULT_REPLY_TO]
+                    reply_to=[]  # TODO: define reply-to email for org
                 )
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()

@@ -139,6 +139,29 @@ class CoreUser(models.Model):
         return self.user.is_active
 
 
+class Invitation(models.Model):
+    """
+    Stores invitations sent to certain e-mails to join the Organization.
+    The invitation might be to become the first Org User
+    (when there is no Organization yet) so organization field could be None
+    """
+    email = models.EmailField("E-mail", blank=False)
+    organization = models.ForeignKey(Organization, null=True,
+                                     on_delete=models.CASCADE,
+                                     verbose_name="Organization")
+    token = models.CharField(max_length=255, verbose_name='Token',
+                             default=uuid.uuid4, unique=True)
+    create_date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return '{} -> {}'.format(self.email, self.organization)
+
+    def renew(self):
+        self.token = uuid.uuid4()
+        self.create_date = timezone.now()
+        self.save()
+
+
 class Internationalization(models.Model):
     language = models.CharField("Language", blank=True, null=True, max_length=100)
     language_file = JSONField()
