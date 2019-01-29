@@ -100,8 +100,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = wfm.CoreUser
-        read_only_fields = ('organization',)
-        exclude = ('core_user_uuid', 'create_date', 'edit_date', 'user')
+        read_only_fields = ('core_user_uuid', 'organization',)
+        exclude = ('create_date', 'edit_date', 'user')
         depth = 1
 
 
