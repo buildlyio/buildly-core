@@ -95,9 +95,15 @@ class APIGatewayView(views.APIView):
                                 content_type=e.content_type)
 
         # load Swagger resource file and init swagger client
-        app = self._load_swagger_resource(
-            kwargs['service']
-        )
+        try:
+            app = self._load_swagger_resource(
+                kwargs['service']
+            )
+        except exceptions.ServiceDoesNotExist as e:
+            logger.error(e.content)
+            return HttpResponse(content=e.content,
+                                status=e.status,
+                                content_type=e.content_type)
         client = Client()
 
         # create and perform a service request
@@ -255,12 +261,7 @@ class APIGatewayView(views.APIView):
         :return PySwagger.App: an app instance
         """
         # load Swagger resource file
-        try:
-            schema_urls = utils.get_swagger_urls(service_name)
-        except exceptions.ServiceDoesNotExist as e:
-            return HttpResponse(content=e.content,
-                                status=e.status,
-                                content_type=e.content_type)
+        schema_urls = utils.get_swagger_urls(service_name)
 
         # load swagger json as a raw App and prepare it
         try:
