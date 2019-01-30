@@ -281,7 +281,8 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_expand_data_from_bifrost(self, mock_perform_request, mock_app):
+    def test_expand_data_from_bifrost_superuser(self, mock_perform_request,
+                                           mock_app):
         # mock app
         mock_app.return_value = Mock(App)
 
@@ -294,6 +295,8 @@ class DataMeshTest(TestCase):
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
         mock_perform_request.return_value = pyswagger_response
+
+        self.core_user.user.is_superuser = True
 
         # make api request
         path = '/{}/{}/'.format(self.lm.name, 'products')
@@ -309,6 +312,37 @@ class DataMeshTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content.decode('utf-8'),
                          utils.json_dump(expected_data))
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_from_bifrost_permission_denied(self,
+                                                        mock_perform_request,
+                                                        mock_app):
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # create expand data
+        wfl2 = factories.WorkflowLevel2()
+
+        self.response_data['workflowlevel2_uuid'] = wfl2.id
+
+        # mock response
+        pyswagger_response = Mock(PySwaggerResponse)
+        pyswagger_response.status = 200
+        pyswagger_response.data = self.response_data
+        mock_perform_request.return_value = pyswagger_response
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+
+        # first without permissions
+        expected_message = 'You do not have permission to perform this action.'
+
+        response = self.client.get(path, {'aggregate': 'true'})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(json.loads(response.content)['detail'],
+                         expected_message)
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
