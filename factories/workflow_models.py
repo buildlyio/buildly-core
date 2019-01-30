@@ -4,8 +4,10 @@ from workflow.models import (
     CoreUser as CoreUserM,
     Organization as OrganizationM,
     WorkflowLevel1 as WorkflowLevel1M,
-    WorkflowLevel2 as WorkflowLevel2M
+    WorkflowLevel2 as WorkflowLevel2M,
+    WorkflowTeam as WorkflowTeamM,
 )
+from .django_models import User, Group
 
 
 class Organization(DjangoModelFactory):
@@ -21,6 +23,7 @@ class CoreUser(DjangoModelFactory):
         model = CoreUserM
         django_get_or_create = ('user',)
 
+    user = SubFactory(User)
     name = LazyAttribute(lambda o: o.user.first_name + " " + o.user.last_name)
     organization = SubFactory(Organization)
 
@@ -38,3 +41,12 @@ class WorkflowLevel2(DjangoModelFactory):
 
     name = 'Help Syrians'
     workflowlevel1 = SubFactory(WorkflowLevel1)
+
+
+class WorkflowTeam(DjangoModelFactory):
+    class Meta:
+        model = WorkflowTeamM
+
+    workflow_user = SubFactory(CoreUser)
+    workflowlevel1 = SubFactory(WorkflowLevel1)
+    role = SubFactory(Group)
