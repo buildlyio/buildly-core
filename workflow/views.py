@@ -1,12 +1,13 @@
 import logging
+from urllib.parse import urlencode
 
-from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
@@ -304,6 +305,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             'detail': 'The invitations were sent successfully.'},
             status=status.HTTP_200_OK)
 
+    # @transaction.atomic
     def perform_invite(self, serializer):
         # TODO: to get FE invitation link (settings or request?)
         reg_location = '/some-frontend-url/{}/'
@@ -311,9 +313,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         user = self.request.user
 
         organization = None
-        if hasattr(user, 'coreuser'):
-            organization = wfm.Organization.objects\
-                .values('organization_uuid', 'name').get(coreuser__user=user)
+        if hasattr(user, 'core_user'):
+            organization = wfm.Organization.objects.get(coreuser__user=user)
         elif not user.is_superuser:
             # only superuser can invite Org's first user
             raise PermissionDenied
@@ -336,12 +337,20 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     reg_location.format(invitation.token)
                 )
 
+                query_params = {
+                    'email': email_address
+                }
+                if organization:
+                    query_params['organization'] = organization.id
+                invitation_link += '?{}'.format(urlencode(query_params))
+                print(invitation_link)
+
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
                     'org_admin_name': user.coreuser.name
                     if hasattr(user, 'coreuser') else '',
-                    'organization_name': organization['name']
+                    'organization_name': organization.name
                     if organization else ''
                 }
                 text_content = loader.render_to_string(

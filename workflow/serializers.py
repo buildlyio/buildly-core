@@ -63,8 +63,24 @@ class CoreUserSerializer(serializers.ModelSerializer):
                                          required=False)
     organization_name = serializers.CharField(source='organization.name',
                                               write_only=True)
+    invitation_token = serializers.CharField(required=False)
+
+    @staticmethod
+    def _validate_and_get_invitation(data):
+        token = data.pop('invitation_token', None)
+        email = data['user']['email']
+        try:
+            # TODO: think about expiration of the token
+            return wfm.Invitation.objects.get(token=token, email=email) \
+                if token else None
+        except wfm.Invitation.DoesNotExist:
+            raise serializers.ValidationError(detail="The invitation "
+                                                     "token is incorrect")
 
     def create(self, validated_data):
+        # check if invitation exits
+        invitation = self._validate_and_get_invitation(validated_data)
+
         # get or create organization
         organization = validated_data.pop('organization')
         try:
@@ -76,7 +92,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
         # create user
         user_data = validated_data.pop('user')
-        user_data['is_active'] = is_new_org
+        user_data['is_active'] = is_new_org or bool(invitation)
         user = User.objects.create(**user_data)
 
         # add org admin role to user if org is new
@@ -95,6 +111,10 @@ class CoreUserSerializer(serializers.ModelSerializer):
             organization=organization,
             **validated_data
         )
+
+        # remove invitation on successful registration
+        if invitation:
+            invitation.delete()
 
         return coreuser
 
