@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User
 from django.db import transaction
 
 import factories
@@ -23,6 +24,7 @@ class Command(BaseCommand):
         # development readability (id == position).
         self._application = None
         self._groups = ['']
+        self._user = None
 
     def _create_oauth_application(self):
         if settings.OAUTH_CLIENT_ID is not None:
@@ -53,7 +55,19 @@ class Command(BaseCommand):
             name=ROLE_PROGRAM_TEAM,
         ))
 
+    def _create_user(self):
+        User.objects.filter(username='admin').delete()
+        user = User.objects.create_superuser(
+            first_name='System',
+            last_name='Admin',
+            username='admin',
+            email='admin@example.com',
+            password='ttmtola1977'
+        )
+        self._core_user = factories.CoreUser(user=user)
+
     @transaction.atomic
     def handle(self, *args, **options):
         self._create_groups()
         self._create_oauth_application()
+        self._create_user()

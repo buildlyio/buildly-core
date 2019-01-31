@@ -13,9 +13,6 @@ python manage.py migrate
 echo $(date -u) "- Load Initial Data"
 python manage.py loadinitialdata
 
-echo $(date -u) "- Creating admin user"
-python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(email='admin@example.com').delete(); User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
-
 echo "Starting celery worker"
 celery_cmd="celery -A gateway worker -l info -f celery.log"
 $celery_cmd &
