@@ -22,7 +22,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 import factories
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from workflow.models import (Organization, CoreUser, CoreUser, ROLE_VIEW_ONLY,
                              ROLE_ORGANIZATION_ADMIN, TITLE_CHOICES)
 
