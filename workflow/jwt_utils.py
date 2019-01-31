@@ -1,5 +1,9 @@
+import logging
+
 from workflow.models import CoreUser
 from gateway.exceptions import PermissionDenied
+
+logger = logging.getLogger(__name__)
 
 
 def payload_enricher(request):
@@ -10,6 +14,7 @@ def payload_enricher(request):
                 'core_user_uuid', 'organization__organization_uuid').get(
                 user__username=username)
         except CoreUser.DoesNotExist:
+            logger.error('No matching CoreUser found.')
             raise PermissionDenied('No matching CoreUser found.')
         return {
             'user_uuid': user['core_user_uuid'],
