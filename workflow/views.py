@@ -340,12 +340,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     reg_location.format(invitation.token)
                 )
 
-                query_params = {
-                    'email': email_address
-                }
-                if organization:
-                    query_params['organization'] = organization.id
-                invitation_link += '?{}'.format(urlencode(query_params))
+                # tell frontend that we need to create organization
+                if not organization:
+                    invitation_link += '?createorg=1'
 
                 # create the used context for the E-mail templates
                 context = {
