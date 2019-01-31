@@ -66,19 +66,16 @@ class CoreUserSerializer(serializers.ModelSerializer):
     invitation_token = serializers.CharField(required=False)
 
     def validate(self, data):
-        print(data)
         token = data.get('invitation_token', None)
         email = data.get('user', {}).get('email', None)
         org_name = data.get('organization', {}).get('name', None)
-        print(token, email, org_name)
         if not token and (not email or not org_name):
             raise serializers.ValidationError('You must provide either email '
                                               'and organization name or '
                                               'invitation token')
         return data
 
-    @staticmethod
-    def _validate_and_get_invitation(data):
+    def _validate_and_get_invitation(self, data):
         token = data.pop('invitation_token', None)
         try:
             # TODO: think about expiration of the token

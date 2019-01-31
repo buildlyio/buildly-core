@@ -354,8 +354,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 }
                 self.send_invitation_email(email_address, context)
 
-    @staticmethod
-    def send_invitation_email(email_address, context):
+    def send_invitation_email(self, email_address, context):
         text_content = loader.render_to_string(
             'email/coreuser/invitation.txt', context, using=None)
         html_content = loader.render_to_string(

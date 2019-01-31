@@ -11,7 +11,6 @@ pipeline:
     when:
       event: [pull_request, push, tag]
     environment:
-      - DJANGO_SETTINGS_MODULE=bifrost-api.settings.test
       - DATABASE_ENGINE=postgresql
       - DATABASE_NAME=bifrost_api
       - DATABASE_USER=root
