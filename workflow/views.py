@@ -1,6 +1,7 @@
 import logging
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
@@ -307,8 +308,10 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     @transaction.atomic
     def perform_invite(self, serializer):
-        # TODO: to get FE invitation link (settings or request?)
-        reg_location = '/some-frontend-url/{}/'
+
+        reg_location = urljoin(settings.FRONTEND_URL,
+                               settings.REG_URL_PATH)
+        reg_location = reg_location + '{}/'
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
 
@@ -343,7 +346,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 if organization:
                     query_params['organization'] = organization.id
                 invitation_link += '?{}'.format(urlencode(query_params))
-                print(invitation_link)
 
                 # create the used context for the E-mail templates
                 context = {

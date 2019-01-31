@@ -279,3 +279,7 @@ RABBIT_WALHALL_QUEUE = os.getenv('RABBIT_WALHALL_QUEUE')
 
 
 DEFAULT_ORG = 'Humanitec'
+
+# Front-end application URL
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
+REG_URL_PATH = os.getenv('REG_URL_PATH', 'register/')
