@@ -1,10 +1,8 @@
 import uuid
 
+from django.contrib.postgres.fields import JSONField
 from django.db import models
-try:
-    from django.utils import timezone
-except ImportError:
-    from datetime import datetime as timezone
+from django.utils import timezone
 
 
 class LogicModule(models.Model):
@@ -12,7 +10,7 @@ class LogicModule(models.Model):
     name = models.CharField("Logic Module Name", max_length=255, blank=True)
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
     endpoint = models.CharField(blank=True, null=True, max_length=255)
-    github_repo = models.CharField(blank=True, null=True, max_length=500)
+    relationships = JSONField(blank=True, null=True)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -26,5 +24,5 @@ class LogicModule(models.Model):
         self.edit_date = timezone.now()
         super(LogicModule, self).save()
 
-    def __unicode__(self):
-        return self.name
+    def __str__(self):
+        return str(self.name)
