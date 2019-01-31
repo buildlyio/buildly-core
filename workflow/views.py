@@ -305,7 +305,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             'detail': 'The invitations were sent successfully.'},
             status=status.HTTP_200_OK)
 
-    # @transaction.atomic
+    @transaction.atomic
     def perform_invite(self, serializer):
         # TODO: to get FE invitation link (settings or request?)
         reg_location = '/some-frontend-url/{}/'
@@ -353,20 +353,23 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'organization_name': organization.name
                     if organization else ''
                 }
-                text_content = loader.render_to_string(
-                    'email/coreuser/invitation.txt', context, using=None)
-                html_content = loader.render_to_string(
-                    'email/coreuser/invitation.html', context, using=None)
+                self.send_invitation_email(email_address, context)
 
-                # send the invitation email
-                msg = EmailMultiAlternatives(
-                    subject='Application Access', # TODO we need to make this dynamic
-                    body=text_content,
-                    to=[email_address],
-                    reply_to=[]  # TODO: define reply-to email for org
-                )
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+    @staticmethod
+    def send_invitation_email(email_address, context):
+        text_content = loader.render_to_string(
+            'email/coreuser/invitation.txt', context, using=None)
+        html_content = loader.render_to_string(
+            'email/coreuser/invitation.html', context, using=None)
+
+        msg = EmailMultiAlternatives(
+            subject='Application Access',  # TODO we need to make this dynamic
+            body=text_content,
+            to=[email_address],
+            reply_to=[]  # TODO: define reply-to email for org
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':
