@@ -11,7 +11,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import django_filters
-from rest_framework import mixins, status, viewsets, filters
+from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -358,6 +358,10 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     def get_permissions(self):
         url_name = self.request.resolver_match.url_name
+
+        # different permissions when creating a new user
+        if self.request.method == 'POST' and url_name == 'coreuser-create':
+            return [permissions.AllowAny()]
 
         # different permissions for the invitation process
         if self.request.method == 'POST' and url_name == 'coreuser-invite':
