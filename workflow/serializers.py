@@ -57,10 +57,10 @@ class CoreUserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name')
     last_name = serializers.CharField(source='user.last_name')
     email = serializers.EmailField(source='user.email')
-    username = serializers.CharField(source='user.username', write_only=True)
+    username = serializers.CharField(source='user.username')
     password = serializers.CharField(source='user.password', write_only=True)
     is_active = serializers.BooleanField(source='user.is_active',
-                                         required=False, write_only=True)
+                                         required=False)
     organization_name = serializers.CharField(source='organization.name',
                                               write_only=True)
 

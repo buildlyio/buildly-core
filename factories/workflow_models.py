@@ -24,7 +24,6 @@ class CoreUser(DjangoModelFactory):
         django_get_or_create = ('user',)
 
     user = SubFactory(User)
-    name = LazyAttribute(lambda o: o.user.first_name + " " + o.user.last_name)
     organization = SubFactory(Organization)
 
 
