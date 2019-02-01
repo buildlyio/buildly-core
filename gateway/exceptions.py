@@ -14,21 +14,17 @@ class EndpointNotFound(Exception):
 
 
 class PySwaggerError(GatewayError):
-    def __init__(self, msg):
-        super(PySwaggerError, self).__init__(msg)
+    pass
 
 
 class RequestValidationError(GatewayError):
-    def __init__(self, msg, status):
-        super(RequestValidationError, self).__init__(msg, status)
+    pass
 
 
 class ServiceDoesNotExist(GatewayError):
-    def __init__(self, msg, status):
-        super(ServiceDoesNotExist, self).__init__(msg, status)
+    pass
 
 
-class PermissionDenied(Exception):
+class PermissionDenied(GatewayError):
     def __init__(self, msg):
-        self.status = 403
-        self.content = {'detail': msg}
+        super(PermissionDenied, self).__init__(msg, 403)
