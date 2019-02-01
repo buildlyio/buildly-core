@@ -1,7 +1,9 @@
 import json
+import logging
 
 from urllib.error import URLError
 
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, Http404
 from django.http.request import QueryDict
 from rest_framework import permissions, views, viewsets
@@ -12,12 +14,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from pyswagger import App
 from pyswagger.contrib.client.requests import Client
+from pyswagger.io import Response as PySwaggerResponse
 from pyswagger.primitives.comm import PrimJSONEncoder
 
 from . import exceptions
 from . import models as gtm
 from . import serializers
 from . import utils
+
+from workflow import models as wfm
+
+logger = logging.getLogger(__name__)
 
 
 class LogicModuleViewSet(viewsets.ModelViewSet):
@@ -101,30 +108,72 @@ class APIGatewayView(views.APIView):
             **kwargs
         )
 
+        # aggregate data if requested
         if request.query_params.get('aggregate', None) == 'true':
-            if isinstance(response.data, dict):
-                if 'results' in response.data:
-                    # DRF API payload structure
-                    res_data = response.data.get('results', None)
-                elif 'data' in response.data:
-                    # JSON API payload structure
-                    res_data = response.data.get('data', None)
-                else:
-                    res_data = response.data
+            self._aggregate_response_data(
+                request=request,
+                response=response,
+                client=client,
+                **kwargs
+            )
+
+        content = json.dumps(response.data,
+                             cls=PrimJSONEncoder,
+                             default=utils.datetime_handler)
+        return HttpResponse(content=content,
+                            status=response.status,
+                            content_type='application/json')
+
+    def _aggregate_response_data(self, request: Request,
+                                 response: PySwaggerResponse,
+                                 client: Client,
+                                 **kwargs):
+        """
+        Aggregate data from first response
+
+        :param rest_framework.Request request: incoming request info
+        :param PySwaggerResponse response: fist response
+        :param pyswagger.Client client: client based on requests
+        :param kwargs: extra arguments
+        :return PySwaggerResponse: response with expanded data
+        """
+        if isinstance(response.data, dict):
+            if 'results' in response.data:
+                # DRF API payload structure
+                res_data = response.data.get('results', None)
+            elif 'data' in response.data:
+                # JSON API payload structure
+                res_data = response.data.get('data', None)
             else:
                 res_data = response.data
+        else:
+            res_data = response.data
 
-            # TODO: Implement for multiple objects
-            # TODO: Implement depth validation
-            # TODO: Implement bifrost lookup (database instead)
-            if isinstance(res_data, dict):
-                extend_models = self._get_extension_map(
-                    service_name=kwargs['service'],
-                    model_name=kwargs['model'],
-                    data=res_data
-                )
+        # TODO: Implement for multiple objects
+        # TODO: Implement depth validation
+        if isinstance(res_data, dict):
+            extend_models = self._get_extension_map(
+                service_name=kwargs['service'],
+                model_name=kwargs['model'],
+                data=res_data
+            )
 
-                for extend_model in extend_models:
+            for extend_model in extend_models:
+                data = None
+                if extend_model['service'].lower() == 'bifrost':
+                    if hasattr(wfm, extend_model['model']):
+                        cls = getattr(wfm, extend_model['model'])
+                        pk_name = cls._meta.pk.attname
+                        lookup = {
+                            pk_name: extend_model['pk']
+                        }
+                        try:
+                            obj = cls.objects.get(**lookup)
+                        except cls.DoesNotExist as e:
+                            logger.info(e)
+                        else:
+                            data = model_to_dict(obj)
+                else:
                     app = self._load_swagger_resource(
                         extend_model['service']
                     )
@@ -136,14 +185,12 @@ class APIGatewayView(views.APIView):
                         client=client,
                         **extend_model
                     )
-                    res_data[extend_model['relationship_key']] = res.data
+                    data = res.data
 
-                response.data.update(**res_data)
+                if data is not None:
+                    res_data[extend_model['relationship_key']] = data
 
-        content = json.dumps(response.data, cls=PrimJSONEncoder)
-        return HttpResponse(content=content,
-                            status=response.status,
-                            content_type='application/json')
+            response.data.update(**res_data)
 
     def _get_extension_map(self, service_name: str, model_name: str,
                               data: dict):
