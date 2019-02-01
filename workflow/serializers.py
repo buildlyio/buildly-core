@@ -1,4 +1,6 @@
+import jwt
 from django.contrib.auth.models import Group, User
+from django.conf import settings
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
@@ -62,49 +64,33 @@ class CoreUserSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(source='user.is_active',
                                          required=False)
     organization_name = serializers.CharField(source='organization.name',
-                                              write_only=True, required=False)
+                                              write_only=True)
     invitation_token = serializers.CharField(required=False)
 
-    def validate(self, data):
-        token = data.get('invitation_token', None)
-        email = data.get('user', {}).get('email', None)
-        org_name = data.get('organization', {}).get('name', None)
-        if not token and (not email or not org_name):
-            raise serializers.ValidationError('You must provide either email '
-                                              'and organization name or '
-                                              'invitation token')
-        return data
-
-    def _validate_and_get_invitation(self, data):
-        token = data.pop('invitation_token', None)
+    def validate_invitation_token(self, value):
         try:
-            # TODO: think about expiration of the token
-            return wfm.Invitation.objects.get(token=token) if token else None
-        except wfm.Invitation.DoesNotExist:
-            raise serializers.ValidationError(detail="The invitation "
-                                                     "token is incorrect")
+            decoded = jwt.decode(value, settings.SECRET_KEY,
+                                 algorithms='HS256')
+        except jwt.DecodeError:
+            raise serializers.ValidationError('Token is not valid.')
+        except jwt.ExpiredSignatureError:
+            raise serializers.ValidationError('Token is expired.')
+        return value
 
     def create(self, validated_data):
-        # check if invitation exits
-        invitation = self._validate_and_get_invitation(validated_data)
-        user_data = validated_data.pop('user')
-
-        if invitation:
-            organization = invitation.organization
-            user_data['email'] = invitation.email
+        # get or create organization
+        organization = validated_data.pop('organization')
+        try:
+            organization = wfm.Organization.objects.get(**organization)
             is_new_org = False
-        else:
-            # get or create organization
-            organization = validated_data.pop('organization')
-            try:
-                organization = wfm.Organization.objects.get(**organization)
-                is_new_org = False
-            except wfm.Organization.DoesNotExist:
-                organization = wfm.Organization.objects.create(**organization)
-                is_new_org = True
+        except wfm.Organization.DoesNotExist:
+            organization = wfm.Organization.objects.create(**organization)
+            is_new_org = True
 
         # create user
-        user_data['is_active'] = is_new_org or bool(invitation)
+        user_data = validated_data.pop('user')
+        user_data['is_active'] = is_new_org \
+            or 'invitation_token' in validated_data
         user = User.objects.create(**user_data)
 
         # add org admin role to user if org is new
@@ -123,10 +109,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
             organization=organization,
             **validated_data
         )
-
-        # remove invitation on successful registration
-        if invitation:
-            invitation.delete()
 
         return coreuser
 

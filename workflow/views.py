@@ -1,3 +1,4 @@
+import datetime
 import logging
 from urllib.parse import urlencode, urljoin
 
@@ -16,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
+import jwt
 
 
 from workflow import models as wfm
@@ -306,12 +308,43 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             'detail': 'The invitations were sent successfully.'},
             status=status.HTTP_200_OK)
 
+    @action(methods=['GET'], detail=False)
+    def invite_check(self, request):
+        """
+        This endpoint is used to validate invitation token and return
+        the information about email and organization
+        """
+        try:
+            token = self.request.query_params['token']
+        except KeyError:
+            return Response({'detail': 'No token is provided.'},
+                           status.HTTP_401_UNAUTHORIZED)
+        try:
+            decoded = jwt.decode(token, settings.SECRET_KEY,
+                                 algorithms='HS256')
+        except jwt.DecodeError:
+            return Response({'detail': 'Token is not valid.'},
+                           status.HTTP_401_UNAUTHORIZED)
+        except jwt.ExpiredSignatureError:
+            return Response({'detail': 'Token is expired.'},
+                           status.HTTP_401_UNAUTHORIZED)
+
+        organization = wfm.Organization.objects\
+            .values('organization_uuid', 'name')\
+            .get(organization_uuid=decoded['org_uuid']) \
+            if decoded['org_uuid'] else None
+
+        return Response({
+            'email': decoded['email'],
+            'organization': organization
+        }, status=status.HTTP_200_OK)
+
     @transaction.atomic
     def perform_invite(self, serializer):
 
         reg_location = urljoin(settings.FRONTEND_URL,
                                settings.REG_URL_PATH)
-        reg_location = reg_location + '{}/'
+        reg_location = reg_location + '?token={}'
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
 
@@ -328,21 +361,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         for email_address in email_addresses:
             if email_address not in registered_emails:
                 # create or update an invitation
-                invitation, created = wfm.Invitation.objects.get_or_create(
-                    email=email_address,
-                    organization=organization
-                )
-                if not created:
-                    invitation.renew()
+
+                token = self.create_invitation_token(email_address,
+                                                     organization)
+                print(token)
 
                 # build the invitation link
                 invitation_link = self.request.build_absolute_uri(
-                    reg_location.format(invitation.token)
+                    reg_location.format(token)
                 )
-
-                # tell frontend that we need to create organization
-                if not organization:
-                    invitation_link += '?createorg=1'
 
                 # create the used context for the E-mail templates
                 context = {
@@ -353,6 +380,20 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     if organization else ''
                 }
                 self.send_invitation_email(email_address, context)
+
+    def create_invitation_token(self, email_address, organization):
+        payload = {
+            'email': email_address,
+            'org_uuid': organization.organization_uuid
+            if organization
+            else None,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)
+        }
+        return jwt.encode(
+            payload,
+            settings.SECRET_KEY,
+            algorithm='HS256'
+        ).decode('utf-8')
 
     def send_invitation_email(self, email_address, context):
         text_content = loader.render_to_string(

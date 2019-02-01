@@ -1,8 +1,8 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import (CoreUser, Invitation, Organization, WorkflowLevel1,
-                     WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam)
+from .models import (CoreUser, Organization, WorkflowLevel1, WorkflowLevel2,
+                     WorkflowLevel2Sort, WorkflowTeam)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
@@ -37,11 +37,6 @@ class CoreUserAdmin(admin.ModelAdmin):
     search_fields = ('user__first_name', 'title')
 
 
-class InvitationAdmin(admin.ModelAdmin):
-    list_display = ('email', 'organization', 'create_date')
-    display = 'Invitation'
-
-
 class WorkflowLevel1Admin(admin.ModelAdmin):
     list_display = ('name',)
     display = 'Workflow Level1'
@@ -69,4 +64,3 @@ admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
-admin.site.register(Invitation, InvitationAdmin)
