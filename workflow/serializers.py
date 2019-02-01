@@ -1,33 +1,8 @@
-from django.contrib.auth.models import User
-from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.models import Group, User
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
-
-
-class UserSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
-    is_superuser = serializers.ReadOnlyField()
-    username = serializers.ReadOnlyField()
-    first_name = serializers.ReadOnlyField()
-    last_name = serializers.ReadOnlyField()
-    email = serializers.ReadOnlyField()
-    is_staff = serializers.ReadOnlyField()
-    groups = serializers.SerializerMethodField()
-
-    def get_groups(self, obj):
-        request = self.context['request']
-        groups = obj.groups.all()
-        urls_groups = []
-        for group in groups:
-            urls_groups.append(reverse('group-detail', kwargs={'pk': group.id},
-                               request=request))
-        return urls_groups
-
-    class Meta:
-        model = wfm.User
-        exclude = ('password', 'last_login', 'date_joined', 'user_permissions')
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -77,55 +52,56 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RegisterCoreUserSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
-    user = UserSerializer(read_only=True)
-    first_name = serializers.CharField(required=False)
-    last_name = serializers.CharField(required=False)
-    email = serializers.EmailField(write_only=True)
-    username = serializers.CharField(write_only=True)
-    password = serializers.CharField(write_only=True)
-    organization = serializers.CharField()
-
-    def validate_password(self, value):
-        validate_password(value)
-        return value
-
-    def validate_organization(self, value):
-        if not wfm.Organization.objects.filter(name=value).exists():
-            raise serializers.ValidationError(
-                'The Organization "{}" does not exist'.format(value))
-        return value
-
-    def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError(
-                'A user with username "{}" already exists'.format(value))
-        return value
-
-    def create(self, validated_data):
-        for field in ('username', 'first_name', 'last_name', 'email',
-                      'password'):
-            if field in validated_data:
-                del validated_data[field]
-
-        tolauser = wfm.CoreUser(**validated_data)
-        tolauser.save()
-        return tolauser
-
-    class Meta:
-        model = wfm.CoreUser
-        fields = ('id', 'user', 'first_name', 'last_name', 'email', 'username',
-                  'password', 'title', 'organization')
-
-
 class CoreUserSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    user = UserSerializer()
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    email = serializers.EmailField(source='user.email')
+    username = serializers.CharField(source='user.username', write_only=True)
+    password = serializers.CharField(source='user.password', write_only=True)
+    is_active = serializers.BooleanField(source='user.is_active',
+                                         required=False, write_only=True)
+    organization_name = serializers.CharField(source='organization.name',
+                                              write_only=True)
+
+    def create(self, validated_data):
+        # get or create organization
+        organization = validated_data.pop('organization')
+        try:
+            organization = wfm.Organization.objects.get(**organization)
+            is_new_org = False
+        except wfm.Organization.DoesNotExist:
+            organization = wfm.Organization.objects.create(**organization)
+            is_new_org = True
+
+        # create user
+        user_data = validated_data.pop('user')
+        user_data['is_active'] = is_new_org
+        user = User.objects.create(**user_data)
+
+        # add org admin role to user if org is new
+        if is_new_org:
+            group_org_admin = Group.objects.get(
+                name=wfm.ROLE_ORGANIZATION_ADMIN)
+            user.groups.add(group_org_admin)
+
+        # set user password
+        user.set_password(user_data['password'])
+        user.save()
+
+        # create core user
+        coreuser = wfm.CoreUser.objects.create(
+            user=user,
+            organization=organization,
+            **validated_data
+        )
+
+        return coreuser
 
     class Meta:
         model = wfm.CoreUser
-        fields = '__all__'
+        read_only_fields = ('core_user_uuid', 'organization',)
+        exclude = ('create_date', 'edit_date', 'user')
         depth = 1
 
 

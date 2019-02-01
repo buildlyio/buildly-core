@@ -53,54 +53,6 @@ class DefaultCursorPagination(CursorPagination):
     page_size_query_param = 'page_size'
 
 
-class UserViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                  mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    User is the primary relationship for identity and access to a logged in user.
-    They are associated with an
-    organization, Group (for permission though WorkflowTeam) and WorkflowLevel 1 (again through WorkflowTeam)
-
-    title:
-    User is the primary relationship for identity and access to a logged in user.
-
-    description:
-    They are associated with an
-    organization, Group (for permission though WorkflowTeam) and WorkflowLevel 1 (again through WorkflowTeam)
-
-    retrieve:
-    Return the given user.
-
-    list:
-    Return a list of all the existing users.
-
-    create:
-    Create a new user instance.
-    """
-    queryset = wfm.User.objects.all()
-    serializer_class = serializers.UserSerializer
-
-    def update(self, request, pk):
-        user_groups = request.user.groups.values_list('name', flat=True)
-        instance = self.get_object()
-        user_org = wfm.CoreUser.objects.\
-            values_list('organization_id', flat=True).\
-            get(user=instance)
-        request_user_org = wfm.CoreUser.objects. \
-            values_list('organization_id', flat=True).\
-            get(user=request.user)
-        if request.user.is_superuser \
-                or (wfm.ROLE_ORGANIZATION_ADMIN in user_groups and
-                    user_org == request_user_org):
-
-            serializer = self.get_serializer(instance,
-                                             data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
@@ -336,22 +288,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                          context={'request': request})
         return Response(serializer.data)
 
-    def perform_create(self, serializer):
-        validated_data = serializer.validated_data
-        organization = wfm.Organization.objects.get(
-            name=validated_data['organization'])
-
-        user = User.objects.create(
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            email=validated_data['email'],
-            username=validated_data['username'],
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-
-        serializer.save(user=user, organization=organization)
-
     @action(methods=['POST'], detail=False)
     def invite(self, request):
         """
@@ -417,16 +353,20 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             invitation_path = reverse('coreuser-invite')
             if self.request._request.path == invitation_path:
                 return serializers.CoreUserInvitationSerializer
-            return serializers.RegisterCoreUserSerializer
-        else:
-            return serializers.CoreUserSerializer
+
+        return serializers.CoreUserSerializer
 
     def get_permissions(self):
+        url_name = self.request.resolver_match.url_name
+
         # different permissions for the invitation process
-        if self.request.method == 'POST':
-            invitation_path = reverse('coreuser-invite')
-            if self.request.path == invitation_path:
-                return [AllowOnlyOrgAdmin()]
+        if self.request.method == 'POST' and url_name == 'coreuser-invite':
+            return [AllowOnlyOrgAdmin()]
+
+        # only org admin can update core user's data
+        if self.request.method in ['PUT', 'PATCH'] \
+                and url_name == 'coreuser-detail':
+            return [AllowOnlyOrgAdmin()]
 
         return super(CoreUserViewSet, self).get_permissions()
 
@@ -793,6 +733,7 @@ GraphQL views from Graphene
 """
 from graphene_django.views import GraphQLView
 from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 class DRFAuthenticatedGraphQLView(GraphQLView):
     @classmethod
