@@ -307,8 +307,8 @@ class DataMeshTest(TestCase):
             'contact_uuid': 1
         }
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content.decode('utf-8'), json.dumps(
-            expected_data, default=utils.datetime_handler))
+        self.assertEqual(response.content.decode('utf-8'),
+                         utils.json_dump(expected_data))
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
