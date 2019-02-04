@@ -364,7 +364,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
                 token = self.create_invitation_token(email_address,
                                                      organization)
-                print(token)
 
                 # build the invitation link
                 invitation_link = self.request.build_absolute_uri(
@@ -382,12 +381,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 self.send_invitation_email(email_address, context)
 
     def create_invitation_token(self, email_address, organization):
+        exp_hours = datetime.timedelta(hours=settings.INVITATION_EXPIRE_HOURS)
         payload = {
             'email': email_address,
             'org_uuid': organization.organization_uuid
             if organization
             else None,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30)
+            'exp': datetime.datetime.utcnow() + exp_hours
         }
         return jwt.encode(
             payload,
@@ -405,7 +405,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             subject='Application Access',  # TODO we need to make this dynamic
             body=text_content,
             to=[email_address],
-            reply_to=[]  # TODO: define reply-to email for org
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
