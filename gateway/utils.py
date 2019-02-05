@@ -1,6 +1,12 @@
+from uuid import UUID
+
 import datetime
 import re
+import json
 import requests
+
+from pyswagger.primitives.comm import PrimJSONEncoder
+
 
 from . import exceptions
 from . import models as gtm
@@ -56,10 +62,21 @@ def get_swagger_from_url(api_url: str):
             f'Please, check that {api_url} is accessible.') from error
 
 
-def datetime_handler(obj):
+def obj_to_json_default_handler(obj):
     """
     JSON doesn't have a default datetime type, so this is why Python can't
     handle it automatically. So you need to make the datetime into a string.
     """
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
+    if isinstance(obj, UUID):
+        return obj.__str__()
+    raise TypeError("Object of type '%s' is not handled and JSON serialized "
+                    "yet" % obj.__class__.__name__)
+
+
+def json_dump(obj):
+    """Serialize ``obj`` to a JSON formatted ``str``."""
+    return json.dumps(obj,
+                      cls=PrimJSONEncoder,
+                      default=obj_to_json_default_handler)

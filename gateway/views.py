@@ -1,4 +1,3 @@
-import json
 import logging
 
 from urllib.error import URLError
@@ -15,7 +14,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from pyswagger.io import Response as PySwaggerResponse
-from pyswagger.primitives.comm import PrimJSONEncoder
 
 from workflow.permissions import IsSuperUser
 
@@ -128,9 +126,8 @@ class APIGatewayView(views.APIView):
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
-        content = json.dumps(response.data,
-                             cls=PrimJSONEncoder,
-                             default=utils.datetime_handler)
+        content = utils.json_dump(response.data)
+
         return HttpResponse(content=content,
                             status=response.status,
                             content_type='application/json')
