@@ -6,7 +6,7 @@ import urllib
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.test import TestCase, Client
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 import factories
 from web import auth_pipeline

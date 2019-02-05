@@ -1,7 +1,7 @@
 from chargebee import APIError
 from chargebee import Plan, Subscription
 from django.test import TestCase
-from mock import Mock
+from unittest.mock import Mock
 import factories
 from rest_framework.test import APIRequestFactory
 

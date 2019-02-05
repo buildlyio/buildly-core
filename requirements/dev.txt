@@ -1,5 +1,4 @@
 -r base.txt
 
 flake8==3.5.0
-mock==2.0.0
 bandit
