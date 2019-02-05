@@ -311,7 +311,8 @@ class DataMeshTest(TestCase):
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content.decode('utf-8'),
-                         utils.json_dump(expected_data))
+                         json.dumps(expected_data,
+                                    cls=utils.GatewayJSONEncoder))
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
