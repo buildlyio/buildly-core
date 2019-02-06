@@ -71,6 +71,23 @@ If you would like to clean the database and start the application, do:
 docker-compose up --renew-anon-volumes --force-recreate --build
 ```
 
+
+### Tests
+
+To run the tests (without flake8) and have `ipdb` open on error:
+
+```bash
+docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tests.sh --keepdb --bash_on_finish
+```
+
+To run the tests like if it was CI with flake8:
+
+```bash
+docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tests.sh --ci
+```
+
+See `pytest --help` for more options.
+
 ## Set up
 
 ### First steps

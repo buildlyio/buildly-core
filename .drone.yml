@@ -6,7 +6,7 @@ pipeline:
       - apk add --no-cache bash git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
       - pip install -r requirements/ci.txt --no-cache-dir
       - ./tcp-port-wait.sh postgres 5432
-      - DJANGO_SETTINGS_MODULE=bifrost-api.settings.base py.test gateway/tests -v --cov  # TODO make all tests run
+      - DJANGO_SETTINGS_MODULE=bifrost-api.settings.base pytest gateway/tests -v --cov  # TODO make all tests run
     when:
       event: [pull_request, push, tag]
     environment:
