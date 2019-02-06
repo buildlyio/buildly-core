@@ -17,7 +17,7 @@ def payload_enricher(request):
             logger.error('No matching CoreUser found.')
             raise PermissionDenied('No matching CoreUser found.')
         return {
-            'user_uuid': user['core_user_uuid'],
+            'core_user_uuid': user['core_user_uuid'],
             'organization_uuid': user['organization__organization_uuid'],
         }
     else:
