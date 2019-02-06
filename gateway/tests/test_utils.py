@@ -1,5 +1,5 @@
 """pytest unit tests, to run:
-DJANGO_SETTINGS_MODULE=bifrost-api.settings.production py.test gateway/tests/test_utils.py -v --cov
+DJANGO_SETTINGS_MODULE=bifrost-api.settings.production pytest gateway/tests/test_utils.py -v --cov
 or: pytest gateway/tests/test_utils.py
 """
 import datetime

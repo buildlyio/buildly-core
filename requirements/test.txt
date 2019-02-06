@@ -1,0 +1,4 @@
+-r ci.txt
+
+ipython==7.2.0
+ipdb==0.11
