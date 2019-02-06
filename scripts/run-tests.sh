@@ -62,10 +62,8 @@ done
 
 set -o xtrace  # shows what's being executed
 
-if [ "$keepdb" = false ] ; then
-    apk add git
-    pip install -r requirements/test.txt
-fi
+apk add git
+pip install -r requirements/test.txt
 
 if [ "$ci" = true ] ; then
     cat .flake8
@@ -89,9 +87,9 @@ if [ "$ci" = true ] ; then
     coverage report -m
 else
     if [ "$keepdb" = true ] ; then
-        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb -s --reuse-db
+        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb --reuse-db
     else
-        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb -s
+        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb
     fi
     if [ $? -eq 1 ] && [ "$bash_on_finish" = true ]; then
         bash_on_failure
