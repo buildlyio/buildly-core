@@ -1,6 +1,5 @@
-import datetime
 import logging
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -20,8 +19,8 @@ from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
 import jwt
 
-
 from workflow import models as wfm
+from workflow.jwt_utils import create_invitation_token
 
 from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
@@ -363,8 +362,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             if email_address not in registered_emails:
                 # create or update an invitation
 
-                token = self.create_invitation_token(email_address,
-                                                     organization)
+                token = create_invitation_token(email_address, organization)
 
                 # build the invitation link
                 invitation_link = self.request.build_absolute_uri(
@@ -380,21 +378,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     if organization else ''
                 }
                 self.send_invitation_email(email_address, context)
-
-    def create_invitation_token(self, email_address, organization):
-        exp_hours = datetime.timedelta(hours=settings.INVITATION_EXPIRE_HOURS)
-        payload = {
-            'email': email_address,
-            'org_uuid': organization.organization_uuid
-            if organization
-            else None,
-            'exp': datetime.datetime.utcnow() + exp_hours
-        }
-        return jwt.encode(
-            payload,
-            settings.SECRET_KEY,
-            algorithm='HS256'
-        ).decode('utf-8')
 
     def send_invitation_email(self, email_address, context):
         text_content = loader.render_to_string(
@@ -423,6 +406,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         # different permissions when creating a new user
         if self.request.method == 'POST' and url_name == 'coreuser-create':
+            return [permissions.AllowAny()]
+
+        # different permissions for checking token
+        if self.request.method == 'GET' \
+                and url_name == 'coreuser-invite-check':
             return [permissions.AllowAny()]
 
         # different permissions for the invitation process

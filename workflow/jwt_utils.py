@@ -1,6 +1,10 @@
 import logging
+import datetime
 
-from workflow.models import CoreUser
+import jwt
+from django.conf import settings
+
+from workflow.models import CoreUser, Organization
 from gateway.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
@@ -22,3 +26,19 @@ def payload_enricher(request):
         }
     else:
         return {}
+
+
+def create_invitation_token(email_address: str, organization: Organization):
+    exp_hours = datetime.timedelta(hours=settings.INVITATION_EXPIRE_HOURS)
+    payload = {
+        'email': email_address,
+        'org_uuid': str(organization.organization_uuid)
+        if organization
+        else None,
+        'exp': datetime.datetime.utcnow() + exp_hours
+    }
+    return jwt.encode(
+        payload,
+        settings.SECRET_KEY,
+        algorithm='HS256'
+    ).decode('utf-8')

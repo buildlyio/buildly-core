@@ -88,9 +88,9 @@ class CoreUserSerializer(serializers.ModelSerializer):
             is_new_org = True
 
         # create user
+        invitation_token = validated_data.pop('invitation_token', None)
         user_data = validated_data.pop('user')
-        user_data['is_active'] = is_new_org \
-            or 'invitation_token' in validated_data
+        user_data['is_active'] = is_new_org or bool(invitation_token)
         user = User.objects.create(**user_data)
 
         # add org admin role to user if org is new
@@ -111,6 +111,17 @@ class CoreUserSerializer(serializers.ModelSerializer):
         )
 
         return coreuser
+
+    def update(self, instance, validated_data):
+        if 'user' in validated_data:
+            user_data = validated_data.pop('user')
+            user = instance.user
+            for attr, value in user_data.items():
+                    setattr(user, attr, value)
+            user.save()
+
+        validated_data.pop('organization', None)
+        return super(CoreUserSerializer, self).update(instance, validated_data)
 
     class Meta:
         model = wfm.CoreUser
