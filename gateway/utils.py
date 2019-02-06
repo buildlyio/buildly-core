@@ -4,16 +4,33 @@ import datetime
 import re
 import json
 import requests
+import logging
+
+from django.db.models import Model
+from rest_framework.request import Request
 
 from pyswagger.primitives.comm import PrimJSONEncoder
 
+from workflow import views as wfv
+from workflow import models as wfm
 
 from . import exceptions
-from . import models as gtm
+from .models import LogicModule
+
 
 SWAGGER_LOOKUP_FIELD = 'swagger'
 SWAGGER_LOOKUP_FORMAT = 'json'
 SWAGGER_LOOKUP_PATH = 'docs'
+MODEL_VIEWSETS_DICT = {
+    wfm.WorkflowTeam: wfv.WorkflowTeamViewSet,
+    wfm.WorkflowLevel2: wfv.WorkflowLevel2ViewSet,
+    wfm.WorkflowLevel1: wfv.WorkflowLevel1ViewSet,
+    wfm.CoreUser: wfv.CoreUserViewSet,
+    wfm.Group: wfv.GroupViewSet,
+    wfm.Organization: wfv.OrganizationViewSet,
+    wfm.Milestone: wfv.MilestoneViewSet,
+    wfm.WorkflowLevel2Sort: wfv.WorkflowLevel2SortViewSet,
+}
 
 
 def get_swagger_urls(service: str = None) -> dict:
@@ -26,10 +43,10 @@ def get_swagger_urls(service: str = None) -> dict:
              Key-value pair with service name and OpenAPI schema URL of it
     """
     if service is None:
-        modules = gtm.LogicModule.objects.values(
+        modules = LogicModule.objects.values(
             'name', 'endpoint').all()
     else:
-        modules = gtm.LogicModule.objects.values(
+        modules = LogicModule.objects.values(
             'name', 'endpoint').filter(name__istartswith=service)
 
     if len(modules) == 0 and service is not None:
@@ -74,6 +91,24 @@ def obj_to_json_default_handler(obj):
     raise TypeError("Object of type '%s' is not handled and JSON serialized "
                     "yet" % obj.__class__.__name__)
 
+
+def validate_object_access(request: Request, obj):
+    """
+    Raise a PermissionDenied-Exception in case the User has no access to
+    the object or return None.
+
+    :param Request request: incoming request
+    :param obj: the object to be validated
+    """
+    # instantiate ViewSet with action for has_obj_permission
+    model = obj.__class__
+    try:
+        viewset = MODEL_VIEWSETS_DICT[model]()
+    except KeyError:
+        logging.critical(f'{model} needs to be added to MODEL_VIEWSETS_DICT')
+        raise exceptions.GatewayError(
+            msg=f'{model} not defined for object access lookup.')
+    viewset.check_object_permissions(request, obj)
 
 def json_dump(obj):
     """Serialize ``obj`` to a JSON formatted ``str``."""

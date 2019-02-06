@@ -1,4 +1,5 @@
 import logging
+import json
 
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
@@ -22,6 +23,6 @@ class ExceptionMiddleware(MiddlewareMixin):
     @staticmethod
     def process_exception(request, exception):
         if isinstance(exception, PermissionDenied):
-            return JsonResponse(data=exception.content,
+            return JsonResponse(data=json.loads(exception.content),
                                 status=exception.status)
         return None
