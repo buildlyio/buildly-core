@@ -6,10 +6,7 @@ import json
 import requests
 import logging
 
-from django.db.models import Model
 from rest_framework.request import Request
-
-from pyswagger.primitives.comm import PrimJSONEncoder
 
 from workflow import views as wfv
 from workflow import models as wfm
@@ -79,19 +76,6 @@ def get_swagger_from_url(api_url: str):
             f'Please, check that {api_url} is accessible.') from error
 
 
-def obj_to_json_default_handler(obj):
-    """
-    JSON doesn't have a default datetime type, so this is why Python can't
-    handle it automatically. So you need to make the datetime into a string.
-    """
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    if isinstance(obj, UUID):
-        return obj.__str__()
-    raise TypeError("Object of type '%s' is not handled and JSON serialized "
-                    "yet" % obj.__class__.__name__)
-
-
 def validate_object_access(request: Request, obj):
     """
     Raise a PermissionDenied-Exception in case the User has no access to
@@ -110,8 +94,22 @@ def validate_object_access(request: Request, obj):
             msg=f'{model} not defined for object access lookup.')
     viewset.check_object_permissions(request, obj)
 
-def json_dump(obj):
-    """Serialize ``obj`` to a JSON formatted ``str``."""
-    return json.dumps(obj,
-                      cls=PrimJSONEncoder,
-                      default=obj_to_json_default_handler)
+
+class GatewayJSONEncoder(json.JSONEncoder):
+    """
+    JSON encoder for API Gateway
+    """
+    def default(self, obj):
+        """
+        JSON doesn't have a default datetime and UUID type, so this is why
+        Python can't handle it automatically. So you need to make the
+        datetime and/or UUID into a string.
+        """
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        if isinstance(obj, UUID):
+            return str(obj)
+        # for handling pyswagger.primitives
+        if hasattr(obj, 'to_json'):
+            return obj.to_json()
+        return json.JSONEncoder.default(self, obj)

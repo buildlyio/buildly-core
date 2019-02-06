@@ -1,3 +1,4 @@
+import json
 import logging
 
 from urllib.error import URLError
@@ -126,7 +127,8 @@ class APIGatewayView(views.APIView):
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
-        content = utils.json_dump(response.data)
+        content = json.dumps(response.data,
+                             cls=utils.GatewayJSONEncoder)
 
         return HttpResponse(content=content,
                             status=response.status,

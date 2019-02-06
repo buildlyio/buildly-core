@@ -2,9 +2,10 @@
 DJANGO_SETTINGS_MODULE=bifrost-api.settings.production py.test gateway/tests/test_utils.py -v --cov
 or: pytest gateway/tests/test_utils.py
 """
-import uuid
 import datetime
+import json
 import pytest
+import uuid
 
 import factories
 
@@ -13,8 +14,8 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 from gateway.exceptions import GatewayError
+from gateway.utils import GatewayJSONEncoder, validate_object_access
 from gateway.views import APIGatewayView
-from gateway.utils import json_dump, validate_object_access
 
 
 class UtilsValidateBifrostObjectAccessTest(TestCase):
@@ -75,7 +76,8 @@ def test_json_dump():
         "uuid": uuid.UUID('50096bc6-848a-456f-ad36-3ac04607ff67'),
         "datetime": datetime.datetime(2019, 2, 5, 12, 36, 0, 147972)
     }
-    response = json_dump(obj)
+
+    response = json.dumps(obj, cls=GatewayJSONEncoder)
     expected_response = '{"string": "test1234",' \
                         ' "integer": 123,' \
                         ' "array": ["1", 2],' \
@@ -90,8 +92,9 @@ def test_json_dump_exception():
         pass
 
     test_obj = TestObj()
+    error_message = 'Object of type \'TestObj\' is not JSON serializable'
 
     with pytest.raises(TypeError) as exc:
-        json_dump(test_obj)
+        json.dumps(test_obj, cls=GatewayJSONEncoder)
 
-    assert 'is not handled' in str(exc.value)
+    assert error_message in str(exc.value)
