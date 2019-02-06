@@ -10,6 +10,7 @@ from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
+from django.urls import resolve
 import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
@@ -418,7 +419,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return serializers.CoreUserSerializer
 
     def get_permissions(self):
-        url_name = self.request.resolver_match.url_name
+        url_name = resolve(self.request.path).url_name
 
         # different permissions when creating a new user
         if self.request.method == 'POST' and url_name == 'coreuser-create':
