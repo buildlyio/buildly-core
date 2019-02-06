@@ -10,13 +10,12 @@ from workflow.models import ROLE_ORGANIZATION_ADMIN
 class JWTUtilsTest(TestCase):
     def test_jwt_payload_enricher(self):
         rf = RequestFactory()
-        tola_user = factories.CoreUser()
-        request = rf.post('', {'username': tola_user.user.username})
+        core_user = factories.CoreUser()
+        request = rf.post('', {'username': core_user.user.username})
         payload = payload_enricher(request)
         expected_payload = {
-            'user_uuid': str(tola_user.tola_user_uuid),
-            'organization_uuid': str(tola_user.organization.organization_uuid),
-            'role': None
+            'core_user_uuid': str(core_user.core_user_uuid),
+            'organization_uuid': str(core_user.organization.organization_uuid),
         }
         self.assertEqual(payload, expected_payload)
 
@@ -28,29 +27,28 @@ class JWTUtilsTest(TestCase):
 
     def test_jwt_payload_enricher_superuser(self):
         rf = RequestFactory()
-        tola_user = factories.CoreUser()
-        tola_user.user.is_superuser = True
-        tola_user.user.save()
+        core_user = factories.CoreUser()
+        core_user.user.is_superuser = True
+        core_user.user.save()
 
-        request = rf.post('', {'username': tola_user.user.username})
+        request = rf.post('', {'username': core_user.user.username})
         payload = payload_enricher(request)
         expected_payload = {
-            'user_uuid': str(tola_user.tola_user_uuid),
-            'organization_uuid': str(tola_user.organization.organization_uuid),
+            'core_user_uuid': str(core_user.core_user_uuid),
+            'organization_uuid': str(core_user.organization.organization_uuid),
         }
         self.assertEqual(payload, expected_payload)
 
     def test_jwt_payload_enricher_org_admin(self):
         rf = RequestFactory()
-        tola_user = factories.CoreUser()
+        core_user = factories.CoreUser()
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        tola_user.user.groups.add(group_org_admin)
+        core_user.user.groups.add(group_org_admin)
 
-        request = rf.post('', {'username': tola_user.user.username})
+        request = rf.post('', {'username': core_user.user.username})
         payload = payload_enricher(request)
         expected_payload = {
-            'user_uuid': str(tola_user.tola_user_uuid),
-            'organization_uuid': str(tola_user.organization.organization_uuid),
-            'role': ROLE_ORGANIZATION_ADMIN
+            'core_user_uuid': str(core_user.core_user_uuid),
+            'organization_uuid': str(core_user.organization.organization_uuid),
         }
         self.assertEqual(payload, expected_payload)
