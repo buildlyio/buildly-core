@@ -16,6 +16,7 @@ pipeline:
       - DATABASE_PASSWORD=root
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
+      - SECRET_KEY=nothing
 
   build-docker-image-tag:
     image: plugins/docker

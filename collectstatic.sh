@@ -10,5 +10,6 @@ export DATABASE_PASSWORD=nothing
 export DATABASE_HOST=nothing
 export DATABASE_PORT=nothing
 export DJANGO_SETTINGS_MODULE=bifrost-api.settings.production
+export SECRET_KEY=nothing
 
 python manage.py collectstatic --no-input

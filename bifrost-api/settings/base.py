@@ -4,8 +4,7 @@ import os
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# SECURITY WARNING: overwrite the secret key!
-SECRET_KEY = os.getenv('SECRET_KEY', 'ek*)b=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wv#_k')
+SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
