@@ -58,6 +58,12 @@ services:
         MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
         qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
         -----END PUBLIC KEY-----
+      RABBIT_HOST: "35.233.76.75"
+      RABBIT_PORT: "5672"
+      RABBIT_USER: "celery_user"
+      RABBIT_PASS: "Y0tGekI2eGUzQlc4"
+      RABBIT_VHOST: "celery_vhost"
+      RABBIT_WALHALL_QUEUE: "walhall_queue"
       SOCIAL_AUTH_GOOGLE_OAUTH2_KEY: "1090285679254-ep8e9kh2p2juqq8u169fqr5ijfnuaihm.apps.googleusercontent.com"
       SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: "kfy1DGJ3POZYtWMGX0l1yoMi"
       SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS: "gmail.com"
@@ -66,12 +72,7 @@ services:
       SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "https://localhost:8000/complete/microsoft-graph"
       SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET: "w8zgk5dz5JVErCNzc8Jz7EM"
       TOLA_TRACK_SYNC_ENABLED: "False"
-      RABBIT_USER: "celery_user"
-      RABBIT_PASS: "Y0tGekI2eGUzQlc4"
-      RABBIT_HOST: "35.233.76.75"
-      RABBIT_PORT: "5672"
-      RABBIT_VHOST: "celery_vhost"
-      RABBIT_WALHALL_QUEUE: "walhall_queue"
+      SECRET_KEY: "ek*)b=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wv#_k"
 
 volumes:
   static-content:
