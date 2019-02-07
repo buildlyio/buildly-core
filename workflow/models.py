@@ -176,7 +176,7 @@ class Portfolio(models.Model):
         super(Portfolio, self).save()
 
     def __str__(self):
-        return unicode(self.name)
+        return str(self.name)
 
 
 class Milestone(models.Model):
@@ -200,7 +200,7 @@ class Milestone(models.Model):
         super(Milestone, self).save()
 
     def __str__(self):
-        return unicode(self.name)
+        return str(self.name)
 
 
 class WorkflowLevel1(models.Model):
