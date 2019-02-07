@@ -127,12 +127,16 @@ class APIGatewayView(views.APIView):
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
-        content = json.dumps(response.data,
-                             cls=utils.GatewayJSONEncoder)
+        if response.data is not None:
+            content = json.dumps(response.data,
+                                 cls=utils.GatewayJSONEncoder)
+        else:
+            content = response.raw
 
+        content_type = ''.join(response.header.get('Content-Type', []))
         return HttpResponse(content=content,
                             status=response.status,
-                            content_type='application/json')
+                            content_type=content_type)
 
     def _aggregate_response_data(self, request: Request,
                                  response: PySwaggerResponse,

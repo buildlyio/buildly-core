@@ -36,9 +36,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
@@ -87,9 +89,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
@@ -116,9 +120,11 @@ class DataMeshTest(TestCase):
         mock_aggregate_response_data.side_effect = exception_obj
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
@@ -139,9 +145,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # mock expand data
@@ -179,9 +187,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = [self.response_data]
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # mock expand data
@@ -219,9 +229,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = {'results': [self.response_data]}
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # mock expand data
@@ -261,9 +273,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # mock logic module get
@@ -291,9 +305,11 @@ class DataMeshTest(TestCase):
         self.response_data['workflowlevel2_uuid'] = wfl2.id
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         self.core_user.user.is_superuser = True
@@ -328,9 +344,11 @@ class DataMeshTest(TestCase):
         self.response_data['workflowlevel2_uuid'] = wfl2.id
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
@@ -359,9 +377,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock service response
+        headers = {'Content-Type': ['application/json']}
         service_response = Mock(PySwaggerResponse)
         service_response.status = 200
         service_response.data = self.response_data
+        service_response.header = headers
 
         # mock expand response
         expand_data = {
@@ -396,9 +416,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock response
+        headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
         pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
@@ -445,9 +467,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock service response
+        headers = {'Content-Type': ['application/json']}
         service_response = Mock(PySwaggerResponse)
         service_response.status = 200
         service_response.data = self.response_data
+        service_response.header = headers
 
         # mock expand response
         expand_data = {
@@ -490,9 +514,11 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock service response
+        headers = {'Content-Type': ['application/json']}
         service_response = Mock(PySwaggerResponse)
         service_response.status = 200
         service_response.data = self.response_data
+        service_response.header = headers
         mock_perform_request.return_value = service_response
 
         # make api request
