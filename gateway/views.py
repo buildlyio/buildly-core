@@ -4,7 +4,7 @@ import logging
 from urllib.error import URLError
 
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.http.request import QueryDict
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
@@ -408,7 +408,7 @@ class APIGatewayView(views.APIView):
         try:
             req, resp = self._get_req_and_rep(app, request, **kwargs)
         except exceptions.EndpointNotFound:
-            raise Http404()
+            raise exceptions.GatewayError('Endpoint not found.', status=404)
 
         headers = self._get_service_request_headers(request)
         try:
