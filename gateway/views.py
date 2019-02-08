@@ -6,6 +6,7 @@ from urllib.error import URLError
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http.request import QueryDict
+from django.core.exceptions import FieldError
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
 from rest_framework.request import Request
@@ -205,7 +206,8 @@ class APIGatewayView(views.APIView):
             if extend_model['service'] == 'bifrost':
                 if hasattr(wfm, extend_model['model']):
                     cls = getattr(wfm, extend_model['model'])
-                    pk_name = cls._meta.pk.attname
+                    # Get the bifrost.object based on the lookup_field
+                    pk_name = extend_model['lookup_field']
                     lookup = {
                         pk_name: extend_model['pk']
                     }
@@ -213,6 +215,10 @@ class APIGatewayView(views.APIView):
                         obj = cls.objects.get(**lookup)
                     except cls.DoesNotExist as e:
                         logger.info(e)
+                    except FieldError as e:
+                        logger.error(e)  # field not in bifrost-model
+                        message = f'relationship broken: {extend_model} - {e}'
+                        raise exceptions.DataMeshError(message, status=500)
                     else:
                         utils.validate_object_access(request, obj)
                         data = model_to_dict(obj)
@@ -231,7 +237,7 @@ class APIGatewayView(views.APIView):
                 data = res.data
 
             if data is not None:
-                result[extend_model['relationship_key']] = data
+                result[extend_model['expand_field']] = data
 
         return result
 
@@ -239,6 +245,18 @@ class APIGatewayView(views.APIView):
                                 model_name: str, data: dict):
         """
         Generate a list of relationship map of a specific service model.
+
+        Following fields must be found in the relationship map:
+
+        ``lookup_field`` is the field, which is used for the lookup on the
+        other model, p.e. 'uuid' or 'id' or something custom
+
+        ``expand_field`` defines the field, in which the new data is inserted,
+        p.e. 'contact' or 'appointment'
+
+        Example: {"time-event": {
+                    "appointment_uuid.uuid.appointment": "crm.Appointment"}
+                 }
 
         :param LogicModule logic_module: a logic module instance
         :param str model_name: Model name that should expand the relationships
@@ -248,11 +266,29 @@ class APIGatewayView(views.APIView):
         extension_map = []
         for k, v in logic_module.relationships[model_name].items():
             value = v.split('.')
+            key = k.split('.')
+            try:
+                pk = str(data[key[0]])  # to str because pk can be a Primitive
+            except KeyError as e:
+                logger.error(e)
+                message = f'relationship broken: {key[0]} not in ' \
+                    f'model {model_name} - {e}'
+                raise exceptions.DataMeshError(message, status=500)
+            if len(key) == 1:
+                lookup_field = 'uuid'
+                expand_field = key[0]
+            elif len(key) == 2:
+                lookup_field = key[1]
+                expand_field = key[1]
+            elif len(key) == 3:
+                lookup_field = key[1]
+                expand_field = key[2]
             collection_args = {
                 'service': value[0],
                 'model': value[1],
-                'pk': data[k],
-                'relationship_key': k
+                'pk': pk,
+                'lookup_field': lookup_field,
+                'expand_field': expand_field,
             }
             extension_map.append(collection_args)
 
@@ -360,7 +396,7 @@ class APIGatewayView(views.APIView):
             # call operation
             return getattr(path_item, method).__call__(**data)
         elif pk is not None:
-            try:
+            try:  # support lookup by id OR uuid
                 int(pk)
             except ValueError:
                 pk_name = 'uuid'

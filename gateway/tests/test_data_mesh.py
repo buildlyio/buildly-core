@@ -369,7 +369,7 @@ class DataMeshTest(TestCase):
                                                mock_app):
         # update relationships
         self.lm.relationships['products'] = {
-            'contact_uuid': 'crm.Contact'
+            'contact_uuid.contact_uuid': 'crm.Contact'
         }
         self.lm.save()
 
@@ -444,10 +444,6 @@ class DataMeshTest(TestCase):
         # mock app
         mock_app.return_value = Mock(App)
 
-        # # create expand data
-        # wfl2 = factories.WorkflowLevel2()
-        # self.response_data['workflowlevel2_uuid'] = wfl2.uuid
-
         # mock response
         headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
@@ -473,6 +469,130 @@ class DataMeshTest(TestCase):
         self.assertIn('relationship broken',
                       json.loads(response.content)['detail'])
 
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_from_bifrost_with_other_lookup_field(
+            self, mock_perform_request, mock_app):
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # mock response
+        headers = {'Content-Type': ['application/json']}
+        pyswagger_response = Mock(PySwaggerResponse)
+        pyswagger_response.status = 200
+        pyswagger_response.data = {
+            'id': 1,
+            'other_lookup_field': 1,
+            'name': 'test',
+            'contact_uuid': 1
+        }
+        pyswagger_response.header = headers
+        mock_perform_request.return_value = pyswagger_response
+
+        # fiddle with relationship
+        self.lm.relationships = {
+            'products': {
+                'workflowlevel2_uuid.other_lookup_field':
+                    'bifrost.WorkflowLevel2'
+            }
+        }
+        self.lm.save()
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+        response = self.client.get(path, {'aggregate': 'true'})
+
+        # validate server error
+        self.assertEqual(response.status_code, 500)
+        self.assertIn('relationship broken',
+                      json.loads(response.content)['detail'])
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_from_external_service_in_expand_field(
+            self, mock_perform_request, mock_app):
+        # update relationships
+        self.lm.relationships['products'] = {
+            'contact_uuid.contact_uuid.contact': 'crm.Contact'
+        }
+        self.lm.save()
+
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # mock service response
+        headers = {'Content-Type': ['application/json']}
+        service_response = Mock(PySwaggerResponse)
+        service_response.status = 200
+        service_response.data = self.response_data
+        service_response.header = headers
+
+        # mock expand response
+        expand_data = {
+            'first_name': 'Jeferson',
+            'last_name': 'Moura',
+            'contact_type': 'company',
+            'company': 'Humanitec'
+        }
+        expand_response = Mock(PySwaggerResponse)
+        expand_response.data = expand_data
+        mock_perform_request.side_effect = [service_response, expand_response]
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+        response = self.client.get(path, {'aggregate': 'true'})
+
+        # validate result
+        expected_data = {
+            'id': 1,
+            'workflowlevel2_uuid': 1,
+            'name': 'test',
+            'contact_uuid': 1,
+            'contact': expand_data
+        }
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), expected_data)
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_from_external_service_raises_key_error_exception(
+            self, mock_perform_request, mock_app):
+        # update relationships
+        self.lm.relationships['products'] = {
+            'contact_uuid.custom_id': 'crm.Contact'
+        }
+        self.lm.save()
+
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # mock service response
+        headers = {'Content-Type': ['application/json']}
+        service_response = Mock(PySwaggerResponse)
+        service_response.status = 200
+        service_response.data = {
+            'id': 1,
+            'workflowlevel2_uuid': 1,
+            'name': 'test',
+            'custom_id': 1
+        }
+        service_response.header = headers
+
+        # mock expand response
+        expand_data = {}
+        expand_response = Mock(PySwaggerResponse)
+        expand_response.data = expand_data
+        mock_perform_request.side_effect = [service_response, expand_response]
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+        response = self.client.get(path, {'aggregate': 'true'})
+
+        self.assertEqual(response.status_code, 500)
+        self.assertIn('relationship broken',
+                      json.loads(response.content)['detail'])
+
     @patch('pyswagger.App.load')
     @patch('gateway.utils')
     @patch('gateway.views.APIGatewayView._perform_service_request')
@@ -487,7 +607,7 @@ class DataMeshTest(TestCase):
 
         # update relationships
         self.lm.relationships['products'] = {
-            'contact_uuid': 'crm.Contact'
+            'contact_uuid.contact_uuid': 'crm.Contact'
         }
         self.lm.save()
 
@@ -531,6 +651,7 @@ class DataMeshTest(TestCase):
             'name': 'test',
             'contact_uuid': expand_data
         }
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected_data)
 
