@@ -11,9 +11,17 @@ services:
       POSTGRES_PASSWORD: root
     volumes:
       - /var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
     restart: always
+
+  rabbitmq_bifrost:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_bifrost
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "admin"
+      RABBITMQ_DEFAULT_VHOST: "celery_vhost"
+    ports:
+      - "15672:15672"
 
   bifrost:
     build:
@@ -29,6 +37,7 @@ services:
       - "8080:8080"
     depends_on:
       - postgres_bifrost
+      - rabbitmq_bifrost
     environment:
       DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
       ALLOWED_HOSTS: "*"
@@ -58,12 +67,12 @@ services:
         MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
         qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
         -----END PUBLIC KEY-----
-      RABBIT_HOST: "35.233.76.75"
+      RABBIT_HOST: "rabbitmq_bifrost"
       RABBIT_PORT: "5672"
-      RABBIT_USER: "celery_user"
-      RABBIT_PASS: "Y0tGekI2eGUzQlc4"
+      RABBIT_USER: "admin"
+      RABBIT_PASS: "admin"
       RABBIT_VHOST: "celery_vhost"
-      RABBIT_WALHALL_QUEUE: "walhall_queue"
+      RABBIT_WALHALL_QUEUE: "bifrost_queue"
       SOCIAL_AUTH_GOOGLE_OAUTH2_KEY: "1090285679254-ep8e9kh2p2juqq8u169fqr5ijfnuaihm.apps.googleusercontent.com"
       SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: "kfy1DGJ3POZYtWMGX0l1yoMi"
       SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS: "gmail.com"
