@@ -4,15 +4,15 @@ or: pytest gateway/tests/test_utils.py
 """
 import datetime
 import json
-import pytest
+from unittest.mock import Mock
 import uuid
 
-import factories
-
 from django.test import TestCase
+import pytest
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
+import factories
 from gateway.exceptions import GatewayError
 from gateway.utils import GatewayJSONEncoder, validate_object_access
 from gateway.views import APIGatewayView
@@ -66,6 +66,14 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
 
         with self.assertRaises(GatewayError):
             validate_object_access(request, lm)
+
+    def test_validate_core_user_access(self):
+        request = self.get_mock_request('/a-jedis-path/', APIGatewayView,
+                                        self.core_user.user)
+        request.resolver_match = Mock(url_name='obi-wan-kenobi')
+        core_user = factories.CoreUser()
+        ret = validate_object_access(request, core_user)
+        self.assertIsNone(ret)
 
 
 def test_json_dump():

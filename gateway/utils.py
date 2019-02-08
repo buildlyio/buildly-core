@@ -92,7 +92,10 @@ def validate_object_access(request: Request, obj):
         logging.critical(f'{model} needs to be added to MODEL_VIEWSETS_DICT')
         raise exceptions.GatewayError(
             msg=f'{model} not defined for object access lookup.')
-    viewset.check_object_permissions(request, obj)
+    else:
+        viewset.request = request
+        viewset.check_object_permissions(request, obj)
+
 
 
 class GatewayJSONEncoder(json.JSONEncoder):
