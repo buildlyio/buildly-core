@@ -262,7 +262,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     and WorkflowLevel 1 (again through WorkflowTeam)
 
     retrieve:
-    Return the given core user.
+    Return the given core user by UUID (user_core_uuid).
 
     list:
     Return a list of all the existing core users.
@@ -280,13 +280,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             queryset = queryset.filter(organization_id=organization_id)
         serializer = self.get_serializer(
             instance=queryset, context={'request': request}, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        queryset = self.queryset
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = self.get_serializer(instance=user,
-                                         context={'request': request})
         return Response(serializer.data)
 
     @action(methods=['POST'], detail=False)
@@ -375,6 +368,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         return super(CoreUserViewSet, self).get_permissions()
 
+    lookup_url_kwarg = 'uuid'
+    lookup_field = 'core_user_uuid'
     filter_fields = ('organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = wfm.CoreUser.objects.all()
