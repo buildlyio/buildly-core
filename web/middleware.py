@@ -4,7 +4,7 @@ import json
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
 
-from gateway.exceptions import PermissionDenied, GatewayError
+from gateway.exceptions import PermissionDenied, EndpointNotFound
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class ExceptionMiddleware(MiddlewareMixin):
 
     @staticmethod
     def process_exception(request, exception):
-        if isinstance(exception, (PermissionDenied, GatewayError)):
+        if isinstance(exception, (PermissionDenied, EndpointNotFound)):
             return JsonResponse(data=json.loads(exception.content),
                                 status=exception.status)
         return None
