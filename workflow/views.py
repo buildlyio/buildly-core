@@ -20,8 +20,9 @@ from rest_framework.pagination import CursorPagination, PageNumberPagination
 
 from workflow import models as wfm
 
-from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, AllowTolaRoles,
-                          AllowAuthenticatedRead, AllowOnlyOrgAdmin,
+from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
+                          AllowCoreUserRoles, AllowAuthenticatedRead,
+                          AllowOnlyOrgAdmin,
                           PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
                           PERMISSIONS_PROGRAM_ADMIN, PERMISSIONS_PROGRAM_TEAM,
                           PERMISSIONS_VIEW_ONLY)
@@ -240,7 +241,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter)
 
     queryset = wfm.WorkflowLevel1.objects.all()
-    permission_classes = (AllowTolaRoles, IsOrgMember)
+    permission_classes = (AllowCoreUserRoles, IsOrgMember)
     pagination_class = DefaultCursorPagination
 
 
@@ -521,7 +522,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
     queryset = wfm.WorkflowLevel2.objects.all()
-    permission_classes = (AllowTolaRoles, IsOrgMember)
+    permission_classes = (AllowCoreUserRoles, IsOrgMember)
     serializer_class = serializers.WorkflowLevel2Serializer
     pagination_class = DefaultCursorPagination
 
@@ -640,7 +641,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
 
     filter_fields = ('workflowlevel1__organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    permission_classes = (AllowTolaRoles,)
+    permission_classes = (AllowCoreUserRoles,)
     queryset = wfm.WorkflowTeam.objects.all()
     serializer_class = serializers.WorkflowTeamSerializer
 
@@ -727,7 +728,7 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
 
-    permission_classes = (AllowTolaRoles, IsOrgMember)
+    permission_classes = (AllowCoreUserRoles, IsOrgMember)
     queryset = wfm.Portfolio.objects.all()
     serializer_class = serializers.PortfolioSerializer
 

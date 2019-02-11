@@ -161,7 +161,7 @@ class IsOrgMember(permissions.BasePermission):
         return False
 
 
-class AllowTolaRoles(permissions.BasePermission):
+class AllowCoreUserRoles(permissions.BasePermission):
     def _get_workflowlevel1(self, view, request_data):
         wflvl1_serializer = view.serializer_class().get_fields()[
             'workflowlevel1']
@@ -311,6 +311,8 @@ class AllowTolaRoles(permissions.BasePermission):
                     'role__name', flat=True)
                 if ROLE_PROGRAM_ADMIN in team_groups:
                     return True
+                elif ROLE_PROGRAM_TEAM in team_groups:
+                    return view.action != 'destroy'
                 elif ROLE_VIEW_ONLY in team_groups:
                     return view.action == 'retrieve'
             else:
