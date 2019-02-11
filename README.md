@@ -77,7 +77,7 @@ docker-compose up --renew-anon-volumes --force-recreate --build
 To run the tests (without flake8) and have `ipdb` open on error:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tests.sh --keepdb --bash_on_finish
+docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tests.sh --keepdb --bash-on-finish
 ```
 
 To run the tests like if it was CI with flake8:
