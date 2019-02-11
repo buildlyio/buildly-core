@@ -302,7 +302,7 @@ class DataMeshTest(TestCase):
 
         # create expand data
         wfl2 = factories.WorkflowLevel2()
-        self.response_data['workflowlevel2_uuid'] = wfl2.id
+        self.response_data['workflowlevel2_uuid'] = wfl2.uuid
 
         # mock response
         headers = {'Content-Type': ['application/json']}
@@ -341,7 +341,7 @@ class DataMeshTest(TestCase):
         # create expand data
         wfl2 = factories.WorkflowLevel2()
 
-        self.response_data['workflowlevel2_uuid'] = wfl2.id
+        self.response_data['workflowlevel2_uuid'] = wfl2.uuid
 
         # mock response
         headers = {'Content-Type': ['application/json']}

@@ -276,8 +276,8 @@ class WorkflowTeam(models.Model):
 
 
 class WorkflowLevel2(models.Model):
+    uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel2 UUID', default=uuid.uuid4, unique=True, blank=True, help_text="Unique ID")
     description = models.TextField("Description", blank=True, null=True, help_text="Description of the workflow level use")
-    level2_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel2 UUID', default=uuid.uuid4, unique=True, blank=True, help_text="Unique ID")
     name = models.CharField("Name", max_length=255, help_text="Name of workflow level as it relates to workflow level 1")
     notes = models.TextField(blank=True, null=True)
     parent_workflowlevel2 = models.IntegerField("Parent", default=0, blank=True, help_text="Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships")
