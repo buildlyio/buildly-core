@@ -9,7 +9,7 @@ class GatewayError(Exception):
         self.content_type = 'application/json'
 
 
-class EndpointNotFound(Exception):
+class EndpointNotFound(GatewayError):
     pass
 
 

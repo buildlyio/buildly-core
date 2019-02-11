@@ -408,7 +408,7 @@ class APIGatewayView(views.APIView):
         try:
             req, resp = self._get_req_and_rep(app, request, **kwargs)
         except exceptions.EndpointNotFound:
-            raise exceptions.GatewayError('Endpoint not found.', status=404)
+            raise exceptions.EndpointNotFound('Endpoint not found.', status=404)
 
         headers = self._get_service_request_headers(request)
         try:
