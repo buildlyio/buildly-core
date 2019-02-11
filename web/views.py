@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 from oauth2_provider.views.generic import ProtectedResourceView
 
 
-from workflow.models import (CoreUser, CoreSites)
+from workflow.models import CoreUser
 
 from workflow.serializers import (CoreUserSerializer,
                                   OrganizationSerializer)
