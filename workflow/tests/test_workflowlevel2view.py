@@ -49,7 +49,6 @@ class WorkflowLevel2ListViewsTest(TestCase):
         response = view(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['contact'], {})
 
     def test_list_workflowlevel2_program_admin(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
@@ -108,37 +107,7 @@ class WorkflowLevel2ListViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
-    def test_list_workflowlevel2_products(self):
-        request = self.factory.get('/api/workflowlevel2/')
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        wflvl2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        products = (
-            factories.Product(name='Name1', type='Type1', reference_id='Ref1',
-                              workflowlevel2=wflvl2),
-            factories.Product(name='Name1', type='Type1', reference_id='Ref1',
-                              workflowlevel2=wflvl2),
-        )
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_VIEW_ONLY))
-        request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
-        response = view(request)
-        self.assertEqual(len(response.data), 1)
-        result = response.data[0]
-        self.assertEqual(len(result['products']), len(products))
-        self.assertEqual(result['products'][0]['name'], products[0].name)
-        self.assertEqual(result['products'][0]['type'], products[0].type)
-        self.assertEqual(result['products'][0]['reference_id'],
-                         products[0].reference_id)
-        self.assertEqual(result['products'][1]['name'], products[1].name)
-        self.assertEqual(result['products'][1]['type'], products[1].type)
-        self.assertEqual(result['products'][1]['reference_id'],
-                         products[1].reference_id)
-
-    @patch('api.views.DefaultCursorPagination.page_size',
+    @patch('workflow.views.DefaultCursorPagination.page_size',
            new_callable=PropertyMock)
     def test_list_workflowlevel2_pagination(self, page_size_mock):
         ''' For page_size 1 and pagination true, list wfl3 endpoint should
@@ -191,12 +160,8 @@ class WorkflowLevel2CreateViewsTest(TestCase):
 
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1()
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
-
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -213,12 +178,8 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
-
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -232,16 +193,13 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_PROGRAM_ADMIN))
 
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1_url
+                'workflowlevel1': wflvl1.pk
                 }
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
@@ -256,16 +214,13 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_PROGRAM_ADMIN))
 
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'),
                                     json.dumps(data),
@@ -281,16 +236,13 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_PROGRAM_TEAM))
 
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -304,16 +256,13 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_VIEW_ONLY))
 
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -326,9 +275,6 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
@@ -337,7 +283,7 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         data = {
             'name': 'Save the Children',
             'level2_uuid': '84a9888-4149-11e8-842f-0ed5f89f718b',
-            'workflowlevel1': wflvl1_url}
+            'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -374,16 +320,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1()
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put('', data)
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 200)
 
@@ -398,12 +341,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -422,12 +362,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         another_org = factories.Organization(name='Another Org')
         wflvl1 = factories.WorkflowLevel1(organization=another_org)
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -444,16 +381,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_PROGRAM_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put('', data)
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 200)
 
@@ -469,17 +403,14 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_PROGRAM_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post('/api/indicator/', json.dumps(data),
+        request = self.factory.put('', json.dumps(data),
                                     content_type='application/json')
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 200)
 
@@ -495,16 +426,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_PROGRAM_TEAM))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put('', data)
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 200)
 
@@ -520,12 +448,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_VIEW_ONLY))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
@@ -542,7 +467,7 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
             role=factories.Group(name=ROLE_PROGRAM_TEAM))
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1.id}
+                'workflowlevel1': wflvl1.pk}
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'post': 'create'})
@@ -550,13 +475,10 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         self.assertEqual(response.status_code, 201)
         first_level2_uuid = response.data['level2_uuid']
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1.id,
+                'workflowlevel1': wflvl1.pk,
                 'level2_uuid': '84a9888-4149-11e8-842f-0ed5f89f718b'}
         pk = int(response.data['id'])
-        request = self.factory.put(
-            reverse('workflowlevel2-detail', args=(pk,)),
-            data
-        )
+        request = self.factory.put('', data)
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=pk)
@@ -702,7 +624,6 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         factories.Organization(id=1)
         self.factory = APIRequestFactory()
         self.core_user = factories.CoreUser()
-
 
     def test_filter_workflowlevel2_wkflvl1_name_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
