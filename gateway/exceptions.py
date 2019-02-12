@@ -24,6 +24,8 @@ class RequestValidationError(GatewayError):
 class ServiceDoesNotExist(GatewayError):
     pass
 
+class DataMeshError(GatewayError):
+    pass
 
 class PermissionDenied(GatewayError):
     def __init__(self, msg):

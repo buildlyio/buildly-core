@@ -410,7 +410,7 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_expand_data_from_bifrost_raises_exception(
+    def test_expand_data_from_bifrost_with_empty_relation(
             self, mock_perform_request, mock_app):
         # mock app
         mock_app.return_value = Mock(App)
@@ -436,6 +436,42 @@ class DataMeshTest(TestCase):
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected_data)
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_from_bifrost_raises_data_mesh_error(
+            self, mock_perform_request, mock_app):
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # # create expand data
+        # wfl2 = factories.WorkflowLevel2()
+        # self.response_data['workflowlevel2_uuid'] = wfl2.uuid
+
+        # mock response
+        headers = {'Content-Type': ['application/json']}
+        pyswagger_response = Mock(PySwaggerResponse)
+        pyswagger_response.status = 200
+        pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
+        mock_perform_request.return_value = pyswagger_response
+
+        # fiddle with relationship
+        self.lm.relationships = {
+            'products': {
+                'workflowlevel2_uuid.not_existent': 'bifrost.WorkflowLevel2'
+            }
+        }
+        self.lm.save()
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+        response = self.client.get(path, {'aggregate': 'true'})
+
+        # validate server error
+        self.assertEqual(response.status_code, 500)
+        self.assertIn('relationship broken',
+                      json.loads(response.content)['detail'])
 
     @patch('pyswagger.App.load')
     @patch('gateway.utils')
