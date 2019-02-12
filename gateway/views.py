@@ -251,7 +251,7 @@ class APIGatewayView(views.APIView):
             collection_args = {
                 'service': value[0],
                 'model': value[1],
-                'pk': data[k],
+                'pk': str(data[k]),
                 'relationship_key': k
             }
             extension_map.append(collection_args)
