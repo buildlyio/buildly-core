@@ -306,9 +306,11 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
 
         data = {'name': 'Community awareness program conducted to plant trees'}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(228,)), data
+        )
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=288)
         self.assertEqual(response.status_code, 404)
 
@@ -324,7 +326,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.put('', data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
+        )
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
@@ -345,9 +349,11 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
+        )
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 200)
 
@@ -366,9 +372,11 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
+        )
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 403)
 
@@ -385,7 +393,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.put('', data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
+        )
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
@@ -407,8 +417,11 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.put('', json.dumps(data),
-                                    content_type='application/json')
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)),
+            json.dumps(data),
+            content_type='application/json'
+        )
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
@@ -430,7 +443,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.put('', data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
+        )
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
@@ -452,9 +467,11 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post(reverse('workflowlevel2-list'), data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
+        )
         request.user = self.core_user.user
-        view = WorkflowLevel2ViewSet.as_view({'post': 'update'})
+        view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=workflowlevel2.pk)
         self.assertEqual(response.status_code, 403)
 
@@ -478,7 +495,9 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
                 'workflowlevel1': wflvl1.pk,
                 'level2_uuid': '84a9888-4149-11e8-842f-0ed5f89f718b'}
         pk = int(response.data['id'])
-        request = self.factory.put('', data)
+        request = self.factory.put(
+            reverse('workflowlevel2-detail', args=(pk,)), data
+        )
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'put': 'update'})
         response = view(request, pk=pk)
