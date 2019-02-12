@@ -12,12 +12,14 @@ from ..views import MilestoneViewSet
 
 class MilestoneListViewsTest(TestCase):
     def setUp(self):
-        factories.Milestone.create_batch(2)
+        factories.Milestone.create_batch(2,
+            organization=factories.Organization.create(name='Another org')
+        )
         self.factory = APIRequestFactory()
         self.core_user = factories.CoreUser()
 
     def test_list_milestone_superuser(self):
-        request = self.factory.get('/api/milestone/')
+        request = self.factory.get('/milestone/')
         request.user = factories.User.build(is_superuser=True,
                                             is_staff=True)
         view = MilestoneViewSet.as_view({'get': 'list'})
@@ -26,7 +28,7 @@ class MilestoneListViewsTest(TestCase):
         self.assertEqual(len(response.data), 2)
 
     def test_list_milestone_org_admin(self):
-        request = self.factory.get('/api/milestone/')
+        request = self.factory.get('/milestone/')
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
         self.core_user.user.groups.add(group_org_admin)
 
@@ -42,7 +44,7 @@ class MilestoneListViewsTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_list_milestone_program_admin(self):
-        request = self.factory.get('/api/milestone/')
+        request = self.factory.get('/milestone/')
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             role=factories.Group(name=ROLE_PROGRAM_ADMIN))
@@ -58,7 +60,7 @@ class MilestoneListViewsTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_list_milestone_program_team(self):
-        request = self.factory.get('/api/milestone/')
+        request = self.factory.get('/milestone/')
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             role=factories.Group(name=ROLE_PROGRAM_TEAM))
@@ -74,7 +76,7 @@ class MilestoneListViewsTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_list_milestone_view_only(self):
-        request = self.factory.get('/api/milestone/')
+        request = self.factory.get('/milestone/')
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             role=factories.Group(name=ROLE_VIEW_ONLY))
@@ -94,29 +96,23 @@ class MilestoneViewTest(TestCase):
     def setUp(self):
         self.user = factories.User(is_superuser=True, is_staff=True)
         factory = APIRequestFactory()
-        self.request = factory.post('/api/milestone/')
+        self.request = factory.post('/milestone/')
 
     def test_create_milestone(self):
-        user_url = reverse('user-detail', kwargs={'pk': self.user.id},
-                           request=self.request)
-
         data = {'name': 'Project Implementation'}
-        self.request = APIRequestFactory().post('/api/milestone/', data)
+        self.request = APIRequestFactory().post('/milestone/', data)
         self.request.user = self.user
         view = MilestoneViewSet.as_view({'post': 'create'})
         response = view(self.request)
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], u'Project Implementation')
-        self.assertEqual(response.data['created_by'], user_url)
+        self.assertEqual(response.data['created_by'], self.user.pk)
 
     def test_create_milestone_json(self):
-        user_url = reverse('user-detail', kwargs={'pk': self.user.id},
-                           request=self.request)
-
         data = {'name': 'Project Implementation'}
         self.request = APIRequestFactory().post(
-            '/api/milestone/', json.dumps(data),
+            '/milestone/', json.dumps(data),
             content_type='application/json')
         self.request.user = self.user
         view = MilestoneViewSet.as_view({'post': 'create'})
@@ -124,4 +120,4 @@ class MilestoneViewTest(TestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], u'Project Implementation')
-        self.assertEqual(response.data['created_by'], user_url)
+        self.assertEqual(response.data['created_by'], self.user.pk)
