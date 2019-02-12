@@ -1,4 +1,4 @@
-from factory import DjangoModelFactory, LazyAttribute, SubFactory
+from factory import DjangoModelFactory, SubFactory
 
 from workflow.models import (
     CoreUser as CoreUserM,
@@ -6,7 +6,8 @@ from workflow.models import (
     WorkflowLevel1 as WorkflowLevel1M,
     WorkflowLevel2 as WorkflowLevel2M,
     WorkflowTeam as WorkflowTeamM,
-    WorkflowLevel2Sort as WorkflowLevel2SortM
+    WorkflowLevel2Sort as WorkflowLevel2SortM,
+    Portfolio as PortfolioM,
 )
 from .django_models import User, Group
 
@@ -58,3 +59,10 @@ class WorkflowLevel2Sort(DjangoModelFactory):
 
     workflowlevel1 = SubFactory(WorkflowLevel1)
     workflowlevel2_parent_id = SubFactory(WorkflowLevel2)
+
+
+class Portfolio(DjangoModelFactory):
+    class Meta:
+        model = PortfolioM
+
+    organization = SubFactory(Organization)
