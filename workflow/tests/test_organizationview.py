@@ -10,14 +10,15 @@ from ..views import OrganizationViewSet
 
 class OrganizationListViewTest(TestCase):
     def setUp(self):
-        factories.Organization.create_batch(2)
+        factories.Organization.create()
+        factories.Organization.create(name='Another org')
 
         factory = APIRequestFactory()
-        self.request = factory.get('/api/organization/')
+        self.request = factory.get('/organization/')
 
     def test_list_organization_superuser(self):
-        self.request.user = factories.User.build(is_superuser=True,
-                                                 is_staff=True)
+        self.request.user = factories.User.create(is_superuser=True,
+                                                  is_staff=True)
         view = OrganizationViewSet.as_view({'get': 'list'})
         response = view(self.request)
         self.assertEqual(response.status_code, 200)
@@ -49,7 +50,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         self.core_user = factories.CoreUser()
 
     def test_get_subscription(self):
-        self.core_user.organization.chargebee_subscription_id = 12345
+        self.core_user.organization.subscription_id = 12345
         self.core_user.organization.save()
 
         sub_response = self.SubscriptionTest({})
@@ -61,17 +62,15 @@ class OrganizationSubscriptionViewTest(TestCase):
         request.user = self.core_user.user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
         response = view(request, pk=self.core_user.organization.id)
-        plan = response.data['plan']
         subscription = response.data
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(plan['name'], 'Plan test')
         self.assertEqual(subscription['status'], 'active')
         self.assertEqual(subscription['used_seats'], 0)
         self.assertEqual(subscription['total_seats'], 1)
 
     def test_get_subscription_error(self):
-        self.core_user.organization.chargebee_subscription_id = 12345
+        self.core_user.organization.subscription_id = 12345
         self.core_user.organization.save()
 
         json_obj = {
@@ -91,7 +90,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         self.assertEqual(response.data['detail'], 'No subscription was found.')
 
     def test_get_subscription_id_exception(self):
-        self.core_user.organization.chargebee_subscription_id = 12345
+        self.core_user.organization.subscription_id = 12345
         self.core_user.organization.save()
 
         sub_response = Exception("Id is None or empty")
