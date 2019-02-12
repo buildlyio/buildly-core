@@ -19,7 +19,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         """
         list view should return all objs to super users
         """
-        request = self.factory.get('/api/workflowlevel2sort/')
+        request = self.factory.get('/workflowlevel2sort/')
         request.user = factories.User.build(is_superuser=True,
                                             is_staff=True)
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
@@ -31,7 +31,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         """
         list view should return only objs of an org to org admins
         """
-        request = self.factory.get('/api/workflowlevel2sort/')
+        request = self.factory.get('/workflowlevel2sort/')
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
         self.tola_user.user.groups.add(group_org_admin)
 
@@ -57,7 +57,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         list view should return only objs associated with programs that
         program admins have access to
         """
-        request = self.factory.get('/api/workflowlevel2sort/')
+        request = self.factory.get('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1(
             organization=self.tola_user.organization)
         WorkflowTeam.objects.create(
@@ -80,7 +80,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         list view should return only objs associated with programs that
         program members have access to
         """
-        request = self.factory.get('/api/workflowlevel2sort/')
+        request = self.factory.get('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1(
             organization=self.tola_user.organization)
         WorkflowTeam.objects.create(
@@ -103,7 +103,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         list view should return only objs associated with programs that
         program view only users have access to
         """
-        request = self.factory.get('/api/workflowlevel2sort/')
+        request = self.factory.get('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1(
             organization=self.tola_user.organization)
         WorkflowTeam.objects.create(
@@ -133,16 +133,13 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
         self.tola_user.user.is_superuser = True
         self.tola_user.user.save()
 
-        request = self.factory.post('/api/workflowlevel2sort/')
+        request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1()
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'workflowlevel2_id': 1,
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post('/api/workflowlevel2/', data)
+        request = self.factory.post('/workflowlevel2/', data)
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'create'})
         response = view(request)
@@ -151,17 +148,14 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
         self.assertEqual(response.data['workflowlevel2_id'], 1)
 
     def test_create_workflowlevel2sort_normal_user(self):
-        request = self.factory.post('/api/workflowlevel2sort/')
+        request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1(
             organization=self.tola_user.organization)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'workflowlevel2_id': 1,
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post('/api/workflowlevel2/', data)
+        request = self.factory.post('/workflowlevel2/', data)
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'create'})
         response = view(request)
@@ -182,7 +176,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
 
         data = {'workflowlevel2_id': 1}
 
-        request = self.factory.post('/api/workflowlevel2sort/', data)
+        request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=288)
@@ -193,18 +187,15 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
         self.tola_user.user.is_superuser = True
         self.tola_user.user.save()
 
-        request = self.factory.post('/api/workflowlevel2sort/')
+        request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1()
         workflowlevel2sort = \
             factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'workflowlevel2_id': 1,
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post('/api/workflowlevel2sort/', data)
+        request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
@@ -216,19 +207,16 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
                           data['workflowlevel2_id'])
 
     def test_update_workflowlevel2sort_normal_user(self):
-        request = self.factory.post('/api/workflowlevel2sort/')
+        request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1(
             organization=self.tola_user.organization)
         workflowlevel2sort = factories.WorkflowLevel2Sort(
             workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'workflowlevel2_id': 1,
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post('/api/workflowlevel2sort/', data)
+        request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
@@ -240,19 +228,16 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
                           data['workflowlevel2_id'])
 
     def test_update_workflowlevel2sort_diff_org_normal_user(self):
-        request = self.factory.post('/api/workflowlevel2sort/')
+        request = self.factory.post('/workflowlevel2sort/')
         another_org = factories.Organization(name='Another Org')
         wflvl1 = factories.WorkflowLevel1(organization=another_org)
         workflowlevel2sort = factories.WorkflowLevel2Sort(
             workflowlevel1=wflvl1)
-        wflvl1_url = reverse('workflowlevel1-detail',
-                             kwargs={'pk': wflvl1.id},
-                             request=request)
 
         data = {'workflowlevel2_id': 1,
-                'workflowlevel1': wflvl1_url}
+                'workflowlevel1': wflvl1.pk}
 
-        request = self.factory.post('/api/workflowlevel2sort/', data)
+        request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
@@ -271,7 +256,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         self.tola_user.user.save()
 
         workflowlevel2sort = factories.WorkflowLevel2Sort()
-        request = self.factory.delete('/api/workflowlevel2sort/')
+        request = self.factory.delete('/workflowlevel2sort/')
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
@@ -286,7 +271,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         workflowlevel2sort = factories.WorkflowLevel2Sort(
             workflowlevel1=wflvl1)
 
-        request = self.factory.delete('/api/workflowlevel2sort/')
+        request = self.factory.delete('/workflowlevel2sort/')
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
@@ -304,7 +289,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         workflowlevel2sort = factories.WorkflowLevel2Sort(
             workflowlevel1=wflvl1)
 
-        request = self.factory.delete('/api/workflowlevel2sort/')
+        request = self.factory.delete('/workflowlevel2sort/')
         request.user = self.tola_user.user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)

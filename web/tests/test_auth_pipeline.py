@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-import imp
+import importlib
 import logging
-import urllib
+import urllib.parse
 
 from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
 from django.test import TestCase, Client
 from unittest.mock import Mock, patch
 
@@ -31,14 +29,9 @@ class OAuthTest(TestCase):
 
     def setUp(self):
         logging.disable(logging.WARNING)
-        self.tola_user = factories.CoreUser()
+        self.core_user = factories.CoreUser()
         self.org = factories.Organization(organization_uuid='12345')
-        self.country = factories.Country()
-        self.site = factories.CoreUser(site=get_current_site(None),
-                                        whitelisted_domains='testenv.com')
-        self.app = factories.Application(user=self.tola_user.user)
-        self.grant = factories.Grant(application=self.app,
-                                     user=self.tola_user.user)
+        self.app = factories.Application(user=self.core_user.user, )
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -48,95 +41,70 @@ class OAuthTest(TestCase):
         Tests if the simple search responds
         :return:
         """
-        self.tola_user.user.set_password('1234')
-        self.tola_user.user.save()
+        self.core_user.user.set_password('1234')
+        self.core_user.user.save()
 
         c = Client(HTTP_USER_AGENT='Test/1.0')
-        c.login(username=self.tola_user.user.username, password='1234')
 
         # Get Authorization token
-        authorize_url = '/oauth/authorize?state=random_state_string' \
-                        '&client_id={}&response_type=code'.format(
-                            self.app.client_id)
+        authorize_url = '/oauth/token/?client_id={}'\
+            .format(self.app.client_id)
 
-        response = c.get(authorize_url, follow=True)
-        self.assertContains(
-            response, "value=\"CXGVOGFnTAt5cQW6m5AxbGrRq1lzKNSrou31dWm9\"")
+        data = {
+            'grant_type': 'password',
+            'username': self.core_user.user.username,
+            'password': '1234',
+        }
+        response = c.post(authorize_url, data=data)
         self.assertEqual(response.status_code, 200)
-
-    def test_auth_allowed_in_whitelist(self):
-        factories.Organization(name=settings.DEFAULT_ORG)
-        backend = self.BackendTest()
-        details = {'email': self.tola_user.user.email}
-        result = auth_pipeline.auth_allowed(backend, details, None)
-        self.assertIsNone(result)
-        self.assertIn('organization_uuid', details)
+        self.assertIn('access_token', response.json())
+        self.assertIn('access_token_jwt', response.json())
+        self.assertIn('expires_in', response.json())
 
     def test_auth_allowed_not_in_whitelist(self):
         factories.Organization(name=settings.DEFAULT_ORG)
         backend = self.BackendTest()
-        details = {'email': self.tola_user.user.email}
-        self.site.whitelisted_domains = 'anotherdomain.com'
-        self.site.save()
+        details = {'email': self.core_user.user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn("You don't appear to have permissions to access "
-                      "the system.", template_content)
-        self.assertIn("Please check with your organization to have access.",
+        self.assertIn(b"You don't appear to have permissions to access "
+                      b"the system.", template_content)
+        self.assertIn(b"Please check with your organization to have access.",
                       template_content)
-
-    def test_auth_allowed_in_oauth_domain(self):
-        self.site.whitelisted_domains = None
-        self.site.save()
-        self.org.oauth_domains = ['testenv.com']
-        self.org.save()
-
-        backend = self.BackendTest()
-        details = {'email': self.tola_user.user.email}
-        result = auth_pipeline.auth_allowed(backend, details, None)
-        self.assertIsNone(result)
-        self.assertIn('organization_uuid', details)
 
     def test_auth_allowed_in_whitelisted_domains_conf(self):
         factories.Organization(name=settings.DEFAULT_ORG)
-        self.site.whitelisted_domains = None
-        self.site.save()
 
         backend = self.BackendTest()
         backend.WHITELISTED_DOMAINS = ['testenv.com']
-        details = {'email': self.tola_user.user.email}
+        details = {'email': 'test@testenv.com'}
         result = auth_pipeline.auth_allowed(backend, details, None)
         self.assertIsNone(result)
         self.assertIn('organization_uuid', details)
 
     def test_auth_allowed_multi_oauth_domain(self):
-        self.site.whitelisted_domains = None
-        self.site.save()
         self.org.oauth_domains = ['testenv.com']
         self.org.save()
         factories.Organization(organization_uuid='6789', name='Another Org',
                                oauth_domains=['testenv.com'])
 
         backend = self.BackendTest()
-        details = {'email': self.tola_user.user.email}
+        details = {'email': self.core_user.user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn("You don't appear to have permissions to access "
-                      "the system.", template_content)
-        self.assertIn("Please check with your organization to have access.",
+        self.assertIn(b"You don't appear to have permissions to access "
+                      b"the system.", template_content)
+        self.assertIn(b"Please check with your organization to have access.",
                       template_content)
 
     def test_auth_allowed_no_whitelist_oauth_domain(self):
-        self.site.whitelisted_domains = None
-        self.site.save()
-
         backend = self.BackendTest()
-        details = {'email': self.tola_user.user.email}
+        details = {'email': self.core_user.user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn("You don't appear to have permissions to access "
-                      "the system.", template_content)
-        self.assertIn("Please check with your organization to have access.",
+        self.assertIn(b"You don't appear to have permissions to access "
+                      b"the system.", template_content)
+        self.assertIn(b"Please check with your organization to have access.",
                       template_content)
 
     def test_auth_allowed_no_email(self):
@@ -145,19 +113,19 @@ class OAuthTest(TestCase):
         details = {}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn("You don't appear to have permissions to access "
-                      "the system.", template_content)
-        self.assertIn("Please check with your organization to have access.",
+        self.assertIn(b"You don't appear to have permissions to access "
+                      b"the system.", template_content)
+        self.assertIn(b"Please check with your organization to have access.",
                       template_content)
 
     def test_check_user_does_not_exist(self):
         def kill_patches():
             patch.stopall()
-            imp.reload(auth_pipeline)
+            importlib.reload(auth_pipeline)
 
         self.addCleanup(kill_patches)
         patch('social_core.pipeline.partial.partial', lambda x: x).start()
-        imp.reload(auth_pipeline)
+        importlib.reload(auth_pipeline)
 
         # Create the parameters for the check_user function
         mocked = Mock()
@@ -182,7 +150,7 @@ class OAuthTest(TestCase):
             'organization_uuid': details['organization_uuid'],
             'partial_token': c_partial.token
         }
-        qp = urllib.urlencode(query_params)
+        qp = urllib.parse.urlencode(query_params)
         redirect_url = '/accounts/register/?{}'.format(qp)
 
         self.assertEqual(response.status_code, 302)
@@ -191,11 +159,11 @@ class OAuthTest(TestCase):
     def test_check_user_is_new(self):
         def kill_patches():
             patch.stopall()
-            imp.reload(auth_pipeline)
+            importlib.reload(auth_pipeline)
 
         self.addCleanup(kill_patches)
         patch('social_core.pipeline.partial.partial', lambda x: x).start()
-        imp.reload(auth_pipeline)
+        importlib.reload(auth_pipeline)
 
         # Create the parameters for the check_user function
         mocked = Mock()
@@ -215,11 +183,11 @@ class OAuthTest(TestCase):
     def test_check_user_is_not_new(self):
         def kill_patches():
             patch.stopall()
-            imp.reload(auth_pipeline)
+            importlib.reload(auth_pipeline)
 
         self.addCleanup(kill_patches)
         patch('social_core.pipeline.partial.partial', lambda x: x).start()
-        imp.reload(auth_pipeline)
+        importlib.reload(auth_pipeline)
 
         # Create the parameters for the check_user function
         mocked = Mock()
