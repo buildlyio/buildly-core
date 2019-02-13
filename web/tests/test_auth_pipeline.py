@@ -1,10 +1,10 @@
 import importlib
 import logging
 import urllib.parse
+from unittest.mock import Mock, patch
 
 from django.conf import settings
 from django.test import TestCase, Client
-from unittest.mock import Mock, patch
 
 import factories
 from web import auth_pipeline
