@@ -732,7 +732,6 @@ class PortfolioViewSet(viewsets.ModelViewSet):
 GraphQL views from Graphene
 """
 from graphene_django.views import GraphQLView
-from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class DRFAuthenticatedGraphQLView(GraphQLView):

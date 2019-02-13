@@ -1,5 +1,5 @@
 import logging
-import urllib
+import urllib.parse
 
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
@@ -44,7 +44,7 @@ def check_user(strategy, details, backend, user=None, *args, **kwargs):
             'organization_uuid': details['organization_uuid'],
             'partial_token': current_partial.token
         }
-        qp = urllib.urlencode(query_params)
+        qp = urllib.parse.urlencode(query_params)
         redirect_url = u'/accounts/register/?{}'.format(qp)
         return HttpResponseRedirect(redirect_url)
 
@@ -63,7 +63,8 @@ def auth_allowed(backend, details, response, *args, **kwargs):
 
     # Get the whitelisted domains defined in the CoreSites
     site = get_current_site(None)
-    core_site = CoreSites.objects.get(site=site)
+
+    core_site = CoreSites.objects.filter(site=site).first()
     if core_site and core_site.whitelisted_domains:
         core_domains = ','.join(core_site.whitelisted_domains.split())
         core_domains = core_domains.split(',')
