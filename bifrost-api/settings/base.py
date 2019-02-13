@@ -190,8 +190,9 @@ REST_FRAMEWORK = {
 }
 
 
-# Auth
-OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
+# Auth Application
+OAUTH2_CLIENT_ID = os.getenv('OAUTH2_CLIENT_ID', None)
+OAUTH2_CLIENT_SECRET = os.getenv('OAUTH2_CLIENT_SECRET', None)
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
@@ -204,6 +205,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
     'web.auth_pipeline.redirect_after_login',
 )
+SOCIAL_AUTH_CLIENT_ID = os.getenv('SOCIAL_AUTH_CLIENT_ID', None)
+SOCIAL_AUTH_CLIENT_SECRET = os.getenv('SOCIAL_AUTH_CLIENT_SECRET', None)
 
 # JWT Authentication settings
 JWT_PAYLOAD_ENRICHER = 'workflow.jwt_utils.payload_enricher'
