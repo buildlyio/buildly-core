@@ -121,8 +121,7 @@ class CoreUser(models.Model):
 
     def __str__(self):
         if self.user.first_name and self.user.last_name:
-            return '{} {}'.format(self.user.first_name,
-                                   self.user.last_name)
+            return f'{self.user.first_name} {self.user.last_name}'
         else:
             return '-'
 
@@ -236,7 +235,7 @@ class WorkflowLevel1(models.Model):
 
     def __str__(self):
         if self.organization:
-            return "{} <{}>".format(self.name, self.organization.name)
+            return f'{self.name} <{self.organization.name}>'
         else:
             return self.name
 
@@ -270,8 +269,7 @@ class WorkflowTeam(models.Model):
         super(WorkflowTeam, self).save()
 
     def __str__(self):
-        return "{} - {} <{}>".format(self.workflow_user, self.role,
-                                      self.workflowlevel1)
+        return f'{self.workflow_user} - {self.role} <{self.workflowlevel1}>'
 
 
 class WorkflowLevel2(models.Model):

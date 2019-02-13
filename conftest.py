@@ -3,5 +3,5 @@ from rest_framework.test import APIRequestFactory
 
 
 @pytest.fixture(scope='session')
-def req_factory():
+def request_factory():
     return APIRequestFactory()

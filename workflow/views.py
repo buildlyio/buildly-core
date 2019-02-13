@@ -9,7 +9,7 @@ from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.urls import resolve
+from django.urls import resolve, Resolver404
 import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
@@ -343,7 +343,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def perform_invite(self, serializer):
 
         reg_location = urljoin(settings.FRONTEND_URL,
-                               settings.REG_URL_PATH)
+                               settings.REGISTRATION_URL_PATH)
         reg_location = reg_location + '?token={}'
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
@@ -402,25 +402,28 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return serializers.CoreUserSerializer
 
     def get_permissions(self):
-        url_name = resolve(self.request.path).url_name
+        try:
+            url_name = resolve(self.request.path).url_name
+        except Resolver404:
+            pass
+        else:
+            # different permissions when creating a new user
+            if self.request.method == 'POST' and url_name == 'coreuser-create':
+                return [permissions.AllowAny()]
 
-        # different permissions when creating a new user
-        if self.request.method == 'POST' and url_name == 'coreuser-create':
-            return [permissions.AllowAny()]
+            # different permissions for checking token
+            if self.request.method == 'GET' \
+                    and url_name == 'coreuser-invite-check':
+                return [permissions.AllowAny()]
 
-        # different permissions for checking token
-        if self.request.method == 'GET' \
-                and url_name == 'coreuser-invite-check':
-            return [permissions.AllowAny()]
+            # different permissions for the invitation process
+            if self.request.method == 'POST' and url_name == 'coreuser-invite':
+                return [AllowOnlyOrgAdmin()]
 
-        # different permissions for the invitation process
-        if self.request.method == 'POST' and url_name == 'coreuser-invite':
-            return [AllowOnlyOrgAdmin()]
-
-        # only org admin can update core user's data
-        if self.request.method in ['PUT', 'PATCH'] \
-                and url_name == 'coreuser-detail':
-            return [AllowOnlyOrgAdmin()]
+            # only org admin can update core user's data
+            if self.request.method in ['PUT', 'PATCH'] \
+                    and url_name == 'coreuser-detail':
+                return [AllowOnlyOrgAdmin()]
 
         return super(CoreUserViewSet, self).get_permissions()
 

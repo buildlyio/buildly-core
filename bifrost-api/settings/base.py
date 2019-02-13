@@ -293,6 +293,6 @@ else:
 
 # Front-end application URL
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
-REG_URL_PATH = os.getenv('REG_URL_PATH', 'register/')
+REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
 
 INVITATION_EXPIRE_HOURS = 24

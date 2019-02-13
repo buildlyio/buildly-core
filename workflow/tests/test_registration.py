@@ -43,74 +43,74 @@ def org_admin(group_org_admin, org):
 # ------------ Tests ------------------
 
 @pytest.mark.django_db()
-def test_coreuser_views_permissions_unauth(req_factory):
+def test_coreuser_views_permissions_unauth(request_factory):
     # has no permission
-    request = req_factory.get(reverse('coreuser-list'))
+    request = request_factory.get(reverse('coreuser-list'))
     response = CoreUserViewSet.as_view({'get': 'list'})(request)
     assert response.status_code == 403
 
     # has permission but need to send data
-    request = req_factory.post(reverse('coreuser-list'))
+    request = request_factory.post(reverse('coreuser-list'))
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 400
 
     # has no permission
-    request = req_factory.post(reverse('coreuser-invite'))
+    request = request_factory.post(reverse('coreuser-invite'))
     response = CoreUserViewSet.as_view({'post': 'invite'})(request)
     assert response.status_code == 403
 
     # not authorized (without token parameter)
-    request = req_factory.get(reverse('coreuser-invite-check'))
+    request = request_factory.get(reverse('coreuser-invite-check'))
     response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
     assert response.status_code == 401
 
     # has no permission
-    request = req_factory.get(reverse('coreuser-detail', args=(1,)))
+    request = request_factory.get(reverse('coreuser-detail', args=(1,)))
     response = CoreUserViewSet.as_view({'get': 'retrieve'})(request, pk=1)
     assert response.status_code == 403
 
     # has no permission
-    request = req_factory.put(reverse('coreuser-detail', args=(1,)))
+    request = request_factory.put(reverse('coreuser-detail', args=(1,)))
     response = CoreUserViewSet.as_view({'put': 'update'})(request, pk=1)
     assert response.status_code == 403
 
     # has no permission
-    request = req_factory.patch(reverse('coreuser-detail', args=(1,)))
+    request = request_factory.patch(reverse('coreuser-detail', args=(1,)))
     response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
                                                                     pk=1)
     assert response.status_code == 403
 
 
 @pytest.mark.django_db()
-def test_coreuser_views_permissions_org_member(req_factory, org_member):
+def test_coreuser_views_permissions_org_member(request_factory, org_member):
     pk = org_member.pk
 
     # has permission
-    request = req_factory.get(reverse('coreuser-list'))
+    request = request_factory.get(reverse('coreuser-list'))
     request.user = org_member.user
     response = CoreUserViewSet.as_view({'get': 'list'})(request)
     assert response.status_code == 200
 
     # has no permission
-    request = req_factory.post(reverse('coreuser-invite'))
+    request = request_factory.post(reverse('coreuser-invite'))
     request.user = org_member.user
     response = CoreUserViewSet.as_view({'post': 'invite'})(request)
     assert response.status_code == 403
 
     # has permission
-    request = req_factory.get(reverse('coreuser-detail', args=(pk,)))
+    request = request_factory.get(reverse('coreuser-detail', args=(pk,)))
     request.user = org_member.user
     response = CoreUserViewSet.as_view({'get': 'retrieve'})(request, pk=pk)
     assert response.status_code == 200
 
     # has no permission
-    request = req_factory.put(reverse('coreuser-detail', args=(pk,)))
+    request = request_factory.put(reverse('coreuser-detail', args=(pk,)))
     request.user = org_member.user
     response = CoreUserViewSet.as_view({'put': 'update'})(request, pk=pk)
     assert response.status_code == 403
 
     # has no permission
-    request = req_factory.patch(reverse('coreuser-detail', args=(1,)))
+    request = request_factory.patch(reverse('coreuser-detail', args=(1,)))
     request.user = org_member.user
     response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
                                                                     pk=1)
@@ -118,19 +118,19 @@ def test_coreuser_views_permissions_org_member(req_factory, org_member):
 
 
 @pytest.mark.django_db()
-def test_registration_fail(req_factory):
+def test_registration_fail(request_factory):
     # check that all fields in USER_DATA are required
     for field_name in TEST_USER_DATA.keys():
         data = TEST_USER_DATA.copy()
         data.pop(field_name)
-        request = req_factory.post(reverse('coreuser-list'), data)
+        request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
         assert response.status_code == 400
 
 
 @pytest.mark.django_db()
-def test_registration_of_first_org_user(req_factory, group_org_admin):
-    request = req_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
+def test_registration_of_first_org_user(request_factory, group_org_admin):
+    request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
 
@@ -148,8 +148,8 @@ def test_registration_of_first_org_user(req_factory, group_org_admin):
 
 
 @pytest.mark.django_db()
-def test_registration_of_second_org_user(req_factory, org_admin):
-    request = req_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
+def test_registration_of_second_org_user(request_factory, org_admin):
+    request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
 
@@ -169,12 +169,12 @@ def test_registration_of_second_org_user(req_factory, org_admin):
 
 
 @pytest.mark.django_db()
-def test_registration_of_invited_org_user(req_factory, org_admin):
+def test_registration_of_invited_org_user(request_factory, org_admin):
     data = TEST_USER_DATA.copy()
     token = create_invitation_token(data['email'], org_admin.organization)
     data['invitation_token'] = token
 
-    request = req_factory.post(reverse('coreuser-list'), data)
+    request = request_factory.post(reverse('coreuser-list'), data)
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
 
@@ -193,14 +193,14 @@ def test_registration_of_invited_org_user(req_factory, org_admin):
 
 
 @pytest.mark.django_db()
-def test_coreuser_update(req_factory, org_admin):
+def test_coreuser_update(request_factory, org_admin):
     coreuser = factories.CoreUser.create(user__is_active=False)
     pk = coreuser.pk
 
     data = {
         'is_active': True,
     }
-    request = req_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
+    request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
     request.user = org_admin.user
     response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
                                                                     pk=pk)
@@ -211,18 +211,18 @@ def test_coreuser_update(req_factory, org_admin):
 
 
 @pytest.mark.django_db()
-def test_invitation(req_factory, org_admin):
+def test_invitation(request_factory, org_admin):
     data = {'emails': [TEST_USER_DATA['email']]}
-    request = req_factory.post(reverse('coreuser-invite'), data)
+    request = request_factory.post(reverse('coreuser-invite'), data)
     request.user = org_admin.user
     response = CoreUserViewSet.as_view({'post': 'invite'})(request)
     assert response.status_code == 200
 
 
 @pytest.mark.django_db()
-def test_invitation_check(req_factory, org):
+def test_invitation_check(request_factory, org):
     token = create_invitation_token(TEST_USER_DATA['email'], org)
-    request = req_factory.get(reverse('coreuser-invite-check'),
+    request = request_factory.get(reverse('coreuser-invite-check'),
                               {'token': token})
     response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
     assert response.status_code == 200
