@@ -1,8 +1,8 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import (CoreUser, Organization, WorkflowLevel1,
-                     WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam)
+from .models import (CoreUser, Organization, WorkflowLevel1, WorkflowLevel2,
+                     WorkflowLevel2Sort, WorkflowTeam)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
@@ -64,4 +64,3 @@ admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
-

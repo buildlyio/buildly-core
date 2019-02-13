@@ -475,7 +475,6 @@ class WorkflowTeamFilterViewTest(TestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['status'], str(workflowteam1.status))
 
-
     def test_filter_workflowteam_nested_models(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
         self.core_user.user.groups.add(group_org_admin)

@@ -1,24 +1,27 @@
 import logging
-import urllib
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
 from django.template import loader
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+from django.urls import resolve, Resolver404
 import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
+from rest_framework.exceptions import PermissionDenied
+import jwt
 from chargebee import Plan, Subscription
 
 from workflow import models as wfm
+from workflow.jwt_utils import create_invitation_token
 
 from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
@@ -306,48 +309,90 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             'detail': 'The invitations were sent successfully.'},
             status=status.HTTP_200_OK)
 
-    # WE MIGHT NEED TO MOVE THIS # TODO RESEARCH WHERE INVITE SHOULD LIVE
+    @action(methods=['GET'], detail=False)
+    def invite_check(self, request):
+        """
+        This endpoint is used to validate invitation token and return
+        the information about email and organization
+        """
+        try:
+            token = self.request.query_params['token']
+        except KeyError:
+            return Response({'detail': 'No token is provided.'},
+                           status.HTTP_401_UNAUTHORIZED)
+        try:
+            decoded = jwt.decode(token, settings.SECRET_KEY,
+                                 algorithms='HS256')
+        except jwt.DecodeError:
+            return Response({'detail': 'Token is not valid.'},
+                           status.HTTP_401_UNAUTHORIZED)
+        except jwt.ExpiredSignatureError:
+            return Response({'detail': 'Token is expired.'},
+                           status.HTTP_401_UNAUTHORIZED)
+
+        organization = wfm.Organization.objects\
+            .values('organization_uuid', 'name')\
+            .get(organization_uuid=decoded['org_uuid']) \
+            if decoded['org_uuid'] else None
+
+        return Response({
+            'email': decoded['email'],
+            'organization': organization
+        }, status=status.HTTP_200_OK)
+
+    @transaction.atomic
     def perform_invite(self, serializer):
-        reg_location = reverse('register')
+
+        reg_location = urljoin(settings.FRONTEND_URL,
+                               settings.REGISTRATION_URL_PATH)
+        reg_location = reg_location + '?token={}'
         email_addresses = serializer.validated_data.get('emails')
-        organization = wfm.Organization.objects.values(
-            'organization_uuid', 'name').get(coreuser__user=self.request.user)
+        user = self.request.user
+
+        organization = None
+        if hasattr(user, 'core_user'):
+            organization = wfm.Organization.objects.get(coreuser__user=user)
+        elif not user.is_superuser:
+            # only superuser can invite Org's first user
+            raise PermissionDenied
 
         registered_emails = User.objects.filter(email__in=email_addresses)\
             .values_list('email', flat=True)
 
         for email_address in email_addresses:
             if email_address not in registered_emails:
+                # create or update an invitation
+
+                token = create_invitation_token(email_address, organization)
+
                 # build the invitation link
-                invitation_link = self.request.build_absolute_uri(reg_location)
-                query_params = {
-                    'organization_uuid': organization['organization_uuid'],
-                    'email': urlsafe_base64_encode
-                    (force_bytes(email_address)).decode()
-                }
-                qp = urllib.urlencode(query_params)
-                invitation_link += '?{}'.format(qp)
+                invitation_link = self.request.build_absolute_uri(
+                    reg_location.format(token)
+                )
 
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
-                    'org_admin_name': self.request.user.core_user.name,
-                    'organization_name': organization['name']
+                    'org_admin_name': user.coreuser.name
+                    if hasattr(user, 'coreuser') else '',
+                    'organization_name': organization.name
+                    if organization else ''
                 }
-                text_content = loader.render_to_string(
-                    'email/coreuser/invitation.txt', context, using=None)
-                html_content = loader.render_to_string(
-                    'email/coreuser/invitation.html', context, using=None)
+                self.send_invitation_email(email_address, context)
 
-                # send the invitation email
-                msg = EmailMultiAlternatives(
-                    subject='Application Access', # TODO we need to make this dynamic
-                    body=text_content,
-                    to=[email_address],
-                    reply_to=[settings.DEFAULT_REPLY_TO]
-                )
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+    def send_invitation_email(self, email_address, context):
+        text_content = loader.render_to_string(
+            'email/coreuser/invitation.txt', context, using=None)
+        html_content = loader.render_to_string(
+            'email/coreuser/invitation.html', context, using=None)
+
+        msg = EmailMultiAlternatives(
+            subject='Application Access',  # TODO we need to make this dynamic
+            body=text_content,
+            to=[email_address],
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':
@@ -358,20 +403,28 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return serializers.CoreUserSerializer
 
     def get_permissions(self):
-        url_name = self.request.resolver_match.url_name
+        try:
+            url_name = resolve(self.request.path).url_name
+        except Resolver404:
+            pass
+        else:
+            # different permissions when creating a new user
+            if self.request.method == 'POST' and url_name == 'coreuser-create':
+                return [permissions.AllowAny()]
 
-        # different permissions when creating a new user
-        if self.request.method == 'POST' and url_name == 'coreuser-create':
-            return [permissions.AllowAny()]
+            # different permissions for checking token
+            if self.request.method == 'GET' \
+                    and url_name == 'coreuser-invite-check':
+                return [permissions.AllowAny()]
 
-        # different permissions for the invitation process
-        if self.request.method == 'POST' and url_name == 'coreuser-invite':
-            return [AllowOnlyOrgAdmin()]
+            # different permissions for the invitation process
+            if self.request.method == 'POST' and url_name == 'coreuser-invite':
+                return [AllowOnlyOrgAdmin()]
 
-        # only org admin can update core user's data
-        if self.request.method in ['PUT', 'PATCH'] \
-                and url_name == 'coreuser-detail':
-            return [AllowOnlyOrgAdmin()]
+            # only org admin can update core user's data
+            if self.request.method in ['PUT', 'PATCH'] \
+                    and url_name == 'coreuser-detail':
+                return [AllowOnlyOrgAdmin()]
 
         return super(CoreUserViewSet, self).get_permissions()
 

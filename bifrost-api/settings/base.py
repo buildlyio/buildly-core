@@ -279,3 +279,20 @@ RABBIT_WALHALL_QUEUE = os.getenv('RABBIT_WALHALL_QUEUE')
 
 
 DEFAULT_ORG = 'Humanitec'
+
+if os.getenv('EMAIL_BACKEND') == 'SMTP':
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ['EMAIL_HOST']
+    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+    EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
+    EMAIL_SUBJECT_PREFIX = os.getenv('EMAIL_SUBJECT_PREFIX', '')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
+# Front-end application URL
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
+REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
+
+INVITATION_EXPIRE_HOURS = 24
