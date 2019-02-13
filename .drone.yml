@@ -10,14 +10,31 @@ pipeline:
     when:
       event: [pull_request, push, tag]
     environment:
-      - DATABASE_ENGINE=postgresql
-      - DATABASE_NAME=bifrost_api
-      - DATABASE_USER=root
-      - DATABASE_PASSWORD=root
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DJANGO_SETTINGS_MODULE=bifrost-api.settings.base
-      - SECRET_KEY=nothing
+      API_URL: /api/docs
+      DATABASE_ENGINE: "postgresql"
+      DATABASE_NAME: "bifrost_api"
+      DATABASE_USER: "root"
+      DATABASE_PASSWORD: "root"
+      DATABASE_HOST: "postgres"
+      DATABASE_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: "bifrost-api.settings.base"
+      JWT_ISSUER: "bifrost"
+      JWT_PRIVATE_KEY_RSA_BIFROST: |-
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIBOgIBAAJBAMtUe741n497BS4syFvey617qA+b4DQSyHj4xE0ZH5qRuk/A42i5
+        zUJidSkFs1Wvq9ShOamST1vrmHriBrYYu7MCAwEAAQJBAI2hUXiSvYwh8t/RDdcA
+        f/tdkRkeSLO9CatKDOJvR5ZQAL5+7iNHTMGOC2FCU3WKSdlEo/xW3kD6omYbIWPk
+        hXECIQD58w4Zl3FSaoWBhBmmyJF08cOQP2Z8amewd70LV0LNlQIhANBAhrTxnDG2
+        KprAffkxjcrV/6ZWC5kGqckTNUUhf0InAiBbosNpmH8gYxM9L4wj/GZvhG9ZRBUz
+        yeLn7I4vSTehnQIgJEaZMHvF0YMB+OL/DqFrKaINXlQuwQFAIh6OcPRczpECICpM
+        q/qlwzGMpOD6blcWDUqgS6HXpS73To/F8RE56FP+
+        -----END RSA PRIVATE KEY-----
+      JWT_PUBLIC_KEY_RSA_BIFROST: |-
+        -----BEGIN PUBLIC KEY-----
+        MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
+        qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
+        -----END PUBLIC KEY-----"""
+      SECRET_KEY: "nothing"
 
   build-docker-image-tag:
     image: plugins/docker
