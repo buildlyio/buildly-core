@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 
 from urllib.error import URLError
 
@@ -188,6 +189,13 @@ class APIGatewayView(views.APIView):
             r = self._expand_data(request, client, extension_map)
             resp_data.update(**r)
 
+    def _get_bifrost_uuid_name(self, model):
+        # TODO: Remove this once all bifrost.models have only one `uuid`-field
+        for field in model._meta.fields:
+            if field.name.endswith('uuid') and field.unique and \
+                    field.default == uuid.uuid4:
+                return field.name
+
     def _expand_data(self, request: Request, client: Client,
                      extend_models: list):
         """
@@ -205,14 +213,17 @@ class APIGatewayView(views.APIView):
             if extend_model['service'] == 'bifrost':
                 if hasattr(wfm, extend_model['model']):
                     cls = getattr(wfm, extend_model['model'])
-                    pk_name = cls._meta.pk.attname
+                    uuid_name = self._get_bifrost_uuid_name(cls)
                     lookup = {
-                        pk_name: extend_model['pk']
+                        uuid_name: extend_model['pk']
                     }
                     try:
                         obj = cls.objects.get(**lookup)
                     except cls.DoesNotExist as e:
                         logger.info(e)
+                    except ValueError as e:
+                        logger.info(f' Not found: {extend_model["model"]} with'
+                                    f' uuid_name={extend_model["pk"]}')
                     else:
                         utils.validate_object_access(request, obj)
                         data = model_to_dict(obj)
