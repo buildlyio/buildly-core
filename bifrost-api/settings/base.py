@@ -190,6 +190,11 @@ REST_FRAMEWORK = {
     )
 }
 
+# Front-end application URL
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
+REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
+
+INVITATION_EXPIRE_HOURS = 24
 
 # Auth Application
 OAUTH2_CLIENT_ID = os.getenv('OAUTH2_CLIENT_ID', None)
@@ -226,6 +231,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Social Auth
+LOGIN_URL = os.getenv('LOGIN_URL', FRONTEND_URL)
 LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
@@ -299,9 +305,3 @@ if os.getenv('EMAIL_BACKEND') == 'SMTP':
     EMAIL_SUBJECT_PREFIX = os.getenv('EMAIL_SUBJECT_PREFIX', '')
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
-# Front-end application URL
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
-REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
-
-INVITATION_EXPIRE_HOURS = 24
