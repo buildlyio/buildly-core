@@ -195,23 +195,13 @@ REST_FRAMEWORK = {
 OAUTH2_CLIENT_ID = os.getenv('OAUTH2_CLIENT_ID', None)
 OAUTH2_CLIENT_SECRET = os.getenv('OAUTH2_CLIENT_SECRET', None)
 
-SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'web.auth_pipeline.auth_allowed',
-    'social_core.pipeline.social_auth.social_user',
-    'web.auth_pipeline.check_user',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-    'web.auth_pipeline.redirect_after_login',
-)
 SOCIAL_AUTH_CLIENT_ID = os.getenv('SOCIAL_AUTH_CLIENT_ID', None)
 SOCIAL_AUTH_CLIENT_SECRET = os.getenv('SOCIAL_AUTH_CLIENT_SECRET', None)
 
 # JWT Authentication settings
 JWT_PAYLOAD_ENRICHER = 'workflow.jwt_utils.payload_enricher'
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
+JWT_ALLOWED_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_AUTH_DISABLED = False
 JWT_PRIVATE_KEY_RSA_BIFROST = os.getenv('JWT_PRIVATE_KEY_RSA_BIFROST')
 JWT_PUBLIC_KEY_RSA_BIFROST = os.getenv('JWT_PUBLIC_KEY_RSA_BIFROST')
@@ -234,20 +224,35 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+# Social Auth
 LOGIN_REDIRECT_URL = '/'
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if os.getenv('SOCIAL_AUTH_REDIRECT_IS_HTTPS') == 'True' else False
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.getenv('SOCIAL_AUTH_LOGIN_REDIRECT_URL')
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.getenv('SOCIAL_AUTH_LOGIN_REDIRECT_URL', '/')
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
 
-SOCIAL_AUTH_MICROSOFT_GRAPH_KEY = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_KEY')
-SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET')
-SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL')
-SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['redirect_after_login']
+# Github social auth
+SOCIAL_AUTH_GITHUB_KEY = os.getenv('SOCIAL_AUTH_GITHUB_KEY', '')
+SOCIAL_AUTH_GITHUB_SECRET = os.getenv('SOCIAL_AUTH_GITHUB_SECRET', '')
+
+# Google social auth
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
+
+# Microsoft social auth
+SOCIAL_AUTH_MICROSOFT_GRAPH_KEY = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_KEY', '')
+SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET', '')
 
 
 # Whitelist of domains allowed to login via social auths
