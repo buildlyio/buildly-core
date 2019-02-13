@@ -14,7 +14,7 @@ echo $(date -u) "- Load Initial Data"
 python manage.py loadinitialdata
 
 echo "Starting celery worker"
-celery_cmd="celery -A gateway worker -l info -f celery.log"
+celery_cmd="celery -A gateway worker -l info -f /var/log/celery.log"
 $celery_cmd &
 
 echo $(date -u) "- Running the server"

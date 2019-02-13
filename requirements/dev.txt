@@ -2,3 +2,4 @@
 
 flake8==3.5.0
 bandit
+tblib==1.3.2
