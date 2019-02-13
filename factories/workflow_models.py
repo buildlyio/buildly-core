@@ -8,6 +8,8 @@ from workflow.models import (
     WorkflowTeam as WorkflowTeamM,
     WorkflowLevel2Sort as WorkflowLevel2SortM,
     Portfolio as PortfolioM,
+    Milestone as MilestoneM,
+    Internationalization as InternationalizationM,
 )
 from .django_models import User, Group
 
@@ -66,3 +68,17 @@ class Portfolio(DjangoModelFactory):
         model = PortfolioM
 
     organization = SubFactory(Organization)
+
+
+class Milestone(DjangoModelFactory):
+    class Meta:
+        model = MilestoneM
+
+    organization = SubFactory(Organization)
+
+
+class Internationalization(DjangoModelFactory):
+    class Meta:
+        model = InternationalizationM
+
+    language_file = '{"name": "Nome", "gender": "Gênero"}'

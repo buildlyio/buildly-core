@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
@@ -22,7 +20,7 @@ class InternationalizationListViewTest(TestCase):
         self.core_user.user.is_superuser = True
         self.core_user.user.save()
 
-        request = self.factory.get('/api/internationalization/')
+        request = self.factory.get('/internationalization/')
         view = InternationalizationViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -32,7 +30,7 @@ class InternationalizationListViewTest(TestCase):
         """
         Normal users are able to list all the objects
         """
-        request = self.factory.get('/api/internationalization/')
+        request = self.factory.get('/internationalization/')
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -54,10 +52,10 @@ class InternationalizationCreateViewTest(TestCase):
         self.core_user.user.save()
 
         data = {
-            u'language': u'pt-BR',
-            u'language_file': u'{"name": "Nome", "gender": "Gênero"}'
+            'language': 'pt-BR',
+            'language_file': '{"name": "Nome", "gender": "Gênero"}'
         }
-        request = self.factory.post('/api/internationalization/', data)
+        request = self.factory.post('/internationalization/', data)
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'post': 'create'})
         response = view(request)
@@ -70,10 +68,10 @@ class InternationalizationCreateViewTest(TestCase):
         Normal users aren't able to create new translations
         """
         data = {
-            u'language': u'pt-BR',
-            u'language_file': u'{"name": "Nome", "gender": "Gênero"}'
+            'language': 'pt-BR',
+            'language_file': '{"name": "Nome", "gender": "Gênero"}'
         }
-        request = self.factory.post('/api/internationalization/', data)
+        request = self.factory.post('/internationalization/', data)
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'post': 'create'})
         response = view(request)
@@ -87,7 +85,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
         self.factory = APIRequestFactory()
 
     def test_retrieve_unexisting_internationalization(self):
-        request = self.factory.get('/api/internationalization/1111')
+        request = self.factory.get('/internationalization/1111')
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
         response = view(request, pk=1111)
@@ -102,7 +100,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
         self.core_user.user.save()
         inter = factories.Internationalization()
 
-        request = self.factory.get('/api/internationalization/{}'.format(
+        request = self.factory.get('/internationalization/{}'.format(
             inter.id))
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
@@ -116,7 +114,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
         """
         inter = factories.Internationalization()
 
-        request = self.factory.get('/api/internationalization/{}'.format(
+        request = self.factory.get('/internationalization/{}'.format(
             inter.id))
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
@@ -136,9 +134,9 @@ class InternationalizationUpdateViewTest(TestCase):
         self.core_user.user.save()
 
         data = {
-            u'language': u'pt-BR',
+            'language': 'pt-BR',
         }
-        request = self.factory.post('/api/internationalization/', data)
+        request = self.factory.post('/internationalization/', data)
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'post': 'update'})
         response = view(request, pk=999)
@@ -155,10 +153,10 @@ class InternationalizationUpdateViewTest(TestCase):
         inter = factories.Internationalization()
 
         data = {
-            u'language': u'pt-BR',
-            u'language_file': u'{"name": "Nome", "gender": "Gênero"}'
+            'language': 'pt-BR',
+            'language_file': '{"name": "Nome", "gender": "Gênero"}'
         }
-        request = self.factory.post('/api/internationalization/', data)
+        request = self.factory.post('/internationalization/', data)
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'post': 'update'})
         response = view(request, pk=inter.pk)
@@ -173,9 +171,9 @@ class InternationalizationUpdateViewTest(TestCase):
         inter = factories.Internationalization()
 
         data = {
-            u'language': u'pt-BR',
+            'language': 'pt-BR',
         }
-        request = self.factory.post('/api/internationalization/', data)
+        request = self.factory.post('/internationalization/', data)
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'post': 'update'})
         response = view(request, pk=inter.pk)
@@ -193,7 +191,7 @@ class InternationalizationDeleteViewTest(TestCase):
         self.core_user.user.is_superuser = True
         self.core_user.user.save()
 
-        request = self.factory.delete('/api/internationalization/')
+        request = self.factory.delete('/internationalization/')
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=999)
@@ -209,7 +207,7 @@ class InternationalizationDeleteViewTest(TestCase):
         self.core_user.user.save()
         inter = factories.Internationalization()
 
-        request = self.factory.delete('/api/internationalization/')
+        request = self.factory.delete('/internationalization/')
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=inter.pk)
@@ -225,7 +223,7 @@ class InternationalizationDeleteViewTest(TestCase):
         """
         inter = factories.Internationalization()
 
-        request = self.factory.delete('/api/internationalization/')
+        request = self.factory.delete('/internationalization/')
         request.user = self.core_user.user
         view = InternationalizationViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=inter.pk)
@@ -246,7 +244,7 @@ class InternationalizationFilterViewTest(TestCase):
         inter_pt_br = factories.Internationalization(language='pt-BR')
 
         query_string = 'language={}'.format(inter_pt_br.language)
-        url = '/api/internationalization/?{}'.format(query_string)
+        url = '/internationalization/?{}'.format(query_string)
 
         request = self.factory.get(url)
         request.user = self.core_user.user
