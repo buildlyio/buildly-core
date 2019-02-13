@@ -16,7 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
-
+from chargebee import Plan, Subscription
 
 from workflow import models as wfm
 
@@ -418,12 +418,12 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     def subscription(self, request, pk):
         instance = self.get_object()
         try:
-            result = Subscription.retrieve(instance.chargebee_subscription_id)
+            result = Subscription.retrieve(instance.subscription_id)
             subscription = result.subscription
             result = Plan.retrieve(subscription.plan_id)
             plan = result.plan
         except Exception as e:
-            logger.warn(e)
+            logger.warning(e)
             return Response(
                 {'detail': 'No subscription was found.'},
                 status=status.HTTP_404_NOT_FOUND
@@ -435,7 +435,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
                 },
                 'status': subscription.status,
                 'total_seats': subscription.plan_quantity,
-                'used_seats': instance.chargebee_used_seats
+                'used_seats': instance.used_seats
             }
 
             return Response(data, status=status.HTTP_200_OK)
