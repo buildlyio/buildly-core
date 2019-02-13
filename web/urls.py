@@ -14,7 +14,6 @@ urlpatterns = [
     path('', include('gateway.urls')),
     path('', include('workflow.urls')),
     # Auth backend URL's
-    path('', include('social_django.urls', namespace='social')),
     path('oauth/',
          include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
 ]
