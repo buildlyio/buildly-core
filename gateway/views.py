@@ -232,6 +232,9 @@ class APIGatewayView(views.APIView):
                     extend_model['service']
                 )
 
+                # remove query_params from original request
+                request._request.GET = QueryDict(mutable=True)
+
                 # create and perform a service request
                 res = self._perform_service_request(
                     app=app,
