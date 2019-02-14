@@ -117,7 +117,7 @@ class APIGatewayView(views.APIView):
         )
 
         # aggregate data if requested
-        if request.query_params.get('aggregate', None) == 'true':
+        if request.query_params.get('aggregate', '_none').lower() == 'true':
             try:
                 self._aggregate_response_data(
                     request=request,
