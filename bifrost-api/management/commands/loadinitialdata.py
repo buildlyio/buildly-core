@@ -5,6 +5,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.db import transaction
 
+from oauth2_provider.models import Application
+
 import factories
 from workflow.models import (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
                              ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM)
@@ -22,17 +24,32 @@ class Command(BaseCommand):
 
         # Note: for the lists we fill the first element with an empty value for
         # development readability (id == position).
-        self._application = None
+        self._applications = []
         self._groups = ['']
         self._user = None
 
     def _create_oauth_application(self):
-        if settings.OAUTH_CLIENT_ID is not None:
-            self._application = factories.Application(
-                id=1,
-                name='bifrost',
-                client_id=settings.OAUTH_CLIENT_ID,
+        if settings.OAUTH2_CLIENT_ID and settings.OAUTH2_CLIENT_SECRET:
+            app = Application.objects.get_or_create(
+                name='bifrost oauth2',
+                client_id=settings.OAUTH2_CLIENT_ID,
+                client_secret=settings.OAUTH2_CLIENT_SECRET,
+                client_type=Application.CLIENT_PUBLIC,
+                authorization_grant_type=Application.GRANT_PASSWORD
             )
+            self._applications.append(app)
+
+        if (settings.SOCIAL_AUTH_CLIENT_ID and
+                settings.SOCIAL_AUTH_CLIENT_SECRET):
+            app = Application.objects.get_or_create(
+                name='bifrost social auth',
+                redirect_uris=settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL,
+                client_id=settings.SOCIAL_AUTH_CLIENT_ID,
+                client_secret=settings.SOCIAL_AUTH_CLIENT_SECRET,
+                client_type=Application.CLIENT_CONFIDENTIAL,
+                authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS
+            )
+            self._applications.append(app)
 
     def _create_groups(self):
         self._groups.append(factories.Group(

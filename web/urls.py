@@ -1,5 +1,5 @@
-from django.urls import include, path
-from .views import IndexView, OAuthUserEndpoint
+from django.urls import include, path, re_path
+from .views import IndexView, OAuthUserEndpoint, oauth_complete
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -14,9 +14,10 @@ urlpatterns = [
     path('', include('gateway.urls')),
     path('', include('workflow.urls')),
     # Auth backend URL's
-    path('', include('social_django.urls', namespace='social')),
     path('oauth/',
          include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
+    re_path(r'^oauth/complete/(?P<backend>[^/]+)/$', oauth_complete,
+            name='oauth_complete'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

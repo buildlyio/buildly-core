@@ -4,6 +4,7 @@ import json
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
 
+from .exceptions import SocialAuthFailed
 from gateway.exceptions import PermissionDenied, EndpointNotFound
 
 
@@ -22,7 +23,8 @@ class ExceptionMiddleware(MiddlewareMixin):
 
     @staticmethod
     def process_exception(request, exception):
-        if isinstance(exception, (PermissionDenied, EndpointNotFound)):
+        if isinstance(exception, (SocialAuthFailed, PermissionDenied,
+                                  EndpointNotFound)):
             return JsonResponse(data=json.loads(exception.content),
                                 status=exception.status)
         return None
