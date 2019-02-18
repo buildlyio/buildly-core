@@ -487,6 +487,39 @@ class DataMeshTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected_data)
 
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_with_empty_relationship(
+            self, mock_perform_request, mock_app):
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # mock response
+        headers = {'Content-Type': ['application/json']}
+        pyswagger_response = Mock(PySwaggerResponse)
+        pyswagger_response.status = 200
+        pyswagger_response.data = self.response_data
+        pyswagger_response.header = headers
+        mock_perform_request.return_value = pyswagger_response
+
+        # empty the relationship
+        self.lm.relationships = ''
+        self.lm.save()
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+        response = self.client.get(path, {'aggregate': 'true'})
+
+        # validate result
+        expected_data = {
+            'id': 1,
+            'workflowlevel2_uuid': 1,
+            'name': 'test',
+            'contact_uuid': 1
+        }
+        assert response.status_code == 200
+        assert json.loads(response.content) == expected_data
+
     @patch('pyswagger.App.load')
     @patch('gateway.utils')
     @patch('gateway.views.APIGatewayView._perform_service_request')
