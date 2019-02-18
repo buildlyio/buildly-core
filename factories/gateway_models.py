@@ -1,4 +1,4 @@
-from factory import DjangoModelFactory, Sequence
+from factory import DjangoModelFactory
 
 from gateway.models import LogicModule as LogicModuleM
 

@@ -13,7 +13,7 @@ from social_core.utils import (partial_pipeline_data, setting_url,
                                user_is_active, user_is_authenticated)
 from social_django.utils import psa
 
-from workflow.models import (CoreUser, CoreSites)
+from workflow.models import CoreUser
 
 from workflow.serializers import (CoreUserSerializer,
                                   OrganizationSerializer)
