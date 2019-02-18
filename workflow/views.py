@@ -303,10 +303,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_invite(serializer)
+        links = self.perform_invite(serializer)
 
-        return Response({
-            'detail': 'The invitations were sent successfully.'},
+        return Response(
+            {
+                'detail': 'The invitations were sent successfully.',
+                'invitations': links,
+            },
             status=status.HTTP_200_OK)
 
     @action(methods=['GET'], detail=False)
@@ -359,6 +362,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         registered_emails = User.objects.filter(email__in=email_addresses)\
             .values_list('email', flat=True)
 
+        links = []
         for email_address in email_addresses:
             if email_address not in registered_emails:
                 # create or update an invitation
@@ -369,6 +373,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 invitation_link = self.request.build_absolute_uri(
                     reg_location.format(token)
                 )
+                links.append(invitation_link)
 
                 # create the used context for the E-mail templates
                 context = {
@@ -379,6 +384,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     if organization else ''
                 }
                 self.send_invitation_email(email_address, context)
+
+        return links
 
     def send_invitation_email(self, email_address, context):
         text_content = loader.render_to_string(

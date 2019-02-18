@@ -217,6 +217,7 @@ def test_invitation(request_factory, org_admin):
     request.user = org_admin.user
     response = CoreUserViewSet.as_view({'post': 'invite'})(request)
     assert response.status_code == 200
+    assert len(response.data['invitations']) == 1
 
 
 @pytest.mark.django_db()
