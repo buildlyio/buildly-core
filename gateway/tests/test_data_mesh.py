@@ -410,6 +410,56 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
+    def test_expand_data_with_empty_request_get_param(
+            self, mock_perform_request, mock_app):
+        # update relationships
+        self.lm.relationships['products'] = {
+            'contact_uuid': 'crm.Contact'
+        }
+        self.lm.save()
+
+        # mock app
+        mock_app.return_value = Mock(App)
+
+        # mock service response
+        headers = {'Content-Type': ['application/json']}
+        service_response = Mock(PySwaggerResponse)
+        service_response.status = 200
+        service_response.data = self.response_data
+        service_response.header = headers
+
+        # mock expand response
+        expand_data = {
+            'first_name': 'Jeferson',
+            'last_name': 'Moura',
+            'contact_type': 'company',
+            'company': 'Humanitec'
+        }
+        expand_response = Mock(PySwaggerResponse)
+        expand_response.data = expand_data
+        mock_perform_request.side_effect = [service_response, expand_response]
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'products')
+        response = self.client.get(path, {'aggregate': 'true',
+                                          'should_not_remain_there': 'true'})
+
+        assert mock_perform_request.call_count == 2
+        assert dict(mock_perform_request.call_args_list[1][1][
+            'request'].query_params) == {}
+
+        # validate result
+        expected_data = {
+            'id': 1,
+            'workflowlevel2_uuid': 1,
+            'name': 'test',
+            'contact_uuid': expand_data
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), expected_data)
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._perform_service_request')
     def test_expand_data_from_bifrost_raises_exception(
             self, mock_perform_request, mock_app):
         # mock app
