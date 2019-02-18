@@ -396,7 +396,7 @@ class DataMeshTest(TestCase):
 
         # make api request
         path = '/{}/{}/'.format(self.lm.name, 'products')
-        response = self.client.get(path, {'aggregate': 'true'})
+        response = self.client.get(path, {'aggregate': 'TRUE'})
 
         # validate result
         expected_data = {
