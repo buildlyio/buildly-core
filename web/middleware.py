@@ -19,12 +19,18 @@ class DisableCsrfCheck(MiddlewareMixin):
             setattr(req, attr, True)
 
 
+MIDDLEWARE_EXCEPTIONS = (
+    PermissionDenied,
+    EndpointNotFound,
+    SocialAuthFailed,
+)
+
+
 class ExceptionMiddleware(MiddlewareMixin):
 
     @staticmethod
     def process_exception(request, exception):
-        if isinstance(exception, (SocialAuthFailed, PermissionDenied,
-                                  EndpointNotFound)):
+        if isinstance(exception, MIDDLEWARE_EXCEPTIONS):
             return JsonResponse(data=json.loads(exception.content),
                                 status=exception.status)
         return None

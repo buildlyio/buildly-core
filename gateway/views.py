@@ -260,6 +260,10 @@ class APIGatewayView(views.APIView):
         :return list: list of dicts with relationships info
         """
         extension_map = []
+        if not logic_module.relationships:
+            logger.warning(f'Tried to aggregate but no relationship defined '
+                           f'in {logic_module}.')
+            return extension_map
         for k, v in logic_module.relationships[model_name].items():
             value = v.split('.')
             collection_args = {
