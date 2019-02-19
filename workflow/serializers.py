@@ -20,8 +20,6 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class WorkflowLevel1Serializer(serializers.ModelSerializer):
-    workflow_key = serializers.UUIDField(read_only=True)
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.WorkflowLevel1
@@ -46,8 +44,6 @@ class WorkflowLevel1PermissionsSerializer(serializers.Serializer):
 
 
 class WorkflowLevel2Serializer(serializers.ModelSerializer):
-    agreement_key = serializers.UUIDField(read_only=True)
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.WorkflowLevel2
@@ -136,7 +132,6 @@ class CoreUserInvitationSerializer(serializers.Serializer):
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.Organization
@@ -144,7 +139,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 
 class InternationalizationSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.Internationalization
@@ -152,7 +146,6 @@ class InternationalizationSerializer(serializers.ModelSerializer):
 
 
 class WorkflowLevel2NameSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.WorkflowLevel2
@@ -160,7 +153,6 @@ class WorkflowLevel2NameSerializer(serializers.ModelSerializer):
 
 
 class WorkflowLevel2SortSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.WorkflowLevel2Sort
@@ -168,7 +160,6 @@ class WorkflowLevel2SortSerializer(serializers.ModelSerializer):
 
 
 class WorkflowTeamSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.WorkflowTeam
@@ -176,7 +167,6 @@ class WorkflowTeamSerializer(serializers.ModelSerializer):
 
 
 class WorkflowTeamListFullSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
     workflowlevel1 = WorkflowLevel1Serializer()
 
     class Meta:
@@ -185,7 +175,6 @@ class WorkflowTeamListFullSerializer(serializers.ModelSerializer):
 
 
 class MilestoneSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.Milestone
@@ -193,9 +182,7 @@ class MilestoneSerializer(serializers.ModelSerializer):
 
 
 class PortfolioSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = wfm.Portfolio
         fields = '__all__'
-
