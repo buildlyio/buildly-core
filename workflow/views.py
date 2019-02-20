@@ -112,7 +112,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     def dispatch(self, *args, **kwargs):
         return super(WorkflowLevel1ViewSet, self).dispatch(*args, **kwargs)
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -227,7 +227,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         obj = serializer.save(organization=organization)
         obj.user_access.add(self.request.user.core_user)
 
-    def destroy(self, request, pk):
+    def destroy(self, request, *args, **kwargs):
         workflowlevel1 = self.get_object()
         workflowlevel1.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -275,7 +275,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     create:
     Create a new core user instance.
     """
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -287,9 +287,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             instance=queryset, context={'request': request}, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, *args, **kwargs):
         queryset = self.queryset
-        user = get_object_or_404(queryset, pk=pk)
+        user = get_object_or_404(queryset, pk=kwargs.get('pk'))
         serializer = self.get_serializer(instance=user,
                                          context={'request': request})
         return Response(serializer.data)
@@ -465,7 +465,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     Create a new organization instance.
     """
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -532,7 +532,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     def dispatch(self, *args, **kwargs):
         return super(WorkflowLevel2ViewSet, self).dispatch(*args, **kwargs)
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -551,10 +551,6 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
                     workflowlevel1__organization_id=organization_id,
                     workflowlevel1__in=wflvl1_ids)
 
-        nested = request.GET.get('nested_models')
-        if nested is not None and (nested.lower() == 'true' or nested == '1'):
-            self.serializer_class = serializers.WorkflowLevel2FullSerializer
-
         paginate = request.GET.get('paginate')
         if paginate and (paginate.lower() == 'true' or paginate == '1'):
             page = self.paginate_queryset(queryset)
@@ -567,10 +563,6 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-
-        nested = request.GET.get('nested_models')
-        if nested is not None and (nested.lower() == 'true' or nested == '1'):
-            self.serializer_class = serializers.WorkflowLevel2FullSerializer
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -608,7 +600,7 @@ class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):
     Create a new workflow level 2 sort instance.
     """
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -677,7 +669,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
     create:
     Create a new workflow team instance.
     """
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -727,7 +719,7 @@ class MilestoneViewSet(viewsets.ModelViewSet):
     Create a new milestone instance.
     """
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
@@ -767,7 +759,7 @@ class PortfolioViewSet(viewsets.ModelViewSet):
     Create a new portfolio instance.
     """
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
