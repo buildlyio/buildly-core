@@ -97,7 +97,6 @@ def validate_object_access(request: Request, obj):
         viewset.check_object_permissions(request, obj)
 
 
-
 class GatewayJSONEncoder(json.JSONEncoder):
     """
     JSON encoder for API Gateway

@@ -221,7 +221,7 @@ class APIGatewayView(views.APIView):
                         obj = cls.objects.get(**lookup)
                     except cls.DoesNotExist as e:
                         logger.info(e)
-                    except ValueError as e:
+                    except ValueError:
                         logger.info(f' Not found: {extend_model["model"]} with'
                                     f' uuid_name={extend_model["pk"]}')
                     else:

@@ -65,8 +65,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     def validate_invitation_token(self, value):
         try:
-            decoded = jwt.decode(value, settings.SECRET_KEY,
-                                 algorithms='HS256')
+            jwt.decode(value, settings.SECRET_KEY, algorithms='HS256')
         except jwt.DecodeError:
             raise serializers.ValidationError('Token is not valid.')
         except jwt.ExpiredSignatureError:
@@ -113,7 +112,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
             user_data = validated_data.pop('user')
             user = instance.user
             for attr, value in user_data.items():
-                    setattr(user, attr, value)
+                setattr(user, attr, value)
             user.save()
 
         validated_data.pop('organization', None)

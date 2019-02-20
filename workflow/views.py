@@ -19,6 +19,8 @@ from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
 import jwt
 from chargebee import Plan, Subscription
+from graphene_django.views import GraphQLView
+
 
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
@@ -322,16 +324,16 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             token = self.request.query_params['token']
         except KeyError:
             return Response({'detail': 'No token is provided.'},
-                           status.HTTP_401_UNAUTHORIZED)
+                            status.HTTP_401_UNAUTHORIZED)
         try:
             decoded = jwt.decode(token, settings.SECRET_KEY,
                                  algorithms='HS256')
         except jwt.DecodeError:
             return Response({'detail': 'Token is not valid.'},
-                           status.HTTP_401_UNAUTHORIZED)
+                            status.HTTP_401_UNAUTHORIZED)
         except jwt.ExpiredSignatureError:
             return Response({'detail': 'Token is expired.'},
-                           status.HTTP_401_UNAUTHORIZED)
+                            status.HTTP_401_UNAUTHORIZED)
 
         organization = wfm.Organization.objects\
             .values('organization_uuid', 'name')\
@@ -509,8 +511,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     """
     title:
-    Workflow Level 2 is the secondary building block for creating relational lists, navigation or generic use case objects
-    in the application core.
+    Workflow Level 2 is the secondary building block for creating relational lists, navigation or generic use case
+    objects in the application core.
 
     description:
     A Workflow level 2 can have one parent workflow leve 1 and multiple related workflow
@@ -750,9 +752,10 @@ class PortfolioViewSet(viewsets.ModelViewSet):
     Portfolio provides organizational structure or groupings for workflows
 
     description:
-    A portfolio can be associated with a workflow level 1 or 2 to provide additional organizational structure for a workflow.
-    This can be used for example in a project workflow to collect multiple workflows into one folder or grouping or in a navigational
-    grouping as a way to provide a secondary site or structure.
+    A portfolio can be associated with a workflow level 1 or 2 to provide additional
+    organizational structure for a workflow.
+    This can be used for example in a project workflow to collect multiple workflows into one folder
+    or grouping or in a navigational grouping as a way to provide a secondary site or structure.
 
     retrieve:
     Return the given portfolio.
@@ -796,7 +799,6 @@ class PortfolioViewSet(viewsets.ModelViewSet):
 """
 GraphQL views from Graphene
 """
-from graphene_django.views import GraphQLView
 
 
 class DRFAuthenticatedGraphQLView(GraphQLView):

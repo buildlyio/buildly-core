@@ -66,7 +66,6 @@ apk add git
 pip install -r requirements/test.txt
 
 if [ "$ci" = true ] ; then
-    cat .flake8
     flake8 .
 fi
 
@@ -80,7 +79,7 @@ if [ $? -eq 1 ] && [ "$bash_on_finish" = true ]; then
 fi
 
 if [ "$ci" = true ] ; then
-    coverage run --source='.' manage.py test -v 2
+    pytest --log-level=2 --cov
     if [ $? -eq 1 ] && [ "$bash_on_finish" = true ]; then
         bash_on_failure
     fi
