@@ -5,6 +5,7 @@ from django.conf import settings
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
+from workflow.forms import CoreUserPasswordResetForm
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -127,6 +128,31 @@ class CoreUserSerializer(serializers.ModelSerializer):
 class CoreUserInvitationSerializer(serializers.Serializer):
     emails = serializers.ListField(child=serializers.EmailField(),
                                    min_length=1, max_length=10)
+
+
+class CoreUserResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for reset password request data, it use built-in django form for password resetting
+    to validate the fields. We override only send_mail method of this form.
+    """
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        self._reset_form = CoreUserPasswordResetForm(data=self.initial_data)
+        if not self._reset_form.is_valid():
+            raise serializers.ValidationError(self._reset_form.errors)
+        return value
+
+    def save(self):
+        assert not hasattr(self, '_reset_form'), "You should validate serializer before saving"
+        request = self.context.get('request')
+        opts = {
+            'use_https': request.is_secure(),
+            'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL'),
+            'request': request,
+        }
+        self._reset_form.save(**opts)
 
 
 class OrganizationSerializer(serializers.ModelSerializer):

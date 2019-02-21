@@ -295,7 +295,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return Response(serializer.data)
 
     @action(methods=['POST'], detail=False)
-    def invite(self, request):
+    def invite(self, request, *args, **kwargs):
         """
         This endpoint is used to invite multiple user at the same time.
         It's expected a list of email, for example:
@@ -315,7 +315,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             status=status.HTTP_200_OK)
 
     @action(methods=['GET'], detail=False)
-    def invite_check(self, request):
+    def invite_check(self, request, *args, **kwargs):
         """
         This endpoint is used to validate invitation token and return
         the information about email and organization
@@ -385,29 +385,48 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'organization_name': organization.name
                     if organization else ''
                 }
-                self.send_invitation_email(email_address, context)
+                text_content = loader.render_to_string(
+                    'email/coreuser/invitation.txt', context, using=None)
+                html_content = loader.render_to_string(
+                    'email/coreuser/invitation.html', context, using=None)
+                subject = 'Application Access'  # TODO we need to make this dynamic
+                self.send_email(email_address, subject, text_content, html_content)
 
         return links
 
-    def send_invitation_email(self, email_address, context):
-        text_content = loader.render_to_string(
-            'email/coreuser/invitation.txt', context, using=None)
-        html_content = loader.render_to_string(
-            'email/coreuser/invitation.html', context, using=None)
+    @action(methods=['POST'], detail=False)
+    def reset_password(self, request, *args, **kwargs):
+        """
+        This endpoint is used to request password resetting.
+        It requests the Email field
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
+        return Response(
+            {
+                'detail': 'The reset password link was sent successfully.',
+            },
+            status=status.HTTP_200_OK)
+
+    def send_email(self, email_address: str, subject: str, text_content: str, html_content: str = None) -> None:
+        # TODO: make sending with messaging service when it's ready instead of direct e-mailing
         msg = EmailMultiAlternatives(
-            subject='Application Access',  # TODO we need to make this dynamic
+            subject=subject,
             body=text_content,
             to=[email_address],
         )
-        msg.attach_alternative(html_content, "text/html")
+        if html_content:
+            msg.attach_alternative(html_content, "text/html")
         msg.send()
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':
-            invitation_path = reverse('coreuser-invite')
-            if self.request._request.path == invitation_path:
+            if self.request._request.path == reverse('coreuser-invite'):
                 return serializers.CoreUserInvitationSerializer
+            if self.request._request.path == reverse('coreuser-reset-password'):
+                return serializers.CoreUserResetPasswordSerializer
 
         return serializers.CoreUserSerializer
 
