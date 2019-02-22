@@ -193,7 +193,9 @@ REST_FRAMEWORK = {
 # Front-end application URL
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
 REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
-RESET_PASSWORD_URL_PATH = os.getenv('RESET_PASSWORD_URL_PATH', 'reset_password/')
+RESETPASS_CONFIRM_URL_PATH = os.getenv('RESETPASS_CONFIRM_URL_PATH', 'reset_password_confirm/')
+
+PASSWORD_RESET_TIMEOUT_DAYS = 1
 
 INVITATION_EXPIRE_HOURS = 24
 

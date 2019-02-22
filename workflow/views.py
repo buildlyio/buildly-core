@@ -3,9 +3,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
-from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
@@ -24,7 +22,7 @@ from graphene_django.views import GraphQLView
 
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
-
+from workflow.email_utils import send_email
 from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
                           AllowOnlyOrgAdmin,
@@ -385,12 +383,10 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'organization_name': organization.name
                     if organization else ''
                 }
-                text_content = loader.render_to_string(
-                    'email/coreuser/invitation.txt', context, using=None)
-                html_content = loader.render_to_string(
-                    'email/coreuser/invitation.html', context, using=None)
                 subject = 'Application Access'  # TODO we need to make this dynamic
-                self.send_email(email_address, subject, text_content, html_content)
+                template_name = 'email/coreuser/invitation.txt'
+                html_template_name = 'email/coreuser/invitation.html'
+                send_email(email_address, subject, context, template_name, html_template_name)
 
         return links
 
@@ -402,24 +398,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-
+        count = serializer.save()
         return Response(
             {
                 'detail': 'The reset password link was sent successfully.',
+                'count': count,
             },
             status=status.HTTP_200_OK)
-
-    def send_email(self, email_address: str, subject: str, text_content: str, html_content: str = None) -> None:
-        # TODO: make sending with messaging service when it's ready instead of direct e-mailing
-        msg = EmailMultiAlternatives(
-            subject=subject,
-            body=text_content,
-            to=[email_address],
-        )
-        if html_content:
-            msg.attach_alternative(html_content, "text/html")
-        msg.send()
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':

@@ -1,11 +1,16 @@
+from urllib.parse import urljoin
+
 import jwt
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
-from workflow.forms import CoreUserPasswordResetForm
+from workflow.email_utils import send_email
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -132,27 +137,30 @@ class CoreUserInvitationSerializer(serializers.Serializer):
 
 class CoreUserResetPasswordSerializer(serializers.Serializer):
     """
-    Serializer for reset password request data, it use built-in django form for password resetting
-    to validate the fields. We override only send_mail method of this form.
+    Serializer for reset password request data
     """
-
     email = serializers.EmailField()
 
-    def validate_email(self, value):
-        self._reset_form = CoreUserPasswordResetForm(data=self.initial_data)
-        if not self._reset_form.is_valid():
-            raise serializers.ValidationError(self._reset_form.errors)
-        return value
+    def save(self, **kwargs):
+        resetpass_url = urljoin(settings.FRONTEND_URL, settings.REGISTRATION_URL_PATH)
+        resetpass_url = resetpass_url + '{uid}-{token}/'
 
-    def save(self):
-        assert hasattr(self, '_reset_form'), "You should validate serializer before saving"
-        request = self.context.get('request')
-        opts = {
-            'use_https': request.is_secure(),
-            'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL'),
-            'request': request,
-        }
-        self._reset_form.save(**opts)
+        email = self.validated_data["email"]
+
+        count = 0
+        for user in User.objects.filter(email=email, is_active=True):
+            subject = 'Reset your password'
+            uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+            token = default_token_generator.make_token(user)
+            context = {
+                'password_reset_link': resetpass_url.format(uid=uid, token=token),
+                'user': user,
+            }
+            template_name = 'email/coreuser/invitation.txt'
+            html_template_name = 'email/coreuser/invitation.html'
+            count += send_email(email, subject, context, template_name, html_template_name)
+
+        return count
 
 
 class OrganizationSerializer(serializers.ModelSerializer):

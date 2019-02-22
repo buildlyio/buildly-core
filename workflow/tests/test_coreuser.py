@@ -1,4 +1,5 @@
 import pytest
+from django.core import mail
 from rest_framework.reverse import reverse
 
 import factories
@@ -199,7 +200,21 @@ def test_invitation_check(request_factory, org):
 
 
 @pytest.mark.django_db()
-def test_reset_password(request_factory):
-    request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'test@example.com'})
+def test_reset_password(request_factory, org_member):
+    email = org_member.user.email
+    request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
     response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
     assert response.status_code == 200
+    assert response.data['count'] == 1
+    assert mail.outbox
+
+    message = mail.outbox[0]
+    assert message.to == [email]
+
+
+@pytest.mark.django_db()
+def test_reset_password_no_user(request_factory):
+    request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'foo@example.com'})
+    response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
+    assert response.status_code == 200
+    assert response.data['count'] == 0
