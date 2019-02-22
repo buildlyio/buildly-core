@@ -5,42 +5,8 @@ import factories
 from workflow.views import CoreUserViewSet
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
+from .fixtures import org, org_admin, org_member, group_org_admin, TEST_USER_DATA
 
-
-TEST_USER_DATA = {
-    'first_name': 'John',
-    'last_name': 'Snow',
-    'email': 'test@example.com',
-    'username': 'johnsnow',
-    'password': '123qwe',
-    'organization_name': 'Humanitec',
-}
-
-# ------------ Fixtures ------------------
-
-@pytest.fixture
-def group_org_admin():
-    return factories.Group.create(name=wfm.ROLE_ORGANIZATION_ADMIN)
-
-
-@pytest.fixture
-def org():
-    return factories.Organization(name=TEST_USER_DATA['organization_name'])
-
-
-@pytest.fixture
-def org_member(org):
-    return factories.CoreUser.create(organization=org)
-
-
-@pytest.fixture
-def org_admin(group_org_admin, org):
-    coreuser = factories.CoreUser.create(organization=org)
-    coreuser.user.groups.add(group_org_admin)
-    return coreuser
-
-
-# ------------ Tests ------------------
 
 @pytest.mark.django_db()
 def test_coreuser_views_permissions_unauth(request_factory):
@@ -230,3 +196,10 @@ def test_invitation_check(request_factory, org):
     assert response.data['email'] == TEST_USER_DATA['email']
     assert response.data['organization']['organization_uuid'] == \
         str(org.organization_uuid)
+
+
+@pytest.mark.django_db()
+def test_reset_password(request_factory):
+    request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'test@example.com'})
+    response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
+    assert response.status_code == 200

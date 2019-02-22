@@ -145,7 +145,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
         return value
 
     def save(self):
-        assert not hasattr(self, '_reset_form'), "You should validate serializer before saving"
+        assert hasattr(self, '_reset_form'), "You should validate serializer before saving"
         request = self.context.get('request')
         opts = {
             'use_https': request.is_secure(),
