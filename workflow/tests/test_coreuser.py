@@ -1,5 +1,12 @@
+from urllib.parse import urljoin
+
 import pytest
 from django.core import mail
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework.reverse import reverse
 
 import factories
@@ -201,7 +208,8 @@ def test_invitation_check(request_factory, org):
 
 @pytest.mark.django_db()
 def test_reset_password(request_factory, org_member):
-    email = org_member.user.email
+    user = org_member.user
+    email = user.email
     request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
     response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
     assert response.status_code == 200
@@ -211,6 +219,11 @@ def test_reset_password(request_factory, org_member):
     message = mail.outbox[0]
     assert message.to == [email]
 
+    resetpass_url = urljoin(settings.FRONTEND_URL, settings.REGISTRATION_URL_PATH)
+    uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+    token = default_token_generator.make_token(user)
+    assert f'{resetpass_url}{uid}-{token}/' in message.body
+
 
 @pytest.mark.django_db()
 def test_reset_password_no_user(request_factory):
@@ -218,3 +231,24 @@ def test_reset_password_no_user(request_factory):
     response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
     assert response.status_code == 200
     assert response.data['count'] == 0
+
+
+@pytest.mark.django_db()
+def test_reset_password_confirm(request_factory, org_member):
+    test_password = '5UU74e7nfU'
+    user = org_member.user
+    uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+    token = default_token_generator.make_token(user)
+    data = {
+        'new_password1': test_password,
+        'new_password2': test_password,
+        'uid': uid,
+        'token': token,
+    }
+    request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
+    response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
+    assert response.status_code == 200
+
+    # check that password was changed
+    updated_user = User.objects.get(pk=user.pk)
+    assert updated_user.check_password(test_password)

@@ -406,12 +406,28 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
+    @action(methods=['POST'], detail=False)
+    def reset_password_confirm(self, request, *args, **kwargs):
+        """
+        This endpoint is used to change password if the token is valid
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                'detail': 'The password was changed successfully.',
+            },
+            status=status.HTTP_200_OK)
+
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':
             if self.request._request.path == reverse('coreuser-invite'):
                 return serializers.CoreUserInvitationSerializer
-            if self.request._request.path == reverse('coreuser-reset-password'):
+            elif self.request._request.path == reverse('coreuser-reset-password'):
                 return serializers.CoreUserResetPasswordSerializer
+            elif self.request._request.path == reverse('coreuser-reset-password-confirm'):
+                return serializers.CoreUserResetPasswordConfirmSerializer
 
         return serializers.CoreUserSerializer
 
