@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from urllib.parse import urljoin
 
 import pytest
@@ -5,15 +6,15 @@ from django.core import mail
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework.reverse import reverse
 
 import factories
 from workflow.views import CoreUserViewSet
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
-from .fixtures import org, org_admin, org_member, group_org_admin, TEST_USER_DATA
+from .fixtures import org, org_admin, org_member, group_org_admin, reset_password_request, TEST_USER_DATA
 
 
 @pytest.mark.django_db()
@@ -234,11 +235,9 @@ def test_reset_password_no_user(request_factory):
 
 
 @pytest.mark.django_db()
-def test_reset_password_confirm(request_factory, org_member):
+def test_reset_password_confirm(request_factory, reset_password_request):
     test_password = '5UU74e7nfU'
-    user = org_member.user
-    uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-    token = default_token_generator.make_token(user)
+    user, uid, token = reset_password_request
     data = {
         'new_password1': test_password,
         'new_password2': test_password,
@@ -252,3 +251,38 @@ def test_reset_password_confirm(request_factory, org_member):
     # check that password was changed
     updated_user = User.objects.get(pk=user.pk)
     assert updated_user.check_password(test_password)
+
+
+@pytest.mark.django_db()
+def test_reset_password_confirm_diff_passwords(request_factory, reset_password_request):
+    test_password1 = '5UU74e7nfU'
+    test_password2 = '5UU74e7nfUa'
+    user, uid, token = reset_password_request
+    data = {
+        'new_password1': test_password1,
+        'new_password2': test_password2,
+        'uid': uid,
+        'token': token,
+    }
+    request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
+    response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
+    assert response.status_code == 400  # validation error (password fields didn't match)
+
+
+from unittest import mock
+
+@pytest.mark.django_db()
+def test_reset_password_confirm_token_expired(request_factory, reset_password_request):
+    test_password = '5UU74e7nfU'
+    user, uid, token = reset_password_request
+    data = {
+        'new_password1': test_password,
+        'new_password2': test_password,
+        'uid': uid,
+        'token': token,
+    }
+    mock_date = date.today() + timedelta(int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1)
+    with mock.patch('django.contrib.auth.tokens.PasswordResetTokenGenerator._today', return_value=mock_date):
+        request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
+        response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
+        assert response.status_code == 400  # validation error (the token is expired)
