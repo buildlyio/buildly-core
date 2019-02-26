@@ -29,11 +29,11 @@ class Command(BaseCommand):
         self._user = None
 
     def _create_oauth_application(self):
-        if settings.OAUTH2_CLIENT_ID and settings.OAUTH2_CLIENT_SECRET:
+        if settings.OAUTH_CLIENT_ID and settings.OAUTH_CLIENT_SECRET:
             app = Application.objects.get_or_create(
                 name='bifrost oauth2',
-                client_id=settings.OAUTH2_CLIENT_ID,
-                client_secret=settings.OAUTH2_CLIENT_SECRET,
+                client_id=settings.OAUTH_CLIENT_ID,
+                client_secret=settings.OAUTH_CLIENT_SECRET,
                 client_type=Application.CLIENT_PUBLIC,
                 authorization_grant_type=Application.GRANT_PASSWORD
             )
