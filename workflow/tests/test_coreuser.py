@@ -226,7 +226,7 @@ class TestResetPassword(object):
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
         uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
         token = default_token_generator.make_token(user)
-        assert f'{resetpass_url}{uid}-{token}/' in message.body
+        assert f'{resetpass_url}{uid}/{token}/' in message.body
 
     def test_reset_password_no_user(self, request_factory):
         request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'foo@example.com'})
