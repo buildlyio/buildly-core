@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from urllib.parse import urljoin
+from unittest import mock
 
 import pytest
 from django.core import mail
@@ -208,81 +209,73 @@ def test_invitation_check(request_factory, org):
 
 
 @pytest.mark.django_db()
-def test_reset_password(request_factory, org_member):
-    user = org_member.user
-    email = user.email
-    request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
-    response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
-    assert response.status_code == 200
-    assert response.data['count'] == 1
-    assert mail.outbox
+class TestResetPassword(object):
 
-    message = mail.outbox[0]
-    assert message.to == [email]
+    def test_reset_password(self, request_factory, org_member):
+        user = org_member.user
+        email = user.email
+        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
+        response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
+        assert response.status_code == 200
+        assert response.data['count'] == 1
+        assert mail.outbox
 
-    resetpass_url = urljoin(settings.FRONTEND_URL, settings.REGISTRATION_URL_PATH)
-    uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-    token = default_token_generator.make_token(user)
-    assert f'{resetpass_url}{uid}-{token}/' in message.body
+        message = mail.outbox[0]
+        assert message.to == [email]
 
+        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+        token = default_token_generator.make_token(user)
+        assert f'{resetpass_url}{uid}-{token}/' in message.body
 
-@pytest.mark.django_db()
-def test_reset_password_no_user(request_factory):
-    request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'foo@example.com'})
-    response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
-    assert response.status_code == 200
-    assert response.data['count'] == 0
+    def test_reset_password_no_user(self, request_factory):
+        request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'foo@example.com'})
+        response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
+        assert response.status_code == 200
+        assert response.data['count'] == 0
 
-
-@pytest.mark.django_db()
-def test_reset_password_confirm(request_factory, reset_password_request):
-    test_password = '5UU74e7nfU'
-    user, uid, token = reset_password_request
-    data = {
-        'new_password1': test_password,
-        'new_password2': test_password,
-        'uid': uid,
-        'token': token,
-    }
-    request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
-    response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
-    assert response.status_code == 200
-
-    # check that password was changed
-    updated_user = User.objects.get(pk=user.pk)
-    assert updated_user.check_password(test_password)
-
-
-@pytest.mark.django_db()
-def test_reset_password_confirm_diff_passwords(request_factory, reset_password_request):
-    test_password1 = '5UU74e7nfU'
-    test_password2 = '5UU74e7nfUa'
-    user, uid, token = reset_password_request
-    data = {
-        'new_password1': test_password1,
-        'new_password2': test_password2,
-        'uid': uid,
-        'token': token,
-    }
-    request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
-    response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
-    assert response.status_code == 400  # validation error (password fields didn't match)
-
-
-from unittest import mock
-
-@pytest.mark.django_db()
-def test_reset_password_confirm_token_expired(request_factory, reset_password_request):
-    test_password = '5UU74e7nfU'
-    user, uid, token = reset_password_request
-    data = {
-        'new_password1': test_password,
-        'new_password2': test_password,
-        'uid': uid,
-        'token': token,
-    }
-    mock_date = date.today() + timedelta(int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1)
-    with mock.patch('django.contrib.auth.tokens.PasswordResetTokenGenerator._today', return_value=mock_date):
+    def test_reset_password_confirm(self, request_factory, reset_password_request):
+        test_password = '5UU74e7nfU'
+        user, uid, token = reset_password_request
+        data = {
+            'new_password1': test_password,
+            'new_password2': test_password,
+            'uid': uid,
+            'token': token,
+        }
         request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
         response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
-        assert response.status_code == 400  # validation error (the token is expired)
+        assert response.status_code == 200
+
+        # check that password was changed
+        updated_user = User.objects.get(pk=user.pk)
+        assert updated_user.check_password(test_password)
+
+    def test_reset_password_confirm_diff_passwords(self, request_factory, reset_password_request):
+        test_password1 = '5UU74e7nfU'
+        test_password2 = '5UU74e7nfUa'
+        user, uid, token = reset_password_request
+        data = {
+            'new_password1': test_password1,
+            'new_password2': test_password2,
+            'uid': uid,
+            'token': token,
+        }
+        request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
+        response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
+        assert response.status_code == 400  # validation error (password fields didn't match)
+
+    def test_reset_password_confirm_token_expired(self, request_factory, reset_password_request):
+        test_password = '5UU74e7nfU'
+        user, uid, token = reset_password_request
+        data = {
+            'new_password1': test_password,
+            'new_password2': test_password,
+            'uid': uid,
+            'token': token,
+        }
+        mock_date = date.today() + timedelta(int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1)
+        with mock.patch('django.contrib.auth.tokens.PasswordResetTokenGenerator._today', return_value=mock_date):
+            request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
+            response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
+            assert response.status_code == 400  # validation error (the token is expired)
