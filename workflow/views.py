@@ -3,9 +3,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
-from django.template import loader
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
@@ -24,7 +22,7 @@ from graphene_django.views import GraphQLView
 
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
-
+from workflow.email_utils import send_email
 from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
                           AllowOnlyOrgAdmin,
@@ -295,7 +293,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return Response(serializer.data)
 
     @action(methods=['POST'], detail=False)
-    def invite(self, request):
+    def invite(self, request, *args, **kwargs):
         """
         This endpoint is used to invite multiple user at the same time.
         It's expected a list of email, for example:
@@ -315,7 +313,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             status=status.HTTP_200_OK)
 
     @action(methods=['GET'], detail=False)
-    def invite_check(self, request):
+    def invite_check(self, request, *args, **kwargs):
         """
         This endpoint is used to validate invitation token and return
         the information about email and organization
@@ -385,29 +383,51 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'organization_name': organization.name
                     if organization else ''
                 }
-                self.send_invitation_email(email_address, context)
+                subject = 'Application Access'  # TODO we need to make this dynamic
+                template_name = 'email/coreuser/invitation.txt'
+                html_template_name = 'email/coreuser/invitation.html'
+                send_email(email_address, subject, context, template_name, html_template_name)
 
         return links
 
-    def send_invitation_email(self, email_address, context):
-        text_content = loader.render_to_string(
-            'email/coreuser/invitation.txt', context, using=None)
-        html_content = loader.render_to_string(
-            'email/coreuser/invitation.html', context, using=None)
+    @action(methods=['POST'], detail=False)
+    def reset_password(self, request, *args, **kwargs):
+        """
+        This endpoint is used to request password resetting.
+        It requests the Email field
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        count = serializer.save()
+        return Response(
+            {
+                'detail': 'The reset password link was sent successfully.',
+                'count': count,
+            },
+            status=status.HTTP_200_OK)
 
-        msg = EmailMultiAlternatives(
-            subject='Application Access',  # TODO we need to make this dynamic
-            body=text_content,
-            to=[email_address],
-        )
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
+    @action(methods=['POST'], detail=False)
+    def reset_password_confirm(self, request, *args, **kwargs):
+        """
+        This endpoint is used to change password if the token is valid
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                'detail': 'The password was changed successfully.',
+            },
+            status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':
-            invitation_path = reverse('coreuser-invite')
-            if self.request._request.path == invitation_path:
+            if self.request._request.path == reverse('coreuser-invite'):
                 return serializers.CoreUserInvitationSerializer
+            elif self.request._request.path == reverse('coreuser-reset-password'):
+                return serializers.CoreUserResetPasswordSerializer
+            elif self.request._request.path == reverse('coreuser-reset-password-confirm'):
+                return serializers.CoreUserResetPasswordConfirmSerializer
 
         return serializers.CoreUserSerializer
 

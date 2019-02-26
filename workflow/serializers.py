@@ -1,10 +1,17 @@
+from urllib.parse import urljoin
+
 import jwt
+from django.contrib.auth import password_validation
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
+from workflow.email_utils import send_email
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -127,6 +134,69 @@ class CoreUserSerializer(serializers.ModelSerializer):
 class CoreUserInvitationSerializer(serializers.Serializer):
     emails = serializers.ListField(child=serializers.EmailField(),
                                    min_length=1, max_length=10)
+
+
+class CoreUserResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for reset password request data
+    """
+    email = serializers.EmailField()
+
+    def save(self, **kwargs):
+        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = resetpass_url + '{uid}/{token}/'
+
+        email = self.validated_data["email"]
+
+        count = 0
+        for user in User.objects.filter(email=email, is_active=True):
+            subject = 'Reset your password'
+            uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+            token = default_token_generator.make_token(user)
+            context = {
+                'password_reset_link': resetpass_url.format(uid=uid, token=token),
+                'user': user,
+            }
+            template_name = 'email/coreuser/password_reset.txt'
+            html_template_name = 'email/coreuser/password_reset.html'
+            count += send_email(email, subject, context, template_name, html_template_name)
+
+        return count
+
+
+class CoreUserResetPasswordConfirmSerializer(serializers.Serializer):
+    """
+    Serializer for reset password data
+    """
+    new_password1 = serializers.CharField(max_length=128)
+    new_password2 = serializers.CharField(max_length=128)
+    uid = serializers.CharField()
+    token = serializers.CharField()
+
+    def validate(self, attrs):
+        # Decode the uidb64 to uid to get User object
+        try:
+            uid = force_text(urlsafe_base64_decode(attrs['uid']))
+            self.user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise serializers.ValidationError({'uid': ['Invalid value']})
+
+        password1 = attrs.get('new_password1')
+        password2 = attrs.get('new_password2')
+        if password1 and password2:
+            if password1 != password2:
+                raise serializers.ValidationError("The two password fields didn't match.")
+        password_validation.validate_password(password2, self.user)
+
+        if not default_token_generator.check_token(self.user, attrs['token']):
+            raise serializers.ValidationError({'token': ['Invalid value']})
+
+        return attrs
+
+    def save(self):
+        self.user.set_password(self.validated_data["new_password1"])
+        self.user.save()
+        return self.user
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
