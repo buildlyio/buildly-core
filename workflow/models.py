@@ -80,6 +80,8 @@ class Organization(models.Model):
     oauth_domains = fields.ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
+    reset_password_tpl = models.TextField("Reset password e-mail template (text)", null=True, blank=True)
+    reset_password_tpl_html = models.TextField("Reset password e-mail template (HTML)", null=True, blank=True)
 
     class Meta:
         ordering = ('name',)

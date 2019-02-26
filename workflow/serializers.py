@@ -7,11 +7,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template import Template, Context
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
-from workflow.email_utils import send_email
+from workflow.email_utils import send_email, send_email_body
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -149,7 +150,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
         email = self.validated_data["email"]
 
         count = 0
-        for user in User.objects.filter(email=email, is_active=True):
+        for user in User.objects.filter(email=email, is_active=True).select_related('core_user'):
             subject = 'Reset your password'
             uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
             token = default_token_generator.make_token(user)
@@ -157,8 +158,21 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
                 'password_reset_link': resetpass_url.format(uid=uid, token=token),
                 'user': user,
             }
+            # default templates
             template_name = 'email/coreuser/password_reset.txt'
             html_template_name = 'email/coreuser/password_reset.html'
+
+            # get specific templates for user's organization
+            if hasattr(user, 'core_user'):
+                org = user.core_user.organization
+                if org and org.reset_password_tpl:
+                    context = Context(context)
+                    text_content = Template(org.reset_password_tpl).render(context)
+                    html_content = Template(org.reset_password_tpl).render(context) \
+                        if org.reset_password_tpl_html else None
+                    count += send_email_body(email, subject, text_content, html_content)
+                    continue
+
             count += send_email(email, subject, context, template_name, html_template_name)
 
         return count
