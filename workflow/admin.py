@@ -2,7 +2,7 @@ from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (CoreUser, Organization, WorkflowLevel1, WorkflowLevel2,
-                     WorkflowLevel2Sort, WorkflowTeam)
+                     WorkflowLevel2Sort, WorkflowTeam, EmailTemplate)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
@@ -58,9 +58,15 @@ class PortfolioAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class EmailTemplateAdmin(admin.ModelAdmin):
+    list_display = ('organization', 'type')
+    display = 'Email Template'
+
+
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(WorkflowLevel2, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
+admin.site.register(EmailTemplate, EmailTemplateAdmin)

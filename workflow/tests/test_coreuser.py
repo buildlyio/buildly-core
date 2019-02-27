@@ -228,6 +228,36 @@ class TestResetPassword(object):
         token = default_token_generator.make_token(user)
         assert f'{resetpass_url}{uid}/{token}/' in message.body
 
+    def test_reset_password_using_org_template(self, request_factory, org_member):
+        user = org_member.user
+        email = user.email
+
+        wfm.EmailTemplate.objects.create(
+            organization=org_member.organization,
+            type=wfm.TEMPLATE_RESET_PASSWORD,
+            subject='Custom subject',
+            template="""
+                Custom template
+                {{ password_reset_link }}
+                """
+        )
+
+        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
+        response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
+        assert response.status_code == 200
+        assert response.data['count'] == 1
+        assert mail.outbox
+
+        message = mail.outbox[0]
+        assert message.to == [email]
+
+        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+        token = default_token_generator.make_token(user)
+        assert message.subject == 'Custom subject'
+        assert 'Custom template' in message.body
+        assert f'{resetpass_url}{uid}/{token}/' in message.body
+
     def test_reset_password_no_user(self, request_factory):
         request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'foo@example.com'})
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)

@@ -7,11 +7,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template import Template, Context
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
-from workflow.email_utils import send_email
+from workflow.email_utils import send_email, send_email_body
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -149,14 +150,27 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
         email = self.validated_data["email"]
 
         count = 0
-        for user in User.objects.filter(email=email, is_active=True):
-            subject = 'Reset your password'
+        for user in User.objects.filter(email=email, is_active=True).select_related('core_user'):
             uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
             token = default_token_generator.make_token(user)
             context = {
                 'password_reset_link': resetpass_url.format(uid=uid, token=token),
                 'user': user,
             }
+
+            # get specific subj and templates for user's organization
+            if hasattr(user, 'core_user'):
+                tpl = wfm.EmailTemplate.objects.filter(organization=user.core_user.organization,
+                                                       type=wfm.TEMPLATE_RESET_PASSWORD).first()
+                if tpl and tpl.template:
+                    context = Context(context)
+                    text_content = Template(tpl.template).render(context)
+                    html_content = Template(tpl.template_html).render(context) if tpl.template_html else None
+                    count += send_email_body(email, tpl.subject, text_content, html_content)
+                    continue
+
+            # default subject and templates
+            subject = 'Reset your password'
             template_name = 'email/coreuser/password_reset.txt'
             html_template_name = 'email/coreuser/password_reset.html'
             count += send_email(email, subject, context, template_name, html_template_name)

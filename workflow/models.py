@@ -326,3 +326,28 @@ class WorkflowLevel2Sort(models.Model):
 
     def __str__(self):
         return self.workflowlevel1
+
+
+TEMPLATE_RESET_PASSWORD, TEMPLATE_INVITE = 1, 2
+TEMPLATE_TYPES = (
+    (TEMPLATE_RESET_PASSWORD, 'Password resetting'),
+    (TEMPLATE_INVITE, 'Invitation'),
+)
+
+
+class EmailTemplate(models.Model):
+    """Stores e-mail templates specific to organization
+    """
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name='Organization')
+    subject = models.CharField('Subject', max_length=255)
+    type = models.PositiveSmallIntegerField('Type of template', choices=TEMPLATE_TYPES)
+    template = models.TextField("Reset password e-mail template (text)", null=True, blank=True)
+    template_html = models.TextField("Reset password e-mail template (HTML)", null=True, blank=True)
+
+    class Meta:
+        unique_together = ('organization', "type")
+        verbose_name = "Email Template"
+        verbose_name_plural = "Email Templates"
+
+    def __str__(self):
+        return f'{self.type} ({self.organization})'
