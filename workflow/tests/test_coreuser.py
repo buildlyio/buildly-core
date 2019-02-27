@@ -264,6 +264,28 @@ class TestResetPassword(object):
         assert response.status_code == 200
         assert response.data['count'] == 0
 
+    def test_reset_password_check(self, request_factory, reset_password_request):
+        user, uid, token = reset_password_request
+        data = {
+            'uid': uid,
+            'token': token,
+        }
+        request = request_factory.post(reverse('coreuser-reset-password-check'), data)
+        response = CoreUserViewSet.as_view({'post': 'reset_password_check'})(request)
+        assert response.status_code == 200
+
+    def test_reset_password_check_expired(self, request_factory, reset_password_request):
+        user, uid, token = reset_password_request
+        data = {
+            'uid': uid,
+            'token': token,
+        }
+        mock_date = date.today() + timedelta(int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1)
+        with mock.patch('django.contrib.auth.tokens.PasswordResetTokenGenerator._today', return_value=mock_date):
+            request = request_factory.post(reverse('coreuser-reset-password-check'), data)
+            response = CoreUserViewSet.as_view({'post': 'reset_password_check'})(request)
+            assert response.status_code == 400
+
     def test_reset_password_confirm(self, request_factory, reset_password_request):
         test_password = '5UU74e7nfU'
         user, uid, token = reset_password_request
