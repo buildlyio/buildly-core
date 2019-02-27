@@ -1,3 +1,6 @@
+"""
+ TODO: We need to break this module into multiple modules in views package, it's already to large
+"""
 import logging
 from urllib.parse import urljoin
 
@@ -12,7 +15,6 @@ import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
 import jwt
@@ -460,8 +462,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         except Resolver404:
             pass
         else:
-            # different permissions when creating a new user
-            if self.request.method == 'POST' and url_name == 'coreuser-create':
+            # different permissions when creating a new user or resetting password
+            if self.request.method == 'POST' and url_name in ['coreuser-create',
+                                                              'coreuser-reset-password',
+                                                              'coreuser-reset-password-check',
+                                                              'coreuser-reset-password-confirm']:
                 return [permissions.AllowAny()]
 
             # different permissions for checking token
