@@ -201,8 +201,8 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
 class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerializer):
     """Serializer for reset password data
     """
-    new_password1 = serializers.CharField(max_length=128)
-    new_password2 = serializers.CharField(max_length=128)
+    new_password1 = serializers.CharField(max_length=128, required=True)
+    new_password2 = serializers.CharField(max_length=128, required=True)
 
     def validate(self, attrs):
 
@@ -210,9 +210,8 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
 
         password1 = attrs.get('new_password1')
         password2 = attrs.get('new_password2')
-        if password1 and password2:
-            if password1 != password2:
-                raise serializers.ValidationError("The two password fields didn't match.")
+        if password1 != password2:
+            raise serializers.ValidationError("The two password fields didn't match.")
         password_validation.validate_password(password2, self.user)
 
         return attrs
