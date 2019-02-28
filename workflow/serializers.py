@@ -138,8 +138,7 @@ class CoreUserInvitationSerializer(serializers.Serializer):
 
 
 class CoreUserResetPasswordSerializer(serializers.Serializer):
-    """
-    Serializer for reset password request data
+    """Serializer for reset password request data
     """
     email = serializers.EmailField()
 
@@ -178,12 +177,9 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
         return count
 
 
-class CoreUserResetPasswordConfirmSerializer(serializers.Serializer):
+class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
+    """Serializer for checking token for resetting password
     """
-    Serializer for reset password data
-    """
-    new_password1 = serializers.CharField(max_length=128)
-    new_password2 = serializers.CharField(max_length=128)
     uid = serializers.CharField()
     token = serializers.CharField()
 
@@ -195,15 +191,28 @@ class CoreUserResetPasswordConfirmSerializer(serializers.Serializer):
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError({'uid': ['Invalid value']})
 
-        password1 = attrs.get('new_password1')
-        password2 = attrs.get('new_password2')
-        if password1 and password2:
-            if password1 != password2:
-                raise serializers.ValidationError("The two password fields didn't match.")
-        password_validation.validate_password(password2, self.user)
-
+        # Check the token
         if not default_token_generator.check_token(self.user, attrs['token']):
             raise serializers.ValidationError({'token': ['Invalid value']})
+
+        return attrs
+
+
+class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerializer):
+    """Serializer for reset password data
+    """
+    new_password1 = serializers.CharField(max_length=128, required=True)
+    new_password2 = serializers.CharField(max_length=128, required=True)
+
+    def validate(self, attrs):
+
+        attrs = super().validate(attrs)
+
+        password1 = attrs.get('new_password1')
+        password2 = attrs.get('new_password2')
+        if password1 != password2:
+            raise serializers.ValidationError("The two password fields didn't match.")
+        password_validation.validate_password(password2, self.user)
 
         return attrs
 

@@ -1,3 +1,6 @@
+"""
+ TODO: We need to break this module into multiple modules in views package, it's already to large
+"""
 import logging
 from urllib.parse import urljoin
 
@@ -12,7 +15,6 @@ import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
 import jwt
@@ -273,6 +275,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     create:
     Create a new core user instance.
     """
+
+    SERIALIZERS_MAP = {
+        'default': serializers.CoreUserSerializer,
+        'coreuser-invite': serializers.CoreUserInvitationSerializer,
+        'coreuser-reset-password': serializers.CoreUserResetPasswordSerializer,
+        'coreuser-reset-password-check': serializers.CoreUserResetPasswordCheckSerializer,
+        'coreuser-reset-password-confirm': serializers.CoreUserResetPasswordConfirmSerializer,
+    }
+
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
@@ -407,6 +418,19 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             status=status.HTTP_200_OK)
 
     @action(methods=['POST'], detail=False)
+    def reset_password_check(self, request, *args, **kwargs):
+        """
+        This endpoint is used to check that token is valid.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            {
+                'detail': 'The password reset token is valid.',
+            },
+            status=status.HTTP_200_OK)
+
+    @action(methods=['POST'], detail=False)
     def reset_password_confirm(self, request, *args, **kwargs):
         """
         This endpoint is used to change password if the token is valid
@@ -422,14 +446,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'POST':
-            if self.request._request.path == reverse('coreuser-invite'):
-                return serializers.CoreUserInvitationSerializer
-            elif self.request._request.path == reverse('coreuser-reset-password'):
-                return serializers.CoreUserResetPasswordSerializer
-            elif self.request._request.path == reverse('coreuser-reset-password-confirm'):
-                return serializers.CoreUserResetPasswordConfirmSerializer
+            try:
+                url_name = resolve(self.request.path).url_name
+            except Resolver404:
+                pass
+            else:
+                if url_name in self.SERIALIZERS_MAP:
+                    return self.SERIALIZERS_MAP[url_name]
 
-        return serializers.CoreUserSerializer
+        return self.SERIALIZERS_MAP['default']
 
     def get_permissions(self):
         try:
@@ -437,8 +462,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         except Resolver404:
             pass
         else:
-            # different permissions when creating a new user
-            if self.request.method == 'POST' and url_name == 'coreuser-create':
+            # different permissions when creating a new user or resetting password
+            if self.request.method == 'POST' and url_name in ['coreuser-create',
+                                                              'coreuser-reset-password',
+                                                              'coreuser-reset-password-check',
+                                                              'coreuser-reset-password-confirm']:
                 return [permissions.AllowAny()]
 
             # different permissions for checking token

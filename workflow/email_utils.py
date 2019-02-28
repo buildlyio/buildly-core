@@ -12,12 +12,13 @@ def send_email(email_address: str, subject: str, context: dict, template_name: s
 
 def send_email_body(email_address: str, subject: str, text_content: str, html_content: str = None) -> int:
     msg = EmailMultiAlternatives(
+        from_email=settings.DEFAULT_FROM_EMAIL,
         subject=subject,
         body=text_content,
         to=[email_address],
     )
     if settings.DEFAULT_REPLYTO_EMAIL:
-        msg.reply_to = settings.DEFAULT_REPLYTO_EMAIL
+        msg.reply_to = [settings.DEFAULT_REPLYTO_EMAIL]
     if html_content:
         msg.attach_alternative(html_content, "text/html")
     return msg.send()
