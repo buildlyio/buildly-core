@@ -20,6 +20,7 @@ from rest_framework.exceptions import PermissionDenied
 import jwt
 from chargebee import Plan, Subscription
 from graphene_django.views import GraphQLView
+from drf_yasg.utils import swagger_auto_schema
 
 
 from workflow import models as wfm
@@ -31,6 +32,8 @@ from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
                           PERMISSIONS_PROGRAM_ADMIN, PERMISSIONS_PROGRAM_TEAM,
                           PERMISSIONS_VIEW_ONLY)
+from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
+                      DETAIL_RESPONSE, TOKEN_QUERY_PARAM)
 from . import serializers
 
 
@@ -303,6 +306,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                          context={'request': request})
         return Response(serializer.data)
 
+    @swagger_auto_schema(methods=['post'],
+                         request_body=serializers.CoreUserInvitationSerializer,
+                         responses=COREUSER_INVITE_RESPONSE)
     @action(methods=['POST'], detail=False)
     def invite(self, request, *args, **kwargs):
         """
@@ -323,6 +329,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(methods=['get'],
+                         responses=COREUSER_INVITE_CHECK_RESPONSE,
+                         manual_parameters=[TOKEN_QUERY_PARAM])
     @action(methods=['GET'], detail=False)
     def invite_check(self, request, *args, **kwargs):
         """
@@ -401,6 +410,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         return links
 
+    @swagger_auto_schema(methods=['post'],
+                         request_body=serializers.CoreUserResetPasswordSerializer,
+                         responses=COREUSER_RESETPASS_RESPONSE)
     @action(methods=['POST'], detail=False)
     def reset_password(self, request, *args, **kwargs):
         """
@@ -417,6 +429,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(methods=['post'],
+                         request_body=serializers.CoreUserResetPasswordCheckSerializer,
+                         responses=DETAIL_RESPONSE)
     @action(methods=['POST'], detail=False)
     def reset_password_check(self, request, *args, **kwargs):
         """
@@ -430,6 +445,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(methods=['post'],
+                         request_body=serializers.CoreUserResetPasswordConfirmSerializer,
+                         responses=DETAIL_RESPONSE)
     @action(methods=['POST'], detail=False)
     def reset_password_confirm(self, request, *args, **kwargs):
         """

@@ -201,8 +201,8 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
 class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerializer):
     """Serializer for reset password data
     """
-    new_password1 = serializers.CharField(max_length=128, required=True)
-    new_password2 = serializers.CharField(max_length=128, required=True)
+    new_password1 = serializers.CharField(max_length=128)
+    new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, attrs):
 
