@@ -50,11 +50,11 @@ class Industry(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name_plural = "Indistires"
+        verbose_name_plural = "Industries"
         app_label = 'workflow'
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Industry, self).save()
@@ -87,7 +87,7 @@ class Organization(models.Model):
         app_label = 'workflow'
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Organization, self).save()
@@ -169,7 +169,7 @@ class Internationalization(models.Model):
         return self.language
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Internationalization, self).save()
@@ -187,7 +187,7 @@ class Portfolio(models.Model):
         ordering = ('name',)
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Portfolio, self).save()
@@ -211,7 +211,7 @@ class Milestone(models.Model):
         ordering = ('name',)
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Milestone, self).save()
@@ -243,7 +243,7 @@ class WorkflowLevel1(models.Model):
     def save(self, *args, **kwargs):
         if not 'force_insert' in kwargs:
             kwargs['force_insert'] = False
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
 
@@ -285,7 +285,7 @@ class WorkflowTeam(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(WorkflowTeam, self).save()
@@ -341,7 +341,7 @@ class WorkflowLevel2Sort(models.Model):
         verbose_name_plural = "Workflow Level Sort"
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(WorkflowLevel2Sort, self).save()
