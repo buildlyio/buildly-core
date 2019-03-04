@@ -33,7 +33,7 @@ from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           PERMISSIONS_PROGRAM_ADMIN, PERMISSIONS_PROGRAM_TEAM,
                           PERMISSIONS_VIEW_ONLY)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
-                      DETAIL_RESPONSE, TOKEN_QUERY_PARAM)
+                      DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from . import serializers
 
 
@@ -431,17 +431,16 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     @swagger_auto_schema(methods=['post'],
                          request_body=serializers.CoreUserResetPasswordCheckSerializer,
-                         responses=DETAIL_RESPONSE)
+                         responses=SUCCESS_RESPONSE)
     @action(methods=['POST'], detail=False)
     def reset_password_check(self, request, *args, **kwargs):
         """
         This endpoint is used to check that token is valid.
         """
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
         return Response(
             {
-                'detail': 'The password reset token is valid.',
+                'success': serializer.is_valid(),
             },
             status=status.HTTP_200_OK)
 
