@@ -8,8 +8,6 @@ from django.db import transaction
 from oauth2_provider.models import Application
 
 import factories
-from workflow.models import (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-                             ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM)
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +23,8 @@ class Command(BaseCommand):
         # Note: for the lists we fill the first element with an empty value for
         # development readability (id == position).
         self._applications = []
-        self._groups = ['']
         self._user = None
+        self._organization = None
 
     def _create_oauth_application(self):
         if settings.OAUTH_CLIENT_ID and settings.OAUTH_CLIENT_SECRET:
@@ -51,26 +49,8 @@ class Command(BaseCommand):
             )
             self._applications.append(app)
 
-    def _create_groups(self):
-        self._groups.append(factories.Group(
-            id=1,
-            name=ROLE_VIEW_ONLY,
-        ))
-
-        self._groups.append(factories.Group(
-            id=2,
-            name=ROLE_ORGANIZATION_ADMIN,
-        ))
-
-        self._groups.append(factories.Group(
-            id=3,
-            name=ROLE_PROGRAM_ADMIN,
-        ))
-
-        self._groups.append(factories.Group(
-            id=4,
-            name=ROLE_PROGRAM_TEAM,
-        ))
+    def _create_organizaton(self):
+        self._organization = factories.Organization(name=settings.DEFAULT_ORG)
 
     def _create_user(self):
         User.objects.filter(username='admin').delete()
@@ -81,10 +61,10 @@ class Command(BaseCommand):
             email='admin@example.com',
             password='ttmtola1977'
         )
-        self._core_user = factories.CoreUser(user=user)
+        self._core_user = factories.CoreUser(user=user, organization=self._organization)
 
     @transaction.atomic
     def handle(self, *args, **options):
-        self._create_groups()
+        self._create_organizaton()
         self._create_oauth_application()
         self._create_user()

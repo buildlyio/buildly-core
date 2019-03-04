@@ -87,13 +87,23 @@ class Organization(models.Model):
         app_label = 'workflow'
 
     def save(self, *args, **kwargs):
+        is_created = not self.pk
         if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
-        super(Organization, self).save()
+        super(Organization, self).save(*args, **kwargs)
+        if is_created:
+            self._create_base_groups()
 
     def __str__(self):
         return self.name
+
+    def _create_base_groups(self):
+        for group_name in (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN, ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM):
+            CoreGroup.objects.create(
+                group=Group.objects.create(name=f'{group_name} ({self.name})'),
+                organization=self
+            )
 
 
 TITLE_CHOICES = (
@@ -146,7 +156,7 @@ class CoreGroup(models.Model):
     group = models.OneToOneField(Group, unique=True, related_name='core_group', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, default=1, on_delete=models.CASCADE)
     workflowlevel1 = models.ForeignKey("WorkflowLevel1", null=True, blank=True, on_delete=models.CASCADE)
-    create_date = models.DateTimeField(null=True, blank=True)
+    create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -154,6 +164,10 @@ class CoreGroup(models.Model):
 
     def __str__(self):
         return f'{self.group.name} <{self.organization}>'
+
+    def save(self, *args, **kwargs):
+        self.edit_date = timezone.now()
+        super(CoreGroup, self).save(*args, **kwargs)
 
 
 class Internationalization(models.Model):

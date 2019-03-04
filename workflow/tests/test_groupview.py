@@ -21,12 +21,12 @@ class GroupViewsTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_list_groups_normaluser(self):
-        tola_user = factories.CoreUser()
-        self.request_get.user = tola_user.user
+        core_user = factories.CoreUser()
+        self.request_get.user = core_user.user
         view = GroupViewSet.as_view({'get': 'list'})
         response = view(self.request_get)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 5)
 
     def test_create_group_error(self):
         # create group via POST request

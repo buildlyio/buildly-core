@@ -296,7 +296,7 @@ RABBIT_VHOST = os.getenv('RABBIT_VHOST')
 RABBIT_WALHALL_QUEUE = os.getenv('RABBIT_WALHALL_QUEUE')
 
 
-DEFAULT_ORG = 'Humanitec'
+DEFAULT_ORG = 'Default Organization'
 
 if os.getenv('EMAIL_BACKEND') == 'SMTP':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -311,4 +311,3 @@ else:
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
 DEFAULT_REPLYTO_EMAIL = os.getenv('DEFAULT_REPLYTO_EMAIL')
-
