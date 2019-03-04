@@ -137,6 +137,25 @@ class CoreUser(models.Model):
         return self.user.is_active
 
 
+class CoreGroup(models.Model):
+    """
+    CoreGroup is an extension of Django Group, it defines permission Groups associated
+    with Organization and WorkflowLevel1 (optionally). Has one-to-one relation to Group instance.
+    """
+    core_group_uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
+    group = models.OneToOneField(Group, unique=True, related_name='core_group', on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, default=1, on_delete=models.CASCADE)
+    workflowlevel1 = models.ForeignKey("WorkflowLevel1", null=True, blank=True, on_delete=models.CASCADE)
+    create_date = models.DateTimeField(null=True, blank=True)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('group__name',)
+
+    def __str__(self):
+        return f'{self.group.name} <{self.organization}>'
+
+
 class Internationalization(models.Model):
     language = models.CharField("Language", blank=True, null=True, max_length=100)
     language_file = JSONField()
@@ -241,6 +260,9 @@ class WorkflowLevel1(models.Model):
 
 
 class WorkflowTeam(models.Model):
+    """
+    TODO: Replace it with CoreGroup model
+    """
     team_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel1 UUID', default=uuid.uuid4, unique=True)
     workflow_user = models.ForeignKey(CoreUser, blank=True, null=True, on_delete=models.CASCADE, related_name="auth_approving", help_text='User with access/permissions to related workflowlevels')
     workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True, help_text='Related workflowlevel 1')
