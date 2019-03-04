@@ -10,6 +10,13 @@ DETAIL_RESPONSE = {200: Schema(
     })
 }
 
+SUCCESS_RESPONSE = {200: Schema(
+    type='object',
+    properties={
+        'success': Schema(type='boolean')
+    })
+}
+
 COREUSER_INVITE_RESPONSE = {200: Schema(
     type='object',
     properties={
