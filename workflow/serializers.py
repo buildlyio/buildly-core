@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 import jwt
 from django.contrib.auth import password_validation
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
@@ -10,21 +10,55 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
 from rest_framework import serializers
-from rest_framework.reverse import reverse
 from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    url = serializers.SerializerMethodField('get_self')
-
-    def get_self(self, obj):
-        request = self.context['request']
-        return reverse('group-detail', kwargs={'pk': obj.id}, request=request)
 
     class Meta:
         model = wfm.Group
-        fields = '__all__'
+        fields = ('name', 'permissions',)
+
+
+class CoreGroupSerializer(serializers.ModelSerializer):
+    group = GroupSerializer()
+
+    def create(self, validated_data):
+        # create group
+        group_data = validated_data.pop('group')
+        permissions_data = group_data.pop('permissions', [])
+        group = Group.objects.create(**group_data)
+        group.permissions.add(*permissions_data)
+
+        # create core group
+        return wfm.CoreGroup.objects.create(
+            group=group,
+            **validated_data
+        )
+
+    def update(self, instance, validated_data):
+        # update group
+        group_data = validated_data.pop('group')
+        new_premissions = group_data.pop('permissions', [])
+        group = instance.group
+        for attr, value in group_data.items():
+            setattr(group, attr, value)
+        group.save()
+
+        # update permissions
+        old_permissions = group.permissions.values_list('id', flat=True)
+        to_add = set(new_premissions) - set(old_permissions)
+        to_delete = set(old_permissions) - set(new_premissions)
+        group.permissions.remove(*to_delete)
+        group.permissions.add(*to_add)
+
+        return super(CoreGroupSerializer, self).update(instance, validated_data)
+
+    class Meta:
+        model = wfm.CoreGroup
+        read_only_fields = ('core_group_uuid',)
+        exclude = ('create_date', 'edit_date')
 
 
 class WorkflowLevel1Serializer(serializers.ModelSerializer):

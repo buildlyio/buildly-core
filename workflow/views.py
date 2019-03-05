@@ -62,17 +62,17 @@ class DefaultCursorPagination(CursorPagination):
     page_size_query_param = 'page_size'
 
 
-class GroupViewSet(viewsets.ReadOnlyModelViewSet):
+class CoreGroupViewSet(viewsets.ModelViewSet):
     """
-    Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
-    a user (for permission though WorkflowTeam)
+    CoreGroup is an extension of the default Group, it defines permissions associated
+    with Organization and WorkflowLevel1 (optionally). It has one-to-one relation to Group instance.
 
     title:
-    Groups are used for setting permission descriptions in Workflow Team.
+    CoreGroup is an extension of the default Group
 
     description:
-    Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
-    a user (for permission though WorkflowTeam)
+    CoreGroup defines permissions associated
+    with Organization and WorkflowLevel1 (optionally). It has one-to-one relation to Group instance.
 
     retrieve:
     Return the given group.
@@ -83,8 +83,8 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     create:
     Create a new group instance.
     """
-    queryset = wfm.Group.objects.all()
-    serializer_class = serializers.GroupSerializer
+    queryset = wfm.CoreGroup.objects.all()
+    serializer_class = serializers.CoreGroupSerializer
 
 
 class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
