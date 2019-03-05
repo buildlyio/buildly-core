@@ -376,6 +376,8 @@ class APIGatewayView(views.APIView):
             path_item = app.s(path)
 
             # call operation
+            if not (hasattr(path_item, method) and callable(getattr(path_item, method))):
+                raise exceptions.EndpointNotFound(f'Endpoint not found: {method.upper()} {path}')
             return getattr(path_item, method).__call__(**data)
         elif pk is not None:
             try:
@@ -391,7 +393,7 @@ class APIGatewayView(views.APIView):
             try:
                 path_item = app.s(path)
             except KeyError:
-                raise exceptions.EndpointNotFound(path)
+                raise exceptions.EndpointNotFound(f'Endpoint not found: {method.upper()} {path}')
 
             # call operation
             return getattr(path_item, method).__call__(**data)
@@ -423,10 +425,7 @@ class APIGatewayView(views.APIView):
         :param pyswagger.Client client: client based on requests
         :return pyswagger.Response: response from the service
         """
-        try:
-            req, resp = self._get_req_and_rep(app, request, **kwargs)
-        except exceptions.EndpointNotFound:
-            raise exceptions.EndpointNotFound('Endpoint not found.', status=404)
+        req, resp = self._get_req_and_rep(app, request, **kwargs)
 
         headers = self._get_service_request_headers(request)
         try:
