@@ -10,7 +10,9 @@ class GatewayError(Exception):
 
 
 class EndpointNotFound(GatewayError):
-    pass
+
+    def __init__(self, msg='Endpoint not found'):
+        super().__init__(msg=msg, status=404)
 
 
 class PySwaggerError(GatewayError):
