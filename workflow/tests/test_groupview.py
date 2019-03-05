@@ -26,7 +26,7 @@ class GroupViewsTest(TestCase):
         view = GroupViewSet.as_view({'get': 'list'})
         response = view(self.request_get)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 5)
+        self.assertEqual(len(response.data), 3)
 
     def test_create_group_error(self):
         # create group via POST request
