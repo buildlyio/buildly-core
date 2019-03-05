@@ -1,7 +1,7 @@
 ---
 pipeline:
   test:
-    image: python:${PYTHON_VERSION}-alpine3.7
+    image: python:3.6-alpine3.7
     commands:
       - apk add --no-cache bash git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
       - pip install -r requirements/ci.txt --no-cache-dir
@@ -72,7 +72,3 @@ services:
       - POSTGRES_DB=bifrost_api
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-
-matrix:
-  PYTHON_VERSION:
-    - 3.6
