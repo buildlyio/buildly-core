@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -e
+
+bash tcp-port-wait.sh $DATABASE_HOST $DATABASE_PORT
+
 echo $(date -u) "- Migrating"
 python manage.py migrate
 
