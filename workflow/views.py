@@ -5,7 +5,7 @@ import logging
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, User, Permission
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -26,12 +26,10 @@ from drf_yasg.utils import swagger_auto_schema
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
 from workflow.email_utils import send_email
-from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
-                          AllowCoreUserRoles, AllowAuthenticatedRead,
+from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, AllowCoreUserRoles, AllowAuthenticatedRead,
                           AllowOnlyOrgAdmin,
-                          PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
-                          PERMISSIONS_PROGRAM_ADMIN, PERMISSIONS_PROGRAM_TEAM,
-                          PERMISSIONS_VIEW_ONLY)
+                          PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN, PERMISSIONS_PROGRAM_ADMIN,
+                          PERMISSIONS_PROGRAM_TEAM, PERMISSIONS_VIEW_ONLY)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                       DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from . import serializers
@@ -60,6 +58,21 @@ class DefaultCursorPagination(CursorPagination):
     page_size = 30
     max_page_size = 100
     page_size_query_param = 'page_size'
+
+
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Existing permissions
+
+    retrieve:
+    Return the given permission
+
+    list:
+    Return a list of existing permissions
+    """
+    queryset = Permission.objects.all()
+    serializer_class = serializers.PermissionSerializer
+    permission_classes = (IsOrgMember,)
 
 
 class CoreGroupViewSet(viewsets.ModelViewSet):
@@ -94,13 +107,6 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(organization_id=user.core_user.organization_id)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, *args, **kwargs):
-        queryset = self.queryset
-        user = request.user
-        group = get_object_or_404(queryset, pk=kwargs.get('pk'), organization_id=user.core_user.organization_id)
-        serializer = self.get_serializer(instance=group, context={'request': request})
         return Response(serializer.data)
 
 

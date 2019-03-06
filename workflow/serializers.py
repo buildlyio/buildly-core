@@ -14,10 +14,17 @@ from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
 
 
+class PermissionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Permission
+        fields = '__all__'
+
+
 class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = wfm.Group
+        model = Group
         fields = ('name', 'permissions',)
 
 
