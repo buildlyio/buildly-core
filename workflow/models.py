@@ -16,6 +16,12 @@ ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_PROGRAM_ADMIN = 'WorkflowAdmin'
 ROLE_PROGRAM_TEAM = 'WorkflowTeam'
 ROLE_VIEW_ONLY = 'ViewOnly'
+BASE_ROLES = (
+    (ROLE_ORGANIZATION_ADMIN, ROLE_ORGANIZATION_ADMIN),
+    (ROLE_VIEW_ONLY, ROLE_VIEW_ONLY),
+    (ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_ADMIN),
+    (ROLE_PROGRAM_TEAM, ROLE_PROGRAM_TEAM),
+)
 DEFAULT_PROGRAM_NAME = 'Default program'
 
 
@@ -99,9 +105,10 @@ class Organization(models.Model):
         return self.name
 
     def _create_base_groups(self):
-        for group_name in (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN):
+        for role in (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN):
             CoreGroup.objects.create(
-                group=Group.objects.create(name=f'{group_name} ({self.name})'),
+                group=Group.objects.create(name=f'{role} ({self.name})'),
+                role=role,
                 organization=self
             )
 
@@ -154,6 +161,7 @@ class CoreGroup(models.Model):
     """
     core_group_uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
     group = models.OneToOneField(Group, unique=True, related_name='core_group', on_delete=models.CASCADE)
+    role = models.CharField('Role', max_length=255, choices=BASE_ROLES, null=True, blank=True)
     organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE, related_name='core_groups')
     workflowlevel1 = models.ForeignKey("WorkflowLevel1", null=True, blank=True, on_delete=models.CASCADE, related_name='core_groups')
     create_date = models.DateTimeField(default=timezone.now)
@@ -266,9 +274,10 @@ class WorkflowLevel1(models.Model):
             self._create_base_groups()
 
     def _create_base_groups(self):
-        for group_name in (ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM):
+        for role in (ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM):
             CoreGroup.objects.create(
-                group=Group.objects.create(name=f'{group_name} ({self.organization}, {self.pk})'),
+                group=Group.objects.create(name=f'{role} ({self.organization}, {self.pk})'),
+                role=role,
                 organization=self.organization,
                 workflowlevel1=self
             )
