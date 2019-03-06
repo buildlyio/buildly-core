@@ -24,7 +24,20 @@ class GroupSerializer(serializers.ModelSerializer):
 class CoreGroupSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
 
+    def _get_current_coreuser(self) -> wfm.CoreUser:
+        coreuser = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+            coreuser = user.core_user if hasattr(user, "core_user") else None
+        return coreuser
+
     def create(self, validated_data):
+        # set organization
+        coreuser = self._get_current_coreuser()
+        if coreuser and coreuser.organization:
+            validated_data['organization'] = coreuser.organization
+
         # create group
         group_data = validated_data.pop('group')
         permissions_data = group_data.pop('permissions', [])
@@ -57,7 +70,7 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = wfm.CoreGroup
-        read_only_fields = ('core_group_uuid',)
+        read_only_fields = ('core_group_uuid', 'organization')
         exclude = ('create_date', 'edit_date')
 
 

@@ -85,6 +85,23 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
     """
     queryset = wfm.CoreGroup.objects.all()
     serializer_class = serializers.CoreGroupSerializer
+    permission_classes = (AllowOnlyOrgAdmin,)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        user = request.user
+        if not user.is_superuser:
+            queryset = queryset.filter(organization_id=user.core_user.organization_id)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.queryset
+        user = request.user
+        group = get_object_or_404(queryset, pk=kwargs.get('pk'), organization_id=user.core_user.organization_id)
+        serializer = self.get_serializer(instance=group, context={'request': request})
+        return Response(serializer.data)
 
 
 class WorkflowLevel1ViewSet(viewsets.ModelViewSet):

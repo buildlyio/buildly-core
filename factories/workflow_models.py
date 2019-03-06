@@ -2,6 +2,7 @@ from factory import DjangoModelFactory, SubFactory
 
 from workflow.models import (
     CoreUser as CoreUserM,
+    CoreGroup as CoreGroupM,
     Organization as OrganizationM,
     WorkflowLevel1 as WorkflowLevel1M,
     WorkflowLevel2 as WorkflowLevel2M,
@@ -10,6 +11,7 @@ from workflow.models import (
     Portfolio as PortfolioM,
     Milestone as MilestoneM,
     Internationalization as InternationalizationM,
+    ROLE_PROGRAM_ADMIN
 )
 from .django_models import User, Group
 
@@ -44,6 +46,16 @@ class WorkflowLevel2(DjangoModelFactory):
 
     name = 'Help Syrians'
     workflowlevel1 = SubFactory(WorkflowLevel1)
+
+
+class CoreGroup(DjangoModelFactory):
+    class Meta:
+        model = CoreGroupM
+
+    group = SubFactory(Group)
+    organization = SubFactory(Organization)
+    workflowlevel1 = SubFactory(WorkflowLevel1)
+    role = ROLE_PROGRAM_ADMIN
 
 
 class WorkflowTeam(DjangoModelFactory):
