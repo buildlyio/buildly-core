@@ -15,7 +15,7 @@ from unittest.mock import Mock
 import factories
 
 from .. import views
-from ..exceptions import SocialAuthFailed
+from ..exceptions import SocialAuthFailed, SocialAuthNotConfigured
 
 # ------------ Fixtures ------------------
 
@@ -201,5 +201,37 @@ class TestOAuthComplete(object):
         # mock request object
         request = wsgi_request_factory()
         request.session = Mock()
+
+        views.oauth_complete(request, 'github')
+
+    @pytest.mark.xfail(raises=SocialAuthNotConfigured)
+    def test_no_social_auth_redirect_url_xfail(self, settings, wsgi_request_factory, monkeypatch):
+        settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS['github'] = None
+
+        # mock functions
+        monkeypatch.setattr(views, 'user_is_authenticated', lambda x: False)
+        monkeypatch.setattr(views, 'partial_pipeline_data', lambda x, y: None)
+
+        # mock request object
+        request = wsgi_request_factory()
+        request.session = Mock()
+        request.GET = {'code': 'test'}
+        request.user = None
+
+        views.oauth_complete(request, 'github')
+
+    @pytest.mark.xfail(raises=SocialAuthNotConfigured)
+    def test_no_support_social_auth_backend_xfail(self, settings, wsgi_request_factory, monkeypatch):
+        del settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS['github']
+
+        # mock functions
+        monkeypatch.setattr(views, 'user_is_authenticated', lambda x: False)
+        monkeypatch.setattr(views, 'partial_pipeline_data', lambda x, y: None)
+
+        # mock request object
+        request = wsgi_request_factory()
+        request.session = Mock()
+        request.GET = {'code': 'test'}
+        request.user = None
 
         views.oauth_complete(request, 'github')
