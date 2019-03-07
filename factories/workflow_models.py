@@ -2,6 +2,7 @@ from factory import DjangoModelFactory, SubFactory
 
 from workflow.models import (
     CoreUser as CoreUserM,
+    CoreGroup as CoreGroupM,
     Organization as OrganizationM,
     WorkflowLevel1 as WorkflowLevel1M,
     WorkflowLevel2 as WorkflowLevel2M,
@@ -20,6 +21,14 @@ class Organization(DjangoModelFactory):
         django_get_or_create = ('name',)
 
     name = 'Default Organization'
+
+
+class CoreGroup(DjangoModelFactory):
+    class Meta:
+        model = CoreGroupM
+
+    group = SubFactory(Group)
+    organization = SubFactory(Organization)
 
 
 class CoreUser(DjangoModelFactory):

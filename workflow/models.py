@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 from django.contrib.postgres import fields
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.contrib.sites.models import Site
@@ -13,8 +13,8 @@ except ImportError:
 from simple_history.models import HistoricalRecords
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
-ROLE_PROGRAM_ADMIN = 'ProgramAdmin'
-ROLE_PROGRAM_TEAM = 'ProgramTeam'
+ROLE_PROGRAM_ADMIN = 'WorkflowAdmin'
+ROLE_PROGRAM_TEAM = 'WorkflowTeam'
 ROLE_VIEW_ONLY = 'ViewOnly'
 DEFAULT_PROGRAM_NAME = 'Default program'
 
@@ -50,11 +50,11 @@ class Industry(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name_plural = "Indistires"
+        verbose_name_plural = "Industries"
         app_label = 'workflow'
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Industry, self).save()
@@ -87,7 +87,7 @@ class Organization(models.Model):
         app_label = 'workflow'
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Organization, self).save()
@@ -103,6 +103,31 @@ TITLE_CHOICES = (
 )
 
 
+class CoreGroup(models.Model):
+    """
+    CoreGroup is similar to Django Group, but it is associated with an organization.
+    It's used for creating groups of Core Users inside an organization and defining model level permissions
+    for this group
+    """
+    core_group_uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
+    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE, related_name='core_groups')
+    name = models.CharField('Name', max_length=80)
+    permissions = models.ManyToManyField(Permission, verbose_name='Permissions', blank=True)
+    create_date = models.DateTimeField(default=timezone.now)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (('name', 'organization'),)
+        ordering = ('organization',)
+
+    def __str__(self):
+        return f'{self.name} <{self.organization}>'
+
+    def save(self, *args, **kwargs):
+        self.edit_date = timezone.now()
+        super(CoreGroup, self).save(*args, **kwargs)
+
+
 class CoreUser(models.Model):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
@@ -112,6 +137,7 @@ class CoreUser(models.Model):
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core Groups', blank=True)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -150,7 +176,7 @@ class Internationalization(models.Model):
         return self.language
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Internationalization, self).save()
@@ -168,7 +194,7 @@ class Portfolio(models.Model):
         ordering = ('name',)
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Portfolio, self).save()
@@ -192,7 +218,7 @@ class Milestone(models.Model):
         ordering = ('name',)
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Milestone, self).save()
@@ -224,7 +250,7 @@ class WorkflowLevel1(models.Model):
     def save(self, *args, **kwargs):
         if not 'force_insert' in kwargs:
             kwargs['force_insert'] = False
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
 
@@ -241,6 +267,10 @@ class WorkflowLevel1(models.Model):
 
 
 class WorkflowTeam(models.Model):
+    """
+    WorkflowTeam defines m2m relations between CoreUser and Workflowlevel1.
+    It also defines a role for this relationship (as a fk to Group instance).
+    """
     team_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel1 UUID', default=uuid.uuid4, unique=True)
     workflow_user = models.ForeignKey(CoreUser, blank=True, null=True, on_delete=models.CASCADE, related_name="auth_approving", help_text='User with access/permissions to related workflowlevels')
     workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True, help_text='Related workflowlevel 1')
@@ -263,7 +293,7 @@ class WorkflowTeam(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(WorkflowTeam, self).save()
@@ -319,7 +349,7 @@ class WorkflowLevel2Sort(models.Model):
         verbose_name_plural = "Workflow Level Sort"
 
     def save(self, *args, **kwargs):
-        if self.create_date == None:
+        if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(WorkflowLevel2Sort, self).save()

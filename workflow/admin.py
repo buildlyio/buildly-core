@@ -1,7 +1,7 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import (CoreUser, Organization, WorkflowLevel1, WorkflowLevel2,
+from .models import (CoreUser, CoreGroup, Organization, WorkflowLevel1, WorkflowLevel2,
                      WorkflowLevel2Sort, WorkflowTeam, EmailTemplate)
 
 
@@ -28,6 +28,13 @@ class OrganizationAdmin(admin.ModelAdmin):
 class MilestoneAdmin(admin.ModelAdmin):
     list_display = ('name', 'create_date', 'edit_date')
     display = 'Milestone'
+
+
+class CoreGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization')
+    display = 'Core Group'
+    list_filter = ('organization',)
+    search_fields = ('name', 'organization__name')
 
 
 class CoreUserAdmin(admin.ModelAdmin):
@@ -68,5 +75,6 @@ admin.site.register(WorkflowLevel2, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
+admin.site.register(CoreGroup, CoreGroupAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)

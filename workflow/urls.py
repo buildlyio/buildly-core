@@ -8,6 +8,8 @@ from . import views
 router = routers.SimpleRouter()
 
 router.register(r'groups', views.GroupViewSet)
+router.register(r'permissions', views.PermissionViewSet)
+router.register(r'coregroups', views.CoreGroupViewSet)
 router.register(r'coreuser', views.CoreUserViewSet)
 router.register(r'workflowlevel1', views.WorkflowLevel1ViewSet)
 router.register(r'workflowlevel2', views.WorkflowLevel2ViewSet)
