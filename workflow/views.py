@@ -276,7 +276,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
     """
     queryset = wfm.CoreGroup.objects.all()
     serializer_class = serializers.CoreGroupSerializer
-    permission_classes = (AllowOnlyOrgAdmin,)
+    permission_classes = (AllowOnlyOrgAdmin, IsOrgMember)
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

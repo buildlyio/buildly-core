@@ -27,7 +27,6 @@ class CoreGroup(DjangoModelFactory):
     class Meta:
         model = CoreGroupM
 
-    group = SubFactory(Group)
     organization = SubFactory(Organization)
 
 

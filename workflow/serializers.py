@@ -65,7 +65,6 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
-    group = GroupSerializer()
 
     def _get_current_coreuser(self) -> wfm.CoreUser:
         coreuser = None
@@ -81,8 +80,12 @@ class CoreGroupSerializer(serializers.ModelSerializer):
         if coreuser and coreuser.organization:
             validated_data['organization'] = coreuser.organization
 
-         # create core group
-        return wfm.CoreGroup.objects.create(**validated_data)
+        # create core group and permissions
+        permissions_data = validated_data.pop('permissions', [])
+        coregroup = wfm.CoreGroup.objects.create(**validated_data)
+        coregroup.permissions.add(*permissions_data)
+
+        return coregroup
 
     def update(self, instance, validated_data):
         # update permissions
