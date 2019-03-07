@@ -1,52 +1,49 @@
 import logging
-import urllib.parse
 
-from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
 from django.conf import settings
 
-from social_core.pipeline.partial import partial
-
-from workflow.models import CoreSites, Organization
+from workflow.models import CoreUser, CoreSites, Organization
 
 logger = logging.getLogger(__name__)
 
 
-def redirect_after_login(strategy, *args, **kwargs):
-    redirect = strategy.session_get('redirect_after_login')
-    strategy.session_set('next', redirect)
+def create_coreuser(strategy, details, backend, user=None, *args, **kwargs):
+    """
+    Create or retrieve a core user based on the created user
+    """
+    if not user:
+        return
+
+    # create or get core user
+    core_user, created = CoreUser.objects.get_or_create(user=user)
+    return {
+        'is_new_core_user': created,
+        'organization': core_user
+    }
 
 
-@partial
-def check_user(strategy, details, backend, user=None, *args, **kwargs):
+def create_organization(strategy, details, backend, core_user=None, *args, **kwargs):
     """
-    Redirect the user to the registration page, if we haven't found
-    a user account yet.
+    Create or retrieve an organization and associate it to the core user
     """
-    if user:
-        return {'is_new': False}
-    try:
-        user = User.objects.get(first_name=details['first_name'],
-                                last_name=details['last_name'],
-                                email=details['email'])
-        return {
-            'is_new': True,
-            'user': user
-        }
-    except User.DoesNotExist:
-        current_partial = kwargs.get('current_partial')
-        query_params = {
-            'cus_fname': details['first_name'].encode('utf8'),
-            'cus_lname': details['last_name'].encode('utf8'),
-            'cus_email': details['email'].encode('utf8'),
-            'organization_uuid': details['organization_uuid'],
-            'partial_token': current_partial.token
-        }
-        qp = urllib.parse.urlencode(query_params)
-        redirect_url = u'/accounts/register/?{}'.format(qp)
-        return HttpResponseRedirect(redirect_url)
+    if not core_user or not kwargs['is_new_core_user']:
+        return
+
+    # create or get an organization and associate it to the core user
+    if settings.DEFAULT_ORG:
+        organization, created = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
+    else:
+        organization, created = Organization.objects.get_or_create(name=core_user.user.username)
+
+    core_user.organization = organization
+    core_user.save()
+
+    return {
+        'is_new_org': created,
+        'organization': organization
+    }
 
 
 def auth_allowed(backend, details, response, *args, **kwargs):
