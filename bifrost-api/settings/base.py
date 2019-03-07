@@ -41,10 +41,18 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'guardian',
     'rest_framework',
     'rest_framework.authtoken',
+
+    # Social auth
     'social_django',
+
+    # OAuth2
     'oauth2_provider',
     'oauth2_provider_jwt',
+
+    # GraphQL
     'graphene_django',
+
+    # swagger
     'drf_yasg',
 
     # health check
@@ -239,13 +247,19 @@ LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if os.getenv('SOCIAL_AUTH_REDIRECT_IS_HTTPS') == 'True' else False
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = os.getenv('SOCIAL_AUTH_LOGIN_REDIRECT_URL', '/')
+SOCIAL_AUTH_LOGIN_REDIRECT_URLS = {
+    'github': os.getenv('SOCIAL_AUTH_GITHUB_REDIRECT_URL', None),
+    'google-oauth2': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL', None),
+    'microsoft-graph': os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL', None)
+}
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.create_user',
+    'web.auth_pipeline.create_coreuser',
+    'web.auth_pipeline.create_organization',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
@@ -296,7 +310,7 @@ RABBIT_VHOST = os.getenv('RABBIT_VHOST')
 RABBIT_WALHALL_QUEUE = os.getenv('RABBIT_WALHALL_QUEUE')
 
 
-DEFAULT_ORG = 'Humanitec'
+DEFAULT_ORG = 'Default Organization'
 
 if os.getenv('EMAIL_BACKEND') == 'SMTP':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

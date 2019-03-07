@@ -18,7 +18,7 @@ from workflow.models import CoreUser
 from workflow.serializers import (CoreUserSerializer,
                                   OrganizationSerializer)
 
-from .exceptions import SocialAuthFailed
+from .exceptions import SocialAuthFailed, SocialAuthNotConfigured
 from .utils import generate_access_tokens
 
 logger = logging.getLogger(__name__)
@@ -80,10 +80,16 @@ def oauth_complete(request, backend, *args, **kwargs):
         # clean partial data after usage
         request.backend.strategy.clean_partial_pipeline(partial.token)
     else:
+        # check if social auth is configured properly
+        if backend not in settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS:
+            raise SocialAuthNotConfigured(f'The backend {backend} is not supported.')
+        elif not settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS.get(backend):
+            raise SocialAuthNotConfigured(f'A redirect URL for the backend {backend} was not defined.')
+
         # prepare request to validate code
         data = request.backend.strategy.request_data()
         data['code'] = code
-        redirect_uri = f'{settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL}'
+        redirect_uri = settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS.get(backend)
         request.backend.redirect_uri = redirect_uri
         request.backend.STATE_PARAMETER = False
         request.backend.REDIRECT_STATE = False

@@ -4,7 +4,7 @@ import json
 from django.utils.deprecation import MiddlewareMixin
 from django.http import JsonResponse
 
-from .exceptions import SocialAuthFailed
+from .exceptions import SocialAuthFailed, SocialAuthNotConfigured
 from gateway.exceptions import PermissionDenied, EndpointNotFound
 
 
@@ -23,6 +23,7 @@ MIDDLEWARE_EXCEPTIONS = (
     PermissionDenied,
     EndpointNotFound,
     SocialAuthFailed,
+    SocialAuthNotConfigured,
 )
 
 

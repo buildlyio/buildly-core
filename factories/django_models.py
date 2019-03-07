@@ -19,6 +19,5 @@ class User(DjangoModelFactory):
 
     first_name = 'Homer'
     last_name = 'Simpson'
-    username = lazy_attribute(lambda o: slugify(o.first_name + '.' +
-                                                o.last_name))
+    username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
     email = lazy_attribute(lambda o: o.username + "@example.com")

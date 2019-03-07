@@ -21,6 +21,9 @@ pipeline:
       DATABASE_HOST: "postgres"
       DATABASE_PORT: "5432"
       DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
+      SOCIAL_AUTH_GITHUB_REDIRECT_URL: "/complete/github"
+      SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL: "/complete/google-oauth2"
+      SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "/complete/microsoft-graph"
       JWT_ISSUER: "bifrost"
       JWT_PRIVATE_KEY_RSA_BIFROST: |-
         -----BEGIN RSA PRIVATE KEY-----
