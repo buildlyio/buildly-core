@@ -1,12 +1,12 @@
 import logging
 
 from django.conf import settings
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
 import factories
 from web import auth_pipeline
 
-from workflow.models import CoreUser
+from workflow.models import CoreUser, Organization
 
 
 class OAuthTest(TestCase):
@@ -62,34 +62,97 @@ class OAuthTest(TestCase):
         self.assertIn('access_token_jwt', response.json())
         self.assertIn('expires_in', response.json())
 
-        # if user already has core user and org, auth pipeline won't change them
-        core_user = CoreUser.objects.get(pk=self.core_user.pk)
-        self.assertEqual(core_user.organization, users_org)
+    def test_create_coreuser_new_core_user(self):
+        user = factories.User(first_name='John', last_name='Lennon')
 
-    def test_authorization_create_org_and_coreuser(self):
-        user = factories.User()
-        user.set_password('1234')
-        user.save()
+        response = auth_pipeline.create_coreuser(user=user)
 
-        c = Client(HTTP_USER_AGENT='Test/1.0')
+        self.assertIn('is_new_core_user', response)
+        self.assertTrue(response['is_new_core_user'])
+        self.assertIn('core_user', response)
+        self.assertTrue(isinstance(response['core_user'], CoreUser))
 
-        # Get Authorization token
-        authorize_url = '/oauth/token/?client_id={}'.format(self.app.client_id)
+    def test_create_coreuser_no_user(self):
+        response = auth_pipeline.create_coreuser()
+        self.assertIsNone(response)
 
-        data = {
-            'grant_type': 'password',
-            'username': user.username,
-            'password': '1234',
-        }
+    def test_create_coreuser_core_user_exists(self):
+        user = factories.User(first_name='John', last_name='Lennon')
+        coreuser = factories.CoreUser(user=user)
 
-        response = c.post(authorize_url, data=data)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('access_token', response.json())
-        self.assertIn('access_token_jwt', response.json())
-        self.assertIn('expires_in', response.json())
+        response = auth_pipeline.create_coreuser(user=user)
 
-        core_user = CoreUser.objects.get(user=user)
-        self.assertEqual(core_user.organization.name, settings.DEFAULT_ORG)
+        self.assertIn('is_new_core_user', response)
+        self.assertFalse(response['is_new_core_user'])
+        self.assertIn('core_user', response)
+        self.assertEqual(response['core_user'], coreuser)
+
+    def test_create_organization_new_default_org(self):
+        Organization.objects.get(name=settings.DEFAULT_ORG).delete()
+        user = factories.User(first_name='John', last_name='Lennon')
+        coreuser = factories.CoreUser(user=user, organization=None)
+
+        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
+
+        self.assertIn('is_new_org', response)
+        self.assertTrue(response['is_new_org'])
+        self.assertIn('organization', response)
+        self.assertTrue(isinstance(response['organization'], Organization))
+        self.assertEqual(response['organization'].name, settings.DEFAULT_ORG)
+
+        coreuser.refresh_from_db()
+        self.assertEqual(coreuser.organization, response['organization'])
+
+    @override_settings(DEFAULT_ORG=None)
+    def test_create_organization_new_username_org(self):
+        user = factories.User(first_name='John', last_name='Lennon')
+        coreuser = factories.CoreUser(user=user)
+
+        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
+
+        self.assertIn('is_new_org', response)
+        self.assertTrue(response['is_new_org'])
+        self.assertIn('organization', response)
+        self.assertTrue(isinstance(response['organization'], Organization))
+        self.assertEqual(response['organization'].name, user.username)
+
+        coreuser.refresh_from_db()
+        self.assertEqual(coreuser.organization, response['organization'])
+
+    @override_settings(DEFAULT_ORG=None)
+    def test_create_organization_org_exists(self):
+        user = factories.User(first_name='John', last_name='Lennon')
+        org = factories.Organization(name=user.username)
+        coreuser = factories.CoreUser(user=user, organization=org)
+
+        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
+
+        self.assertIn('is_new_org', response)
+        self.assertFalse(response['is_new_org'])
+        self.assertIn('organization', response)
+        self.assertTrue(isinstance(response['organization'], Organization))
+        self.assertEqual(response['organization'], org)
+
+        coreuser.refresh_from_db()
+        self.assertEqual(coreuser.organization, org)
+
+    def test_create_organization_no_new_coreuser(self):
+        user = factories.User(first_name='John', last_name='Lennon')
+        coreuser = factories.CoreUser(user=user)
+
+        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=False)
+        self.assertIsNone(response)
+
+    def test_create_organization_no_coreuser(self):
+        response = auth_pipeline.create_organization(core_user=None, is_new_core_user=True)
+        self.assertIsNone(response)
+
+    def test_create_organization_no_is_new_core_user(self):
+        user = factories.User(first_name='John', last_name='Lennon')
+        coreuser = factories.CoreUser(user=user)
+
+        response = auth_pipeline.create_organization(core_user=coreuser)
+        self.assertIsNone(response)
 
     def test_auth_allowed_not_in_whitelist(self):
         factories.Organization(name=settings.DEFAULT_ORG)
