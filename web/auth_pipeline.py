@@ -9,7 +9,7 @@ from workflow.models import CoreUser, CoreSites, Organization
 logger = logging.getLogger(__name__)
 
 
-def create_coreuser(strategy, details, backend, user=None, *args, **kwargs):
+def create_coreuser(user=None, *args, **kwargs):
     """
     Create or retrieve a core user based on the created user
     """
@@ -20,15 +20,15 @@ def create_coreuser(strategy, details, backend, user=None, *args, **kwargs):
     core_user, created = CoreUser.objects.get_or_create(user=user)
     return {
         'is_new_core_user': created,
-        'organization': core_user
+        'core_user': core_user
     }
 
 
-def create_organization(strategy, details, backend, core_user=None, *args, **kwargs):
+def create_organization(core_user=None, *args, **kwargs):
     """
     Create or retrieve an organization and associate it to the core user
     """
-    if not core_user or not kwargs['is_new_core_user']:
+    if not core_user or not kwargs.get('is_new_core_user', None):
         return
 
     # create or get an organization and associate it to the core user
