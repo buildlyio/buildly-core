@@ -141,3 +141,46 @@ class APIGatewayViewTest(TestCase):
         self.assertTrue(response.has_header('Content-Type'))
         self.assertEqual(response.get('Content-Type'), ''.join(
             headers.get('Content-Type')))
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._get_swagger_data')
+    def test_get_req_and_rep_without_pk_raises_exception(
+            self, mock_swagger_data, mock_app):
+
+        mock_swagger_data.return_value = {}
+
+        # mock app
+        app = Mock(App)
+        app.s.return_value = None
+        mock_app.return_value = app
+
+        # make api request
+        path = '/{}/{}/'.format(self.lm.name, 'nowhere')
+        response = self.client.get(path)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(response.has_header('Content-Type'))
+        self.assertEqual(response.get('Content-Type'), 'application/json')
+        self.assertEqual(json.loads(response.content)['detail'],
+                         "Endpoint not found: GET /nowhere/")
+
+    @patch('gateway.views.APIGatewayView._load_swagger_resource')
+    @patch('gateway.views.APIGatewayView._get_swagger_data')
+    def test_get_req_and_rep_with_pk_raises_exception(
+            self, mock_swagger_data, mock_app):
+        mock_swagger_data.return_value = {}
+
+        # mock app
+        app = Mock(App)
+        app.s.side_effect = KeyError()
+        mock_app.return_value = app
+
+        # make api request
+        path = '/{}/{}/123/'.format(self.lm.name, 'nowhere')
+        response = self.client.get(path)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(response.has_header('Content-Type'))
+        self.assertEqual(response.get('Content-Type'), 'application/json')
+        self.assertEqual(json.loads(response.content)['detail'],
+                         "Endpoint not found: GET /nowhere/{id}/")
