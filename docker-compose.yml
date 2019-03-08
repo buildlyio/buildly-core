@@ -49,6 +49,7 @@ services:
       DATABASE_HOST: "postgres_bifrost"
       DATABASE_PORT: "5432"
       DEFAULT_OAUTH_DOMAINS: "toladata.com,humanitec.com"
+      DEFAULT_ORG: "Default Organization"
       DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
       API_URL: "/api/docs"
       JWT_ISSUER: "bifrost"
