@@ -111,7 +111,7 @@ class CoreUser(models.Model):
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
-    organization = models.ForeignKey(Organization, default=1, blank=True, null=True, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
