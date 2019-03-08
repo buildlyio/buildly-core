@@ -30,24 +30,33 @@ class Command(BaseCommand):
 
     def _create_oauth_application(self):
         if settings.OAUTH_CLIENT_ID and settings.OAUTH_CLIENT_SECRET:
-            app = Application.objects.get_or_create(
-                name='bifrost oauth2',
+            app, created = Application.objects.update_or_create(
                 client_id=settings.OAUTH_CLIENT_ID,
                 client_secret=settings.OAUTH_CLIENT_SECRET,
-                client_type=Application.CLIENT_PUBLIC,
-                authorization_grant_type=Application.GRANT_PASSWORD
+                defaults={
+                    'name': 'bifrost oauth2',
+                    'client_type': Application.CLIENT_PUBLIC,
+                    'authorization_grant_type': Application.GRANT_PASSWORD,
+                }
             )
             self._applications.append(app)
 
-        if (settings.SOCIAL_AUTH_CLIENT_ID and
-                settings.SOCIAL_AUTH_CLIENT_SECRET):
-            app = Application.objects.get_or_create(
-                name='bifrost social auth',
-                redirect_uris=settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL,
+        if settings.SOCIAL_AUTH_CLIENT_ID and settings.SOCIAL_AUTH_CLIENT_SECRET:
+            urls = list()
+            for url in settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS.values():
+                if url:
+                    urls.append(url)
+
+            social_auth_redirect_urls = '\n'.join(urls)
+            app, created = Application.objects.update_or_create(
                 client_id=settings.SOCIAL_AUTH_CLIENT_ID,
                 client_secret=settings.SOCIAL_AUTH_CLIENT_SECRET,
-                client_type=Application.CLIENT_CONFIDENTIAL,
-                authorization_grant_type=Application.GRANT_CLIENT_CREDENTIALS
+                defaults={
+                    'name': 'bifrost social auth',
+                    'client_type': Application.CLIENT_CONFIDENTIAL,
+                    'redirect_uris': social_auth_redirect_urls,
+                    'authorization_grant_type': Application.GRANT_CLIENT_CREDENTIALS,
+                }
             )
             self._applications.append(app)
 

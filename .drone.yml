@@ -20,6 +20,7 @@ pipeline:
       DATABASE_PASSWORD: "root"
       DATABASE_HOST: "postgres"
       DATABASE_PORT: "5432"
+      DEFAULT_ORG: "Default Organization"
       DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
       SOCIAL_AUTH_GITHUB_REDIRECT_URL: "/complete/github"
       SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL: "/complete/google-oauth2"
