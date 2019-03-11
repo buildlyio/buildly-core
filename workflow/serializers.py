@@ -170,8 +170,11 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 
             # default subject and templates
             subject = 'Reset your password'
-            template_name = 'email/coreuser/password_reset.txt'
-            html_template_name = 'email/coreuser/password_reset.html'
+            # ToDo: implement languages (default should be english, but for kupfer we need german)
+            # template_name = 'email/coreuser/password_reset.txt'
+            # html_template_name = 'email/coreuser/password_reset.html'
+            template_name = 'email/coreuser/password_reset_de.txt'
+            html_template_name = 'email/coreuser/password_reset_de.html'
             count += send_email(email, subject, context, template_name, html_template_name)
 
         return count
