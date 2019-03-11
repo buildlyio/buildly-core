@@ -12,6 +12,7 @@ from django.utils.http import urlsafe_base64_encode
 from rest_framework.reverse import reverse
 
 import factories
+from workflow.models import Organization
 from workflow.views import CoreUserViewSet
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
@@ -211,9 +212,11 @@ def test_invitation_check(request_factory, org):
 @pytest.mark.django_db()
 class TestResetPassword(object):
 
-    def test_reset_password(self, request_factory, org_member):
+    def test_reset_password_using_default_emailtemplate(self, request_factory, org_member):
         user = org_member.user
         email = user.email
+        assert list(user.core_user.organization.emailtemplate_set.all()) == []
+        assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == []
         request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
@@ -227,6 +230,7 @@ class TestResetPassword(object):
         uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
         token = default_token_generator.make_token(user)
         assert f'{resetpass_url}{uid}/{token}/' in message.body
+        assert 'Thanks for using our site!' in message.body
 
     def test_reset_password_using_org_template(self, request_factory, org_member):
         user = org_member.user
