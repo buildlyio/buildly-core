@@ -8,8 +8,9 @@ from django.db import transaction
 from oauth2_provider.models import Application
 
 import factories
-from workflow.models import (ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-                             ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM)
+from workflow.models import (
+    ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
+    ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM, Organization)
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,10 @@ class Command(BaseCommand):
             )
             self._applications.append(app)
 
+    def _create_default_organization(self):
+        if settings.DEFAULT_ORG:
+            Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
+
     def _create_groups(self):
         self._groups.append(factories.Group(
             id=1,
@@ -95,5 +100,6 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         self._create_groups()
+        self._create_default_organization()
         self._create_oauth_application()
         self._create_user()
