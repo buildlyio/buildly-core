@@ -161,6 +161,9 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             if hasattr(user, 'core_user'):
                 tpl = wfm.EmailTemplate.objects.filter(organization=user.core_user.organization,
                                                        type=wfm.TEMPLATE_RESET_PASSWORD).first()
+                if not tpl:
+                    tpl = wfm.EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
+                                                           type=wfm.TEMPLATE_RESET_PASSWORD).first()
                 if tpl and tpl.template:
                     context = Context(context)
                     text_content = Template(tpl.template).render(context)
