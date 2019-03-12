@@ -67,22 +67,18 @@ class Command(BaseCommand):
 
     def _create_groups(self):
         self._groups.append(factories.Group(
-            id=1,
             name=ROLE_VIEW_ONLY,
         ))
 
         self._groups.append(factories.Group(
-            id=2,
             name=ROLE_ORGANIZATION_ADMIN,
         ))
 
         self._groups.append(factories.Group(
-            id=3,
             name=ROLE_PROGRAM_ADMIN,
         ))
 
         self._groups.append(factories.Group(
-            id=4,
             name=ROLE_PROGRAM_TEAM,
         ))
 
