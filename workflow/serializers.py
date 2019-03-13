@@ -90,11 +90,7 @@ class CoreGroupSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # update permissions
         new_permissions = validated_data.pop('permissions', [])
-        old_permissions = instance.permissions.values_list('id', flat=True)
-        to_add = set(new_permissions) - set(old_permissions)
-        to_delete = set(old_permissions) - set(new_permissions)
-        instance.permissions.remove(*to_delete)
-        instance.permissions.add(*to_add)
+        instance.permissions.set(new_permissions)
 
         return super(CoreGroupSerializer, self).update(instance, validated_data)
 

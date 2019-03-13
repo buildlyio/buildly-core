@@ -74,7 +74,7 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Permission.objects.all()
     serializer_class = serializers.PermissionSerializer
-    permission_classes = (IsOrgMember,)
+    permission_classes = (AllowAuthenticatedRead,)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
