@@ -6,7 +6,7 @@ from django.http import QueryDict
 from workflow.models import (
     ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_PROGRAM_ADMIN,
     ROLE_PROGRAM_TEAM, WorkflowTeam, Organization, Milestone,
-    Portfolio, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreUser)
+    Portfolio, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreUser, CoreGroup)
 
 PERMISSIONS_ORG_ADMIN = {
     'create': True,
@@ -138,13 +138,10 @@ class IsOrgMember(permissions.BasePermission):
         user_org = CoreUser.objects.values_list(
             'organization_id', flat=True).get(user=request.user)
         try:
-            if obj.__class__ in [Milestone,
-                                 Portfolio, WorkflowLevel1]:
+            if obj.__class__ in [Milestone, Portfolio, WorkflowLevel1, CoreGroup]:
                 return obj.organization.id == user_org
-            elif obj.__class__ in [WorkflowLevel2,
-                                   WorkflowLevel2Sort]:
-                return obj.__class__.objects.filter(
-                    workflowlevel1__organization=user_org, id=obj.id).exists()
+            elif obj.__class__ in [WorkflowLevel2, WorkflowLevel2Sort]:
+                return obj.__class__.objects.filter(workflowlevel1__organization=user_org, id=obj.id).exists()
             elif obj.__class__ in [Organization]:
                 return obj.id == user_org
             elif obj.__class__ in [WorkflowTeam]:

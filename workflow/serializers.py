@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 import jwt
 from django.contrib.auth import password_validation
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
@@ -15,6 +15,12 @@ from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
 
 
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = '__all__'
+
+
 class GroupSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField('get_self')
 
@@ -23,7 +29,7 @@ class GroupSerializer(serializers.ModelSerializer):
         return reverse('group-detail', kwargs={'pk': obj.id}, request=request)
 
     class Meta:
-        model = wfm.Group
+        model = Group
         fields = '__all__'
 
 
@@ -56,6 +62,42 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
     class Meta:
         model = wfm.WorkflowLevel2
         fields = '__all__'
+
+
+class CoreGroupSerializer(serializers.ModelSerializer):
+
+    def _get_current_coreuser(self) -> wfm.CoreUser:
+        coreuser = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+            coreuser = user.core_user if hasattr(user, "core_user") else None
+        return coreuser
+
+    def create(self, validated_data):
+        # set organization
+        coreuser = self._get_current_coreuser()
+        if coreuser and coreuser.organization:
+            validated_data['organization'] = coreuser.organization
+
+        # create core group and permissions
+        permissions_data = validated_data.pop('permissions', [])
+        coregroup = wfm.CoreGroup.objects.create(**validated_data)
+        coregroup.permissions.add(*permissions_data)
+
+        return coregroup
+
+    def update(self, instance, validated_data):
+        # update permissions
+        new_permissions = validated_data.pop('permissions', [])
+        instance.permissions.set(new_permissions)
+
+        return super(CoreGroupSerializer, self).update(instance, validated_data)
+
+    class Meta:
+        model = wfm.CoreGroup
+        read_only_fields = ('core_group_uuid', 'organization')
+        exclude = ('create_date', 'edit_date')
 
 
 class CoreUserSerializer(serializers.ModelSerializer):

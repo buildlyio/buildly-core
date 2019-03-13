@@ -5,7 +5,7 @@ import logging
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, User, Permission
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -62,17 +62,32 @@ class DefaultCursorPagination(CursorPagination):
     page_size_query_param = 'page_size'
 
 
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Existing permissions
+
+    retrieve:
+    Return the given permission
+
+    list:
+    Return a list of existing permissions
+    """
+    queryset = Permission.objects.all()
+    serializer_class = serializers.PermissionSerializer
+    permission_classes = (AllowAuthenticatedRead,)
+
+
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
-    a user (for permission though WorkflowTeam)
+    a user (for permission through WorkflowTeam)
 
     title:
     Groups are used for setting permission descriptions in Workflow Team.
 
     description:
     Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
-    a user (for permission though WorkflowTeam)
+    a user (for permission through WorkflowTeam)
 
     retrieve:
     Return the given group.
@@ -83,7 +98,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     create:
     Create a new group instance.
     """
-    queryset = wfm.Group.objects.all()
+    queryset = Group.objects.all()
     serializer_class = serializers.GroupSerializer
 
 
@@ -251,6 +266,26 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     queryset = wfm.WorkflowLevel1.objects.all()
     permission_classes = (AllowCoreUserRoles, IsOrgMember)
     pagination_class = DefaultCursorPagination
+
+
+class CoreGroupViewSet(viewsets.ModelViewSet):
+    """
+    CoreGroup is similar to Django Group, but it is associated with an organization.
+    It's used for creating groups of Core Users inside an organization and defining model level permissions
+    for this group
+    """
+    queryset = wfm.CoreGroup.objects.all()
+    serializer_class = serializers.CoreGroupSerializer
+    permission_classes = (AllowOnlyOrgAdmin, IsOrgMember)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        user = request.user
+        if not user.is_superuser:
+            queryset = queryset.filter(organization_id=user.core_user.organization_id)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
