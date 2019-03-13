@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 from django.contrib.postgres import fields
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import AbstractUser, User, Group, Permission
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.contrib.sites.models import Site
@@ -16,6 +16,12 @@ ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_PROGRAM_ADMIN = 'WorkflowAdmin'
 ROLE_PROGRAM_TEAM = 'WorkflowTeam'
 ROLE_VIEW_ONLY = 'ViewOnly'
+ROLES = (
+    (ROLE_ORGANIZATION_ADMIN, ROLE_ORGANIZATION_ADMIN),
+    (ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_ADMIN),
+    (ROLE_PROGRAM_TEAM, ROLE_PROGRAM_TEAM),
+    (ROLE_VIEW_ONLY, ROLE_VIEW_ONLY),
+)
 DEFAULT_PROGRAM_NAME = 'Default program'
 
 
@@ -128,7 +134,7 @@ class CoreGroup(models.Model):
         super(CoreGroup, self).save(*args, **kwargs)
 
 
-class CoreUser(models.Model):
+class CoreUser(AbstractUser):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
     """
@@ -137,17 +143,23 @@ class CoreUser(models.Model):
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core Groups', blank=True)
+    groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
+    roles = models.CharField('User roles', max_length=100, null=True, blank=True, choices=ROLES)
     privacy_disclaimer_accepted = models.BooleanField(default=False)
-    create_date = models.DateTimeField(null=True, blank=True)
+    create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
+    # We need to override this field to specify different `related_name` to avoid conflict with User model
+    # (probably we can remove it when `django.contrib.auth` will be excluded from INSTALLED_APPS)
+    user_permissions = models.ManyToManyField(Permission, verbose_name='User permissions', blank=True,
+                                              help_text='Specific permissions for this user.',
+                                              related_name="core_user_set", related_query_name="core_user")
 
     class Meta:
-        ordering = ('user__first_name',)
+        ordering = ('first_name',)
 
     def __str__(self):
-        if self.user.first_name and self.user.last_name:
-            return f'{self.user.first_name} {self.user.last_name}'
+        if self.first_name and self.last_name:
+            return f'{self.first_name} {self.last_name}'
         else:
             return '-'
 
@@ -160,7 +172,7 @@ class CoreUser(models.Model):
 
     @property
     def is_active(self):
-        return self.user.is_active
+        return self.is_active
 
 
 class Internationalization(models.Model):
