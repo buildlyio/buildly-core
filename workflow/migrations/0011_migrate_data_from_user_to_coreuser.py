@@ -20,14 +20,11 @@ def forwards(apps, schema_editor):
 
         core_user.user_permissions.add(*list(user.user_permissions.all()))
 
-        for role in user.groups.all():
-            pass
-
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('workflow', '0009_coreuser_is_active'),
+        ('workflow', '0010_coreuser_is_active'),
     ]
 
     operations = [
