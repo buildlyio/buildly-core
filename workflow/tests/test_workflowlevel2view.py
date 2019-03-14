@@ -8,7 +8,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.reverse import reverse
 from workflow.models import (WorkflowLevel2, WorkflowTeam,
                              ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-                             ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM)
+                             ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM)
 
 from ..views import WorkflowLevel2ViewSet
 
@@ -57,7 +57,7 @@ class WorkflowLevel2ListViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -76,7 +76,7 @@ class WorkflowLevel2ListViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         request.user = self.core_user.user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -196,7 +196,7 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk
@@ -217,7 +217,7 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk}
@@ -239,7 +239,7 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk}
@@ -278,7 +278,7 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         data = {
             'name': 'Save the Children',
@@ -387,7 +387,7 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
 
         data = {'name': 'Community awareness program conducted to plant trees',
@@ -411,7 +411,7 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
 
         data = {'name': 'Community awareness program conducted to plant trees',
@@ -437,7 +437,7 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
 
         data = {'name': 'Community awareness program conducted to plant trees',
@@ -481,7 +481,7 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
@@ -568,7 +568,7 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))
@@ -586,7 +586,7 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))
@@ -602,7 +602,7 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))

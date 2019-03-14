@@ -3,8 +3,8 @@ import factories
 from rest_framework.test import APIRequestFactory
 from rest_framework.reverse import reverse
 from workflow.models import (WorkflowLevel2Sort, WorkflowTeam,
-                             ROLE_ORGANIZATION_ADMIN, ROLE_PROGRAM_ADMIN,
-                             ROLE_PROGRAM_TEAM, ROLE_VIEW_ONLY)
+                             ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN,
+                             ROLE_WORKFLOW_TEAM, ROLE_VIEW_ONLY)
 
 from ..views import WorkflowLevel2SortViewSet
 
@@ -63,7 +63,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         request.user = self.core_user.user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -86,7 +86,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         request.user = self.core_user.user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
