@@ -7,11 +7,15 @@ from workflow.models import CoreUser, Role
 
 def forwards(apps, schema_editor):
     for group in Group.objects.all():
-        Role.objects.create(name=group.name)
+        Role.objects.get_or_create(name=group.name)
 
     for core_user in CoreUser.objects.all():
-        roles = Role.objects.filter(name__in=core_user.groups.values_list('name', flat=True))
+        roles = Role.objects.filter(name__in=core_user.user.groups.values_list('name', flat=True))
         core_user.roles.add(*list(roles))
+
+
+def backwards(apps, schema_editor):
+    pass
 
 
 class Migration(migrations.Migration):
@@ -21,5 +25,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards)
+        migrations.RunPython(forwards, backwards)
     ]
