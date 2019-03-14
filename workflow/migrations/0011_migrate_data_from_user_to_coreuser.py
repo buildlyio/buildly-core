@@ -17,8 +17,13 @@ def forwards(apps, schema_editor):
         core_user.last_login = user.last_login
         core_user.password = user.password
         core_user.date_joined = user.date_joined
+        core_user.save()
 
         core_user.user_permissions.add(*list(user.user_permissions.all()))
+
+
+def backwards(apps, schema_editor):
+    pass
 
 
 class Migration(migrations.Migration):
@@ -28,5 +33,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards)
+        migrations.RunPython(forwards, backwards)
     ]
