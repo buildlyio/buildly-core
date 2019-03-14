@@ -1,7 +1,7 @@
 from django.template.defaultfilters import slugify
 from factory import DjangoModelFactory, lazy_attribute
 
-from workflow.models import ROLE_PROGRAM_ADMIN
+from workflow.models import ROLE_WORKFLOW_ADMIN
 
 
 class Group(DjangoModelFactory):
@@ -9,7 +9,7 @@ class Group(DjangoModelFactory):
         model = 'auth.Group'
         django_get_or_create = ('name',)
 
-    name = ROLE_PROGRAM_ADMIN
+    name = ROLE_WORKFLOW_ADMIN
 
 
 class User(DjangoModelFactory):

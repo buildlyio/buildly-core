@@ -1,4 +1,4 @@
-from factory import DjangoModelFactory, SubFactory
+from factory import DjangoModelFactory, SubFactory, lazy_attribute
 
 from workflow.models import (
     CoreUser as CoreUserM,
@@ -37,6 +37,8 @@ class CoreUser(DjangoModelFactory):
 
     user = SubFactory(User)
     organization = SubFactory(Organization)
+    username = lazy_attribute(lambda o: o.user.username)
+    email = lazy_attribute(lambda o: o.user.email)
 
 
 class WorkflowLevel1(DjangoModelFactory):

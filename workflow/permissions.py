@@ -4,8 +4,8 @@ from rest_framework.relations import ManyRelatedField
 from django.http import QueryDict
 
 from workflow.models import (
-    ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_PROGRAM_ADMIN,
-    ROLE_PROGRAM_TEAM, WorkflowTeam, Organization, Milestone,
+    ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_WORKFLOW_ADMIN,
+    ROLE_WORKFLOW_TEAM, WorkflowTeam, Organization, Milestone,
     Portfolio, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreUser, CoreGroup)
 
 PERMISSIONS_ORG_ADMIN = {
@@ -18,9 +18,9 @@ PERMISSIONS_ORG_ADMIN = {
 
 PERMISSIONS_ADMIN = PERMISSIONS_ORG_ADMIN
 
-PERMISSIONS_PROGRAM_ADMIN = PERMISSIONS_ORG_ADMIN
+PERMISSIONS_WORKFLOW_ADMIN = PERMISSIONS_ORG_ADMIN
 
-PERMISSIONS_PROGRAM_TEAM = {
+PERMISSIONS_WORKFLOW_TEAM = {
     'create': True,
     'edit': True,
     'remove': False,
@@ -217,8 +217,8 @@ class AllowCoreUserRoles(permissions.BasePermission):
 
                 if model_cls in [WorkflowLevel2]:
                     if (ROLE_ORGANIZATION_ADMIN in user_groups or
-                            ROLE_PROGRAM_ADMIN in team_groups or
-                            ROLE_PROGRAM_TEAM in team_groups):
+                            ROLE_WORKFLOW_ADMIN in team_groups or
+                            ROLE_WORKFLOW_TEAM in team_groups):
                         is_allowed_role = True
                     else:
                         is_allowed_role = False
@@ -227,7 +227,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     return is_allowed_role and is_same_org
                 elif model_cls is WorkflowTeam:
                     return (((ROLE_VIEW_ONLY not in team_groups and
-                            ROLE_PROGRAM_TEAM not in team_groups) or
+                              ROLE_WORKFLOW_TEAM not in team_groups) or
                              ROLE_ORGANIZATION_ADMIN in user_groups) and
                             all(x.organization == user_org for x in wflvl1))
 
@@ -278,7 +278,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     workflow_user=request.user.core_user,
                     workflowlevel1__portfolio=obj).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups or ROLE_PROGRAM_TEAM in \
+                if ROLE_WORKFLOW_ADMIN in team_groups or ROLE_WORKFLOW_TEAM in \
                         team_groups:
                     return view.action == 'retrieve'
             elif model_cls is WorkflowTeam:
@@ -286,7 +286,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     workflow_user=request.user.core_user,
                     workflowlevel1=obj.workflowlevel1).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups:
+                if ROLE_WORKFLOW_ADMIN in team_groups:
                     return True
                 else:
                     return view.action == 'retrieve'
@@ -295,9 +295,9 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     workflow_user=request.user.core_user,
                     workflowlevel1=obj).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups:
+                if ROLE_WORKFLOW_ADMIN in team_groups:
                     return True
-                elif ROLE_PROGRAM_TEAM in team_groups:
+                elif ROLE_WORKFLOW_TEAM in team_groups:
                     return view.action != 'destroy'
 
             elif model_cls in [WorkflowLevel2]:
@@ -306,9 +306,9 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     workflow_user=request.user.core_user,
                     workflowlevel1=workflowlevel1).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups:
+                if ROLE_WORKFLOW_ADMIN in team_groups:
                     return True
-                elif ROLE_PROGRAM_TEAM in team_groups:
+                elif ROLE_WORKFLOW_TEAM in team_groups:
                     return view.action != 'destroy'
                 elif ROLE_VIEW_ONLY in team_groups:
                     return view.action == 'retrieve'

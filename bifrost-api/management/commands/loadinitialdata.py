@@ -10,7 +10,7 @@ from oauth2_provider.models import Application
 import factories
 from workflow.models import (
     ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-    ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM, Organization)
+    ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization)
 
 logger = logging.getLogger(__name__)
 
@@ -75,11 +75,11 @@ class Command(BaseCommand):
         ))
 
         self._groups.append(factories.Group(
-            name=ROLE_PROGRAM_ADMIN,
+            name=ROLE_WORKFLOW_ADMIN,
         ))
 
         self._groups.append(factories.Group(
-            name=ROLE_PROGRAM_TEAM,
+            name=ROLE_WORKFLOW_TEAM,
         ))
 
     def _create_user(self):

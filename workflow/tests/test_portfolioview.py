@@ -4,8 +4,8 @@ from django.test import TestCase
 import factories
 from rest_framework.reverse import reverse
 from rest_framework.test import APIRequestFactory
-from workflow.models import (ROLE_ORGANIZATION_ADMIN, ROLE_PROGRAM_ADMIN,
-                             ROLE_PROGRAM_TEAM, ROLE_VIEW_ONLY, Portfolio)
+from workflow.models import (ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN,
+                             ROLE_WORKFLOW_TEAM, ROLE_VIEW_ONLY, Portfolio)
 
 from ..views import PortfolioViewSet
 
@@ -72,7 +72,7 @@ class PortfolioListViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=factories.WorkflowLevel1(
                 organization=self.core_user.organization),
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         self.portfolio.organization = self.core_user.organization
         self.portfolio.save()
@@ -89,7 +89,7 @@ class PortfolioListViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=factories.WorkflowLevel1(
                 organization=self.core_user.organization),
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         self.portfolio.organization = self.core_user.organization
         self.portfolio.save()
@@ -190,7 +190,7 @@ class PortfolioCreateViewsTest(TestCase):
                          self.core_user.organization.pk)
 
     def test_create_portfolio_other_user(self):
-        role_without_benefits = ROLE_PROGRAM_ADMIN
+        role_without_benefits = ROLE_WORKFLOW_ADMIN
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             role=factories.Group(name=role_without_benefits))
@@ -286,7 +286,7 @@ class PortfolioUpdateViewsTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_update_portfolio_org_admin_other_user(self):
-        role_without_benefits = ROLE_PROGRAM_ADMIN
+        role_without_benefits = ROLE_WORKFLOW_ADMIN
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             role=factories.Group(name=role_without_benefits))
@@ -352,7 +352,7 @@ class PortfolioDeleteViewsTest(TestCase):
         Portfolio.objects.get(pk=portfolio.pk)
 
     def test_delete_portfolio_org_admin_other_user(self):
-        role_without_benefits = ROLE_PROGRAM_ADMIN
+        role_without_benefits = ROLE_WORKFLOW_ADMIN
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             role=factories.Group(name=role_without_benefits))
