@@ -109,6 +109,19 @@ TITLE_CHOICES = (
 )
 
 
+class Role(models.Model):
+    """
+    Defines role permissions for Core Users (organization admin, workflow admin etc)
+    """
+    name = models.CharField('Name', max_length=100, choices=ROLES, unique=True)
+
+    class Meta:
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+
 class CoreGroup(models.Model):
     """
     CoreGroup is similar to Django Group, but it is associated with an organization.
@@ -144,7 +157,7 @@ class CoreUser(AbstractUser):
     user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
     groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
-    roles = models.CharField('User roles', max_length=100, null=True, blank=True, choices=ROLES)
+    roles = models.ManyToManyField(Role, verbose_name='User roles', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
