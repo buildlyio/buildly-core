@@ -30,7 +30,7 @@ from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
                           AllowOnlyOrgAdmin,
                           PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
-                          PERMISSIONS_PROGRAM_ADMIN, PERMISSIONS_PROGRAM_TEAM,
+                          PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_WORKFLOW_TEAM,
                           PERMISSIONS_VIEW_ONLY)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                       DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -175,8 +175,8 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         permissions_role = {
             'Admin': PERMISSIONS_ADMIN,
             wfm.ROLE_ORGANIZATION_ADMIN: PERMISSIONS_ORG_ADMIN,
-            wfm.ROLE_PROGRAM_ADMIN: PERMISSIONS_PROGRAM_ADMIN,
-            wfm.ROLE_PROGRAM_TEAM: PERMISSIONS_PROGRAM_TEAM,
+            wfm.ROLE_WORKFLOW_ADMIN: PERMISSIONS_WORKFLOW_ADMIN,
+            wfm.ROLE_WORKFLOW_TEAM: PERMISSIONS_WORKFLOW_TEAM,
             wfm.ROLE_VIEW_ONLY: PERMISSIONS_VIEW_ONLY,
         }
 
@@ -229,7 +229,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)  # inherited from CreateModelMixin
 
         # Assign the user to multiple properties of the Program
-        group_program_admin = Group.objects.get(name=wfm.ROLE_PROGRAM_ADMIN)
+        group_program_admin = Group.objects.get(name=wfm.ROLE_WORKFLOW_ADMIN)
         wflvl1 = wfm.WorkflowLevel1.objects.get(
             level1_uuid=serializer.data['level1_uuid'])
         wfm.WorkflowTeam.objects.create(

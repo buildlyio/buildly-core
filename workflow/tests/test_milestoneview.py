@@ -5,7 +5,7 @@ import factories
 from rest_framework.test import APIRequestFactory
 from rest_framework.reverse import reverse
 from workflow.models import WorkflowTeam, ROLE_ORGANIZATION_ADMIN, \
-    ROLE_PROGRAM_TEAM, ROLE_PROGRAM_ADMIN, ROLE_VIEW_ONLY
+    ROLE_WORKFLOW_TEAM, ROLE_WORKFLOW_ADMIN, ROLE_VIEW_ONLY
 
 from ..views import MilestoneViewSet
 
@@ -47,7 +47,7 @@ class MilestoneListViewsTest(TestCase):
         request = self.factory.get('/milestone/')
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         request.user = self.core_user.user
         view = MilestoneViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -63,7 +63,7 @@ class MilestoneListViewsTest(TestCase):
         request = self.factory.get('/milestone/')
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         request.user = self.core_user.user
         view = MilestoneViewSet.as_view({'get': 'list'})
         response = view(request)

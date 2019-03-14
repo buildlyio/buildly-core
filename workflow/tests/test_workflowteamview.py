@@ -4,7 +4,7 @@ from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
 from workflow.models import (WorkflowTeam, ROLE_ORGANIZATION_ADMIN,
-                             ROLE_PROGRAM_ADMIN, ROLE_PROGRAM_TEAM,
+                             ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM,
                              ROLE_VIEW_ONLY)
 
 from ..views import WorkflowTeamViewSet
@@ -112,7 +112,7 @@ class WorkflowTeamListViewsTest(TestCase):
     def test_list_workflowteam_program_admin(self):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         request_get = self.factory.get('/workflowteam/')
         request_get.user = self.core_user.user
@@ -124,7 +124,7 @@ class WorkflowTeamListViewsTest(TestCase):
     def test_list_workflowteam_program_team(self):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         request_get = self.factory.get('/workflowteam/')
         request_get.user = self.core_user.user
@@ -172,7 +172,7 @@ class WorkflowTeamCreateViewsTest(TestCase):
         self.core_user.user.is_superuser = True
         self.core_user.user.save()
 
-        role = factories.Group(name=ROLE_PROGRAM_ADMIN)
+        role = factories.Group(name=ROLE_WORKFLOW_ADMIN)
         data = {
             'role': role.pk,
             'workflow_user': self.core_user.pk,
@@ -194,9 +194,9 @@ class WorkflowTeamCreateViewsTest(TestCase):
     def test_create_workflowteam_program_admin(self):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
-        role = factories.Group(name=ROLE_PROGRAM_TEAM)
+        role = factories.Group(name=ROLE_WORKFLOW_TEAM)
         data = {
             'role': role.pk,
             'workflow_user': self.core_user.pk,
@@ -218,9 +218,9 @@ class WorkflowTeamCreateViewsTest(TestCase):
     def test_create_workflowteam_program_admin_json(self):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
-        role = factories.Group(name=ROLE_PROGRAM_TEAM)
+        role = factories.Group(name=ROLE_WORKFLOW_TEAM)
         data = {
             'role': role.pk,
             'workflow_user': self.core_user.pk,
@@ -241,7 +241,7 @@ class WorkflowTeamCreateViewsTest(TestCase):
         )
 
     def test_create_workflowteam_other_user(self):
-        role_without_benefits = ROLE_PROGRAM_TEAM
+        role_without_benefits = ROLE_WORKFLOW_TEAM
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=self.wflvl1,
             role=factories.Group(name=role_without_benefits))
@@ -325,7 +325,7 @@ class WorkflowTeamUpdateViewsTest(TestCase):
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         data = {'status': 'active'}
         request = self.factory.post(None, data)
@@ -342,7 +342,7 @@ class WorkflowTeamUpdateViewsTest(TestCase):
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         data = {'status': 'active'}
         request = self.factory.post(None, json.dumps(data),
@@ -357,7 +357,7 @@ class WorkflowTeamUpdateViewsTest(TestCase):
         self.assertEqual(status_updated, 'active')
 
     def test_update_workflowteam_other_user(self):
-        role_without_benefits = ROLE_PROGRAM_TEAM
+        role_without_benefits = ROLE_WORKFLOW_TEAM
         self.workflowteam.role = factories.Group(name=role_without_benefits)
         self.workflowteam.save()
 
@@ -417,7 +417,7 @@ class WorkflowTeamDeleteViewsTest(TestCase):
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         request = self.factory.delete(None)
         request.user = self.core_user.user
@@ -433,7 +433,7 @@ class WorkflowTeamDeleteViewsTest(TestCase):
         factories.WorkflowTeam(
             workflow_user=self.core_user,
             workflowlevel1=self.wflvl1,
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         request = self.factory.delete(None)
         request.user = self.core_user.user

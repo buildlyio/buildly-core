@@ -8,8 +8,8 @@ from rest_framework.reverse import reverse
 from rest_framework.serializers import ValidationError
 from rest_framework.test import APIRequestFactory
 from workflow.models import (WorkflowTeam, WorkflowLevel1,
-                             ROLE_ORGANIZATION_ADMIN, ROLE_PROGRAM_TEAM,
-                             ROLE_PROGRAM_ADMIN, ROLE_VIEW_ONLY)
+                             ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_TEAM,
+                             ROLE_WORKFLOW_ADMIN, ROLE_VIEW_ONLY)
 
 from ..serializers import WorkflowLevel1PermissionsSerializer
 from ..views import WorkflowLevel1ViewSet
@@ -73,7 +73,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         wflvl2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        group_program_admin = factories.Group(name=ROLE_PROGRAM_ADMIN)
+        group_program_admin = factories.Group(name=ROLE_WORKFLOW_ADMIN)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=wflvl1,
             role=group_program_admin)
@@ -92,7 +92,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
         wflvl1_2 = factories.WorkflowLevel1(
             name='Population Health Initiative',
             organization=self.core_user.organization)
-        group_program_admin = factories.Group(name=ROLE_PROGRAM_ADMIN)
+        group_program_admin = factories.Group(name=ROLE_WORKFLOW_ADMIN)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=wflvl1,
             role=group_program_admin)
@@ -115,7 +115,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         wflvl2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
-        group_program_team = factories.Group(name=ROLE_PROGRAM_TEAM)
+        group_program_team = factories.Group(name=ROLE_WORKFLOW_TEAM)
         WorkflowTeam.objects.create(
             workflow_user=self.core_user, workflowlevel1=wflvl1,
             role=group_program_team)
@@ -285,11 +285,11 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                 'role_org': ROLE_ORGANIZATION_ADMIN,
             })
 
-    def test_list_permissions_program_admin(self):
+    def test_list_permissions_workflow_admin(self):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         factories.WorkflowTeam(workflow_user=self.core_user,
-                               role=factories.Group(name=ROLE_PROGRAM_ADMIN),
+                               role=factories.Group(name=ROLE_WORKFLOW_ADMIN),
                                workflowlevel1=wflvl1)
 
         request = self.factory.get('')
@@ -304,7 +304,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                     {
                         'workflowlevel1_id': wflvl1.id,
                         'workflowlevel1_uuid': str(wflvl1.level1_uuid),
-                        'role': ROLE_PROGRAM_ADMIN,
+                        'role': ROLE_WORKFLOW_ADMIN,
                         'create': True,
                         'edit': True,
                         'remove': True,
@@ -314,11 +314,11 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                 ],
             })
 
-    def test_list_permissions_program_team(self):
+    def test_list_permissions_workflow_team(self):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         factories.WorkflowTeam(workflow_user=self.core_user,
-                               role=factories.Group(name=ROLE_PROGRAM_TEAM),
+                               role=factories.Group(name=ROLE_WORKFLOW_TEAM),
                                workflowlevel1=wflvl1)
 
         request = self.factory.get('')
@@ -333,7 +333,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                     {
                         'workflowlevel1_id': wflvl1.id,
                         'workflowlevel1_uuid': str(wflvl1.level1_uuid),
-                        'role': ROLE_PROGRAM_TEAM,
+                        'role': ROLE_WORKFLOW_TEAM,
                         'create': True,
                         'edit': True,
                         'remove': False,
@@ -380,10 +380,10 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
         wflvl1_2 = factories.WorkflowLevel1(
             name='wflvl1_2', organization=self.core_user.organization)
         factories.WorkflowTeam(workflow_user=self.core_user,
-                               role=factories.Group(name=ROLE_PROGRAM_ADMIN),
+                               role=factories.Group(name=ROLE_WORKFLOW_ADMIN),
                                workflowlevel1=wflvl1_0)
         factories.WorkflowTeam(workflow_user=self.core_user,
-                               role=factories.Group(name=ROLE_PROGRAM_TEAM),
+                               role=factories.Group(name=ROLE_WORKFLOW_TEAM),
                                workflowlevel1=wflvl1_1)
         factories.WorkflowTeam(workflow_user=self.core_user,
                                role=factories.Group(name=ROLE_VIEW_ONLY),
@@ -401,7 +401,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                     {
                         'workflowlevel1_id': wflvl1_0.id,
                         'workflowlevel1_uuid': str(wflvl1_0.level1_uuid),
-                        'role': ROLE_PROGRAM_ADMIN,
+                        'role': ROLE_WORKFLOW_ADMIN,
                         'create': True,
                         'edit': True,
                         'remove': True,
@@ -411,7 +411,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                     {
                         'workflowlevel1_id': wflvl1_1.id,
                         'workflowlevel1_uuid': str(wflvl1_1.level1_uuid),
-                        'role': ROLE_PROGRAM_TEAM,
+                        'role': ROLE_WORKFLOW_TEAM,
                         'create': True,
                         'edit': True,
                         'remove': False,
@@ -580,7 +580,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         WorkflowTeam.objects.get(
             workflowlevel1__id=response.data['id'],
             workflow_user=self.core_user,
-            role__name=ROLE_PROGRAM_ADMIN)
+            role__name=ROLE_WORKFLOW_ADMIN)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
         self.assertEqual(wflvl1.organization, self.core_user.organization)
@@ -602,7 +602,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         WorkflowTeam.objects.get(
             workflowlevel1__id=response.data['id'],
             workflow_user=self.core_user,
-            role__name=ROLE_PROGRAM_ADMIN)
+            role__name=ROLE_WORKFLOW_ADMIN)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
         self.assertEqual(wflvl1.organization, self.core_user.organization)
@@ -621,7 +621,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=factories.WorkflowLevel1(
                 organization=self.core_user.organization),
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
@@ -636,7 +636,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         WorkflowTeam.objects.get(
             workflowlevel1__id=response.data['id'],
             workflow_user=self.core_user,
-            role__name=ROLE_PROGRAM_ADMIN)
+            role__name=ROLE_WORKFLOW_ADMIN)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
         self.assertEqual(wflvl1.organization, self.core_user.organization)
@@ -652,7 +652,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=factories.WorkflowLevel1(
                 organization=self.core_user.organization),
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'),
@@ -667,7 +667,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         WorkflowTeam.objects.get(
             workflowlevel1__id=response.data['id'],
             workflow_user=self.core_user,
-            role__name=ROLE_PROGRAM_ADMIN)
+            role__name=ROLE_WORKFLOW_ADMIN)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
         self.assertEqual(wflvl1.organization, self.core_user.organization)
@@ -683,7 +683,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=factories.WorkflowLevel1(
                 organization=self.core_user.organization),
-            role=factories.Group(name=ROLE_PROGRAM_TEAM))
+            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
 
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
@@ -696,7 +696,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         WorkflowTeam.objects.get(
             workflowlevel1__id=response.data['id'],
             workflow_user=self.core_user,
-            role__name=ROLE_PROGRAM_ADMIN)
+            role__name=ROLE_WORKFLOW_ADMIN)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
         self.assertEqual(wflvl1.organization, self.core_user.organization)
@@ -840,7 +840,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
 
     def test_update_workflowlevel1_program_team(self):
         wflvl1 = factories.WorkflowLevel1()
-        group_program_team = factories.Group(name=ROLE_PROGRAM_TEAM)
+        group_program_team = factories.Group(name=ROLE_WORKFLOW_TEAM)
         wflvl1.organization = self.core_user.organization
         wflvl1.user_access.add(self.core_user)
         wflvl1.save()
@@ -862,7 +862,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
 
     def test_update_workflowlevel1_same_org_different_program_team(self):
         wflvl1_other = factories.WorkflowLevel1()
-        group_program_team = factories.Group(name=ROLE_PROGRAM_TEAM)
+        group_program_team = factories.Group(name=ROLE_WORKFLOW_TEAM)
         wflvl1_other.organization = self.core_user.organization
         wflvl1_other.user_access.add(self.core_user)
         wflvl1_other.save()
@@ -957,7 +957,7 @@ class WorkflowLevel1DeleteViewsTest(TestCase):
     def test_delete_workflowlevel1_program_admin(self):
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
-            role=factories.Group(name=ROLE_PROGRAM_ADMIN))
+            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
 
         # Create a program
         data = {'name': 'Save the Children'}
