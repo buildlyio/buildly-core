@@ -8,8 +8,6 @@ from workflow.models import (
     WorkflowLevel2 as WorkflowLevel2M,
     WorkflowTeam as WorkflowTeamM,
     WorkflowLevel2Sort as WorkflowLevel2SortM,
-    Portfolio as PortfolioM,
-    Milestone as MilestoneM,
     Internationalization as InternationalizationM,
 )
 from .django_models import User, Group
@@ -71,20 +69,6 @@ class WorkflowLevel2Sort(DjangoModelFactory):
 
     workflowlevel1 = SubFactory(WorkflowLevel1)
     workflowlevel2_parent_id = SubFactory(WorkflowLevel2)
-
-
-class Portfolio(DjangoModelFactory):
-    class Meta:
-        model = PortfolioM
-
-    organization = SubFactory(Organization)
-
-
-class Milestone(DjangoModelFactory):
-    class Meta:
-        model = MilestoneM
-
-    organization = SubFactory(Organization)
 
 
 class Internationalization(DjangoModelFactory):

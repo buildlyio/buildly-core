@@ -10,7 +10,7 @@ from oauth2_provider.models import Application
 import factories
 from workflow.models import (
     ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-    ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization)
+    ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization, CoreUser)
 
 logger = logging.getLogger(__name__)
 
@@ -83,15 +83,14 @@ class Command(BaseCommand):
         ))
 
     def _create_user(self):
-        User.objects.filter(username='admin').delete()
-        user = User.objects.create_superuser(
+        CoreUser.objects.filter(username='admin').delete()
+        CoreUser.objects.create_superuser(
             first_name='System',
             last_name='Admin',
             username='admin',
             email='admin@example.com',
-            password='ttmtola1977'
+            password='ttmtola1977',
         )
-        self._core_user = factories.CoreUser(user=user)
 
     @transaction.atomic
     def handle(self, *args, **options):
