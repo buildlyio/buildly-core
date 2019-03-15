@@ -668,7 +668,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(created_by=getattr(self.request.user, 'core_user', None))
 
     filter_fields = ('level2_uuid',
                      'workflowlevel1__name', 'workflowlevel1__id')
