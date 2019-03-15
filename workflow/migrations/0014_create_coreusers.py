@@ -30,6 +30,10 @@ def forwards(apps, schema_editor):
             core_user.roles.add(*list(roles))
 
 
+def backwards(apps, schema_editor):
+    pass
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -37,5 +41,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards)
+        migrations.RunPython(forwards, backwards)
     ]
