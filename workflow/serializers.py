@@ -308,17 +308,3 @@ class WorkflowTeamListFullSerializer(serializers.ModelSerializer):
     class Meta:
         model = wfm.WorkflowTeam
         fields = '__all__'
-
-
-class MilestoneSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = wfm.Milestone
-        fields = '__all__'
-
-
-class PortfolioSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = wfm.Portfolio
-        fields = '__all__'

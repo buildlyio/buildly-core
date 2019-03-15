@@ -140,6 +140,8 @@ DATABASES = {
 }
 
 
+AUTH_USER_MODEL = 'workflow.CoreUser'
+
 # Authentication backends
 # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
 
