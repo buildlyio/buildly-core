@@ -1,3 +1,4 @@
+from django.template.defaultfilters import slugify
 from factory import DjangoModelFactory, SubFactory, lazy_attribute
 
 from workflow.models import (
@@ -10,7 +11,7 @@ from workflow.models import (
     WorkflowLevel2Sort as WorkflowLevel2SortM,
     Internationalization as InternationalizationM,
 )
-from .django_models import User, Group
+from .django_models import Group
 
 
 class Organization(DjangoModelFactory):
@@ -31,12 +32,16 @@ class CoreGroup(DjangoModelFactory):
 class CoreUser(DjangoModelFactory):
     class Meta:
         model = CoreUserM
-        django_get_or_create = ('user',)
+        django_get_or_create = ('username',)
 
-    user = SubFactory(User)
     organization = SubFactory(Organization)
-    username = lazy_attribute(lambda o: o.user.username)
-    email = lazy_attribute(lambda o: o.user.email)
+    first_name = 'Homer'
+    last_name = 'Simpson'
+    username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
+    email = lazy_attribute(lambda o: o.username + "@example.com")
+
+
+User = CoreUser  # for tests incompatibility
 
 
 class WorkflowLevel1(DjangoModelFactory):

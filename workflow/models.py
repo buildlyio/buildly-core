@@ -155,7 +155,7 @@ class CoreUser(AbstractUser):
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
-    groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
     roles = models.ManyToManyField(Role, verbose_name='User roles', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)

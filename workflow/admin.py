@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (CoreUser, CoreGroup, Role, Organization, WorkflowLevel1, WorkflowLevel2,
@@ -44,6 +45,22 @@ class CoreUserAdmin(admin.ModelAdmin):
     list_filter = ('is_staff', 'organization')
     search_fields = ('first_name', 'first_name', 'username', 'title')
 
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return self.add_fieldsets
+
+        if request.user.is_superuser:
+            perm_fields = ('is_active', 'is_staff', 'is_superuser',
+                           'groups', 'user_permissions')
+        else:
+            perm_fields = ('is_active', 'is_staff', 'groups')
+
+        return [(None, {'fields': ('username', 'password')}),
+                (_('Personal info'), {'fields': ('first_name', 'last_name',
+                                                 'email')}),
+                (_('Permissions'), {'fields': perm_fields}),
+                (_('Important dates'), {'fields':  ('last_login',
+                                                    'date_joined')})]
 
 class WorkflowLevel1Admin(admin.ModelAdmin):
     list_display = ('name',)

@@ -775,15 +775,12 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser:
             if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
                     'name', flat=True):
-                organization_id = wfm.CoreUser.objects. \
-                    values_list('organization_id', flat=True). \
-                    get(user=request.user)
+                organization_id = request.user.organization_id
                 queryset = queryset.filter(
                     workflow_user__organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
-                    'workflowlevel1__id', flat=True)
+                    workflow_user=request.user).values_list('workflowlevel1__id', flat=True)
                 queryset = queryset.filter(workflowlevel1__in=wflvl1_ids)
 
         nested = request.GET.get('nested_models')
