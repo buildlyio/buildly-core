@@ -47,16 +47,35 @@ pipeline:
         0aYDOHUNAxK4MjbnYOHhfrKx8Ezj3jd7aKq2C7yRDZ6FbAL4SgRFxY8N6GbB6IGyC
         gpT6pmQ5pEVJmH7mIEUJxyXKbta7ebxULLULjXwnJYGhUgT2hPyCfptkWFhsZVV
 
-  build-docker-image-tag:
+  build-old-docker-image-tag:
     image: plugins/docker
     insecure: true
     registry: registry.tola.io
     repo: registry.tola.io/humanitec-walhall/bifrost
     file: Dockerfile
     auto_tag: true
-    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
+    secrets: [DOCKER_OLD_USERNAME, DOCKER_OLD_PASSWORD]
     when:
       event: [tag]
+      branch: master
+      status: [success]
+
+  build-new-docker-image-tag:
+    image: plugins/docker
+    registry:
+      from_secret: DOCKER_REGISTRY
+    repo:
+      from_secret: DOCKER_REPO
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    auto_tag: true
+    insecure: true
+    file: Dockerfile
+    when:
+      event: [tag]
+      branch: master
       status: [success]
 
   notify:
