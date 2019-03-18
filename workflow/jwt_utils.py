@@ -15,8 +15,7 @@ def payload_enricher(request):
         username = request.POST.get('username')
         try:
             user = CoreUser.objects.values(
-                'core_user_uuid', 'organization__organization_uuid').get(
-                user__username=username)
+                'core_user_uuid', 'organization__organization_uuid').get(username=username)
         except CoreUser.DoesNotExist:
             logger.error('No matching CoreUser found.')
             raise PermissionDenied('No matching CoreUser found.')
