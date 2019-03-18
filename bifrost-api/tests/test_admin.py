@@ -1,28 +1,30 @@
 from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 import factories
-from django.contrib.auth.models import User, Permission
 
 
 class AdminViewTest(TestCase):
     def test_admin_user_auth_page_with_superuser(self):
         """Super user should see superuser status field on django admin"""
+        User = get_user_model()
         User.objects.create_superuser('admin', 'admin@example.com',
                                       'Password123')
         another_user = factories.User(username='another_user')
 
         self.client.login(username='admin', password='Password123')
 
-        url = '/admin/auth/user/{}/change/'.format(another_user.pk)
+        url = '/admin/workflow/coreuser/{}/change/'.format(another_user.pk)
         response = self.client.get(url)
         self.assertContains(response, 'Superuser status')
 
     def test_admin_user_auth_page_with_staff_user(self):
         """Staff user shouldn't see superuser status field on django admin"""
+        User = get_user_model()
         staff_user = User.objects.create_user('staff_user',
                                               'staffuser@example.com',
                                               'Password123')
-        factories.CoreUser(user=staff_user)
-        permission = Permission.objects.get(name='Can change user')
+        permission = Permission.objects.get(name='Can change core user')
         staff_user.user_permissions.add(permission)
         staff_user.is_staff = True
         staff_user.save()
@@ -31,31 +33,32 @@ class AdminViewTest(TestCase):
 
         self.client.login(username='staff_user', password='Password123')
 
-        url = '/admin/auth/user/{}/change/'.format(another_user.pk)
+        url = '/admin/workflow/coreuser/{}/change/'.format(another_user.pk)
         response = self.client.get(url)
+        response.user = staff_user
         self.assertContains(response, 'Staff status')
         self.assertNotContains(response, 'Superuser status')
 
     def test_admin_user_permissions_section_with_superuser(self):
         """Super user should see user permissions section on django admin"""
+        User = get_user_model()
         User.objects.create_superuser('admin', 'admin@example.com',
                                       'Password123')
         another_user = factories.User(username='another_user')
 
         self.client.login(username='admin', password='Password123')
 
-        url = '/admin/auth/user/{}/change/'.format(another_user.pk)
+        url = '/admin/workflow/coreuser/{}/change/'.format(another_user.pk)
         response = self.client.get(url)
         self.assertContains(response, 'User permissions')
 
     def test_admin_user_permissions_section_with_staff_user(self):
-        """Staff user shouldn't see user permissions section field on
-        django admin"""
+        """Staff user shouldn't see user permissions section field on django admin"""
+        User = get_user_model()
         staff_user = User.objects.create_user('staff_user',
                                               'staffuser@example.com',
                                               'Password123')
-        factories.CoreUser(user=staff_user)
-        permission = Permission.objects.get(name='Can change user')
+        permission = Permission.objects.get(name='Can change core user')
         staff_user.user_permissions.add(permission)
         staff_user.is_staff = True
         staff_user.save()
@@ -64,6 +67,6 @@ class AdminViewTest(TestCase):
 
         self.client.login(username='staff_user', password='Password123')
 
-        url = '/admin/auth/user/{}/change/'.format(another_user.pk)
+        url = '/admin/workflow/coreuser/{}/change/'.format(another_user.pk)
         response = self.client.get(url)
         self.assertNotContains(response, 'User permissions')

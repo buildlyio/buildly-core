@@ -20,7 +20,7 @@ class DataMeshTest(TestCase):
         self.lm = factories.LogicModule(name='products')
 
         # bypass authentication
-        self.client.force_authenticate(user=self.core_user.user)
+        self.client.force_authenticate(user=self.core_user)
         self.response_data = {
             'id': 1,
             'workflowlevel2_uuid': 1,
@@ -312,7 +312,7 @@ class DataMeshTest(TestCase):
         pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
 
-        self.core_user.user.is_superuser = True
+        self.core_user.is_superuser = True
 
         # make api request
         path = '/{}/{}/'.format(self.lm.name, 'products')

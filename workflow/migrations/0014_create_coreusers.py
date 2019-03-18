@@ -3,31 +3,38 @@
 from django.db import migrations
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db.utils import ProgrammingError
 from workflow.models import CoreUser, Organization, Role
 
 
 def forwards(apps, schema_editor):
-    for user in User.objects.all():
-        if not hasattr(user, "core_user"):
-            core_user = CoreUser(user=user)
-            org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
-            core_user.organization = org
-            core_user.username = user.username
-            core_user.first_name = user.first_name
-            core_user.last_name = user.last_name
-            core_user.email = user.email
-            core_user.is_staff = user.is_staff
-            core_user.is_active = user.is_active
-            core_user.is_superuser = user.is_superuser
-            core_user.last_login = user.last_login
-            core_user.password = user.password
-            core_user.date_joined = user.date_joined
-            core_user.create_date = user.date_joined
-            core_user.save()
+    user_model_class = settings.AUTH_USER_MODEL
+    del settings.AUTH_USER_MODEL
+    try:
+        for user in User.objects.all():
+            if not hasattr(user, "core_user"):
+                core_user = CoreUser(user=user)
+                org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
+                core_user.organization = org
+                core_user.username = user.username
+                core_user.first_name = user.first_name
+                core_user.last_name = user.last_name
+                core_user.email = user.email
+                core_user.is_staff = user.is_staff
+                core_user.is_active = user.is_active
+                core_user.is_superuser = user.is_superuser
+                core_user.last_login = user.last_login
+                core_user.password = user.password
+                core_user.date_joined = user.date_joined
+                core_user.create_date = user.date_joined
+                core_user.save()
 
-            core_user.user_permissions.add(*list(user.user_permissions.all()))
-            roles = Role.objects.filter(name__in=user.groups.values_list('name', flat=True))
-            core_user.roles.add(*list(roles))
+                core_user.user_permissions.add(*list(user.user_permissions.all()))
+                roles = Role.objects.filter(name__in=user.groups.values_list('name', flat=True))
+                core_user.roles.add(*list(roles))
+    except ProgrammingError:
+        pass
+    settings.AUTH_USER_MODEL = user_model_class
 
 
 def backwards(apps, schema_editor):
