@@ -78,7 +78,7 @@ class TestGenerateTokens(object):
         # mock request object
         request = wsgi_request_factory()
 
-        result = utils.generate_access_tokens(request, core_user.user)
+        result = utils.generate_access_tokens(request, core_user)
         assert result == final_token
 
     @pytest.mark.django_db()
@@ -115,7 +115,7 @@ class TestGenerateTokens(object):
         # the tokens change all the time, it's not possible to validate them
         # just check if the function doesn't raise an error when providing
         # all needed parameters
-        utils.generate_access_tokens(request, core_user.user)
+        utils.generate_access_tokens(request, core_user)
 
     @pytest.mark.django_db()
     def test_no_func_mocks_success(self, wsgi_request_factory, core_user,
@@ -129,4 +129,4 @@ class TestGenerateTokens(object):
         # the tokens change all the time, it's not possible to validate them
         # just check if the function doesn't raise an error when providing
         # all needed parameters
-        utils.generate_access_tokens(request, core_user.user)
+        utils.generate_access_tokens(request, core_user)

@@ -34,13 +34,12 @@ def org_member(org):
 @pytest.fixture
 def org_admin(group_org_admin, org):
     coreuser = factories.CoreUser.create(organization=org)
-    coreuser.user.groups.add(group_org_admin)
+    coreuser.groups.add(group_org_admin)
     return coreuser
 
 
 @pytest.fixture
 def reset_password_request(org_member):
-    user = org_member.user
-    uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-    token = default_token_generator.make_token(user)
-    return user, uid, token
+    uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+    token = default_token_generator.make_token(org_member)
+    return org_member, uid, token

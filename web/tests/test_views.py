@@ -69,7 +69,7 @@ class TestOAuthComplete(object):
                                       monkeypatch):
 
         def mock_auth_complete(*args, **kwargs):
-            return core_user.user
+            return core_user
 
         tokens = {
             'access_token': 'bZr9TVYykJnbVL1gAjq4Xhn3x1SY91',
@@ -92,7 +92,7 @@ class TestOAuthComplete(object):
         request = wsgi_request_factory()
         request.session = Mock()
         request.GET = {'code': 'test'}
-        request.user = core_user.user
+        request.user = core_user
 
         response = views.oauth_complete(request, 'github')
         data = json.loads(response.content)
@@ -103,7 +103,7 @@ class TestOAuthComplete(object):
     def test_user_success(self, wsgi_request_factory, core_user, monkeypatch):
 
         def mock_auth_complete(*args, **kwargs):
-            return core_user.user
+            return core_user
 
         tokens = {
             'access_token': 'bZr9TVYykJnbVL1gAjq4Xhn3x1SY91',
@@ -135,11 +135,11 @@ class TestOAuthComplete(object):
 
     @pytest.mark.django_db()
     def test_inactive_user(self, wsgi_request_factory, core_user, monkeypatch):
-        core_user.user.is_active = False
-        core_user.user.save()
+        core_user.is_active = False
+        core_user.save()
 
         def mock_auth_complete(*args, **kwargs):
-            return core_user.user
+            return core_user
 
         # mock functions in order as in the code
         monkeypatch.setattr(views, 'user_is_authenticated', lambda x: False)
