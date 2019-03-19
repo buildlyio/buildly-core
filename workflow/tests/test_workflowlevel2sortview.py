@@ -33,14 +33,14 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         """
         request = self.factory.get('/workflowlevel2sort/')
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         wflvl1 = factories.WorkflowLevel1()
         WorkflowTeam.objects.create(
             workflow_user=self.core_user,
             workflowlevel1=wflvl1)
         factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -64,7 +64,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -87,7 +87,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_WORKFLOW_TEAM))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -110,7 +110,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
             workflow_user=self.core_user,
             workflowlevel1=wflvl1,
             role=factories.Group(name=ROLE_VIEW_ONLY))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -129,9 +129,9 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
         factories.Group()
 
     def test_create_workflowlevel2_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1()
@@ -140,7 +140,7 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'create'})
         response = view(request)
 
@@ -156,7 +156,7 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'create'})
         response = view(request)
 
@@ -172,20 +172,20 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
 
     def test_update_unexisting_workflowlevel2sort(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         data = {'workflowlevel2_id': 1}
 
         request = self.factory.post('/workflowlevel2sort/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=288)
         self.assertEqual(response.status_code, 404)
 
     def test_update_workflowlevel2sort_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1()
@@ -196,7 +196,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2sort/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 200)
@@ -217,7 +217,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2sort/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 200)
@@ -238,7 +238,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2sort/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 403)
@@ -251,13 +251,13 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         factories.Group()
 
     def test_delete_workflowlevel2sort_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         workflowlevel2sort = factories.WorkflowLevel2Sort()
         request = self.factory.delete('/workflowlevel2sort/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 204)
@@ -272,7 +272,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
             workflowlevel1=wflvl1)
 
         request = self.factory.delete('/workflowlevel2sort/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 204)
@@ -282,7 +282,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
 
     def test_delete_workflowlevel2sort_diff_org_normal_user(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         another_org = factories.Organization(name='Another Org')
         wflvl1 = factories.WorkflowLevel1(organization=another_org)
@@ -290,7 +290,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
             workflowlevel1=wflvl1)
 
         request = self.factory.delete('/workflowlevel2sort/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 403)

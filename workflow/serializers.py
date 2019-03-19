@@ -1,8 +1,8 @@
 from urllib.parse import urljoin
 
 import jwt
-from django.contrib.auth import password_validation
-from django.contrib.auth.models import Group, User, Permission
+from django.contrib.auth import password_validation, get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
@@ -13,6 +13,9 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
+
+
+User = get_user_model()
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -97,15 +100,13 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(source='user.first_name')
-    last_name = serializers.CharField(source='user.last_name')
-    email = serializers.EmailField(source='user.email')
-    username = serializers.CharField(source='user.username')
-    password = serializers.CharField(source='user.password', write_only=True)
-    is_active = serializers.BooleanField(source='user.is_active',
-                                         required=False)
-    organization_name = serializers.CharField(source='organization.name',
-                                              write_only=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    is_active = serializers.BooleanField(required=False)
+    organization_name = serializers.CharField(source='organization.name', write_only=True)
     invitation_token = serializers.CharField(required=False)
 
     def validate_invitation_token(self, value):
@@ -129,44 +130,29 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
         # create user
         invitation_token = validated_data.pop('invitation_token', None)
-        user_data = validated_data.pop('user')
-        user_data['is_active'] = is_new_org or bool(invitation_token)
-        user = User.objects.create(**user_data)
-
-        # add org admin role to user if org is new
-        if is_new_org:
-            group_org_admin = Group.objects.get(
-                name=wfm.ROLE_ORGANIZATION_ADMIN)
-            user.groups.add(group_org_admin)
-
-        # set user password
-        user.set_password(user_data['password'])
-        user.save()
-
+        validated_data['is_active'] = is_new_org or bool(invitation_token)
         # create core user
         coreuser = wfm.CoreUser.objects.create(
-            user=user,
             organization=organization,
             **validated_data
         )
+        # set user password
+        coreuser.set_password(validated_data['password'])
+        coreuser.save()
+
+        # add org admin role to user if org is new
+        if is_new_org:
+            group_org_admin = Group.objects.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
+            coreuser.groups.add(group_org_admin)
 
         return coreuser
 
-    def update(self, instance, validated_data):
-        if 'user' in validated_data:
-            user_data = validated_data.pop('user')
-            user = instance.user
-            for attr, value in user_data.items():
-                setattr(user, attr, value)
-            user.save()
-
-        validated_data.pop('organization', None)
-        return super(CoreUserSerializer, self).update(instance, validated_data)
-
     class Meta:
         model = wfm.CoreUser
-        read_only_fields = ('core_user_uuid', 'organization',)
-        exclude = ('create_date', 'edit_date', 'user')
+        fields = ('core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'password', 'is_active',
+                  'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
+                  'organization_name', 'invitation_token')
+        read_only_fields = ('core_user_uuid', 'organization', 'core_groups',)
         depth = 1
 
 
@@ -187,7 +173,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
         email = self.validated_data["email"]
 
         count = 0
-        for user in User.objects.filter(email=email, is_active=True).select_related('core_user'):
+        for user in User.objects.filter(email=email, is_active=True):
             uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
             token = default_token_generator.make_token(user)
             context = {
@@ -196,18 +182,17 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             }
 
             # get specific subj and templates for user's organization
-            if hasattr(user, 'core_user'):
-                tpl = wfm.EmailTemplate.objects.filter(organization=user.core_user.organization,
+            tpl = wfm.EmailTemplate.objects.filter(organization=user.organization,
+                                                   type=wfm.TEMPLATE_RESET_PASSWORD).first()
+            if not tpl:
+                tpl = wfm.EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
                                                        type=wfm.TEMPLATE_RESET_PASSWORD).first()
-                if not tpl:
-                    tpl = wfm.EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                           type=wfm.TEMPLATE_RESET_PASSWORD).first()
-                if tpl and tpl.template:
-                    context = Context(context)
-                    text_content = Template(tpl.template).render(context)
-                    html_content = Template(tpl.template_html).render(context) if tpl.template_html else None
-                    count += send_email_body(email, tpl.subject, text_content, html_content)
-                    continue
+            if tpl and tpl.template:
+                context = Context(context)
+                text_content = Template(tpl.template).render(context)
+                html_content = Template(tpl.template_html).render(context) if tpl.template_html else None
+                count += send_email_body(email, tpl.subject, text_content, html_content)
+                continue
 
             # default subject and templates
             subject = 'Reset your password'

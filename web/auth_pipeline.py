@@ -4,7 +4,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render_to_response
 from django.conf import settings
 
-from workflow.models import CoreUser, CoreSites, Organization
+from workflow.models import CoreSites, Organization
 
 logger = logging.getLogger(__name__)
 

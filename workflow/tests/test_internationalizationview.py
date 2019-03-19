@@ -16,9 +16,9 @@ class InternationalizationListViewTest(TestCase):
         """
         Superusers are able to list all the objects
         """
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.get('/internationalization/')
         view = InternationalizationViewSet.as_view({'get': 'list'})
@@ -31,7 +31,7 @@ class InternationalizationListViewTest(TestCase):
         Normal users are able to list all the objects
         """
         request = self.factory.get('/internationalization/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -47,16 +47,16 @@ class InternationalizationCreateViewTest(TestCase):
         """
         Superusers are able to create new translations
         """
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         data = {
             'language': 'pt-BR',
             'language_file': '{"name": "Nome", "gender": "Gênero"}'
         }
         request = self.factory.post('/internationalization/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'create'})
         response = view(request)
 
@@ -72,7 +72,7 @@ class InternationalizationCreateViewTest(TestCase):
             'language_file': '{"name": "Nome", "gender": "Gênero"}'
         }
         request = self.factory.post('/internationalization/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'create'})
         response = view(request)
 
@@ -86,7 +86,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
 
     def test_retrieve_unexisting_internationalization(self):
         request = self.factory.get('/internationalization/1111')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
         response = view(request, pk=1111)
         self.assertEqual(response.status_code, 404)
@@ -95,14 +95,14 @@ class InternationalizationRetrieveViewsTest(TestCase):
         """
         Superusers are able to retrieve any translation
         """
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
         inter = factories.Internationalization()
 
         request = self.factory.get('/internationalization/{}'.format(
             inter.id))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
         response = view(request, pk=inter.pk)
         self.assertEqual(response.status_code, 200)
@@ -116,7 +116,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
 
         request = self.factory.get('/internationalization/{}'.format(
             inter.id))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
         response = view(request, pk=inter.pk)
         self.assertEqual(response.status_code, 200)
@@ -129,15 +129,15 @@ class InternationalizationUpdateViewTest(TestCase):
         self.factory = APIRequestFactory()
 
     def test_update_unexisting_internationalization(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         data = {
             'language': 'pt-BR',
         }
         request = self.factory.post('/internationalization/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'update'})
         response = view(request, pk=999)
 
@@ -147,9 +147,9 @@ class InternationalizationUpdateViewTest(TestCase):
         """
         Superusers are able to update translations
         """
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
         inter = factories.Internationalization()
 
         data = {
@@ -157,7 +157,7 @@ class InternationalizationUpdateViewTest(TestCase):
             'language_file': '{"name": "Nome", "gender": "Gênero"}'
         }
         request = self.factory.post('/internationalization/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'update'})
         response = view(request, pk=inter.pk)
 
@@ -174,7 +174,7 @@ class InternationalizationUpdateViewTest(TestCase):
             'language': 'pt-BR',
         }
         request = self.factory.post('/internationalization/', data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'update'})
         response = view(request, pk=inter.pk)
 
@@ -187,12 +187,12 @@ class InternationalizationDeleteViewTest(TestCase):
         self.factory = APIRequestFactory()
 
     def test_delete_unexisting_internationalization(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.delete('/internationalization/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=999)
 
@@ -202,13 +202,13 @@ class InternationalizationDeleteViewTest(TestCase):
         """
         Superusers are able to delete any translation
         """
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
         inter = factories.Internationalization()
 
         request = self.factory.delete('/internationalization/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=inter.pk)
 
@@ -224,7 +224,7 @@ class InternationalizationDeleteViewTest(TestCase):
         inter = factories.Internationalization()
 
         request = self.factory.delete('/internationalization/')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=inter.pk)
 
@@ -247,7 +247,7 @@ class InternationalizationFilterViewTest(TestCase):
         url = '/internationalization/?{}'.format(query_string)
 
         request = self.factory.get(url)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
