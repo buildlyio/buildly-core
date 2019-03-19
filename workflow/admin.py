@@ -56,11 +56,10 @@ class CoreUserAdmin(admin.ModelAdmin):
             perm_fields = ('is_active', 'is_staff', 'groups')
 
         return [(None, {'fields': ('username', 'password')}),
-                (_('Personal info'), {'fields': ('first_name', 'last_name',
-                                                 'email')}),
+                (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
                 (_('Permissions'), {'fields': perm_fields}),
-                (_('Important dates'), {'fields':  ('last_login',
-                                                    'date_joined')})]
+                (_('Important dates'), {'fields':  ('last_login', 'date_joined')})]
+
 
 class WorkflowLevel1Admin(admin.ModelAdmin):
     list_display = ('name',)

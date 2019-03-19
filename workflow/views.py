@@ -5,7 +5,8 @@ import logging
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User, Permission
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -16,7 +17,6 @@ from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import CursorPagination, PageNumberPagination
-from rest_framework.exceptions import PermissionDenied
 import jwt
 from chargebee import Plan, Subscription
 from graphene_django.views import GraphQLView
@@ -38,6 +38,8 @@ from . import serializers
 
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -254,7 +256,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
 
     ordering_fields = ('name',)
     ordering = ('name',)
-    filter_fields = ('name', 'level1_uuid')
+    filterset_fields = ('name', 'level1_uuid')
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
 
@@ -330,8 +332,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def retrieve(self, request, *args, **kwargs):
         queryset = self.queryset
         user = get_object_or_404(queryset, pk=kwargs.get('pk'))
-        serializer = self.get_serializer(instance=user,
-                                         context={'request': request})
+        serializer = self.get_serializer(instance=user, context={'request': request})
         return Response(serializer.data)
 
     @swagger_auto_schema(methods=['post'],
@@ -400,15 +401,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
 
-        organization = None
-        if hasattr(user, 'core_user'):
-            organization = wfm.Organization.objects.get(coreuser__user=user)
-        elif not user.is_superuser:
-            # only superuser can invite Org's first user
-            raise PermissionDenied
-
-        registered_emails = User.objects.filter(email__in=email_addresses)\
-            .values_list('email', flat=True)
+        organization = user.organization
+        registered_emails = User.objects.filter(email__in=email_addresses).values_list('email', flat=True)
 
         links = []
         for email_address in email_addresses:
@@ -426,7 +420,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
-                    'org_admin_name': user.coreuser.name
+                    'org_admin_name': user.name
                     if hasattr(user, 'coreuser') else '',
                     'organization_name': organization.name
                     if organization else ''
@@ -515,8 +509,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 return [permissions.AllowAny()]
 
             # different permissions for checking token
-            if self.request.method == 'GET' \
-                    and url_name == 'coreuser-invite-check':
+            if self.request.method == 'GET' and url_name == 'coreuser-invite-check':
                 return [permissions.AllowAny()]
 
             # different permissions for the invitation process
@@ -524,13 +517,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 return [AllowOnlyOrgAdmin()]
 
             # only org admin can update core user's data
-            if self.request.method in ['PUT', 'PATCH'] \
-                    and url_name == 'coreuser-detail':
+            if self.request.method in ['PUT', 'PATCH'] and url_name == 'coreuser-detail':
                 return [AllowOnlyOrgAdmin()]
 
         return super(CoreUserViewSet, self).get_permissions()
 
-    filter_fields = ('organization__id',)
+    filterset_fields = ('organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = wfm.CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
@@ -659,8 +651,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=getattr(self.request.user, 'core_user', None))
 
-    filter_fields = ('level2_uuid',
-                     'workflowlevel1__name', 'workflowlevel1__id')
+    filterset_fields = ('level2_uuid', 'workflowlevel1__name', 'workflowlevel1__id')
     ordering = ('name',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
@@ -730,7 +721,7 @@ class InternationalizationViewSet(viewsets.ModelViewSet):
     Create a new Internationalization instance.
     """
 
-    filter_fields = ('language',)
+    filterset_fields = ('language',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (IsSuperUserOrReadOnly,)
     queryset = wfm.Internationalization.objects.all()
@@ -777,7 +768,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    filter_fields = ('workflowlevel1__organization__id',)
+    filterset_fields = ('workflowlevel1__organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (AllowCoreUserRoles,)
     queryset = wfm.WorkflowTeam.objects.all()

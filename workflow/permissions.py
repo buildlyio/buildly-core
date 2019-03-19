@@ -5,8 +5,7 @@ from django.http import QueryDict
 
 from workflow.models import (
     ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM,
-    WorkflowTeam, Organization, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort,
-    CoreUser, CoreGroup)
+    WorkflowTeam, Organization, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreGroup)
 
 PERMISSIONS_ORG_ADMIN = {
     'create': True,
