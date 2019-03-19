@@ -67,12 +67,8 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 class CoreGroupSerializer(serializers.ModelSerializer):
 
     def _get_current_coreuser(self) -> wfm.CoreUser:
-        coreuser = None
         request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            user = request.user
-            coreuser = user.core_user if hasattr(user, "core_user") else None
-        return coreuser
+        return request.user if request and hasattr(request, "user") else None
 
     def create(self, validated_data):
         # set organization

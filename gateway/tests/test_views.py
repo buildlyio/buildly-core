@@ -17,7 +17,7 @@ class LogicModuleViewsPermissionTest(TestCase):
         self.core_user = factories.CoreUser()
 
         # bypass authentication
-        self.client.force_authenticate(user=self.core_user.user)
+        self.client.force_authenticate(user=self.core_user)
         self.response_data = {
             'id': 1,
             'workflowlevel2_uuid': 1,
@@ -54,7 +54,7 @@ class APIGatewayViewTest(TestCase):
         self.lm = factories.LogicModule(name='documents')
 
         # bypass authentication
-        self.client.force_authenticate(user=self.core_user.user)
+        self.client.force_authenticate(user=self.core_user)
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')

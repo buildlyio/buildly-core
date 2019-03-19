@@ -30,15 +30,15 @@ class OAuthTest(TestCase):
         logging.disable(logging.WARNING)
         self.core_user = factories.CoreUser()
         self.org = factories.Organization(organization_uuid='12345')
-        self.app = factories.Application(user=self.core_user.user, )
+        self.app = factories.Application(user=self.core_user, )
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
 
     def test_authorization_success(self):
         # set user's password
-        self.core_user.user.set_password('1234')
-        self.core_user.user.save()
+        self.core_user.set_password('1234')
+        self.core_user.save()
 
         # change user's organization
         users_org = factories.Organization(name='Test Org')
@@ -52,7 +52,7 @@ class OAuthTest(TestCase):
 
         data = {
             'grant_type': 'password',
-            'username': self.core_user.user.username,
+            'username': self.core_user.username,
             'password': '1234',
         }
 
@@ -62,35 +62,9 @@ class OAuthTest(TestCase):
         self.assertIn('access_token_jwt', response.json())
         self.assertIn('expires_in', response.json())
 
-    def test_create_coreuser_new_core_user(self):
-        user = factories.User(first_name='John', last_name='Lennon')
-
-        response = auth_pipeline.create_coreuser(user=user)
-
-        self.assertIn('is_new_core_user', response)
-        self.assertTrue(response['is_new_core_user'])
-        self.assertIn('core_user', response)
-        self.assertTrue(isinstance(response['core_user'], CoreUser))
-
-    def test_create_coreuser_no_user(self):
-        response = auth_pipeline.create_coreuser()
-        self.assertIsNone(response)
-
-    def test_create_coreuser_core_user_exists(self):
-        user = factories.User(first_name='John', last_name='Lennon')
-        coreuser = factories.CoreUser(user=user)
-
-        response = auth_pipeline.create_coreuser(user=user)
-
-        self.assertIn('is_new_core_user', response)
-        self.assertFalse(response['is_new_core_user'])
-        self.assertIn('core_user', response)
-        self.assertEqual(response['core_user'], coreuser)
-
     def test_create_organization_new_default_org(self):
         Organization.objects.get(name=settings.DEFAULT_ORG).delete()
-        user = factories.User(first_name='John', last_name='Lennon')
-        coreuser = factories.CoreUser(user=user, organization=None)
+        coreuser = factories.CoreUser(first_name='John', last_name='Lennon', organization=None)
 
         response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
 
@@ -105,8 +79,7 @@ class OAuthTest(TestCase):
 
     @override_settings(DEFAULT_ORG=None)
     def test_create_organization_new_username_org(self):
-        user = factories.User(first_name='John', last_name='Lennon')
-        coreuser = factories.CoreUser(user=user)
+        coreuser = factories.CoreUser(first_name='John', last_name='Lennon')
 
         response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
 
@@ -114,16 +87,17 @@ class OAuthTest(TestCase):
         self.assertTrue(response['is_new_org'])
         self.assertIn('organization', response)
         self.assertTrue(isinstance(response['organization'], Organization))
-        self.assertEqual(response['organization'].name, user.username)
+        self.assertEqual(response['organization'].name, coreuser.username)
 
         coreuser.refresh_from_db()
         self.assertEqual(coreuser.organization, response['organization'])
 
     @override_settings(DEFAULT_ORG=None)
     def test_create_organization_org_exists(self):
-        user = factories.User(first_name='John', last_name='Lennon')
-        org = factories.Organization(name=user.username)
-        coreuser = factories.CoreUser(user=user, organization=org)
+        coreuser = factories.CoreUser(first_name='John', last_name='Lennon')
+        org = factories.Organization(name=coreuser.username)
+        coreuser.organization = org
+        coreuser.save()
 
         response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
 
@@ -137,8 +111,7 @@ class OAuthTest(TestCase):
         self.assertEqual(coreuser.organization, org)
 
     def test_create_organization_no_new_coreuser(self):
-        user = factories.User(first_name='John', last_name='Lennon')
-        coreuser = factories.CoreUser(user=user)
+        coreuser = factories.CoreUser(first_name='John', last_name='Lennon')
 
         response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=False)
         self.assertIsNone(response)
@@ -148,8 +121,7 @@ class OAuthTest(TestCase):
         self.assertIsNone(response)
 
     def test_create_organization_no_is_new_core_user(self):
-        user = factories.User(first_name='John', last_name='Lennon')
-        coreuser = factories.CoreUser(user=user)
+        coreuser = factories.CoreUser(first_name='John', last_name='Lennon')
 
         response = auth_pipeline.create_organization(core_user=coreuser)
         self.assertIsNone(response)
@@ -157,7 +129,7 @@ class OAuthTest(TestCase):
     def test_auth_allowed_not_in_whitelist(self):
         factories.Organization(name=settings.DEFAULT_ORG)
         backend = self.BackendTest()
-        details = {'email': self.core_user.user.email}
+        details = {'email': self.core_user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
         self.assertIn(b"You don't appear to have permissions to access "
@@ -182,7 +154,7 @@ class OAuthTest(TestCase):
                                oauth_domains=['testenv.com'])
 
         backend = self.BackendTest()
-        details = {'email': self.core_user.user.email}
+        details = {'email': self.core_user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
         self.assertIn(b"You don't appear to have permissions to access "
@@ -192,7 +164,7 @@ class OAuthTest(TestCase):
 
     def test_auth_allowed_no_whitelist_oauth_domain(self):
         backend = self.BackendTest()
-        details = {'email': self.core_user.user.email}
+        details = {'email': self.core_user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
         self.assertIn(b"You don't appear to have permissions to access "

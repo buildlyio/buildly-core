@@ -105,8 +105,7 @@ class IsOrgMember(permissions.BasePermission):
             return True
 
         if view.action == 'create':
-            user_org = CoreUser.objects.values_list(
-                'organization_id', flat=True).get(user=request.user)
+            user_org = request.user.organization_id
 
             if 'organization' in request.data:
                 org_serializer = view.get_serializer_class()().get_fields()[
@@ -135,8 +134,7 @@ class IsOrgMember(permissions.BasePermission):
             return True
         user_groups = request.user.groups.values_list('name', flat=True)
         org_admin = True if ROLE_ORGANIZATION_ADMIN in user_groups else False
-        user_org = CoreUser.objects.values_list(
-            'organization_id', flat=True).get(user=request.user)
+        user_org = request.user.organization_id
         try:
             if obj.__class__ in [WorkflowLevel1, CoreGroup]:
                 return obj.organization.id == user_org

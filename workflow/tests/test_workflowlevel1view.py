@@ -24,12 +24,12 @@ class WorkflowLevel1ListViewsTest(TestCase):
     def test_list_workflowlevel1_superuser(self):
         wflvl1 = factories.WorkflowLevel1()
 
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.get(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -40,14 +40,14 @@ class WorkflowLevel1ListViewsTest(TestCase):
         wflvl1 = factories.WorkflowLevel1()
         wflvl2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.get(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -59,10 +59,10 @@ class WorkflowLevel1ListViewsTest(TestCase):
             organization=self.core_user.organization)
         wflvl2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         request = self.factory.get(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -79,7 +79,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
             role=group_program_admin)
 
         request = self.factory.get(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -103,7 +103,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
         request = self.factory.get(
             '{}?name={}'.format(reverse('workflowlevel1-list'), wflvl1.name)
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -121,7 +121,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
             role=group_program_team)
 
         request = self.factory.get(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -135,7 +135,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
         factories.WorkflowLevel1(organization=self.core_user.organization)
 
         request = self.factory.get(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -153,10 +153,10 @@ class WorkflowLevel1ListViewsTest(TestCase):
         wfl1_2 = factories.WorkflowLevel1(
             name='2. wfl', organization=self.core_user.organization)
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         request = self.factory.get('?paginate=true')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -170,7 +170,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
 
         request = self.factory.get('?cursor={}&paginate=true'.format(
             cursor))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -185,12 +185,12 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
         factories.Group()
 
     def test_list_permissions_superuser_empty(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -206,12 +206,12 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
         wflvl1_1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
 
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -245,10 +245,10 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
 
     def test_list_permissions_org_admin_empty(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -258,12 +258,12 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
 
     def test_list_permissions_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -293,7 +293,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                                workflowlevel1=wflvl1)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -322,7 +322,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                                workflowlevel1=wflvl1)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -351,7 +351,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                                workflowlevel1=wflvl1)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -390,7 +390,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
                                workflowlevel1=wflvl1_2)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -433,10 +433,10 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
 
     def test_list_permissions_view_only_group_empty(self):
         group_view_only = factories.Group(name=ROLE_VIEW_ONLY)
-        self.core_user.user.groups.add(group_view_only)
+        self.core_user.groups.add(group_view_only)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -445,12 +445,12 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
 
     def test_list_permissions_view_only_group(self):
         group_org_admin = factories.Group(name=ROLE_VIEW_ONLY)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -474,7 +474,7 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
 
     def test_list_permissions_empty(self):
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'permissions'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -487,50 +487,50 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_get_user_org_role_is_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         view = WorkflowLevel1ViewSet()
-        result = view._get_user_org_role(self.core_user.user)
+        result = view._get_user_org_role(self.core_user)
         self.assertEqual(result, 'Admin')
 
     def test_get_user_org_role_is_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         view = WorkflowLevel1ViewSet()
-        result = view._get_user_org_role(self.core_user.user)
+        result = view._get_user_org_role(self.core_user)
         self.assertEqual(result, ROLE_ORGANIZATION_ADMIN)
 
     def test_get_user_org_role_is_view_only(self):
         group_view_only = factories.Group(name=ROLE_VIEW_ONLY)
-        self.core_user.user.groups.add(group_view_only)
+        self.core_user.groups.add(group_view_only)
 
         view = WorkflowLevel1ViewSet()
-        result = view._get_user_org_role(self.core_user.user)
+        result = view._get_user_org_role(self.core_user)
         self.assertEqual(result, ROLE_VIEW_ONLY)
 
     def test_get_user_org_role_is_mixed(self):
         group_view_only = factories.Group(name=ROLE_VIEW_ONLY)
-        self.core_user.user.groups.add(group_view_only)
+        self.core_user.groups.add(group_view_only)
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         view = WorkflowLevel1ViewSet()
-        result = view._get_user_org_role(self.core_user.user)
+        result = view._get_user_org_role(self.core_user)
         self.assertEqual(result, ROLE_ORGANIZATION_ADMIN)
 
     def test_permission_serializer_match(self):
         group_org_admin = factories.Group(name=ROLE_VIEW_ONLY)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
         factories.WorkflowLevel1(organization=self.core_user.organization)
 
         view = WorkflowLevel1ViewSet()
         data = {
             'role_org': ROLE_VIEW_ONLY,
         }
-        permissions = view._get_permissions(self.core_user.user,
+        permissions = view._get_permissions(self.core_user,
                                             ROLE_VIEW_ONLY)
         data['permissions'] = permissions
 
@@ -539,14 +539,14 @@ class WorkflowLevel1PermissionsListViewsTest(TestCase):
 
     def test_permission_serializer_not_match(self):
         group_org_admin = factories.Group(name=ROLE_VIEW_ONLY)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
         factories.WorkflowLevel1(organization=self.core_user.organization)
 
         view = WorkflowLevel1ViewSet()
         data = {
             'role_org': 'Invented',
         }
-        permissions = view._get_permissions(self.core_user.user,
+        permissions = view._get_permissions(self.core_user,
                                             ROLE_VIEW_ONLY)
         data['permissions'] = permissions
 
@@ -562,16 +562,16 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         factories.Group()
 
     def test_create_workflowlevel1_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         data = {
             'name': 'Save the Children',
             'organization': self.core_user.organization.pk
         }
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -589,11 +589,11 @@ class WorkflowLevel1CreateViewsTest(TestCase):
 
     def test_create_workflowlevel1_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -625,7 +625,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
 
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -658,7 +658,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel1-list'),
                                     json.dumps(data),
                                     content_type='application/json')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -687,7 +687,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
 
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -706,7 +706,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
     def test_create_workflowlevel1_normal_user(self):
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
 
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
@@ -718,7 +718,7 @@ class WorkflowLevel1CreateViewsTest(TestCase):
             'level1_uuid': '75e4c912-4149-11e8-842f-0ed5f89f718b'
         }
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
@@ -734,38 +734,38 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
 
     def test_update_unexisting_workflowlevel1(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         data = {'salary': '10'}
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(288,)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=288)
         self.assertEqual(response.status_code, 404)
 
     def test_update_workflowlevel1_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         wflvl1 = factories.WorkflowLevel1()
         data = {'name': 'Save the Lennons'}
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(wflvl1.pk,)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=wflvl1.pk)
         self.assertEqual(response.status_code, 200)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
-        self.assertEquals(wflvl1.name, data['name'])
+        self.assertEqual(wflvl1.name, data['name'])
 
     def test_update_workflowlevel1_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
@@ -773,17 +773,17 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(wflvl1.pk,)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=wflvl1.pk)
         self.assertEqual(response.status_code, 200)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
-        self.assertEquals(wflvl1.name, data['name'])
+        self.assertEqual(wflvl1.name, data['name'])
 
     def test_update_workflowlevel1_different_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         wflvl1 = factories.WorkflowLevel1(
             organization=factories.Organization(name='Other Org'))
@@ -791,7 +791,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(wflvl1.pk,)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=wflvl1.pk)
         self.assertEqual(response.status_code, 403)
@@ -799,7 +799,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
     def test_update_workflowlevel1_program_admin(self):
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
 
@@ -807,20 +807,20 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(response.data['id'],)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=response.data['id'])
         self.assertEqual(response.status_code, 200)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
-        self.assertEquals(wflvl1.name, data['name'])
+        self.assertEqual(wflvl1.name, data['name'])
 
     def test_update_workflowlevel1_program_admin_json(self):
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'),
                                     json.dumps(data),
                                     content_type='application/json')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
 
@@ -830,13 +830,13 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
             json.dumps(data),
             content_type='application/json'
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=response.data['id'])
         self.assertEqual(response.status_code, 200)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
-        self.assertEquals(wflvl1.name, data['name'])
+        self.assertEqual(wflvl1.name, data['name'])
 
     def test_update_workflowlevel1_program_team(self):
         wflvl1 = factories.WorkflowLevel1()
@@ -852,13 +852,13 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(wflvl1.pk,)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=wflvl1.pk)
         self.assertEqual(response.status_code, 200)
 
         wflvl1 = WorkflowLevel1.objects.get(pk=response.data['id'])
-        self.assertEquals(wflvl1.name, data['name'])
+        self.assertEqual(wflvl1.name, data['name'])
 
     def test_update_workflowlevel1_same_org_different_program_team(self):
         wflvl1_other = factories.WorkflowLevel1()
@@ -877,7 +877,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(wflvl1.pk,)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=wflvl1.pk)
         self.assertEqual(response.status_code, 403)
@@ -885,7 +885,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
     def test_update_workflowlevel1_uuid_is_self_generated(self):
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         first_level1_uuid = response.data['level1_uuid']
@@ -894,7 +894,7 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
         request = self.factory.put(
             reverse('workflowlevel1-detail', args=(response.data['id'],)), data
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'put': 'update'})
         response = view(request, pk=response.data['id'])
         self.assertEqual(response.status_code, 200)
@@ -912,46 +912,46 @@ class WorkflowLevel1DeleteViewsTest(TestCase):
         factories.Group()
 
     def test_delete_workflowlevel1_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         wflvl1 = factories.WorkflowLevel1()
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=wflvl1.pk)
-        self.assertEquals(response.status_code, 204)
+        self.assertEqual(response.status_code, 204)
         self.assertRaises(
             WorkflowLevel1.DoesNotExist,
             WorkflowLevel1.objects.get, pk=wflvl1.pk)
 
     def test_delete_workflowlevel1_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=wflvl1.pk)
-        self.assertEquals(response.status_code, 204)
+        self.assertEqual(response.status_code, 204)
         self.assertRaises(
             WorkflowLevel1.DoesNotExist,
             WorkflowLevel1.objects.get, pk=wflvl1.pk)
 
     def test_delete_workflowlevel1_different_org_admin(self):
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         org_other = factories.Organization(name='Other Org')
         wflvl1 = factories.WorkflowLevel1(organization=org_other)
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=wflvl1.pk)
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         WorkflowLevel1.objects.get(pk=wflvl1.pk)
 
     def test_delete_workflowlevel1_program_admin(self):
@@ -962,14 +962,14 @@ class WorkflowLevel1DeleteViewsTest(TestCase):
         # Create a program
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 201)
 
         # Delete the program created before
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         view(request, pk=response.data['id'])
         self.assertRaises(
@@ -978,30 +978,30 @@ class WorkflowLevel1DeleteViewsTest(TestCase):
 
     def test_delete_workflowlevel1_different_org(self):
         group_other = factories.Group(name='other')
-        self.core_user.user.groups.add(group_other)
+        self.core_user.groups.add(group_other)
 
         wflvl1 = factories.WorkflowLevel1()
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=wflvl1.pk)
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         WorkflowLevel1.objects.get(pk=wflvl1.pk)
 
     def test_delete_workflowlevel1_normal_user(self):
         wflvl1 = factories.WorkflowLevel1()
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=wflvl1.pk)
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         WorkflowLevel1.objects.get(pk=wflvl1.pk)
 
     def test_delete_workflowlevel1_program_admin_just_one(self):
         # Create a program
         data = {'name': 'Save the Pandas'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
         first_program_id = response.data['id']
@@ -1009,13 +1009,13 @@ class WorkflowLevel1DeleteViewsTest(TestCase):
         # Create another program
         data = {'name': 'Save the Children'}
         request = self.factory.post(reverse('workflowlevel1-list'), data)
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'post': 'create'})
         response = view(request)
 
         # Delete only the latter program
         request = self.factory.delete(reverse('workflowlevel1-list'))
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'delete': 'destroy'})
         view(request, pk=response.data['id'])
         self.assertRaises(
@@ -1034,14 +1034,14 @@ class WorkflowLevel1FilterViewsTest(TestCase):
         wflvl1 = factories.WorkflowLevel1()
         factories.WorkflowLevel1(name='Population Health Initiative')
 
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
         request = self.factory.get(
             '{}?name={}'.format(reverse('workflowlevel1-list'), wflvl1.name)
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -1054,12 +1054,12 @@ class WorkflowLevel1FilterViewsTest(TestCase):
         factories.WorkflowLevel1(name='Population Health Initiative',
                                  organization=self.core_user.organization)
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.user.groups.add(group_org_admin)
+        self.core_user.groups.add(group_org_admin)
 
         request = self.factory.get(
             '{}?name={}'.format(reverse('workflowlevel1-list'), wflvl1.name)
         )
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = WorkflowLevel1ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)

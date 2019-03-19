@@ -203,7 +203,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
 
         workflowlevel2sort = WorkflowLevel2Sort.objects.get(
             pk=response.data['id'])
-        self.assertEquals(workflowlevel2sort.workflowlevel2_id,
+        self.assertEqual(workflowlevel2sort.workflowlevel2_id,
                           data['workflowlevel2_id'])
 
     def test_update_workflowlevel2sort_normal_user(self):
@@ -224,7 +224,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
 
         workflowlevel2sort = WorkflowLevel2Sort.objects.get(
             pk=response.data['id'])
-        self.assertEquals(workflowlevel2sort.workflowlevel2_id,
+        self.assertEqual(workflowlevel2sort.workflowlevel2_id,
                           data['workflowlevel2_id'])
 
     def test_update_workflowlevel2sort_diff_org_normal_user(self):
@@ -260,7 +260,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         request.user = self.core_user.user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
-        self.assertEquals(response.status_code, 204)
+        self.assertEqual(response.status_code, 204)
         self.assertRaises(
             WorkflowLevel2Sort.DoesNotExist,
             WorkflowLevel2Sort.objects.get, pk=workflowlevel2sort.pk)
@@ -275,7 +275,7 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         request.user = self.core_user.user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
-        self.assertEquals(response.status_code, 204)
+        self.assertEqual(response.status_code, 204)
         self.assertRaises(
             WorkflowLevel2Sort.DoesNotExist,
             WorkflowLevel2Sort.objects.get, pk=workflowlevel2sort.pk)
@@ -293,5 +293,5 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
         request.user = self.core_user.user
         view = WorkflowLevel2SortViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=workflowlevel2sort.pk)
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         WorkflowLevel2Sort.objects.get(pk=workflowlevel2sort.pk)

@@ -136,13 +136,11 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser:
             if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
                     'name', flat=True):
-                organization_id = wfm.CoreUser.objects. \
-                    values_list('organization_id', flat=True). \
-                    get(user=request.user)
+                organization_id = request.user.organization_id
                 queryset = queryset.filter(organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
+                    workflow_user=request.user).values_list(
                     'workflowlevel1__id', flat=True)
                 queryset = queryset.filter(id__in=wflvl1_ids)
 
@@ -181,15 +179,12 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         }
 
         if role_org:
-            qs = wfm.WorkflowLevel1.objects.\
-                values_list('id', 'level1_uuid').\
-                filter(organization=user.core_user.organization).order_by('id')
+            qs = wfm.WorkflowLevel1.objects.values_list('id', 'level1_uuid').\
+                filter(organization=user.organization).order_by('id')
         else:
             qs = wfm.WorkflowTeam.objects.\
-                values_list('workflowlevel1_id',
-                            'workflowlevel1__level1_uuid', 'role__name').\
-                filter(workflow_user=user.core_user).\
-                order_by('workflowlevel1_id')
+                values_list('workflowlevel1_id', 'workflowlevel1__level1_uuid', 'role__name').\
+                filter(workflow_user=user).order_by('workflowlevel1_id')
 
         for wflvl1_info in qs:
             if role_org:
@@ -233,7 +228,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         wflvl1 = wfm.WorkflowLevel1.objects.get(
             level1_uuid=serializer.data['level1_uuid'])
         wfm.WorkflowTeam.objects.create(
-            workflow_user=request.user.core_user, workflowlevel1=wflvl1,
+            workflow_user=request.user, workflowlevel1=wflvl1,
             role=group_program_admin)
 
         headers = self.get_success_headers(serializer.data)
@@ -241,9 +236,9 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
                         headers=headers)
 
     def perform_create(self, serializer):
-        organization = self.request.user.core_user.organization
+        organization = self.request.user.organization
         obj = serializer.save(organization=organization)
-        obj.user_access.add(self.request.user.core_user)
+        obj.user_access.add(self.request.user)
 
     def destroy(self, request, *args, **kwargs):
         workflowlevel1 = self.get_object()
@@ -282,7 +277,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         user = request.user
         if not user.is_superuser:
-            queryset = queryset.filter(organization_id=user.core_user.organization_id)
+            queryset = queryset.filter(organization_id=user.organization_id)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -326,9 +321,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects.\
-                values_list('organization_id', flat=True).\
-                get(user=request.user)
+            organization_id = request.user.organization_id
             queryset = queryset.filter(organization_id=organization_id)
         serializer = self.get_serializer(
             instance=queryset, context={'request': request}, many=True)
@@ -569,9 +562,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects. \
-                values_list('organization_id', flat=True). \
-                get(user=request.user)
+            organization_id = request.user.organization_id
             queryset = queryset.filter(id=organization_id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -636,16 +627,14 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects. \
-                values_list('organization_id', flat=True). \
-                get(user=request.user)
+            organization_id = request.user.organization_id
             if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
                     'name', flat=True):
                 queryset = queryset.filter(
                     workflowlevel1__organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
+                    workflow_user=request.user).values_list(
                     'workflowlevel1__id', flat=True)
                 queryset = queryset.filter(
                     workflowlevel1__organization_id=organization_id,
@@ -706,14 +695,12 @@ class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser:
             user_groups = request.user.groups.values_list('name', flat=True)
             if wfm.ROLE_ORGANIZATION_ADMIN in user_groups:
-                organization_id = wfm.CoreUser.objects. \
-                    values_list('organization_id', flat=True). \
-                    get(user=request.user)
+                organization_id = request.user.organization_id
                 queryset = queryset.filter(
                     workflowlevel1__organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
+                    workflow_user=request.user).values_list(
                     'workflowlevel1__id', flat=True)
                 queryset = queryset.filter(workflowlevel1__in=wflvl1_ids)
         serializer = self.get_serializer(queryset, many=True)
