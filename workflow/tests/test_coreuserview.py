@@ -99,8 +99,8 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
 
 @pytest.mark.django_db()
 def test_registration_fail(request_factory):
-    # check that all fields in USER_DATA are required
-    for field_name in TEST_USER_DATA.keys():
+    # check that 'password' and 'organization_name' fields are required
+    for field_name in ['password', 'organization_name']:
         data = TEST_USER_DATA.copy()
         data.pop(field_name)
         request = request_factory.post(reverse('coreuser-list'), data)
