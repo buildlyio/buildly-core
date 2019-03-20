@@ -100,10 +100,6 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    email = serializers.EmailField()
-    username = serializers.CharField()
     password = serializers.CharField(write_only=True)
     is_active = serializers.BooleanField(required=False)
     organization_name = serializers.CharField(source='organization.name', write_only=True)
