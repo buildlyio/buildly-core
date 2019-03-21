@@ -57,7 +57,6 @@ pipeline:
     secrets: [DOCKER_OLD_USERNAME, DOCKER_OLD_PASSWORD]
     when:
       event: [tag]
-      branch: master
       status: [success]
 
   build-new-docker-image-tag:
@@ -75,7 +74,6 @@ pipeline:
     file: Dockerfile
     when:
       event: [tag]
-      branch: master
       status: [success]
 
   notify:
