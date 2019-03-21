@@ -54,7 +54,10 @@ pipeline:
     repo: registry.tola.io/humanitec-walhall/bifrost
     file: Dockerfile
     auto_tag: true
-    secrets: [DOCKER_OLD_USERNAME, DOCKER_OLD_PASSWORD]
+    username:
+      from_secret: DOCKER_OLD_USERNAME
+    password:
+      from_secret: DOCKER_OLD_PASSWORD
     when:
       event: [tag]
       status: [success]
