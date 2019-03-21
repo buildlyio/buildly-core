@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 from django.contrib.postgres import fields
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.contrib.sites.models import Site
@@ -13,9 +13,15 @@ except ImportError:
 from simple_history.models import HistoricalRecords
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
-ROLE_PROGRAM_ADMIN = 'WorkflowAdmin'
-ROLE_PROGRAM_TEAM = 'WorkflowTeam'
+ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
+ROLE_WORKFLOW_TEAM = 'WorkflowTeam'
 ROLE_VIEW_ONLY = 'ViewOnly'
+ROLES = (
+    (ROLE_ORGANIZATION_ADMIN, ROLE_ORGANIZATION_ADMIN),
+    (ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_ADMIN),
+    (ROLE_WORKFLOW_TEAM, ROLE_WORKFLOW_TEAM),
+    (ROLE_VIEW_ONLY, ROLE_VIEW_ONLY),
+)
 DEFAULT_PROGRAM_NAME = 'Default program'
 
 
@@ -103,6 +109,19 @@ TITLE_CHOICES = (
 )
 
 
+class Role(models.Model):
+    """
+    Defines role permissions for Core Users (organization admin, workflow admin etc)
+    """
+    name = models.CharField('Name', max_length=100, choices=ROLES, unique=True)
+
+    class Meta:
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+
 class CoreGroup(models.Model):
     """
     CoreGroup is similar to Django Group, but it is associated with an organization.
@@ -128,28 +147,30 @@ class CoreGroup(models.Model):
         super(CoreGroup, self).save(*args, **kwargs)
 
 
-class CoreUser(models.Model):
+class CoreUser(AbstractUser):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
     """
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
-    user = models.OneToOneField(User, unique=True, related_name='core_user', on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core Groups', blank=True)
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
+    roles = models.ManyToManyField(Role, verbose_name='User roles', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
-    create_date = models.DateTimeField(null=True, blank=True)
+    create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
+    # We need to override this field to specify different `related_name` to avoid conflict with User model
+    # (probably we can remove it when `django.contrib.auth` will be excluded from INSTALLED_APPS)
+    user_permissions = models.ManyToManyField(Permission, verbose_name='User permissions', blank=True,
+                                              help_text='Specific permissions for this user.',
+                                              related_name="core_user_set", related_query_name="core_user")
 
     class Meta:
-        ordering = ('user__first_name',)
+        ordering = ('first_name',)
 
     def __str__(self):
-        if self.user.first_name and self.user.last_name:
-            return f'{self.user.first_name} {self.user.last_name}'
-        else:
-            return '-'
+        return self.username
 
     def save(self, *args, **kwargs):
         if self.create_date is None:
@@ -157,10 +178,6 @@ class CoreUser(models.Model):
         self.edit_date = timezone.now()
 
         super(CoreUser, self).save()
-
-    @property
-    def is_active(self):
-        return self.user.is_active
 
 
 class Internationalization(models.Model):
@@ -182,59 +199,12 @@ class Internationalization(models.Model):
         super(Internationalization, self).save()
 
 
-class Portfolio(models.Model):
-    name = models.CharField(max_length=255, help_text="Portfolio/folder label displayed in list views")
-    description = models.TextField(null=True, blank=True, help_text="Describe the purpose or use case for this Portfolio collection")
-    organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text="Related Organization that created portfolio")
-    is_global = models.BooleanField(default=0, help_text="A Global appears for all organizations")
-    create_date = models.DateTimeField(null=True, blank=True)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ('name',)
-
-    def save(self, *args, **kwargs):
-        if self.create_date is None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-        super(Portfolio, self).save()
-
-    def __str__(self):
-        return str(self.name)
-
-
-class Milestone(models.Model):
-    name = models.CharField(max_length=255, help_text="A Milestone can be associated with a workflow level as time marked goal")
-    description = models.TextField(null=True, blank=True, help_text="Purpose of the Milestone")
-    organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text="Related Organization that created portfolio")
-    milestone_start_date = models.DateTimeField(null=True, blank=True, help_text="Milestone can have a single date associated with start date or a start and end date")
-    milestone_end_date = models.DateTimeField(null=True, blank=True, help_text="Optional End of milestone period")
-    is_global = models.BooleanField(default=0, help_text="A Global appears for all organizations")
-    create_date = models.DateTimeField(null=True, blank=True)
-    edit_date = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey('auth.User', related_name='milestones', on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        ordering = ('name',)
-
-    def save(self, *args, **kwargs):
-        if self.create_date is None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-        super(Milestone, self).save()
-
-    def __str__(self):
-        return str(self.name)
-
-
 class WorkflowLevel1(models.Model):
     level1_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel1 UUID', default=uuid.uuid4, unique=True)
     unique_id = models.CharField("ID", max_length=255, blank=True, null=True, help_text="User facing unique ID field if needed")
     name = models.CharField("Name", max_length=255, blank=True, help_text="Top level workflow can have child workflowleves, name it according to it's grouping of children")
     organization = models.ForeignKey(Organization, blank=True, on_delete=models.CASCADE, null=True, help_text='Related Org to associate with')
-    portfolio = models.ForeignKey(Portfolio, blank=True, on_delete=models.CASCADE, null=True, help_text='Combine with a set or other level 1s for folder like structure')
     description = models.TextField("Description", max_length=765, null=True, blank=True, help_text='Describe how this collection of related workflows are used')
-    milestone = models.ManyToManyField(Milestone, blank=True, help_text='Set of milestones or stated goals and dates for work')
     user_access = models.ManyToManyField(CoreUser, blank=True)
     start_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level')
     end_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level')
@@ -309,10 +279,9 @@ class WorkflowLevel2(models.Model):
     notes = models.TextField(blank=True, null=True)
     parent_workflowlevel2 = models.IntegerField("Parent", default=0, blank=True, help_text="Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships")
     short_name = models.CharField("Code", max_length=20, blank=True, null=True, help_text="Shortened name autogenerated")
-    milestone = models.ForeignKey("Milestone", null=True, blank=True, on_delete=models.SET_NULL, help_text="Association with a Milestone")
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, verbose_name="Program", on_delete=models.CASCADE, related_name="workflowlevel2", help_text="Primary or parent Workflow")
+    workflowlevel1 = models.ForeignKey(WorkflowLevel1, verbose_name="Workflow Level 1", on_delete=models.CASCADE, related_name="workflowlevel2", help_text="Primary or parent Workflow")
     create_date = models.DateTimeField("Date Created", null=True, blank=True)
-    created_by = models.ForeignKey('auth.User', related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(CoreUser, related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
     edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
     history = HistoricalRecords()
 

@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 from django.core import mail
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes
@@ -17,6 +17,9 @@ from workflow.views import CoreUserViewSet
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
 from .fixtures import org, org_admin, org_member, group_org_admin, reset_password_request, TEST_USER_DATA
+
+
+User = get_user_model()
 
 
 @pytest.mark.django_db()
@@ -64,31 +67,31 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
 
     # has permission
     request = request_factory.get(reverse('coreuser-list'))
-    request.user = org_member.user
+    request.user = org_member
     response = CoreUserViewSet.as_view({'get': 'list'})(request)
     assert response.status_code == 200
 
     # has no permission
     request = request_factory.post(reverse('coreuser-invite'))
-    request.user = org_member.user
+    request.user = org_member
     response = CoreUserViewSet.as_view({'post': 'invite'})(request)
     assert response.status_code == 403
 
     # has permission
     request = request_factory.get(reverse('coreuser-detail', args=(pk,)))
-    request.user = org_member.user
+    request.user = org_member
     response = CoreUserViewSet.as_view({'get': 'retrieve'})(request, pk=pk)
     assert response.status_code == 200
 
     # has no permission
     request = request_factory.put(reverse('coreuser-detail', args=(pk,)))
-    request.user = org_member.user
+    request.user = org_member
     response = CoreUserViewSet.as_view({'put': 'update'})(request, pk=pk)
     assert response.status_code == 403
 
     # has no permission
     request = request_factory.patch(reverse('coreuser-detail', args=(1,)))
-    request.user = org_member.user
+    request.user = org_member
     response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
                                                                     pk=1)
     assert response.status_code == 403
@@ -96,8 +99,8 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
 
 @pytest.mark.django_db()
 def test_registration_fail(request_factory):
-    # check that all fields in USER_DATA are required
-    for field_name in TEST_USER_DATA.keys():
+    # check that 'password' and 'organization_name' fields are required
+    for field_name in ['password', 'organization_name']:
         data = TEST_USER_DATA.copy()
         data.pop(field_name)
         request = request_factory.post(reverse('coreuser-list'), data)
@@ -111,13 +114,11 @@ def test_registration_of_first_org_user(request_factory, group_org_admin):
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
 
-    coreuser = wfm.CoreUser.objects.get(user__username=
-                                        TEST_USER_DATA['username'])
-    user = coreuser.user
+    user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
     assert user.email == TEST_USER_DATA['email']
     assert user.first_name == TEST_USER_DATA['first_name']
     assert user.last_name == TEST_USER_DATA['last_name']
-    assert coreuser.organization.name == TEST_USER_DATA['organization_name']
+    assert user.organization.name == TEST_USER_DATA['organization_name']
     assert user.is_active
 
     # check this user is org admin
@@ -130,18 +131,15 @@ def test_registration_of_second_org_user(request_factory, org_admin):
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
 
-    coreuser = wfm.CoreUser.objects.get(user__username=
-                                        TEST_USER_DATA['username'])
-    user = coreuser.user
+    user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
     assert user.email == TEST_USER_DATA['email']
     assert user.first_name == TEST_USER_DATA['first_name']
     assert user.last_name == TEST_USER_DATA['last_name']
-    assert coreuser.organization.name == TEST_USER_DATA['organization_name']
+    assert user.organization.name == TEST_USER_DATA['organization_name']
     assert not user.is_active
 
     # check this user is NOT org admin
-    group_org_admin = org_admin.user.groups.get(name=
-                                                wfm.ROLE_ORGANIZATION_ADMIN)
+    group_org_admin = org_admin.groups.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
     assert group_org_admin not in user.groups.all()
 
 
@@ -155,35 +153,31 @@ def test_registration_of_invited_org_user(request_factory, org_admin):
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
 
-    coreuser = wfm.CoreUser.objects.get(user__username=TEST_USER_DATA['username'])
-    user = coreuser.user
+    user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
     assert user.email == TEST_USER_DATA['email']
     assert user.first_name == TEST_USER_DATA['first_name']
     assert user.last_name == TEST_USER_DATA['last_name']
-    assert coreuser.organization.name == TEST_USER_DATA['organization_name']
+    assert user.organization.name == TEST_USER_DATA['organization_name']
     assert user.is_active
 
     # check this user is NOT org admin
-    group_org_admin = org_admin.user.groups.get(name=
-                                                wfm.ROLE_ORGANIZATION_ADMIN)
+    group_org_admin = org_admin.groups.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
     assert group_org_admin not in user.groups.all()
 
 
 @pytest.mark.django_db()
 def test_coreuser_update(request_factory, org_admin):
-    coreuser = factories.CoreUser.create(user__is_active=False)
-    pk = coreuser.pk
+    user = factories.CoreUser.create(is_active=False)
+    pk = user.pk
 
     data = {
         'is_active': True,
     }
     request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
-    request.user = org_admin.user
-    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
-                                                                    pk=pk)
+    request.user = org_admin
+    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
     assert response.status_code == 200
     coreuser = wfm.CoreUser.objects.get(pk=pk)
-    assert coreuser.user.is_active
     assert coreuser.is_active
 
 
@@ -191,7 +185,7 @@ def test_coreuser_update(request_factory, org_admin):
 def test_invitation(request_factory, org_admin):
     data = {'emails': [TEST_USER_DATA['email']]}
     request = request_factory.post(reverse('coreuser-invite'), data)
-    request.user = org_admin.user
+    request.user = org_admin
     response = CoreUserViewSet.as_view({'post': 'invite'})(request)
     assert response.status_code == 200
     assert len(response.data['invitations']) == 1
@@ -200,22 +194,19 @@ def test_invitation(request_factory, org_admin):
 @pytest.mark.django_db()
 def test_invitation_check(request_factory, org):
     token = create_invitation_token(TEST_USER_DATA['email'], org)
-    request = request_factory.get(reverse('coreuser-invite-check'),
-                              {'token': token})
+    request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
     response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
     assert response.status_code == 200
     assert response.data['email'] == TEST_USER_DATA['email']
-    assert response.data['organization']['organization_uuid'] == \
-        str(org.organization_uuid)
+    assert response.data['organization']['organization_uuid'] == str(org.organization_uuid)
 
 
 @pytest.mark.django_db()
 class TestResetPassword(object):
 
     def test_reset_password_using_default_emailtemplate(self, request_factory, org_member):
-        user = org_member.user
-        email = user.email
-        assert list(user.core_user.organization.emailtemplate_set.all()) == []
+        email = org_member.email
+        assert list(org_member.organization.emailtemplate_set.all()) == []
         assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == []
         request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
@@ -227,14 +218,13 @@ class TestResetPassword(object):
         assert message.to == [email]
 
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+        token = default_token_generator.make_token(org_member)
         assert f'{resetpass_url}{uid}/{token}/' in message.body
         assert 'Thanks for using our site!' in message.body
 
     def test_reset_password_using_org_template(self, request_factory, org_member):
-        user = org_member.user
-        email = user.email
+        email = org_member.email
 
         wfm.EmailTemplate.objects.create(
             organization=org_member.organization,
@@ -256,15 +246,14 @@ class TestResetPassword(object):
         assert message.to == [email]
 
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+        token = default_token_generator.make_token(org_member)
         assert message.subject == 'Custom subject'
         assert 'Custom template' in message.body
         assert f'{resetpass_url}{uid}/{token}/' in message.body
 
     def test_reset_password_using_default_org_template(self, request_factory, org_member):
-        user = org_member.user
-        email = user.email
+        email = org_member.email
 
         default_organization = factories.Organization(name=settings.DEFAULT_ORG)
 
@@ -288,8 +277,8 @@ class TestResetPassword(object):
         assert message.to == [email]
 
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+        token = default_token_generator.make_token(org_member)
         assert message.subject == 'Custom subject'
         assert 'Custom template' in message.body
         assert f'{resetpass_url}{uid}/{token}/' in message.body

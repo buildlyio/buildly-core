@@ -4,9 +4,8 @@ from rest_framework.relations import ManyRelatedField
 from django.http import QueryDict
 
 from workflow.models import (
-    ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_PROGRAM_ADMIN,
-    ROLE_PROGRAM_TEAM, WorkflowTeam, Organization, Milestone,
-    Portfolio, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreUser, CoreGroup)
+    ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM,
+    WorkflowTeam, Organization, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreGroup)
 
 PERMISSIONS_ORG_ADMIN = {
     'create': True,
@@ -18,9 +17,9 @@ PERMISSIONS_ORG_ADMIN = {
 
 PERMISSIONS_ADMIN = PERMISSIONS_ORG_ADMIN
 
-PERMISSIONS_PROGRAM_ADMIN = PERMISSIONS_ORG_ADMIN
+PERMISSIONS_WORKFLOW_ADMIN = PERMISSIONS_ORG_ADMIN
 
-PERMISSIONS_PROGRAM_TEAM = {
+PERMISSIONS_WORKFLOW_TEAM = {
     'create': True,
     'edit': True,
     'remove': False,
@@ -105,8 +104,7 @@ class IsOrgMember(permissions.BasePermission):
             return True
 
         if view.action == 'create':
-            user_org = CoreUser.objects.values_list(
-                'organization_id', flat=True).get(user=request.user)
+            user_org = request.user.organization_id
 
             if 'organization' in request.data:
                 org_serializer = view.get_serializer_class()().get_fields()[
@@ -135,10 +133,9 @@ class IsOrgMember(permissions.BasePermission):
             return True
         user_groups = request.user.groups.values_list('name', flat=True)
         org_admin = True if ROLE_ORGANIZATION_ADMIN in user_groups else False
-        user_org = CoreUser.objects.values_list(
-            'organization_id', flat=True).get(user=request.user)
+        user_org = request.user.organization_id
         try:
-            if obj.__class__ in [Milestone, Portfolio, WorkflowLevel1, CoreGroup]:
+            if obj.__class__ in [WorkflowLevel1, CoreGroup]:
                 return obj.organization.id == user_org
             elif obj.__class__ in [WorkflowLevel2, WorkflowLevel2Sort]:
                 return obj.__class__.objects.filter(workflowlevel1__organization=user_org, id=obj.id).exists()
@@ -194,7 +191,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
         queryset = self._queryset(view)
         model_cls = queryset.model
         if view.action == 'create':
-            user_org = request.user.core_user.organization
+            user_org = request.user.organization
             data = request.data
 
             if data.get('workflowlevel1') or data.get('workflowlevel2_uuid'):
@@ -211,14 +208,14 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     wflvl1 = [wflvl1]
 
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.core_user,
+                    workflow_user=request.user,
                     workflowlevel1__in=wflvl1).values_list(
                     'role__name', flat=True)
 
                 if model_cls in [WorkflowLevel2]:
                     if (ROLE_ORGANIZATION_ADMIN in user_groups or
-                            ROLE_PROGRAM_ADMIN in team_groups or
-                            ROLE_PROGRAM_TEAM in team_groups):
+                            ROLE_WORKFLOW_ADMIN in team_groups or
+                            ROLE_WORKFLOW_TEAM in team_groups):
                         is_allowed_role = True
                     else:
                         is_allowed_role = False
@@ -227,12 +224,9 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     return is_allowed_role and is_same_org
                 elif model_cls is WorkflowTeam:
                     return (((ROLE_VIEW_ONLY not in team_groups and
-                            ROLE_PROGRAM_TEAM not in team_groups) or
+                              ROLE_WORKFLOW_TEAM not in team_groups) or
                              ROLE_ORGANIZATION_ADMIN in user_groups) and
                             all(x.organization == user_org for x in wflvl1))
-
-            elif model_cls is Portfolio:
-                return ROLE_ORGANIZATION_ADMIN in user_groups
 
         return True
 
@@ -273,42 +267,34 @@ class AllowCoreUserRoles(permissions.BasePermission):
             if ROLE_ORGANIZATION_ADMIN in user_groups:
                 return True
 
-            if model_cls is Portfolio:
+            if model_cls is WorkflowTeam:
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.core_user,
-                    workflowlevel1__portfolio=obj).values_list(
-                    'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups or ROLE_PROGRAM_TEAM in \
-                        team_groups:
-                    return view.action == 'retrieve'
-            elif model_cls is WorkflowTeam:
-                team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.core_user,
+                    workflow_user=request.user,
                     workflowlevel1=obj.workflowlevel1).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups:
+                if ROLE_WORKFLOW_ADMIN in team_groups:
                     return True
                 else:
                     return view.action == 'retrieve'
             elif model_cls is WorkflowLevel1:
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.core_user,
+                    workflow_user=request.user,
                     workflowlevel1=obj).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups:
+                if ROLE_WORKFLOW_ADMIN in team_groups:
                     return True
-                elif ROLE_PROGRAM_TEAM in team_groups:
+                elif ROLE_WORKFLOW_TEAM in team_groups:
                     return view.action != 'destroy'
 
             elif model_cls in [WorkflowLevel2]:
                 workflowlevel1 = obj.workflowlevel1
                 team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user.core_user,
+                    workflow_user=request.user,
                     workflowlevel1=workflowlevel1).values_list(
                     'role__name', flat=True)
-                if ROLE_PROGRAM_ADMIN in team_groups:
+                if ROLE_WORKFLOW_ADMIN in team_groups:
                     return True
-                elif ROLE_PROGRAM_TEAM in team_groups:
+                elif ROLE_WORKFLOW_TEAM in team_groups:
                     return view.action != 'destroy'
                 elif ROLE_VIEW_ONLY in team_groups:
                     return view.action == 'retrieve'

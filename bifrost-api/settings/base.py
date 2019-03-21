@@ -140,6 +140,8 @@ DATABASES = {
 }
 
 
+AUTH_USER_MODEL = 'workflow.CoreUser'
+
 # Authentication backends
 # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
 
@@ -258,7 +260,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.create_user',
-    'web.auth_pipeline.create_coreuser',
     'web.auth_pipeline.create_organization',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',

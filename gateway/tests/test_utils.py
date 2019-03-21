@@ -32,19 +32,17 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
         return request
 
     def test_validate_bifrost_wfl1_access_superuser(self):
-        self.core_user.user.is_staff = True
-        self.core_user.user.is_superuser = True
-        self.core_user.user.save()
+        self.core_user.is_staff = True
+        self.core_user.is_superuser = True
+        self.core_user.save()
 
-        request = self.get_mock_request('/', APIGatewayView,
-                                        self.core_user.user)
+        request = self.get_mock_request('/', APIGatewayView, self.core_user)
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         validate_object_access(request, wflvl1)
 
     def test_validate_bifrost_wfl1_no_permission(self):
-        request = self.get_mock_request('/', APIGatewayView,
-                                        self.core_user.user)
+        request = self.get_mock_request('/', APIGatewayView, self.core_user)
         wflvl1 = factories.WorkflowLevel1()
 
         error_message = 'You do not have permission to perform this action.'
@@ -60,16 +58,14 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
             validate_object_access(request, wflvl1)
 
     def test_validate_bifrost_logic_module_no_viewset(self):
-        request = self.get_mock_request('/', APIGatewayView,
-                                        self.core_user.user)
+        request = self.get_mock_request('/', APIGatewayView, self.core_user)
         lm = factories.LogicModule()
 
         with self.assertRaises(GatewayError):
             validate_object_access(request, lm)
 
     def test_validate_core_user_access(self):
-        request = self.get_mock_request('/a-jedis-path/', APIGatewayView,
-                                        self.core_user.user)
+        request = self.get_mock_request('/a-jedis-path/', APIGatewayView, self.core_user)
         request.resolver_match = Mock(url_name='obi-wan-kenobi')
         core_user = factories.CoreUser()
         ret = validate_object_access(request, core_user)

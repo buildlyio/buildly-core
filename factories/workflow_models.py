@@ -1,4 +1,5 @@
-from factory import DjangoModelFactory, SubFactory
+from django.template.defaultfilters import slugify
+from factory import DjangoModelFactory, SubFactory, lazy_attribute
 
 from workflow.models import (
     CoreUser as CoreUserM,
@@ -8,11 +9,9 @@ from workflow.models import (
     WorkflowLevel2 as WorkflowLevel2M,
     WorkflowTeam as WorkflowTeamM,
     WorkflowLevel2Sort as WorkflowLevel2SortM,
-    Portfolio as PortfolioM,
-    Milestone as MilestoneM,
     Internationalization as InternationalizationM,
 )
-from .django_models import User, Group
+from .django_models import Group
 
 
 class Organization(DjangoModelFactory):
@@ -33,10 +32,16 @@ class CoreGroup(DjangoModelFactory):
 class CoreUser(DjangoModelFactory):
     class Meta:
         model = CoreUserM
-        django_get_or_create = ('user',)
+        django_get_or_create = ('username',)
 
-    user = SubFactory(User)
     organization = SubFactory(Organization)
+    first_name = 'Homer'
+    last_name = 'Simpson'
+    username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
+    email = lazy_attribute(lambda o: o.username + "@example.com")
+
+
+User = CoreUser  # for tests incompatibility
 
 
 class WorkflowLevel1(DjangoModelFactory):
@@ -69,20 +74,6 @@ class WorkflowLevel2Sort(DjangoModelFactory):
 
     workflowlevel1 = SubFactory(WorkflowLevel1)
     workflowlevel2_parent_id = SubFactory(WorkflowLevel2)
-
-
-class Portfolio(DjangoModelFactory):
-    class Meta:
-        model = PortfolioM
-
-    organization = SubFactory(Organization)
-
-
-class Milestone(DjangoModelFactory):
-    class Meta:
-        model = MilestoneM
-
-    organization = SubFactory(Organization)
 
 
 class Internationalization(DjangoModelFactory):

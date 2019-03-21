@@ -1,15 +1,16 @@
 from django.contrib import admin
+from django.utils.translation import ugettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import (CoreUser, CoreGroup, Organization, WorkflowLevel1, WorkflowLevel2,
+from .models import (CoreUser, CoreGroup, Role, Organization, WorkflowLevel1, WorkflowLevel2,
                      WorkflowLevel2Sort, WorkflowTeam, EmailTemplate)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
     list_display = ('workflow_user', 'workflowlevel1')
     display = 'Workflow Team'
-    search_fields = ('workflow_user__user__username', 'workflowlevel1__name',
-                     'workflow_user__user__last_name')
+    search_fields = ('workflow_user__username', 'workflowlevel1__name',
+                     'workflow_user__last_name')
     list_filter = ('create_date',)
 
 
@@ -25,9 +26,10 @@ class OrganizationAdmin(admin.ModelAdmin):
     display = 'Organization'
 
 
-class MilestoneAdmin(admin.ModelAdmin):
-    list_display = ('name', 'create_date', 'edit_date')
-    display = 'Milestone'
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    display = 'Role'
+    search_fields = ('role',)
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
@@ -38,10 +40,25 @@ class CoreGroupAdmin(admin.ModelAdmin):
 
 
 class CoreUserAdmin(admin.ModelAdmin):
-    list_display = ('user', 'organization', 'is_active')
+    list_display = ('username', 'first_name', 'last_name', 'organization', 'is_active')
     display = 'Core User'
-    list_filter = ('user__is_staff', 'organization')
-    search_fields = ('user__first_name', 'title')
+    list_filter = ('is_staff', 'organization')
+    search_fields = ('first_name', 'first_name', 'username', 'title')
+
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return self.add_fieldsets
+
+        if request.user.is_superuser:
+            perm_fields = ('is_active', 'is_staff', 'is_superuser',
+                           'groups', 'user_permissions')
+        else:
+            perm_fields = ('is_active', 'is_staff', 'groups')
+
+        return [(None, {'fields': ('username', 'password')}),
+                (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
+                (_('Permissions'), {'fields': perm_fields}),
+                (_('Important dates'), {'fields':  ('last_login', 'date_joined')})]
 
 
 class WorkflowLevel1Admin(admin.ModelAdmin):
@@ -58,13 +75,6 @@ class WorkflowLevel2Admin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-class PortfolioAdmin(admin.ModelAdmin):
-    list_display = ('name', 'create_date', 'edit_date')
-    display = 'Portfolio'
-    list_filter = ('create_date',)
-    search_fields = ('name',)
-
-
 class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('organization', 'type')
     display = 'Email Template'
@@ -75,6 +85,7 @@ admin.site.register(WorkflowLevel2, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
+admin.site.register(Role, RoleAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)

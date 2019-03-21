@@ -21,12 +21,6 @@ class WorkflowLevel2(DjangoObjectType):
         model = wfm.WorkflowLevel2
 
 
-# GraphQL Milestone
-class Milestone(DjangoObjectType):
-    class Meta:
-        model = wfm.Milestone
-
-
 # Query each class
 class Query(graphene.ObjectType):
     users = graphene.List(CoreUser)
@@ -36,10 +30,6 @@ class Query(graphene.ObjectType):
     @graphene.resolve_only_args
     def resolve_users(self):
         return wfm.CoreUser.objects.all()
-
-    @graphene.resolve_only_args
-    def resolve_milestone(self):
-        return wfm.Milestone.objects.all()
 
     @graphene.resolve_only_args
     def resolve_workflowlevel1s(self):

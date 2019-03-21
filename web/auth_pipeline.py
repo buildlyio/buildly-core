@@ -4,24 +4,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render_to_response
 from django.conf import settings
 
-from workflow.models import CoreUser, CoreSites, Organization
+from workflow.models import CoreSites, Organization
 
 logger = logging.getLogger(__name__)
-
-
-def create_coreuser(user=None, *args, **kwargs):
-    """
-    Create or retrieve a core user based on the created user
-    """
-    if not user:
-        return
-
-    # create or get core user
-    core_user, created = CoreUser.objects.get_or_create(user=user)
-    return {
-        'is_new_core_user': created,
-        'core_user': core_user
-    }
 
 
 def create_organization(core_user=None, *args, **kwargs):
@@ -35,7 +20,7 @@ def create_organization(core_user=None, *args, **kwargs):
     if settings.DEFAULT_ORG:
         organization, created = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
     else:
-        organization, created = Organization.objects.get_or_create(name=core_user.user.username)
+        organization, created = Organization.objects.get_or_create(name=core_user.username)
 
     core_user.organization = organization
     core_user.save()

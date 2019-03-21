@@ -25,8 +25,7 @@ class OrganizationListViewTest(TestCase):
         self.assertEqual(len(response.data), 2)
 
     def test_list_organization_normaluser_one_result(self):
-        tola_user = factories.CoreUser()
-        self.request.user = tola_user.user
+        self.request.user = factories.CoreUser()
         view = OrganizationViewSet.as_view({'get': 'list'})
         response = view(self.request)
         self.assertEqual(response.status_code, 200)
@@ -59,7 +58,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         Plan.retrieve = Mock(return_value=plan_response)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
         response = view(request, pk=self.core_user.organization.id)
         subscription = response.data
@@ -82,7 +81,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         Subscription.retrieve = Mock(side_effect=sub_response)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
         response = view(request, pk=self.core_user.organization.id)
 
@@ -97,7 +96,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         Subscription.retrieve = Mock(side_effect=sub_response)
 
         request = self.factory.get('')
-        request.user = self.core_user.user
+        request.user = self.core_user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
         response = view(request, pk=self.core_user.organization.id)
 

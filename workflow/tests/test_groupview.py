@@ -13,16 +13,14 @@ class GroupViewsTest(TestCase):
         self.request_post = factory.post('/api/groups/')
 
     def test_list_groups_superuser(self):
-        self.request_get.user = factories.User.build(is_superuser=True,
-                                                     is_staff=True)
+        self.request_get.user = factories.User.build(is_superuser=True, is_staff=True)
         view = GroupViewSet.as_view({'get': 'list'})
         response = view(self.request_get)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
     def test_list_groups_normaluser(self):
-        tola_user = factories.CoreUser()
-        self.request_get.user = tola_user.user
+        self.request_get.user = factories.CoreUser()
         view = GroupViewSet.as_view({'get': 'list'})
         response = view(self.request_get)
         self.assertEqual(response.status_code, 200)
@@ -32,8 +30,7 @@ class GroupViewsTest(TestCase):
         # create group via POST request
         data = {'name': 'TestGroup'}
         self.request_post = APIRequestFactory().post('/api/stakeholder/', data)
-        self.request_post.user = factories.User.build(is_superuser=False,
-                                                      is_staff=False)
+        self.request_post.user = factories.User.build(is_superuser=False, is_staff=False)
         view = GroupViewSet.as_view({'post': 'create'})
 
         with self.assertRaises(AttributeError) as context:

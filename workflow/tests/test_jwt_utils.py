@@ -11,7 +11,7 @@ class JWTUtilsTest(TestCase):
     def test_jwt_payload_enricher(self):
         rf = RequestFactory()
         core_user = factories.CoreUser()
-        request = rf.post('', {'username': core_user.user.username})
+        request = rf.post('', {'username': core_user.username})
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(core_user.core_user_uuid),
@@ -28,10 +28,10 @@ class JWTUtilsTest(TestCase):
     def test_jwt_payload_enricher_superuser(self):
         rf = RequestFactory()
         core_user = factories.CoreUser()
-        core_user.user.is_superuser = True
-        core_user.user.save()
+        core_user.is_superuser = True
+        core_user.save()
 
-        request = rf.post('', {'username': core_user.user.username})
+        request = rf.post('', {'username': core_user.username})
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(core_user.core_user_uuid),
@@ -43,9 +43,9 @@ class JWTUtilsTest(TestCase):
         rf = RequestFactory()
         core_user = factories.CoreUser()
         group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        core_user.user.groups.add(group_org_admin)
+        core_user.groups.add(group_org_admin)
 
-        request = rf.post('', {'username': core_user.user.username})
+        request = rf.post('', {'username': core_user.username})
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(core_user.core_user_uuid),

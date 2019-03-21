@@ -5,7 +5,8 @@ import logging
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User, Permission
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -16,7 +17,6 @@ from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import CursorPagination, PageNumberPagination
-from rest_framework.exceptions import PermissionDenied
 import jwt
 from chargebee import Plan, Subscription
 from graphene_django.views import GraphQLView
@@ -30,7 +30,7 @@ from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
                           AllowOnlyOrgAdmin,
                           PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
-                          PERMISSIONS_PROGRAM_ADMIN, PERMISSIONS_PROGRAM_TEAM,
+                          PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_WORKFLOW_TEAM,
                           PERMISSIONS_VIEW_ONLY)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                       DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -38,6 +38,8 @@ from . import serializers
 
 
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -136,13 +138,11 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser:
             if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
                     'name', flat=True):
-                organization_id = wfm.CoreUser.objects. \
-                    values_list('organization_id', flat=True). \
-                    get(user=request.user)
+                organization_id = request.user.organization_id
                 queryset = queryset.filter(organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
+                    workflow_user=request.user).values_list(
                     'workflowlevel1__id', flat=True)
                 queryset = queryset.filter(id__in=wflvl1_ids)
 
@@ -175,21 +175,18 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         permissions_role = {
             'Admin': PERMISSIONS_ADMIN,
             wfm.ROLE_ORGANIZATION_ADMIN: PERMISSIONS_ORG_ADMIN,
-            wfm.ROLE_PROGRAM_ADMIN: PERMISSIONS_PROGRAM_ADMIN,
-            wfm.ROLE_PROGRAM_TEAM: PERMISSIONS_PROGRAM_TEAM,
+            wfm.ROLE_WORKFLOW_ADMIN: PERMISSIONS_WORKFLOW_ADMIN,
+            wfm.ROLE_WORKFLOW_TEAM: PERMISSIONS_WORKFLOW_TEAM,
             wfm.ROLE_VIEW_ONLY: PERMISSIONS_VIEW_ONLY,
         }
 
         if role_org:
-            qs = wfm.WorkflowLevel1.objects.\
-                values_list('id', 'level1_uuid').\
-                filter(organization=user.core_user.organization).order_by('id')
+            qs = wfm.WorkflowLevel1.objects.values_list('id', 'level1_uuid').\
+                filter(organization=user.organization).order_by('id')
         else:
             qs = wfm.WorkflowTeam.objects.\
-                values_list('workflowlevel1_id',
-                            'workflowlevel1__level1_uuid', 'role__name').\
-                filter(workflow_user=user.core_user).\
-                order_by('workflowlevel1_id')
+                values_list('workflowlevel1_id', 'workflowlevel1__level1_uuid', 'role__name').\
+                filter(workflow_user=user).order_by('workflowlevel1_id')
 
         for wflvl1_info in qs:
             if role_org:
@@ -229,11 +226,11 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)  # inherited from CreateModelMixin
 
         # Assign the user to multiple properties of the Program
-        group_program_admin = Group.objects.get(name=wfm.ROLE_PROGRAM_ADMIN)
+        group_program_admin = Group.objects.get(name=wfm.ROLE_WORKFLOW_ADMIN)
         wflvl1 = wfm.WorkflowLevel1.objects.get(
             level1_uuid=serializer.data['level1_uuid'])
         wfm.WorkflowTeam.objects.create(
-            workflow_user=request.user.core_user, workflowlevel1=wflvl1,
+            workflow_user=request.user, workflowlevel1=wflvl1,
             role=group_program_admin)
 
         headers = self.get_success_headers(serializer.data)
@@ -241,9 +238,9 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
                         headers=headers)
 
     def perform_create(self, serializer):
-        organization = self.request.user.core_user.organization
+        organization = self.request.user.organization
         obj = serializer.save(organization=organization)
-        obj.user_access.add(self.request.user.core_user)
+        obj.user_access.add(self.request.user)
 
     def destroy(self, request, *args, **kwargs):
         workflowlevel1 = self.get_object()
@@ -259,7 +256,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
 
     ordering_fields = ('name',)
     ordering = ('name',)
-    filter_fields = ('name', 'level1_uuid')
+    filterset_fields = ('name', 'level1_uuid')
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
 
@@ -282,7 +279,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         user = request.user
         if not user.is_superuser:
-            queryset = queryset.filter(organization_id=user.core_user.organization_id)
+            queryset = queryset.filter(organization_id=user.organization_id)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -326,9 +323,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects.\
-                values_list('organization_id', flat=True).\
-                get(user=request.user)
+            organization_id = request.user.organization_id
             queryset = queryset.filter(organization_id=organization_id)
         serializer = self.get_serializer(
             instance=queryset, context={'request': request}, many=True)
@@ -337,8 +332,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def retrieve(self, request, *args, **kwargs):
         queryset = self.queryset
         user = get_object_or_404(queryset, pk=kwargs.get('pk'))
-        serializer = self.get_serializer(instance=user,
-                                         context={'request': request})
+        serializer = self.get_serializer(instance=user, context={'request': request})
         return Response(serializer.data)
 
     @swagger_auto_schema(methods=['post'],
@@ -407,15 +401,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
 
-        organization = None
-        if hasattr(user, 'core_user'):
-            organization = wfm.Organization.objects.get(coreuser__user=user)
-        elif not user.is_superuser:
-            # only superuser can invite Org's first user
-            raise PermissionDenied
-
-        registered_emails = User.objects.filter(email__in=email_addresses)\
-            .values_list('email', flat=True)
+        organization = user.organization
+        registered_emails = User.objects.filter(email__in=email_addresses).values_list('email', flat=True)
 
         links = []
         for email_address in email_addresses:
@@ -433,7 +420,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
-                    'org_admin_name': user.coreuser.name
+                    'org_admin_name': user.name
                     if hasattr(user, 'coreuser') else '',
                     'organization_name': organization.name
                     if organization else ''
@@ -522,8 +509,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 return [permissions.AllowAny()]
 
             # different permissions for checking token
-            if self.request.method == 'GET' \
-                    and url_name == 'coreuser-invite-check':
+            if self.request.method == 'GET' and url_name == 'coreuser-invite-check':
                 return [permissions.AllowAny()]
 
             # different permissions for the invitation process
@@ -531,13 +517,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 return [AllowOnlyOrgAdmin()]
 
             # only org admin can update core user's data
-            if self.request.method in ['PUT', 'PATCH'] \
-                    and url_name == 'coreuser-detail':
+            if self.request.method in ['PUT', 'PATCH'] and url_name == 'coreuser-detail':
                 return [AllowOnlyOrgAdmin()]
 
         return super(CoreUserViewSet, self).get_permissions()
 
-    filter_fields = ('organization__id',)
+    filterset_fields = ('organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = wfm.CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
@@ -569,9 +554,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects. \
-                values_list('organization_id', flat=True). \
-                get(user=request.user)
+            organization_id = request.user.organization_id
             queryset = queryset.filter(id=organization_id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -636,16 +619,14 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects. \
-                values_list('organization_id', flat=True). \
-                get(user=request.user)
+            organization_id = request.user.organization_id
             if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
                     'name', flat=True):
                 queryset = queryset.filter(
                     workflowlevel1__organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
+                    workflow_user=request.user).values_list(
                     'workflowlevel1__id', flat=True)
                 queryset = queryset.filter(
                     workflowlevel1__organization_id=organization_id,
@@ -668,10 +649,9 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(created_by=getattr(self.request.user, 'core_user', None))
 
-    filter_fields = ('level2_uuid',
-                     'workflowlevel1__name', 'workflowlevel1__id')
+    filterset_fields = ('level2_uuid', 'workflowlevel1__name', 'workflowlevel1__id')
     ordering = ('name',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
@@ -706,14 +686,12 @@ class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser:
             user_groups = request.user.groups.values_list('name', flat=True)
             if wfm.ROLE_ORGANIZATION_ADMIN in user_groups:
-                organization_id = wfm.CoreUser.objects. \
-                    values_list('organization_id', flat=True). \
-                    get(user=request.user)
+                organization_id = request.user.organization_id
                 queryset = queryset.filter(
                     workflowlevel1__organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
+                    workflow_user=request.user).values_list(
                     'workflowlevel1__id', flat=True)
                 queryset = queryset.filter(workflowlevel1__in=wflvl1_ids)
         serializer = self.get_serializer(queryset, many=True)
@@ -743,7 +721,7 @@ class InternationalizationViewSet(viewsets.ModelViewSet):
     Create a new Internationalization instance.
     """
 
-    filter_fields = ('language',)
+    filterset_fields = ('language',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (IsSuperUserOrReadOnly,)
     queryset = wfm.Internationalization.objects.all()
@@ -775,15 +753,12 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser:
             if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
                     'name', flat=True):
-                organization_id = wfm.CoreUser.objects. \
-                    values_list('organization_id', flat=True). \
-                    get(user=request.user)
+                organization_id = request.user.organization_id
                 queryset = queryset.filter(
                     workflow_user__organization_id=organization_id)
             else:
                 wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user__user=request.user).values_list(
-                    'workflowlevel1__id', flat=True)
+                    workflow_user=request.user).values_list('workflowlevel1__id', flat=True)
                 queryset = queryset.filter(workflowlevel1__in=wflvl1_ids)
 
         nested = request.GET.get('nested_models')
@@ -793,99 +768,11 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    filter_fields = ('workflowlevel1__organization__id',)
+    filterset_fields = ('workflowlevel1__organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (AllowCoreUserRoles,)
     queryset = wfm.WorkflowTeam.objects.all()
     serializer_class = serializers.WorkflowTeamSerializer
-
-
-class MilestoneViewSet(viewsets.ModelViewSet):
-    """
-    title:
-    Milestones are time bound relationships to workflow level 1 or 2
-
-    description:
-    A milestone can be associated with a workflow level 1 or 2 to provide additional time tracked goals for a workflow.
-    This can be used for example in a project workflow to track high level goals across a set of workflows.
-
-    retrieve:
-    Return the given milestone.
-
-    list:
-    Return a list of all the existing milestones.
-
-    create:
-    Create a new milestone instance.
-    """
-
-    def list(self, request, *args, **kwargs):
-        # Use this queryset or the django-filters lib will not work
-        queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects. \
-                values_list('organization_id', flat=True). \
-                get(user=request.user)
-            queryset = queryset.filter(organization_id=organization_id)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
-
-    permission_classes = (IsOrgMember,)
-    queryset = wfm.Milestone.objects.all()
-    serializer_class = serializers.MilestoneSerializer
-
-
-class PortfolioViewSet(viewsets.ModelViewSet):
-    """
-    title:
-    Portfolio provides organizational structure or groupings for workflows
-
-    description:
-    A portfolio can be associated with a workflow level 1 or 2 to provide additional
-    organizational structure for a workflow.
-    This can be used for example in a project workflow to collect multiple workflows into one folder
-    or grouping or in a navigational grouping as a way to provide a secondary site or structure.
-
-    retrieve:
-    Return the given portfolio.
-
-    list:
-    Return a list of all the existing portfolios.
-
-    create:
-    Create a new portfolio instance.
-    """
-
-    def list(self, request, *args, **kwargs):
-        # Use this queryset or the django-filters lib will not work
-        queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
-            organization_id = wfm.CoreUser.objects. \
-                values_list('organization_id', flat=True). \
-                get(user=request.user)
-            queryset = queryset.filter(organization_id=organization_id)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)  # inherited from CreateModelMixin
-
-        portfolio = wfm.Portfolio.objects.get(pk=serializer.data['id'])
-        portfolio.organization = request.user.core_user.organization
-        portfolio.save()
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED,
-                        headers=headers)
-
-    permission_classes = (AllowCoreUserRoles, IsOrgMember)
-    queryset = wfm.Portfolio.objects.all()
-    serializer_class = serializers.PortfolioSerializer
 
 
 """
