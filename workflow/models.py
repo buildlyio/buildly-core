@@ -179,6 +179,14 @@ class CoreUser(AbstractUser):
 
         super(CoreUser, self).save()
 
+    def is_org_admin(self) -> bool:
+        """
+        Checks if user has Organization admin role
+        """
+        if not hasattr(self, '_is_org_admin'):
+            self._is_org_admin = ROLE_ORGANIZATION_ADMIN in self.groups.values_list('name', flat=True)
+        return self._is_org_admin
+
 
 class Internationalization(models.Model):
     language = models.CharField("Language", blank=True, null=True, max_length=100)

@@ -53,7 +53,7 @@ class IsSuperUser(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_superuser
+        return request.user.is_active and request.user.is_superuser
 
 
 class IsSuperUserOrReadOnly(permissions.BasePermission):
@@ -75,17 +75,15 @@ class AllowAuthenticatedRead(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             if request.user.is_anonymous:
                 return False
-            if not (request.user and request.user.is_authenticated):
-                return False
         return True
 
 
 class AllowOnlyOrgAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_anonymous and not request.user.is_authenticated:
+        if request.user.is_anonymous:
             return False
 
-        if request.user.is_superuser:
+        if request.user.is_active and request.user.is_superuser:
             return True
 
         user_groups = request.user.groups.values_list('name', flat=True)
@@ -100,26 +98,17 @@ class IsOrgMember(permissions.BasePermission):
         if request.user.is_anonymous:
             return False
 
-        if request.user.is_superuser:
+        if request.user.is_active and request.user.is_superuser:
             return True
 
         if view.action == 'create':
             user_org = request.user.organization_id
 
             if 'organization' in request.data:
-                org_serializer = view.get_serializer_class()().get_fields()[
-                    'organization']
+                org_serializer = view.get_serializer_class()().get_fields()['organization']
                 primitive_value = request.data.get('organization')
                 org = org_serializer.run_validation(primitive_value)
                 return org.id == user_org
-            if 'indicator' in request.data:
-                indicator_serializer = view.serializer_class().get_fields()[
-                    'indicator']
-                primitive_value = request.data.get('indicator')
-                indicator = indicator_serializer.run_validation(
-                    primitive_value)
-                return indicator.workflowlevel1.filter(
-                    organization_id=user_org).exists()
 
         return True
 
@@ -129,10 +118,8 @@ class IsOrgMember(permissions.BasePermission):
         should be allowed to act on a particular object
         """
 
-        if request.user.is_superuser:
+        if request.user.is_active and request.user.is_superuser:
             return True
-        user_groups = request.user.groups.values_list('name', flat=True)
-        org_admin = True if ROLE_ORGANIZATION_ADMIN in user_groups else False
         user_org = request.user.organization_id
         try:
             if obj.__class__ in [WorkflowLevel1, CoreGroup]:
@@ -142,14 +129,10 @@ class IsOrgMember(permissions.BasePermission):
             elif obj.__class__ in [Organization]:
                 return obj.id == user_org
             elif obj.__class__ in [WorkflowTeam]:
-                if org_admin:
-                    return obj.__class__.objects.filter(
-                        workflow_user__organization=user_org,
-                        id=obj.id).exists()
+                if request.user.is_org_admin():
+                    return obj.__class__.objects.filter(workflow_user__organization=user_org, id=obj.id).exists()
                 else:
-                    return obj.__class__.objects.filter(
-                        workflowlevel1__organization=user_org,
-                        id=obj.id).exists()
+                    return obj.__class__.objects.filter(workflowlevel1__organization=user_org, id=obj.id).exists()
         except AttributeError:
             pass
         return False
@@ -157,12 +140,10 @@ class IsOrgMember(permissions.BasePermission):
 
 class AllowCoreUserRoles(permissions.BasePermission):
     def _get_workflowlevel1(self, view, request_data):
-        wflvl1_serializer = view.serializer_class().get_fields()[
-            'workflowlevel1']
+        wflvl1_serializer = view.serializer_class().get_fields()['workflowlevel1']
 
         # Check if the field is Many-To-Many or not
-        if wflvl1_serializer.__class__ == ManyRelatedField and \
-                isinstance(request_data, QueryDict):
+        if wflvl1_serializer.__class__ == ManyRelatedField and isinstance(request_data, QueryDict):
             primitive_value = request_data.getlist('workflowlevel1')
         else:
             primitive_value = request_data.get('workflowlevel1')
@@ -183,7 +164,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
         if request.user.is_anonymous:
             return False
 
-        if request.user.is_superuser:
+        if request.user.is_active and request.user.is_superuser:
             return True
 
         user_groups = request.user.groups.values_list('name', flat=True)
@@ -198,19 +179,17 @@ class AllowCoreUserRoles(permissions.BasePermission):
                 if data.get('workflowlevel1'):
                     wflvl1 = self._get_workflowlevel1(view, data)
                 elif data.get('workflowlevel2_uuid'):
-                    wflvl1 = self._get_workflowlevel1_from_level2(
-                        data['workflowlevel2_uuid'])
+                    wflvl1 = self._get_workflowlevel1_from_level2(data['workflowlevel2_uuid'])
 
                 if not wflvl1:
                     return False
-                # We use a list to fetch the program teams
+                # We use a list to fetch the workflow teams
                 elif not isinstance(wflvl1, list):
                     wflvl1 = [wflvl1]
 
                 team_groups = WorkflowTeam.objects.filter(
                     workflow_user=request.user,
-                    workflowlevel1__in=wflvl1).values_list(
-                    'role__name', flat=True)
+                    workflowlevel1__in=wflvl1).values_list('role__name', flat=True)
 
                 if model_cls in [WorkflowLevel2]:
                     if (ROLE_ORGANIZATION_ADMIN in user_groups or
@@ -219,8 +198,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
                         is_allowed_role = True
                     else:
                         is_allowed_role = False
-                    is_same_org = all(x.organization == user_org
-                                      for x in wflvl1)
+                    is_same_org = all(x.organization == user_org for x in wflvl1)
                     return is_allowed_role and is_same_org
                 elif model_cls is WorkflowTeam:
                     return (((ROLE_VIEW_ONLY not in team_groups and
@@ -263,8 +241,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
             queryset = self._queryset(view)
             model_cls = queryset.model
 
-            user_groups = request.user.groups.values_list('name', flat=True)
-            if ROLE_ORGANIZATION_ADMIN in user_groups:
+            if request.user.is_org_admin():
                 return True
 
             if model_cls is WorkflowTeam:
