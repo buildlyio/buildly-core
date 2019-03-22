@@ -2,10 +2,13 @@
 
 import django.contrib.auth.validators
 from django.db import migrations, models
+from django.conf import settings
 from workflow.models import CoreUser
 
 
 def forwards(apps, schema_editor):
+    user_model_class = settings.AUTH_USER_MODEL
+    del settings.AUTH_USER_MODEL
     for core_user in CoreUser.objects.all():
         user = core_user.user
         core_user.username = user.username
@@ -21,6 +24,7 @@ def forwards(apps, schema_editor):
         core_user.save()
 
         core_user.user_permissions.add(*list(user.user_permissions.all()))
+    settings.AUTH_USER_MODEL = user_model_class
 
 
 def backwards(apps, schema_editor):
