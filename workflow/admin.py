@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import (CoreUser, CoreGroup, Role, Organization, WorkflowLevel1, WorkflowLevel2,
+from .models import (CoreUser, CoreGroup, Organization, WorkflowLevel1, WorkflowLevel2,
                      WorkflowLevel2Sort, WorkflowTeam, EmailTemplate)
 
 
@@ -26,17 +26,11 @@ class OrganizationAdmin(admin.ModelAdmin):
     display = 'Organization'
 
 
-class RoleAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    display = 'Role'
-    search_fields = ('role',)
-
-
 class CoreGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'organization')
+    list_display = ('role', 'workflowlevel1', 'workflowlevel2')
     display = 'Core Group'
-    list_filter = ('organization',)
-    search_fields = ('name', 'organization__name')
+    list_filter = ('workflowlevel1', 'workflowlevel2',)
+    search_fields = ('name', 'workflowlevel1', 'workflowlevel2',)
 
 
 class CoreUserAdmin(admin.ModelAdmin):
@@ -85,7 +79,6 @@ admin.site.register(WorkflowLevel2, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
-admin.site.register(Role, RoleAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
