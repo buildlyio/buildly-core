@@ -13,8 +13,6 @@ from social_core.utils import (partial_pipeline_data, setting_url,
                                user_is_active, user_is_authenticated)
 from social_django.utils import psa
 
-from workflow.models import CoreUser
-
 from workflow.serializers import (CoreUserSerializer,
                                   OrganizationSerializer)
 
@@ -47,12 +45,11 @@ class OAuthUserEndpoint(ProtectedResourceView):
             'first_name': user.first_name,
             'last_name': user.last_name,
         }
-        core_user = CoreUser.objects.all().filter(user=user)
-        if len(core_user) == 1:
+        if len(user) == 1:
             body["core_user"] = CoreUserSerializer(
-                instance=core_user[0], context={'request': request}).data
+                instance=user[0], context={'request': request}).data
             body["organization"] = OrganizationSerializer(
-                instance=core_user[0].organization,
+                instance=user[0].organization,
                 context={'request': request}).data
 
         return HttpResponse(json.dumps(body))
