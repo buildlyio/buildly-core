@@ -9,10 +9,6 @@ def forwards(apps, schema_editor):
     for group in Group.objects.all():
         Role.objects.get_or_create(name=group.name)
 
-    for core_user in CoreUser.objects.all():
-        roles = Role.objects.filter(name__in=core_user.user.groups.values_list('name', flat=True))
-        core_user.roles.add(*list(roles))
-
 
 def backwards(apps, schema_editor):
     pass
