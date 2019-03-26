@@ -122,11 +122,6 @@ class CoreUser(AbstractUser):
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
-    # We need to override this field to specify different `related_name` to avoid conflict with User model
-    # (probably we can remove it when `django.contrib.auth` will be excluded from INSTALLED_APPS)
-    user_permissions = models.ManyToManyField(Permission, verbose_name='User permissions', blank=True,
-                                              help_text='Specific permissions for this user.',
-                                              related_name="core_user_set", related_query_name="core_user")
 
     class Meta:
         ordering = ('first_name',)
