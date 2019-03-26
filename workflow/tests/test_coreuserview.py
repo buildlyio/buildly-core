@@ -358,3 +358,31 @@ class TestResetPassword(object):
             request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
             response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
             assert response.status_code == 400  # validation error (the token is expired)
+
+
+@pytest.mark.django_db()
+class TestCoreUserRead(object):
+
+    keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
+            'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups'}
+
+    def test_coreuser_list(self, request_factory, org_member):
+        factories.CoreUser.create(organization=org_member.organization, username='another_user')  # 2nd user of the org
+        factories.CoreUser.create(organization=factories.Organization(name='another otg'),
+                                  username='yet_another_user')  # user of the different org
+        request = request_factory.get(reverse('coreuser-list'))
+        request.user = org_member
+        response = CoreUserViewSet.as_view({'get': 'list'})(request)
+        assert response.status_code == 200
+        data = response.data
+        assert len(data) == 2
+        assert set(data[0].keys()) == self.keys
+
+    def test_coreuser_retrieve(self, request_factory, org_member):
+        core_user = factories.CoreUser.create(organization=org_member.organization, username='another_user')
+
+        request = request_factory.get(reverse('coreuser-detail', args=(core_user.pk,)))
+        request.user = org_member
+        response = CoreUserViewSet.as_view({'get': 'retrieve'})(request, pk=core_user.pk)
+        assert response.status_code == 200
+        assert set(response.data.keys()) == self.keys
