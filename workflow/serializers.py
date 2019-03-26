@@ -145,7 +145,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = wfm.CoreUser
-        fields = ('core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'password', 'is_active',
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'password', 'is_active',
                   'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
                   'organization_name', 'invitation_token')
         read_only_fields = ('core_user_uuid', 'organization', 'core_groups',)
