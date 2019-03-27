@@ -5,8 +5,7 @@ set -e
 bash tcp-port-wait.sh $DATABASE_HOST $DATABASE_PORT
 
 echo $(date -u) "- Migrating"
-python manage.py migrate workflow --fake-initial
-python manage.py migrate --fake
+python manage.py migrate
 
 echo $(date -u) "- Load Initial Data"
 python manage.py loadinitialdata
