@@ -330,6 +330,10 @@ class WorkflowTeam(models.Model):
     def __str__(self):
         return f'{self.workflow_user} - {self.role} <{self.workflowlevel1}>'
 
+    @property
+    def organization(self) -> Union[Organization, None]:
+        return self.workflowlevel1.organization if self.workflowlevel1 else None
+
 
 class WorkflowLevel2Sort(models.Model):
     workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True)
@@ -352,6 +356,10 @@ class WorkflowLevel2Sort(models.Model):
 
     def __str__(self):
         return self.workflowlevel1
+
+    @property
+    def organization(self) -> Union[Organization, None]:
+        return self.workflowlevel1.organization if self.workflowlevel1 else None
 
 
 TEMPLATE_RESET_PASSWORD, TEMPLATE_INVITE = 1, 2

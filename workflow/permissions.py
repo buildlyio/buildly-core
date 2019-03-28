@@ -3,9 +3,8 @@ from rest_framework.relations import ManyRelatedField
 
 from django.http import QueryDict
 
-from workflow.models import (
-    ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM,
-    WorkflowTeam, Organization, WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, CoreGroup)
+from workflow.models import (ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM,
+                             WorkflowTeam, Organization, WorkflowLevel1, WorkflowLevel2)
 
 PERMISSIONS_ORG_ADMIN = {
     'create': True,
@@ -122,17 +121,15 @@ class IsOrgMember(permissions.BasePermission):
             return True
         user_org = request.user.organization_id
         try:
-            if obj.__class__ in [WorkflowLevel1, CoreGroup]:
-                return obj.organization.id == user_org
-            elif obj.__class__ in [WorkflowLevel2, WorkflowLevel2Sort]:
-                return obj.__class__.objects.filter(workflowlevel1__organization=user_org, id=obj.id).exists()
-            elif obj.__class__ in [Organization]:
+            if obj.__class__ in [Organization]:
                 return obj.id == user_org
             elif obj.__class__ in [WorkflowTeam]:
                 if request.user.is_org_admin():
-                    return obj.__class__.objects.filter(workflow_user__organization=user_org, id=obj.id).exists()
+                    return obj.workflow_user and obj.workflow_user.organization == user_org  # ?
                 else:
-                    return obj.__class__.objects.filter(workflowlevel1__organization=user_org, id=obj.id).exists()
+                    return obj.organization.id == user_org
+            elif hasattr(obj, 'organization'):
+                return obj.organization.id == user_org
         except AttributeError:
             pass
         return False

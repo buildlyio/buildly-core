@@ -66,32 +66,34 @@ class TestCoreGroupViewsPermissions:
         response = CoreGroupViewSet.as_view({'delete': 'destroy'})(request, pk=1)
         assert response.status_code == 403
 
-    # def test_coregroup_views_permissions_different_org_admin(self, request_factory, org, group_org_admin):
-    #     coregroup = factories.CoreGroup.create(organization=org)
-    #
-    #     # create admin of another organization
-    #     coreuser = factories.CoreUser.create(organization=factories.Organization(name='Another Org'))
-    #     coreuser.groups.add(group_org_admin)
-    #
-    #     request = request_factory.get(reverse('coregroup-detail', args=(coregroup.pk,)))
-    #     request.user = coreuser
-    #     response = CoreGroupViewSet.as_view({'get': 'retrieve'})(request, pk=coregroup.pk)
-    #     assert response.status_code == 403
-    #
-    #     request = request_factory.put(reverse('coregroup-detail', args=(coregroup.pk,)))
-    #     request.user = coreuser
-    #     response = CoreGroupViewSet.as_view({'put': 'update'})(request, pk=coregroup.pk)
-    #     assert response.status_code == 403
-    #
-    #     request = request_factory.patch(reverse('coregroup-detail', args=(coregroup.pk,)))
-    #     request.user = coreuser
-    #     response = CoreGroupViewSet.as_view({'patch': 'partial_update'})(request, pk=coregroup.pk)
-    #     assert response.status_code == 403
-    #
-    #     request = request_factory.delete(reverse('coregroup-detail', args=(coregroup.pk,)))
-    #     request.user = coreuser
-    #     response = CoreGroupViewSet.as_view({'delete': 'destroy'})(request, pk=coregroup.pk)
-    #     assert response.status_code == 403
+    def test_coregroup_views_permissions_different_org_admin(self, request_factory, org, group_org_admin):
+        wfl1 = factories.WorkflowLevel1.create(organization=org)
+        coregroup = factories.CoreGroup.create(workflowlevel1=wfl1)
+
+        # create admin of another organization
+        wfl1_another = factories.WorkflowLevel1.create(organization=factories.Organization(name='Another Org'))
+        coreuser = factories.CoreUser.create(workflowlevel1=wfl1_another)
+        coreuser.groups.add(group_org_admin)
+
+        request = request_factory.get(reverse('coregroup-detail', args=(coregroup.pk,)))
+        request.user = coreuser
+        response = CoreGroupViewSet.as_view({'get': 'retrieve'})(request, pk=coregroup.pk)
+        assert response.status_code == 403
+
+        request = request_factory.put(reverse('coregroup-detail', args=(coregroup.pk,)))
+        request.user = coreuser
+        response = CoreGroupViewSet.as_view({'put': 'update'})(request, pk=coregroup.pk)
+        assert response.status_code == 403
+
+        request = request_factory.patch(reverse('coregroup-detail', args=(coregroup.pk,)))
+        request.user = coreuser
+        response = CoreGroupViewSet.as_view({'patch': 'partial_update'})(request, pk=coregroup.pk)
+        assert response.status_code == 403
+
+        request = request_factory.delete(reverse('coregroup-detail', args=(coregroup.pk,)))
+        request.user = coreuser
+        response = CoreGroupViewSet.as_view({'delete': 'destroy'})(request, pk=coregroup.pk)
+        assert response.status_code == 403
 
 
 @pytest.mark.django_db()
