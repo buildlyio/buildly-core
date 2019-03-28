@@ -254,7 +254,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         user = request.user
         if not user.is_superuser:
-            queryset = queryset.filter(organization_id=user.organization_id)
+            queryset = queryset.by_organization(user.organization_id)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

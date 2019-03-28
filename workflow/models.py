@@ -237,6 +237,22 @@ class WorkflowLevel2(models.Model):
         return self.workflowlevel1.organization
 
 
+class CoreGroupQuerySet(models.QuerySet):
+    def by_organization(self, org_id):
+        return self.filter(
+            models.Q(workflowlevel1__organization_id=org_id) |
+            models.Q(workflowlevel2__workflowlevel1__organization_id=org_id)
+        )
+
+
+class CoreGroupManager(models.Manager):
+    def get_queryset(self):
+        return CoreGroupQuerySet(self.model, using=self._db)
+
+    def by_organization(self, org_id):
+        return self.get_queryset().by_organization(org_id)
+
+
 class CoreGroup(models.Model):
     """
     CoreGroup model defines the groups of the users with specific permissions in the context of given workflow
@@ -247,18 +263,20 @@ class CoreGroup(models.Model):
     """
     uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
     name = models.CharField('Name of the role', max_length=80)
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, blank=True, on_delete=models.SET_NULL)
-    workflowlevel2 = models.ForeignKey(WorkflowLevel2, null=True, blank=True, on_delete=models.SET_NULL)
-    permissions = models.PositiveSmallIntegerField('Permissions', help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, blank=True, on_delete=models.CASCADE)
+    workflowlevel2 = models.ForeignKey(WorkflowLevel2, null=True, blank=True, on_delete=models.CASCADE)
+    permissions = models.PositiveSmallIntegerField('Permissions', default=15, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
+    objects = CoreGroupManager()
+
     class Meta:
-        ordering = ('role',)
+        ordering = ('name',)
 
     def __str__(self):
         wf = self.workflowlevel2 or self.workflowlevel1
-        return f'{self.role} <{wf}>'
+        return f'{self.name} <{wf}>'
 
     def save(self, *args, **kwargs):
         self.edit_date = timezone.now()
