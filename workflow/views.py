@@ -79,31 +79,6 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (AllowAuthenticatedRead,)
 
 
-class GroupViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
-    a user (for permission through WorkflowTeam)
-
-    title:
-    Groups are used for setting permission descriptions in Workflow Team.
-
-    description:
-    Groups are used for setting permission descriptions in Workflow Team.  They are associated with an
-    a user (for permission through WorkflowTeam)
-
-    retrieve:
-    Return the given group.
-
-    list:
-    Return a list of all the existing groups.
-
-    create:
-    Create a new group instance.
-    """
-    queryset = Group.objects.all()
-    serializer_class = serializers.GroupSerializer
-
-
 class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     """
     Workflow Level 1 is the primary building block for creating relational lists, navigation or generic use case objects

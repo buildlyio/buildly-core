@@ -23,7 +23,6 @@ MODEL_VIEWSETS_DICT = {
     wfm.WorkflowLevel2: wfv.WorkflowLevel2ViewSet,
     wfm.WorkflowLevel1: wfv.WorkflowLevel1ViewSet,
     wfm.CoreUser: wfv.CoreUserViewSet,
-    wfm.Group: wfv.GroupViewSet,
     wfm.Organization: wfv.OrganizationViewSet,
     wfm.WorkflowLevel2Sort: wfv.WorkflowLevel2SortViewSet,
 }
