@@ -10,7 +10,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
 from rest_framework import serializers
-from rest_framework.reverse import reverse
 from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
 
@@ -21,18 +20,6 @@ User = get_user_model()
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = '__all__'
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    url = serializers.SerializerMethodField('get_self')
-
-    def get_self(self, obj):
-        request = self.context['request']
-        return reverse('group-detail', kwargs={'pk': obj.id}, request=request)
-
-    class Meta:
-        model = Group
         fields = '__all__'
 
 

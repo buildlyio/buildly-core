@@ -18,6 +18,5 @@ API_GATEWAY_RESERVED_NAMES = [
     'core',
     'logicmodule',
     'user',
-    'group',
     'organization'
 ]
