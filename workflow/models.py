@@ -265,7 +265,7 @@ class CoreGroup(models.Model):
     name = models.CharField('Name of the role', max_length=80)
     workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, blank=True, on_delete=models.CASCADE)
     workflowlevel2 = models.ForeignKey(WorkflowLevel2, null=True, blank=True, on_delete=models.CASCADE)
-    permissions = models.PositiveSmallIntegerField('Permissions', default=15, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    permissions = models.PositiveSmallIntegerField('Permissions', default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -292,7 +292,7 @@ class CoreGroup(models.Model):
 
     @property
     def display_permissions(self) -> str:
-        return '{0:b}'.format(self.permissions if self.permissions < 16 else 15)
+        return '{0:04b}'.format(self.permissions if self.permissions < 16 else 15)
 
 
 class WorkflowTeam(models.Model):

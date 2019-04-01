@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='coregroup',
             name='permissions',
-            field=models.PositiveSmallIntegerField(default=15, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD', verbose_name='Permissions'),
+            field=models.PositiveSmallIntegerField(default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD', verbose_name='Permissions'),
         ),
         migrations.AlterField(
             model_name='coreuser',

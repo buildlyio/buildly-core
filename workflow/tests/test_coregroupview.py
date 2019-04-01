@@ -113,7 +113,7 @@ class TestCoreGroupCreateView:
         assert response.status_code == 201
         coregroup = wfm.CoreGroup.objects.get(name='New Group')
         assert coregroup.organization is None
-        assert coregroup.permissions == 15  # check default permissions
+        assert coregroup.permissions == 4  # check default permissions
 
     def test_coregroup_create_with_workfllow1(self, request_factory, org_admin):
         wfl1 = factories.WorkflowLevel1.create(organization=org_admin.organization)

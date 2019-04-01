@@ -35,7 +35,8 @@ def test_coregroup_with_no_wfl():
 def test_coregroup_display_permissions():
     for i in range(16):
         coregroup = factories.CoreGroup.create(permissions=i)
-        assert coregroup.display_permissions == f'{i:b}'
+        assert len(coregroup.display_permissions) == 4
+        assert coregroup.display_permissions == f'{i:04b}'
 
     coregroup = factories.CoreGroup.create(permissions=20)
     assert coregroup.display_permissions == '1111'
