@@ -58,7 +58,7 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = wfm.CoreGroup
-        read_only_fields = ('core_group_uuid',)
+        read_only_fields = ('uuid',)
         exclude = ('create_date', 'edit_date')
 
 

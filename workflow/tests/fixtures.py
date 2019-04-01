@@ -43,3 +43,8 @@ def reset_password_request(org_member):
     uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
     token = default_token_generator.make_token(org_member)
     return org_member, uid, token
+
+
+@pytest.fixture
+def superuser():
+    return factories.CoreUser.create(is_superuser=True)

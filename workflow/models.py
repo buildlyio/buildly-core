@@ -103,22 +103,49 @@ class Organization(models.Model):
         return self.name
 
 
-TITLE_CHOICES = (
-    ('mr', 'Mr.'),
-    ('mrs', 'Mrs.'),
-    ('ms', 'Ms.'),
-)
+class CoreGroup(models.Model):
+    """
+    CoreGroup model defines the groups of the users with specific permissions for the set of workflowlevel1's
+    and workflowlevel2's (it has many-to-many relationship to WorkFlowLevel1 and WorkFlowLevel2 models).
+    Permissions field is the decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions
+    for CRUD. For example: 12 -> 1100 -> CR__ (allowed to Create and Read).
+    """
+    uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
+    name = models.CharField('Name of the role', max_length=80)
+    permissions = models.PositiveSmallIntegerField('Permissions', default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    create_date = models.DateTimeField(default=timezone.now)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.edit_date = timezone.now()
+        super(CoreGroup, self).save(*args, **kwargs)
+
+    @property
+    def display_permissions(self) -> str:
+        return '{0:04b}'.format(self.permissions if self.permissions < 16 else 15)
 
 
 class CoreUser(AbstractUser):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
     """
+    TITLE_CHOICES = (
+        ('mr', 'Mr.'),
+        ('mrs', 'Mrs.'),
+        ('ms', 'Ms.'),
+    )
+
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
-    core_groups = models.ManyToManyField('CoreGroup', verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -175,7 +202,8 @@ class WorkflowLevel1(models.Model):
     end_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level')
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    sort = models.IntegerField(default=0)  #sort array
+    sort = models.IntegerField(default=0)  # sort array
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core groups', blank=True, related_name='workflowlevel1s', related_query_name='workflowlevel1s')
 
     class Meta:
         ordering = ('name',)
@@ -213,6 +241,7 @@ class WorkflowLevel2(models.Model):
     created_by = models.ForeignKey(CoreUser, related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
     edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
     history = HistoricalRecords()
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core groups', blank=True, related_name='workflowlevel2s', related_query_name='workflowlevel2s')
 
     class Meta:
         ordering = ('name',)
@@ -235,64 +264,6 @@ class WorkflowLevel2(models.Model):
     @property
     def organization(self) -> Union[Organization, None]:
         return self.workflowlevel1.organization
-
-
-class CoreGroupQuerySet(models.QuerySet):
-    def by_organization(self, org_id):
-        return self.filter(
-            models.Q(workflowlevel1__organization_id=org_id) |
-            models.Q(workflowlevel2__workflowlevel1__organization_id=org_id)
-        )
-
-
-class CoreGroupManager(models.Manager):
-    def get_queryset(self):
-        return CoreGroupQuerySet(self.model, using=self._db)
-
-    def by_organization(self, org_id):
-        return self.get_queryset().by_organization(org_id)
-
-
-class CoreGroup(models.Model):
-    """
-    CoreGroup model defines the groups of the users with specific permissions in the context of given workflow
-    (it could be Workflow Level 1 or Workflow Level 2).
-    If there's no workflow attached than it's a global Role (such as Organization Admin)
-    Permissions field is the decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions
-    for CRUD. For example: 12 -> 1100 -> CR__ (allowed to Create and Read).
-    """
-    uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
-    name = models.CharField('Name of the role', max_length=80)
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, blank=True, on_delete=models.CASCADE)
-    workflowlevel2 = models.ForeignKey(WorkflowLevel2, null=True, blank=True, on_delete=models.CASCADE)
-    permissions = models.PositiveSmallIntegerField('Permissions', default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
-    create_date = models.DateTimeField(default=timezone.now)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    objects = CoreGroupManager()
-
-    class Meta:
-        ordering = ('name',)
-
-    def __str__(self):
-        wf = self.workflowlevel2 or self.workflowlevel1
-        return f'{self.name} <{wf}>'
-
-    def save(self, *args, **kwargs):
-        self.edit_date = timezone.now()
-        super(CoreGroup, self).save(*args, **kwargs)
-
-    @property
-    def organization(self) -> Union[Organization, None]:
-        if self.workflowlevel2:
-            return self.workflowlevel2.organization
-        if self.workflowlevel1:
-            return self.workflowlevel1.organization
-        return None
-
-    @property
-    def display_permissions(self) -> str:
-        return '{0:04b}'.format(self.permissions if self.permissions < 16 else 15)
 
 
 class WorkflowTeam(models.Model):

@@ -27,10 +27,9 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'workflowlevel1', 'workflowlevel2')
+    list_display = ('name',)
     display = 'Core Group'
-    list_filter = ('workflowlevel1', 'workflowlevel2',)
-    search_fields = ('name', 'workflowlevel1', 'workflowlevel2',)
+    search_fields = ('name',)
 
 
 class CoreUserAdmin(admin.ModelAdmin):
