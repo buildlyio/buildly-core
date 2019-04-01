@@ -26,12 +26,8 @@ from drf_yasg.utils import swagger_auto_schema
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
 from workflow.email_utils import send_email
-from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, IsSuperUser,
-                          AllowCoreUserRoles, AllowAuthenticatedRead,
-                          AllowOnlyOrgAdmin,
-                          PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
-                          PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_WORKFLOW_TEAM,
-                          PERMISSIONS_VIEW_ONLY)
+from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, CoreGroupsPermissions, AllowAuthenticatedRead,
+                          AllowOnlyOrgAdmin, IsSuperUser)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                       DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from . import serializers
@@ -148,11 +144,11 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         permissions = []
 
         permissions_role = {
-            'Admin': PERMISSIONS_ADMIN,
-            wfm.ROLE_ORGANIZATION_ADMIN: PERMISSIONS_ORG_ADMIN,
-            wfm.ROLE_WORKFLOW_ADMIN: PERMISSIONS_WORKFLOW_ADMIN,
-            wfm.ROLE_WORKFLOW_TEAM: PERMISSIONS_WORKFLOW_TEAM,
-            wfm.ROLE_VIEW_ONLY: PERMISSIONS_VIEW_ONLY,
+            'Admin': wfm.PERMISSIONS_ADMIN,
+            wfm.ROLE_ORGANIZATION_ADMIN: wfm.PERMISSIONS_ORG_ADMIN,
+            wfm.ROLE_WORKFLOW_ADMIN: wfm.PERMISSIONS_WORKFLOW_ADMIN,
+            wfm.ROLE_WORKFLOW_TEAM: wfm.PERMISSIONS_WORKFLOW_TEAM,
+            wfm.ROLE_VIEW_ONLY: wfm.PERMISSIONS_VIEW_ONLY,
         }
 
         if role_org:
@@ -236,7 +232,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter)
 
     queryset = wfm.WorkflowLevel1.objects.all()
-    permission_classes = (AllowCoreUserRoles, IsOrgMember)
+    permission_classes = (CoreGroupsPermissions, IsOrgMember)
     pagination_class = DefaultCursorPagination
 
 
@@ -622,7 +618,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
                        filters.OrderingFilter)
     queryset = wfm.WorkflowLevel2.objects.all()
-    permission_classes = (AllowCoreUserRoles, IsOrgMember)
+    permission_classes = (CoreGroupsPermissions, IsOrgMember)
     serializer_class = serializers.WorkflowLevel2Serializer
     pagination_class = DefaultCursorPagination
 
@@ -736,7 +732,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
 
     filterset_fields = ('workflowlevel1__organization__id',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    permission_classes = (AllowCoreUserRoles,)
+    permission_classes = (CoreGroupsPermissions,)
     queryset = wfm.WorkflowTeam.objects.all()
     serializer_class = serializers.WorkflowTeamSerializer
 

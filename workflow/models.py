@@ -11,7 +11,6 @@ try:
     from django.utils import timezone
 except ImportError:
     from datetime import datetime as timezone
-from simple_history.models import HistoricalRecords
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -24,6 +23,16 @@ ROLES = (
     (ROLE_VIEW_ONLY, ROLE_VIEW_ONLY),
 )
 DEFAULT_PROGRAM_NAME = 'Default program'
+
+PERMISSIONS_ORG_ADMIN = 15  # 1111
+
+PERMISSIONS_ADMIN = PERMISSIONS_ORG_ADMIN
+
+PERMISSIONS_WORKFLOW_ADMIN = PERMISSIONS_ORG_ADMIN
+
+PERMISSIONS_WORKFLOW_TEAM = 14  # 1110
+
+PERMISSIONS_VIEW_ONLY = 4  # 0100
 
 
 class CoreSites(models.Model):
@@ -112,6 +121,9 @@ class CoreGroup(models.Model):
     """
     uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
     name = models.CharField('Name of the role', max_length=80)
+    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
+    is_global = models.BooleanField('Is global group', default=False)
+    is_org_level = models.BooleanField('Is organization level group', default=False)
     permissions = models.PositiveSmallIntegerField('Permissions', default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -165,10 +177,10 @@ class CoreUser(AbstractUser):
 
     def is_org_admin(self) -> bool:
         """
-        Checks if user has Organization admin role
+        Check if user has organization level admin permissions
         """
         if not hasattr(self, '_is_org_admin'):
-            self._is_org_admin = ROLE_ORGANIZATION_ADMIN in self.groups.values_list('name', flat=True)
+            self._is_org_admin = self.core_groups.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True).exists()
         return self._is_org_admin
 
 
@@ -240,7 +252,6 @@ class WorkflowLevel2(models.Model):
     create_date = models.DateTimeField("Date Created", null=True, blank=True)
     created_by = models.ForeignKey(CoreUser, related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
     edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
-    history = HistoricalRecords()
     core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core groups', blank=True, related_name='workflowlevel2s', related_query_name='workflowlevel2s')
 
     class Meta:
