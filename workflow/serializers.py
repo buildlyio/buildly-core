@@ -56,33 +56,9 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
 class CoreGroupSerializer(serializers.ModelSerializer):
 
-    def _get_current_coreuser(self) -> wfm.CoreUser:
-        request = self.context.get("request")
-        return request.user if request and hasattr(request, "user") else None
-
-    def create(self, validated_data):
-        # set organization
-        coreuser = self._get_current_coreuser()
-        if coreuser and coreuser.organization:
-            validated_data['organization'] = coreuser.organization
-
-        # create core group and permissions
-        permissions_data = validated_data.pop('permissions', [])
-        coregroup = wfm.CoreGroup.objects.create(**validated_data)
-        coregroup.permissions.add(*permissions_data)
-
-        return coregroup
-
-    def update(self, instance, validated_data):
-        # update permissions
-        new_permissions = validated_data.pop('permissions', [])
-        instance.permissions.set(new_permissions)
-
-        return super(CoreGroupSerializer, self).update(instance, validated_data)
-
     class Meta:
         model = wfm.CoreGroup
-        read_only_fields = ('core_group_uuid', 'organization')
+        read_only_fields = ('uuid',)
         exclude = ('create_date', 'edit_date')
 
 

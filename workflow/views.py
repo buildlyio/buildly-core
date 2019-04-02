@@ -26,7 +26,7 @@ from drf_yasg.utils import swagger_auto_schema
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
 from workflow.email_utils import send_email
-from .permissions import (IsOrgMember, IsSuperUserOrReadOnly,
+from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, IsSuperUser,
                           AllowCoreUserRoles, AllowAuthenticatedRead,
                           AllowOnlyOrgAdmin,
                           PERMISSIONS_ADMIN, PERMISSIONS_ORG_ADMIN,
@@ -248,16 +248,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
     """
     queryset = wfm.CoreGroup.objects.all()
     serializer_class = serializers.CoreGroupSerializer
-    permission_classes = (AllowOnlyOrgAdmin, IsOrgMember)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        user = request.user
-        if not user.is_superuser:
-            queryset = queryset.filter(organization_id=user.organization_id)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    permission_classes = (IsSuperUser,)
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,

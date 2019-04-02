@@ -1,5 +1,5 @@
 from django.template.defaultfilters import slugify
-from factory import DjangoModelFactory, SubFactory, lazy_attribute
+from factory import DjangoModelFactory, SubFactory, Faker, lazy_attribute
 
 from workflow.models import (
     CoreUser as CoreUserM,
@@ -23,10 +23,11 @@ class Organization(DjangoModelFactory):
 
 
 class CoreGroup(DjangoModelFactory):
+
+    name = Faker('name')
+
     class Meta:
         model = CoreGroupM
-
-    organization = SubFactory(Organization)
 
 
 class CoreUser(DjangoModelFactory):

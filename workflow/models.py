@@ -1,4 +1,5 @@
 import uuid
+from typing import Union
 
 from django.db import models
 from django.contrib.postgres import fields
@@ -102,18 +103,18 @@ class Organization(models.Model):
         return self.name
 
 
-TITLE_CHOICES = (
-    ('mr', 'Mr.'),
-    ('mrs', 'Mrs.'),
-    ('ms', 'Ms.'),
-)
-
-
-class Role(models.Model):
+class CoreGroup(models.Model):
     """
-    Defines role permissions for Core Users (organization admin, workflow admin etc)
+    CoreGroup model defines the groups of the users with specific permissions for the set of workflowlevel1's
+    and workflowlevel2's (it has many-to-many relationship to WorkFlowLevel1 and WorkFlowLevel2 models).
+    Permissions field is the decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions
+    for CRUD. For example: 12 -> 1100 -> CR__ (allowed to Create and Read).
     """
-    name = models.CharField('Name', max_length=100, choices=ROLES, unique=True)
+    uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
+    name = models.CharField('Name of the role', max_length=80)
+    permissions = models.PositiveSmallIntegerField('Permissions', default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    create_date = models.DateTimeField(default=timezone.now)
+    edit_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ('name',)
@@ -121,50 +122,33 @@ class Role(models.Model):
     def __str__(self):
         return self.name
 
-
-class CoreGroup(models.Model):
-    """
-    CoreGroup is similar to Django Group, but it is associated with an organization.
-    It's used for creating groups of Core Users inside an organization and defining model level permissions
-    for this group
-    """
-    core_group_uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
-    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE, related_name='core_groups')
-    name = models.CharField('Name', max_length=80)
-    permissions = models.ManyToManyField(Permission, verbose_name='Permissions', blank=True)
-    create_date = models.DateTimeField(default=timezone.now)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = (('name', 'organization'),)
-        ordering = ('organization',)
-
-    def __str__(self):
-        return f'{self.name} <{self.organization}>'
-
     def save(self, *args, **kwargs):
         self.edit_date = timezone.now()
         super(CoreGroup, self).save(*args, **kwargs)
+
+    @property
+    def display_permissions(self) -> str:
+        return '{0:04b}'.format(self.permissions if self.permissions < 16 else 15)
 
 
 class CoreUser(AbstractUser):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
     """
+    TITLE_CHOICES = (
+        ('mr', 'Mr.'),
+        ('mrs', 'Mrs.'),
+        ('ms', 'Ms.'),
+    )
+
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
     core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
-    roles = models.ManyToManyField(Role, verbose_name='User roles', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
-    # We need to override this field to specify different `related_name` to avoid conflict with User model
-    # (probably we can remove it when `django.contrib.auth` will be excluded from INSTALLED_APPS)
-    user_permissions = models.ManyToManyField(Permission, verbose_name='User permissions', blank=True,
-                                              help_text='Specific permissions for this user.',
-                                              related_name="core_user_set", related_query_name="core_user")
 
     class Meta:
         ordering = ('first_name',)
@@ -218,7 +202,8 @@ class WorkflowLevel1(models.Model):
     end_date = models.DateTimeField(null=True, blank=True, help_text='If required a time span can be associated with workflow level')
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    sort = models.IntegerField(default=0)  #sort array
+    sort = models.IntegerField(default=0)  # sort array
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core groups', blank=True, related_name='workflowlevel1s', related_query_name='workflowlevel1s')
 
     class Meta:
         ordering = ('name',)
@@ -242,6 +227,43 @@ class WorkflowLevel1(models.Model):
             return f'{self.name} <{self.organization.name}>'
         else:
             return self.name
+
+
+class WorkflowLevel2(models.Model):
+    description = models.TextField("Description", blank=True, null=True, help_text="Description of the workflow level use")
+    level2_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel2 UUID', default=uuid.uuid4, unique=True, blank=True, help_text="Unique ID")
+    name = models.CharField("Name", max_length=255, help_text="Name of workflow level as it relates to workflow level 1")
+    notes = models.TextField(blank=True, null=True)
+    parent_workflowlevel2 = models.IntegerField("Parent", default=0, blank=True, help_text="Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships")
+    short_name = models.CharField("Code", max_length=20, blank=True, null=True, help_text="Shortened name autogenerated")
+    workflowlevel1 = models.ForeignKey(WorkflowLevel1, verbose_name="Workflow Level 1", on_delete=models.CASCADE, related_name="workflowlevel2", help_text="Primary or parent Workflow")
+    create_date = models.DateTimeField("Date Created", null=True, blank=True)
+    created_by = models.ForeignKey(CoreUser, related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
+    edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
+    history = HistoricalRecords()
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core groups', blank=True, related_name='workflowlevel2s', related_query_name='workflowlevel2s')
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = "Workflow Level 2"
+        verbose_name_plural = "Workflow Level 2"
+
+    def save(self, *args, **kwargs):
+        if self.create_date is None:
+            self.create_date = timezone.now()
+        self.edit_date = timezone.now()
+
+        super(WorkflowLevel2, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        super(WorkflowLevel2, self).delete(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def organization(self) -> Union[Organization, None]:
+        return self.workflowlevel1.organization
 
 
 class WorkflowTeam(models.Model):
@@ -279,37 +301,9 @@ class WorkflowTeam(models.Model):
     def __str__(self):
         return f'{self.workflow_user} - {self.role} <{self.workflowlevel1}>'
 
-
-class WorkflowLevel2(models.Model):
-    description = models.TextField("Description", blank=True, null=True, help_text="Description of the workflow level use")
-    level2_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel2 UUID', default=uuid.uuid4, unique=True, blank=True, help_text="Unique ID")
-    name = models.CharField("Name", max_length=255, help_text="Name of workflow level as it relates to workflow level 1")
-    notes = models.TextField(blank=True, null=True)
-    parent_workflowlevel2 = models.IntegerField("Parent", default=0, blank=True, help_text="Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships")
-    short_name = models.CharField("Code", max_length=20, blank=True, null=True, help_text="Shortened name autogenerated")
-    workflowlevel1 = models.ForeignKey(WorkflowLevel1, verbose_name="Workflow Level 1", on_delete=models.CASCADE, related_name="workflowlevel2", help_text="Primary or parent Workflow")
-    create_date = models.DateTimeField("Date Created", null=True, blank=True)
-    created_by = models.ForeignKey(CoreUser, related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
-    edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
-    history = HistoricalRecords()
-
-    class Meta:
-        ordering = ('name',)
-        verbose_name = "Workflow Level 2"
-        verbose_name_plural = "Workflow Level 2"
-
-    def save(self, *args, **kwargs):
-        if self.create_date is None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-
-        super(WorkflowLevel2, self).save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        super(WorkflowLevel2, self).delete(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
+    @property
+    def organization(self) -> Union[Organization, None]:
+        return self.workflowlevel1.organization if self.workflowlevel1 else None
 
 
 class WorkflowLevel2Sort(models.Model):
@@ -333,6 +327,10 @@ class WorkflowLevel2Sort(models.Model):
 
     def __str__(self):
         return self.workflowlevel1
+
+    @property
+    def organization(self) -> Union[Organization, None]:
+        return self.workflowlevel1.organization if self.workflowlevel1 else None
 
 
 TEMPLATE_RESET_PASSWORD, TEMPLATE_INVITE = 1, 2
