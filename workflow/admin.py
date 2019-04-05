@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -32,26 +33,28 @@ class CoreGroupAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-class CoreUserAdmin(admin.ModelAdmin):
+class CoreUserAdmin(UserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'organization', 'is_active')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
     search_fields = ('first_name', 'first_name', 'username', 'title')
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization')}),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
+    )
 
     def get_fieldsets(self, request, obj=None):
-        if not obj:
-            return self.add_fieldsets
 
-        if request.user.is_superuser:
-            perm_fields = ('is_active', 'is_staff', 'is_superuser',
-                           'groups', 'user_permissions')
+        fieldsets = super().get_fieldsets(request, obj)
+
+        if not request.user.is_superuser:
+            fieldsets[2][1]['fields'] = ('is_active', 'is_staff')
         else:
-            perm_fields = ('is_active', 'is_staff', 'groups')
+            fieldsets[2][1]['fields'] = ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')
 
-        return [(None, {'fields': ('username', 'password')}),
-                (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
-                (_('Permissions'), {'fields': perm_fields}),
-                (_('Important dates'), {'fields':  ('last_login', 'date_joined')})]
+        return fieldsets
 
 
 class WorkflowLevel1Admin(admin.ModelAdmin):
