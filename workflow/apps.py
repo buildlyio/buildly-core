@@ -5,4 +5,4 @@ class WorkflowAppConfig(AppConfig):
     name = 'workflow'
 
     def ready(self):
-        import workflow.signals
+        import workflow.signals  # noqa

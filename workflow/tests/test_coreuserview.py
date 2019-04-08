@@ -16,7 +16,7 @@ from workflow.models import Organization
 from workflow.views import CoreUserViewSet
 from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
-from .fixtures import org, org_admin, org_member, group_org_admin, reset_password_request, TEST_USER_DATA
+from .fixtures import org, org_admin, org_member, reset_password_request, TEST_USER_DATA
 
 
 User = get_user_model()
@@ -109,7 +109,7 @@ def test_registration_fail(request_factory):
 
 
 @pytest.mark.django_db()
-def test_registration_of_first_org_user(request_factory, group_org_admin):
+def test_registration_of_first_org_user(request_factory):
     request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
     response = CoreUserViewSet.as_view({'post': 'create'})(request)
     assert response.status_code == 201
@@ -122,7 +122,7 @@ def test_registration_of_first_org_user(request_factory, group_org_admin):
     assert user.is_active
 
     # check this user is org admin
-    assert group_org_admin in user.groups.all()
+    assert user.is_org_admin()
 
 
 @pytest.mark.django_db()
@@ -139,8 +139,7 @@ def test_registration_of_second_org_user(request_factory, org_admin):
     assert not user.is_active
 
     # check this user is NOT org admin
-    group_org_admin = org_admin.groups.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
-    assert group_org_admin not in user.groups.all()
+    assert not user.is_org_admin()
 
 
 @pytest.mark.django_db()
@@ -161,8 +160,7 @@ def test_registration_of_invited_org_user(request_factory, org_admin):
     assert user.is_active
 
     # check this user is NOT org admin
-    group_org_admin = org_admin.groups.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
-    assert group_org_admin not in user.groups.all()
+    assert not user.is_org_admin()
 
 
 @pytest.mark.django_db()

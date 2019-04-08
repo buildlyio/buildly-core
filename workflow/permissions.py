@@ -16,15 +16,21 @@ def merge_permissions(permissions1: str, permissions2: str) -> str:
     return ''.join(map(str, [max(int(i), int(j)) for i, j in zip(permissions1, permissions2)]))
 
 
-def has_permission(permissions: str, action: str) -> bool:
+def has_permission(permissions_: str, action: str) -> bool:
     """ Check if CRUD action corresponds to permissions"""
-    actions = ['create', 'retrieve', 'update', 'destroy']
+    actions = {'create': 0,
+               'list': 1,
+               'retrieve': 1,
+               'update': 2,
+               'partial_update': 2,
+               'destroy': 3,
+               }
     try:
-        i = actions.index(action)
-    except ValueError:
+        i = actions[action]
+    except KeyError:
         logger.warning(f'No view action with such name: {action}')
         return False
-    return bool(permissions[i])
+    return bool(int(permissions_[i]))
 
 
 class IsSuperUserBrowseableAPI(permissions.BasePermission):
@@ -175,28 +181,30 @@ class CoreGroupsPermissions(permissions.BasePermission):
         if has_permission(org_permissions, action):
             return True
 
-        data = request.data
+        if action in 'create':
+            data = request.data
 
-        # Check WorkflowLevel1 permissions
-        if data.get('workflowlevel1') or data.get('workflowlevel2'):
-            if data.get('workflowlevel1'):
-                wflvl1 = self._get_workflowlevel(view, data, 'workflowlevel1')
-            else:
-                wflvl1 = self._get_workflowlevel1_from_level2(data['workflowlevel2'])
+            # Check WorkflowLevel1 permissions
+            if data.get('workflowlevel1') or data.get('workflowlevel2'):
+                if data.get('workflowlevel1'):
+                    wflvl1 = self._get_workflowlevel(view, data, 'workflowlevel1')
+                else:
+                    wflvl1 = self._get_workflowlevel1_from_level2(data['workflowlevel2'])
 
-            if not wflvl1:
-                return False
-            elif not isinstance(wflvl1, list):
-                wflvl1 = [wflvl1]
+                if not wflvl1:
+                    return False
+                elif not isinstance(wflvl1, list):
+                    wflvl1 = [wflvl1]
 
-            for item in wflvl1:
-                if has_permission(wl1_permissions[item.pk], action):
-                    return True
+                for item in wflvl1:
+                    if has_permission(wl1_permissions[item.pk], action):
+                        return True
 
-            # TODO: Check WorkflowLefel2 permissions
+                # TODO: Check WorkflowLefel2 permissions
 
             return False
 
+        # Otherwise check object permissions
         return True
 
     def _queryset(self, view):
@@ -243,7 +251,7 @@ class CoreGroupsPermissions(permissions.BasePermission):
             for group in groups:
                 if has_permission(group.display_permissions, view.action):
                     return True
-        elif model_cls is WorkflowLevel2:
+        elif hasattr(obj, 'workflowlevel1'):
             workflowlevel1 = obj.workflowlevel1
             groups = request.user.core_groups.all().intersection(workflowlevel1.core_groups.all())
             for group in groups:

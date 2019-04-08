@@ -187,6 +187,8 @@ class CoreUser(AbstractUser):
         """
         Check if user has organization level admin permissions
         """
+        if self.is_superuser:
+            return True
         if not hasattr(self, '_is_global_admin'):
             self._is_global_admin = self.core_groups.filter(permissions=PERMISSIONS_ADMIN, is_global=True).exists()
         return self._is_global_admin

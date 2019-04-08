@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 import jwt
 from django.contrib.auth import password_validation, get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
@@ -84,8 +84,10 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
         # add org admin role to user if org is new
         if is_new_org:
-            group_org_admin = Group.objects.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
-            coreuser.groups.add(group_org_admin)
+            group_org_admin = wfm.CoreGroup.objects.get(organization=organization,
+                                                        is_org_level=True,
+                                                        permissions=wfm.PERMISSIONS_ORG_ADMIN)
+            coreuser.core_groups.add(group_org_admin)
 
         return coreuser
 

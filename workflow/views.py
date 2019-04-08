@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -27,7 +27,7 @@ from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
 from workflow.email_utils import send_email
 from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, CoreGroupsPermissions, AllowAuthenticatedRead,
-                          AllowOnlyOrgAdmin, IsSuperUser, merge_permissions)
+                          AllowOnlyOrgAdmin)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                       DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from . import serializers
@@ -106,16 +106,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
-            if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
-                    'name', flat=True):
-                organization_id = request.user.organization_id
-                queryset = queryset.filter(organization_id=organization_id)
-            else:
-                wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user=request.user).values_list(
-                    'workflowlevel1__id', flat=True)
-                queryset = queryset.filter(id__in=wflvl1_ids)
+        queryset = queryset.filter(organization_id=request.user.organization_id)
 
         paginate = request.GET.get('paginate')
         if paginate and (paginate.lower() == 'true' or paginate == '1'):
@@ -131,15 +122,6 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)  # inherited from CreateModelMixin
-
-        # Assign the user to multiple properties of the Program
-        group_program_admin = Group.objects.get(name=wfm.ROLE_WORKFLOW_ADMIN)
-        wflvl1 = wfm.WorkflowLevel1.objects.get(
-            level1_uuid=serializer.data['level1_uuid'])
-        wfm.WorkflowTeam.objects.create(
-            workflow_user=request.user, workflowlevel1=wflvl1,
-            role=group_program_admin)
-
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -173,7 +155,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
     """
     queryset = wfm.CoreGroup.objects.all()
     serializer_class = serializers.CoreGroupSerializer
-    permission_classes = (IsSuperUser,)
+    permission_classes = (CoreGroupsPermissions,)
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -511,17 +493,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
             organization_id = request.user.organization_id
-            if wfm.ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
-                    'name', flat=True):
-                queryset = queryset.filter(
-                    workflowlevel1__organization_id=organization_id)
-            else:
-                wflvl1_ids = wfm.WorkflowTeam.objects.filter(
-                    workflow_user=request.user).values_list(
-                    'workflowlevel1__id', flat=True)
-                queryset = queryset.filter(
-                    workflowlevel1__organization_id=organization_id,
-                    workflowlevel1__in=wflvl1_ids)
+            queryset = queryset.filter(workflowlevel1__organization_id=organization_id)
 
         paginate = request.GET.get('paginate')
         if paginate and (paginate.lower() == 'true' or paginate == '1'):

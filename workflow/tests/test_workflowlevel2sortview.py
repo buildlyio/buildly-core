@@ -1,17 +1,17 @@
 from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
-from rest_framework.reverse import reverse
-from workflow.models import (WorkflowLevel2Sort, WorkflowTeam,
-                             ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN,
-                             ROLE_WORKFLOW_TEAM, ROLE_VIEW_ONLY)
+from workflow.models import (WorkflowLevel2Sort, PERMISSIONS_ORG_ADMIN, PERMISSIONS_VIEW_ONLY,
+                             PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_WORKFLOW_TEAM)
 
 from ..views import WorkflowLevel2SortViewSet
 
 
 class WorkflowLevel2SortListViewsTest(TestCase):
     def setUp(self):
-        factories.WorkflowLevel2Sort.create_batch(2)
+        self.not_default_org = factories.Organization.create(name='Some Org')
+        wfl1_not_default_org = factories.WorkflowLevel1.create(organization=self.not_default_org)
+        factories.WorkflowLevel2Sort.create_batch(2, workflowlevel1=wfl1_not_default_org)
         self.factory = APIRequestFactory()
         self.core_user = factories.CoreUser()
 
@@ -32,25 +32,18 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         list view should return only objs of an org to org admins
         """
         request = self.factory.get('/workflowlevel2sort/')
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
-        wflvl1 = factories.WorkflowLevel1()
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1)
+        wflvl1 = factories.WorkflowLevel1(organization=self.not_default_org)
         factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
         request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
-
-        wflvl1.organization = self.core_user.organization
-        wflvl1.save()
-        response = view(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
 
     def test_list_workflowlevel2sort_program_admin(self):
         """
@@ -58,22 +51,17 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         program admins have access to
         """
         request = self.factory.get('/workflowlevel2sort/')
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
         request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
-
-        factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
-        response = view(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
 
     def test_list_workflowlevel2sort_program_team(self):
         """
@@ -81,22 +69,17 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         program members have access to
         """
         request = self.factory.get('/workflowlevel2sort/')
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                            permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                            organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
         request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
-
-        factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
-        response = view(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
 
     def test_list_workflowlevel2sort_view_only(self):
         """
@@ -104,22 +87,17 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         program view only users have access to
         """
         request = self.factory.get('/workflowlevel2sort/')
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_VIEW_ONLY))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+        group_wf_team = factories.CoreGroup(name='WF View Only',
+                                            permissions=PERMISSIONS_VIEW_ONLY,
+                                            organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
         request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
-
-        factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
-        response = view(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
 
 
 class WorkflowLevel2SortCreateViewsTest(TestCase):
@@ -171,8 +149,10 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
         factories.Group()
 
     def test_update_unexisting_workflowlevel2sort(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         data = {'workflowlevel2_id': 1}
 
@@ -281,8 +261,10 @@ class WorkflowLevel2SortDeleteViewsTest(TestCase):
             WorkflowLevel2Sort.objects.get, pk=workflowlevel2sort.pk)
 
     def test_delete_workflowlevel2sort_diff_org_normal_user(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         another_org = factories.Organization(name='Another Org')
         wflvl1 = factories.WorkflowLevel1(organization=another_org)
