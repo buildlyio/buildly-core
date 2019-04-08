@@ -30,23 +30,6 @@ class WorkflowLevel1Serializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class WorkflowLevel1PermissionsSerializer(serializers.Serializer):
-    permissions = serializers.ListField(child=serializers.DictField())
-    role_org = serializers.CharField(required=False)
-
-    def validate_role_org(self, value):
-        POSSIBLE_ROLES = (
-            'Admin',
-            wfm.ROLE_ORGANIZATION_ADMIN,
-            wfm.ROLE_VIEW_ONLY
-        )
-        if value not in POSSIBLE_ROLES:
-            raise serializers.ValidationError(
-                'Invalid "{}" organization role. Possible values: {}'.format(
-                    value, POSSIBLE_ROLES))
-        return value
-
-
 class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
     class Meta:

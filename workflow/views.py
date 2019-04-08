@@ -27,7 +27,7 @@ from workflow import models as wfm
 from workflow.jwt_utils import create_invitation_token
 from workflow.email_utils import send_email
 from .permissions import (IsOrgMember, IsSuperUserOrReadOnly, CoreGroupsPermissions, AllowAuthenticatedRead,
-                          AllowOnlyOrgAdmin, IsSuperUser)
+                          AllowOnlyOrgAdmin, IsSuperUser, merge_permissions)
 from .swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                       DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from . import serializers
@@ -127,70 +127,6 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def _get_user_org_role(self, user):
-        if user.is_superuser:
-            return 'Admin'
-        else:
-            groups = user.groups.values_list('name', flat=True).filter(
-                name__in=[wfm.ROLE_ORGANIZATION_ADMIN, wfm.ROLE_VIEW_ONLY])
-            if len(groups) == 2:
-                return wfm.ROLE_ORGANIZATION_ADMIN
-            elif len(groups) == 1:
-                return groups.first()
-            else:
-                return None
-
-    def _get_permissions(self, user, role_org):
-        permissions = []
-
-        permissions_role = {
-            'Admin': wfm.PERMISSIONS_ADMIN,
-            wfm.ROLE_ORGANIZATION_ADMIN: wfm.PERMISSIONS_ORG_ADMIN,
-            wfm.ROLE_WORKFLOW_ADMIN: wfm.PERMISSIONS_WORKFLOW_ADMIN,
-            wfm.ROLE_WORKFLOW_TEAM: wfm.PERMISSIONS_WORKFLOW_TEAM,
-            wfm.ROLE_VIEW_ONLY: wfm.PERMISSIONS_VIEW_ONLY,
-        }
-
-        if role_org:
-            qs = wfm.WorkflowLevel1.objects.values_list('id', 'level1_uuid').\
-                filter(organization=user.organization).order_by('id')
-        else:
-            qs = wfm.WorkflowTeam.objects.\
-                values_list('workflowlevel1_id', 'workflowlevel1__level1_uuid', 'role__name').\
-                filter(workflow_user=user).order_by('workflowlevel1_id')
-
-        for wflvl1_info in qs:
-            if role_org:
-                permissions_details = permissions_role.get(role_org)
-                wflvl1_id = wflvl1_info[0]
-                wflvl1_uuid = wflvl1_info[1]
-                role = role_org
-            else:
-                wflvl1_id, wflvl1_uuid, role = wflvl1_info
-                permissions_details = permissions_role.get(role)
-            permission = {
-                'workflowlevel1_id': wflvl1_id,
-                'workflowlevel1_uuid': wflvl1_uuid,
-                'role': role,
-            }
-            permission.update(permissions_details)
-            permissions.append(permission)
-
-        return permissions
-
-    @action(detail=False, methods=['GET'])
-    def permissions(self, request):
-        data = {}
-
-        role_org = self._get_user_org_role(request.user)
-        if role_org:
-            data['role_org'] = role_org
-        data['permissions'] = self._get_permissions(request.user, role_org)
-
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data)
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -218,20 +154,13 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         workflowlevel1.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_serializer_class(self):
-        if (self.request and self.request.method == 'GET' and
-                self.action == 'permissions'):
-            return serializers.WorkflowLevel1PermissionsSerializer
-        else:
-            return serializers.WorkflowLevel1Serializer
-
     ordering_fields = ('name',)
     ordering = ('name',)
     filterset_fields = ('name', 'level1_uuid')
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.OrderingFilter)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.OrderingFilter)
 
     queryset = wfm.WorkflowLevel1.objects.all()
+    serializer_class = serializers.WorkflowLevel1Serializer
     permission_classes = (CoreGroupsPermissions, IsOrgMember)
     pagination_class = DefaultCursorPagination
 
