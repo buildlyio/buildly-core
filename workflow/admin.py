@@ -47,6 +47,9 @@ class CoreUserAdmin(UserAdmin):
 
     def get_fieldsets(self, request, obj=None):
 
+        if not obj:
+            return self.add_fieldsets
+
         fieldsets = super().get_fieldsets(request, obj)
 
         if not request.user.is_superuser:
