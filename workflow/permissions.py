@@ -147,8 +147,7 @@ class CoreGroupsPermissions(permissions.BasePermission):
         if request.user.is_anonymous or not request.user.is_active:
             return False
 
-        # TODO: we can remove this in the future as we check CoreGroup with is_global=True
-        if request.user.is_active and request.user.is_superuser:
+        if request.user.is_global_admin():
             return True
 
         # TODO: check if we can optimize following query using 'through' M2M Models
@@ -162,11 +161,11 @@ class CoreGroupsPermissions(permissions.BasePermission):
             if group.is_global:
                 global_permissions = merge_permissions(global_permissions, group.display_permissions)
             elif group.is_org_level:
-                global_permissions = merge_permissions(global_permissions, group.display_permissions)
+                org_permissions = merge_permissions(org_permissions, group.display_permissions)
             else:
                 for wl1 in group.workflowlevel1s.all():
                     wl1_permissions[wl1.pk] = merge_permissions(wl1_permissions[wl1.pk], group.display_permissions)
-                for wl2 in group.workflowlevel1s.all():
+                for wl2 in group.workflowlevel2s.all():
                     wl2_permissions[wl2.pk] = merge_permissions(wl2_permissions[wl2.pk], group.display_permissions)
 
         action = view.action
@@ -225,11 +224,19 @@ class CoreGroupsPermissions(permissions.BasePermission):
         if request.user.is_anonymous or not request.user.is_active:
             return False
 
-        if request.user.is_org_admin():
+        # TODO: Need some optimization pre-fetching all user's core gropus
+        if request.user.is_global_admin():
             return True
 
         queryset = self._queryset(view)
         model_cls = queryset.model
+
+        # Check if the user and the object belong to the same organization
+        if hasattr(obj, 'organization') and not request.user.organization == obj.organization:
+            return False
+
+        if request.user.is_org_admin():
+            return True
 
         if model_cls is WorkflowLevel1:
             groups = request.user.core_groups.all().intersection(obj.core_groups.all())

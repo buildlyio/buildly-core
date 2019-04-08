@@ -183,6 +183,14 @@ class CoreUser(AbstractUser):
             self._is_org_admin = self.core_groups.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True).exists()
         return self._is_org_admin
 
+    def is_global_admin(self) -> bool:
+        """
+        Check if user has organization level admin permissions
+        """
+        if not hasattr(self, '_is_global_admin'):
+            self._is_global_admin = self.core_groups.filter(permissions=PERMISSIONS_ADMIN, is_global=True).exists()
+        return self._is_global_admin
+
 
 class Internationalization(models.Model):
     language = models.CharField("Language", blank=True, null=True, max_length=100)
