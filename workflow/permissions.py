@@ -241,10 +241,6 @@ class CoreGroupsPermissions(permissions.BasePermission):
         queryset = self._queryset(view)
         model_cls = queryset.model
 
-        # Check if the user and the object belong to the same organization
-        if hasattr(obj, 'organization') and not request.user.organization == obj.organization:
-            return False
-
         if request.user.is_org_admin:
             return True
 

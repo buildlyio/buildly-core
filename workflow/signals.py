@@ -9,5 +9,5 @@ def create_admin_group(sender, instance, **kwargs):
     CoreGroup.objects.get_or_create(
         organization=instance,
         is_org_level=True,
-        defaults={'name': 'Organization Admin', 'permissions': PERMISSIONS_ORG_ADMIN}
+        defaults={'name': 'Organization Admin ({instance.name})', 'permissions': PERMISSIONS_ORG_ADMIN}
     )

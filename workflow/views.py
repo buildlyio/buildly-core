@@ -106,7 +106,8 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
-        queryset = queryset.filter(organization_id=request.user.organization_id)
+        if not request.user.is_global_admin:
+            queryset = queryset.filter(organization_id=request.user.organization_id)
 
         paginate = request.GET.get('paginate')
         if paginate and (paginate.lower() == 'true' or paginate == '1'):
@@ -195,7 +196,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
+        if not request.user.is_global_admin:
             organization_id = request.user.organization_id
             queryset = queryset.filter(organization_id=organization_id)
         serializer = self.get_serializer(
@@ -426,7 +427,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
+        if not request.user.is_global_admin:
             organization_id = request.user.organization_id
             queryset = queryset.filter(id=organization_id)
         serializer = self.get_serializer(queryset, many=True)
@@ -491,7 +492,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
+        if not request.user.is_global_admin:
             organization_id = request.user.organization_id
             queryset = queryset.filter(workflowlevel1__organization_id=organization_id)
 
@@ -546,7 +547,7 @@ class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
-        if not request.user.is_superuser:
+        if not request.user.is_global_admin:
             user_groups = request.user.groups.values_list('name', flat=True)
             if wfm.ROLE_ORGANIZATION_ADMIN in user_groups:
                 organization_id = request.user.organization_id
