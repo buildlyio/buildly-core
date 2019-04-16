@@ -17,7 +17,7 @@ class DataMeshTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.core_user = factories.CoreUser()
-        self.lm = factories.LogicModule(name='products')
+        self.lm = factories.LogicModule(name='Products Service', endpoint_name='products')
 
         # bypass authentication
         self.client.force_authenticate(user=self.core_user)
@@ -44,7 +44,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'example')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path)
 
         # validate result
@@ -56,12 +56,12 @@ class DataMeshTest(TestCase):
     def test_make_service_request_content_raises_exception(
             self, mock_perform_request):
         # mock response
-        msg = 'Service "{}" not found.'.format(self.lm.name)
+        msg = 'Service "{}" not found.'.format(self.lm.endpoint_name)
         exception_obj = exceptions.ServiceDoesNotExist(msg=msg, status=404)
         mock_perform_request.side_effect = exception_obj
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'example')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path)
 
         # validate result
@@ -97,7 +97,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'example')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -115,7 +115,7 @@ class DataMeshTest(TestCase):
         mock_app.return_value = Mock(App)
 
         # mock aggregate response data
-        msg = 'Service "{}" not found.'.format(self.lm.name)
+        msg = 'Service "{}" not found.'.format(self.lm.endpoint_name)
         exception_obj = exceptions.ServiceDoesNotExist(msg=msg)
         mock_aggregate_response_data.side_effect = exception_obj
 
@@ -128,7 +128,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'example')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -162,7 +162,7 @@ class DataMeshTest(TestCase):
         mock_expand_data.return_value = external_data
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -204,7 +204,7 @@ class DataMeshTest(TestCase):
         mock_expand_data.return_value = external_data
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -246,7 +246,7 @@ class DataMeshTest(TestCase):
         mock_expand_data.return_value = external_data
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -281,12 +281,12 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # mock logic module get
-        msg = 'Service "{}" not found.'.format(self.lm.name)
+        msg = 'Service "{}" not found.'.format(self.lm.endpoint_name)
         exception_obj = exceptions.ServiceDoesNotExist(msg=msg)
         mock_logic_module_get.side_effect = exception_obj
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -315,7 +315,7 @@ class DataMeshTest(TestCase):
         self.core_user.is_superuser = True
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -352,7 +352,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
 
         # first without permissions
         expected_message = 'You do not have permission to perform this action.'
@@ -395,7 +395,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = [service_response, expand_response]
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'TRUE'})
 
         # validate result
@@ -440,7 +440,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = [service_response, expand_response]
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true',
                                           'should_not_remain_there': 'true'})
 
@@ -474,7 +474,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -507,7 +507,7 @@ class DataMeshTest(TestCase):
         self.lm.save()
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -527,8 +527,9 @@ class DataMeshTest(TestCase):
             self, mock_perform_request, mock_utils, mock_app):
         # create extra service
         crm_lm = factories.LogicModule(
-            name='crm',
+            name='Contacts and Appointments Service',
             endpoint='http://crm.example.com',
+            endpoint_name='crm',
             relationships={}
         )
 
@@ -540,7 +541,7 @@ class DataMeshTest(TestCase):
 
         # mock schema urls and app
         product_schema_url = {
-            self.lm.name: self.lm.endpoint
+            self.lm.endpoint_name: self.lm.endpoint
         }
         crm_schema_url = {
             'crm': crm_lm.endpoint
@@ -568,7 +569,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = [service_response, expand_response]
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -588,7 +589,7 @@ class DataMeshTest(TestCase):
             self, mock_perform_request, mock_utils, mock_app):
         # mock schema urls and app
         product_schema_url = {
-            self.lm.name: self.lm.endpoint
+            self.lm.endpoint_name: self.lm.endpoint
         }
         msg = 'Service "crm" not found.'
         exception_obj = exceptions.ServiceDoesNotExist(msg=msg)
@@ -605,7 +606,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = service_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -625,14 +626,15 @@ class DataMeshTest(TestCase):
             self, mock_perform_request, mock_utils, mock_app):
         # create extra service
         crm_lm = factories.LogicModule(
-            name='crm',
+            name='Contacts and Appointments Service',
             endpoint='http://crm.example.com',
+            endpoint_name='crm',
             relationships={}
         )
 
         # mock schema urls and app
         product_schema_url = {
-            self.lm.name: self.lm.endpoint
+            self.lm.endpoint_name: self.lm.endpoint
         }
         crm_schema_url = {
             'crm': crm_lm.endpoint
@@ -650,7 +652,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = service_response
 
         # make api request and validate error
-        path = '/{}/{}/'.format(self.lm.name, 'products')
+        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
         with self.assertRaises(error.URLError) as context:
             self.client.get(path, {'aggregate': 'true'})
             self.assertTrue(msg in context.exception)
