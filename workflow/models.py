@@ -175,6 +175,7 @@ class CoreUser(AbstractUser):
 
         super(CoreUser, self).save()
 
+    @property
     def is_org_admin(self) -> bool:
         """
         Check if user has organization level admin permissions
@@ -183,6 +184,7 @@ class CoreUser(AbstractUser):
             self._is_org_admin = self.core_groups.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True).exists()
         return self._is_org_admin
 
+    @property
     def is_global_admin(self) -> bool:
         """
         Check if user has organization level admin permissions

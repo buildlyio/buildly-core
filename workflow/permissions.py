@@ -5,7 +5,7 @@ from rest_framework import permissions
 from rest_framework.relations import ManyRelatedField
 from django.http import QueryDict
 
-from workflow.models import Organization, WorkflowLevel1, WorkflowLevel2
+from workflow.models import Organization, WorkflowLevel1, WorkflowLevel2, PERMISSIONS_VIEW_ONLY
 
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class AllowOnlyOrgAdmin(permissions.BasePermission):
         if request.user.is_active and request.user.is_superuser:
             return True
 
-        if request.user.is_org_admin():
+        if request.user.is_org_admin:
             return True
 
         return False
@@ -153,7 +153,7 @@ class CoreGroupsPermissions(permissions.BasePermission):
         if request.user.is_anonymous or not request.user.is_active:
             return False
 
-        if request.user.is_global_admin():
+        if request.user.is_global_admin:
             return True
 
         # TODO: check if we can optimize following query using 'through' M2M Models
@@ -161,8 +161,10 @@ class CoreGroupsPermissions(permissions.BasePermission):
 
         # sort up permissions into more convenient way (default is read-only '0100')
         # TODO: should it's always allowed to read?
-        global_permissions, org_permissions = '0100', '0100'
-        wl1_permissions, wl2_permissions = defaultdict(lambda: '0100'), defaultdict(lambda: '0100')
+        viewonly_display_permissions = '{0:04b}'.format(PERMISSIONS_VIEW_ONLY)
+        global_permissions, org_permissions = viewonly_display_permissions, viewonly_display_permissions
+        wl1_permissions = defaultdict(lambda: viewonly_display_permissions)
+        wl2_permissions = defaultdict(lambda: viewonly_display_permissions)
         for group in user_groups:
             if group.is_global:
                 global_permissions = merge_permissions(global_permissions, group.display_permissions)
@@ -233,7 +235,7 @@ class CoreGroupsPermissions(permissions.BasePermission):
             return False
 
         # TODO: Need some optimization pre-fetching all user's core gropus
-        if request.user.is_global_admin():
+        if request.user.is_global_admin:
             return True
 
         queryset = self._queryset(view)
@@ -243,7 +245,7 @@ class CoreGroupsPermissions(permissions.BasePermission):
         if hasattr(obj, 'organization') and not request.user.organization == obj.organization:
             return False
 
-        if request.user.is_org_admin():
+        if request.user.is_org_admin:
             return True
 
         if model_cls is WorkflowLevel1:

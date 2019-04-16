@@ -122,7 +122,7 @@ def test_registration_of_first_org_user(request_factory):
     assert user.is_active
 
     # check this user is org admin
-    assert user.is_org_admin()
+    assert user.is_org_admin
 
 
 @pytest.mark.django_db()
@@ -139,7 +139,7 @@ def test_registration_of_second_org_user(request_factory, org_admin):
     assert not user.is_active
 
     # check this user is NOT org admin
-    assert not user.is_org_admin()
+    assert not user.is_org_admin
 
 
 @pytest.mark.django_db()
@@ -160,7 +160,7 @@ def test_registration_of_invited_org_user(request_factory, org_admin):
     assert user.is_active
 
     # check this user is NOT org admin
-    assert not user.is_org_admin()
+    assert not user.is_org_admin
 
 
 @pytest.mark.django_db()
