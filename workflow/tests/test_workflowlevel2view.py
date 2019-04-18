@@ -6,16 +6,17 @@ from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
 from rest_framework.reverse import reverse
-from workflow.models import (WorkflowLevel2, WorkflowTeam,
-                             ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-                             ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM)
+from workflow.models import (WorkflowLevel2, PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_ORG_ADMIN,
+                             PERMISSIONS_VIEW_ONLY, PERMISSIONS_WORKFLOW_TEAM)
 
 from ..views import WorkflowLevel2ViewSet
 
 
 class WorkflowLevel2ListViewsTest(TestCase):
     def setUp(self):
-        factories.WorkflowLevel2.create_batch(2)
+        self.not_default_org = factories.Organization.create(name='Some Org')
+        wfl1_not_default_org = factories.WorkflowLevel1.create(organization=self.not_default_org)
+        factories.WorkflowLevel2.create_batch(2, workflowlevel1=wfl1_not_default_org)
         self.factory = APIRequestFactory()
         self.core_user = factories.CoreUser()
 
@@ -30,17 +31,17 @@ class WorkflowLevel2ListViewsTest(TestCase):
 
     def test_list_workflowlevel2_org_admin(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
-        wflvl1 = factories.WorkflowLevel1()
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1)
+        wflvl1 = factories.WorkflowLevel1(organization=self.not_default_org)
         factories.WorkflowLevel2(workflowlevel1=wflvl1)
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
+        print(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
@@ -52,12 +53,14 @@ class WorkflowLevel2ListViewsTest(TestCase):
 
     def test_list_workflowlevel2_program_admin(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
+
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -71,12 +74,14 @@ class WorkflowLevel2ListViewsTest(TestCase):
 
     def test_list_workflowlevel2_program_team(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                            permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                            organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
+
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -90,12 +95,14 @@ class WorkflowLevel2ListViewsTest(TestCase):
 
     def test_list_workflowlevel2_view_only(self):
         request = self.factory.get('/api/workflowlevel2/')
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_VIEW_ONLY))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+
+        group_wf_team = factories.CoreGroup(name='WF View Only',
+                                             permissions=PERMISSIONS_VIEW_ONLY,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
+
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -121,8 +128,10 @@ class WorkflowLevel2ListViewsTest(TestCase):
         wfl2_2 = factories.WorkflowLevel2(name='2. wfl2',
                                           workflowlevel1=wfl1_1)
 
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         request = self.factory.get('?paginate=true')
         request.user = self.core_user
@@ -172,8 +181,10 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         self.assertEqual(response.data['name'], u'Help Syrians')
 
     def test_create_workflowlevel2_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
@@ -191,12 +202,13 @@ class WorkflowLevel2CreateViewsTest(TestCase):
 
     def test_create_workflowlevel2_program_admin(self):
         request = self.factory.post(reverse('workflowlevel2-list'))
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk
@@ -212,12 +224,13 @@ class WorkflowLevel2CreateViewsTest(TestCase):
 
     def test_create_workflowlevel2_program_admin_json(self):
         request = self.factory.post(reverse('workflowlevel2-list'))
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk}
@@ -236,10 +249,11 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                             permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk}
@@ -256,10 +270,12 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_VIEW_ONLY))
+
+        group_wf_team = factories.CoreGroup(name='WF View Only',
+                                             permissions=PERMISSIONS_VIEW_ONLY,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         data = {'name': 'Help Syrians',
                 'workflowlevel1': wflvl1.pk}
@@ -273,12 +289,12 @@ class WorkflowLevel2CreateViewsTest(TestCase):
 
     def test_create_workflowlevel2_uuid_is_self_generated(self):
         request = self.factory.post(reverse('workflowlevel2-list'))
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                             permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         data = {
             'name': 'Save the Children',
@@ -301,8 +317,10 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         factories.Group()
 
     def test_update_unexisting_workflowlevel2(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         data = {'name': 'Community awareness program conducted to plant trees'}
 
@@ -338,8 +356,10 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         self.assertEqual(workflowlevel2.name, data['name'])
 
     def test_update_workflowlevel2_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
@@ -361,8 +381,10 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         self.assertEqual(workflowlevel2.name, data['name'])
 
     def test_update_workflowlevel2_diff_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         request = self.factory.post(reverse('workflowlevel2-list'))
         another_org = factories.Organization(name='Another Org')
@@ -384,11 +406,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
 
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
@@ -408,11 +432,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
 
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
@@ -434,11 +460,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                             permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
@@ -458,11 +486,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         request = self.factory.post(reverse('workflowlevel2-list'))
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_VIEW_ONLY))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+
+        group_wf_team = factories.CoreGroup(name='WF View Only',
+                                             permissions=PERMISSIONS_VIEW_ONLY,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
@@ -476,12 +506,13 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_update_workflowlevel2_uuid_is_self_generated(self):
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                            permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                            organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         data = {'name': 'Community awareness program conducted to plant trees',
                 'workflowlevel1': wflvl1.pk}
@@ -531,8 +562,10 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
             WorkflowLevel2.objects.get, pk=workflowlevel2.pk)
 
     def test_delete_workflowlevel2_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
@@ -548,8 +581,10 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
             WorkflowLevel2.objects.get, pk=workflowlevel2.pk)
 
     def test_delete_workflowlevel2_diff_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         another_org = factories.Organization(name='Another Org')
         wflvl1 = factories.WorkflowLevel1(organization=another_org)
@@ -563,13 +598,13 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
         WorkflowLevel2.objects.get(pk=workflowlevel2.pk)
 
     def test_delete_workflowlevel2_program_admin(self):
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))
         request.user = self.core_user
@@ -583,11 +618,12 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
     def test_delete_workflowlevel2_diff_org(self):
         another_org = factories.Organization(name='Another Org')
         wflvl1 = factories.WorkflowLevel1(organization=another_org)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_ADMIN))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+        group_wf_admin = factories.CoreGroup(name='WF Admin',
+                                             permissions=PERMISSIONS_WORKFLOW_ADMIN,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_admin)
+        wflvl1.core_groups.add(group_wf_admin)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))
         request.user = self.core_user
@@ -599,11 +635,13 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
     def test_delete_workflowlevel2_program_team(self):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_WORKFLOW_TEAM))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+
+        group_wf_team = factories.CoreGroup(name='WF Team',
+                                             permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))
         request.user = self.core_user
@@ -615,11 +653,13 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
     def test_delete_workflowlevel2_view_only(self):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wflvl1,
-            role=factories.Group(name=ROLE_VIEW_ONLY))
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+
+        group_wf_team = factories.CoreGroup(name='WF View Only',
+                                             permissions=PERMISSIONS_VIEW_ONLY,
+                                             organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_wf_team)
+        wflvl1.core_groups.add(group_wf_team)
 
         request = self.factory.delete(reverse('workflowlevel2-list'))
         request.user = self.core_user
@@ -645,20 +685,15 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.core_user = factories.CoreUser()
 
     def test_filter_workflowlevel2_wkflvl1_name_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
-        wkflvl1_1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
+        wkflvl1_1 = factories.WorkflowLevel1(organization=self.core_user.organization)
         wkflvl1_2 = factories.WorkflowLevel1(
             name='Construction Project',
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wkflvl1_1)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wkflvl1_2)
         wkflvl2 = factories.WorkflowLevel2(workflowlevel1=wkflvl1_1)
         factories.WorkflowLevel2(
             name='Develop brief survey', workflowlevel1=wkflvl1_2)
@@ -675,19 +710,15 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.assertEqual(response.data[0]['name'], wkflvl2.name)
 
     def test_filter_workflowlevel2_wkflvl1_id_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         wkflvl1_1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         wkflvl1_2 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wkflvl1_1)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wkflvl1_2)
         wkflvl2 = factories.WorkflowLevel2(workflowlevel1=wkflvl1_1)
         factories.WorkflowLevel2(
             name='Develop brief survey', workflowlevel1=wkflvl1_2)
@@ -704,14 +735,13 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.assertEqual(response.data[0]['name'], wkflvl2.name)
 
     def test_filter_workflowlevel2_level2_uuid_org_admin(self):
-        group_org_admin = factories.Group(name=ROLE_ORGANIZATION_ADMIN)
-        self.core_user.groups.add(group_org_admin)
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
 
         wkflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
-        WorkflowTeam.objects.create(
-            workflow_user=self.core_user,
-            workflowlevel1=wkflvl1)
         wkflvl2 = factories.WorkflowLevel2(
             level2_uuid=111, workflowlevel1=wkflvl1)
         factories.WorkflowLevel2(

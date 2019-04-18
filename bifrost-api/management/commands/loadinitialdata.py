@@ -9,7 +9,7 @@ from oauth2_provider.models import Application
 import factories
 from workflow.models import (
     ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-    ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization, CoreUser)
+    ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization, CoreUser, CoreGroup)
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,8 @@ class Command(BaseCommand):
         self._applications = []
         self._groups = ['']
         self._user = None
+        self._su_group = None
+        self._default_org = None
 
     def _create_oauth_application(self):
         if settings.OAUTH_CLIENT_ID and settings.OAUTH_CLIENT_SECRET:
@@ -62,9 +64,15 @@ class Command(BaseCommand):
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
-            Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
+            self._default_org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
 
     def _create_groups(self):
+        self._su_group = CoreGroup.objects.filter(is_global=True, permissions=15).first()
+        if not self._su_group:
+            logger.info("Creating global CoreGroup")
+            self._su_group = factories.CoreGroup(name='Global Admin', is_global=True, permissions=15)
+
+        # TODO: remove this after full Group -> CoreGroup refactoring
         self._groups.append(factories.Group(
             name=ROLE_VIEW_ONLY,
         ))
@@ -82,14 +90,17 @@ class Command(BaseCommand):
         ))
 
     def _create_user(self):
-        CoreUser.objects.filter(username='admin').delete()
-        CoreUser.objects.create_superuser(
-            first_name='System',
-            last_name='Admin',
-            username='admin',
-            email='admin@example.com',
-            password='ttmtola1977',
-        )
+        if not CoreUser.objects.filter(is_superuser=True).exists():
+            logger.info("Creating global CoreGroup")
+            su = CoreUser.objects.create_superuser(
+                first_name='System',
+                last_name='Admin',
+                username='admin',
+                email='admin@example.com',
+                password='ttmtola1977',
+                organization=self._default_org,
+            )
+            su.core_groups.add(self._su_group)
 
     @transaction.atomic
     def handle(self, *args, **options):
