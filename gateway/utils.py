@@ -1,7 +1,6 @@
 from uuid import UUID
 
 import datetime
-import re
 import json
 import requests
 import logging
@@ -38,11 +37,9 @@ def get_swagger_urls(service: str = None) -> dict:
              Key-value pair with service name and OpenAPI schema URL of it
     """
     if service is None:
-        modules = LogicModule.objects.values(
-            'name', 'endpoint').all()
+        modules = LogicModule.objects.values('endpoint', 'endpoint_name').all()
     else:
-        modules = LogicModule.objects.values(
-            'name', 'endpoint').filter(name__istartswith=service)
+        modules = LogicModule.objects.values('endpoint', 'endpoint_name').filter(endpoint_name=service)
 
     if len(modules) == 0 and service is not None:
         msg = 'Service "{}" not found.'.format(service)
@@ -54,8 +51,7 @@ def get_swagger_urls(service: str = None) -> dict:
             module['endpoint'], SWAGGER_LOOKUP_PATH,
             SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT
         )
-        module_name = re.sub('_service$', '', module['name'].lower())
-        module_urls[module_name] = swagger_url
+        module_urls[module['endpoint_name']] = swagger_url
 
     return module_urls
 

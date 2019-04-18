@@ -50,6 +50,7 @@ class WorkflowLevel1(DjangoModelFactory):
         model = WorkflowLevel1M
 
     name = 'Health and Survival for Syrians in Affected Regions'
+    organization = SubFactory(Organization)
 
 
 class WorkflowLevel2(DjangoModelFactory):

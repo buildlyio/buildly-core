@@ -10,6 +10,7 @@ class LogicModule(models.Model):
     name = models.CharField("Logic Module Name", max_length=255, blank=True)
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
     endpoint = models.CharField(blank=True, null=True, max_length=255)
+    endpoint_name = models.CharField(blank=True, null=True, max_length=255)
     relationships = JSONField(blank=True, null=True)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -17,6 +18,7 @@ class LogicModule(models.Model):
     class Meta:
         ordering = ('name',)
         verbose_name_plural = "Logic Modules"
+        unique_together = (('endpoint', 'endpoint_name'),)
 
     def save(self, *args, **kwargs):
         if self.create_date is None:

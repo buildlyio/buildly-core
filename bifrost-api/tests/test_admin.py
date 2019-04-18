@@ -8,9 +8,8 @@ class AdminViewTest(TestCase):
     def test_admin_user_auth_page_with_superuser(self):
         """Super user should see superuser status field on django admin"""
         User = get_user_model()
-        User.objects.create_superuser('admin', 'admin@example.com',
-                                      'Password123')
-        another_user = factories.User(username='another_user')
+        admin = User.objects.create_superuser('admin', 'admin@example.com', 'Password123')
+        another_user = factories.CoreUser(username='another_user')
 
         self.client.login(username='admin', password='Password123')
 
@@ -44,7 +43,7 @@ class AdminViewTest(TestCase):
         User = get_user_model()
         User.objects.create_superuser('admin', 'admin@example.com',
                                       'Password123')
-        another_user = factories.User(username='another_user')
+        another_user = factories.CoreUser(username='another_user')
 
         self.client.login(username='admin', password='Password123')
 
@@ -63,7 +62,7 @@ class AdminViewTest(TestCase):
         staff_user.is_staff = True
         staff_user.save()
 
-        another_user = factories.User(username='another_user')
+        another_user = factories.CoreUser(username='another_user')
 
         self.client.login(username='staff_user', password='Password123')
 

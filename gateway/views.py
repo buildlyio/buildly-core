@@ -164,7 +164,7 @@ class APIGatewayView(views.APIView):
             resp_data = response.data
 
         try:
-            logic_module = gtm.LogicModule.objects.get(name=service_name)
+            logic_module = gtm.LogicModule.objects.get(endpoint_name=service_name)
         except gtm.LogicModule.DoesNotExist:
             msg = 'Service "{}" not found.'.format(service_name)
             raise exceptions.ServiceDoesNotExist(msg)
@@ -276,23 +276,23 @@ class APIGatewayView(views.APIView):
 
         return extension_map
 
-    def _load_swagger_resource(self, service_name: str):
+    def _load_swagger_resource(self, endpoint_name: str):
         """
         Get Swagger spec of specified service and create an app instance to
         be able to validate requests/responses and perform request.
 
-        :param service_name: name of the service that data will be retrieved
+        :param endpoint_name: name of the service endpoint that data will be retrieved
         :return PySwagger.App: an app instance
         """
         # load Swagger resource file
-        schema_urls = utils.get_swagger_urls(service_name)
+        schema_urls = utils.get_swagger_urls(endpoint_name)
 
         # load swagger json as a raw App and prepare it
         try:
-            app = App.load(schema_urls[service_name])
+            app = App.load(schema_urls[endpoint_name])
         except URLError:
             raise URLError(
-                f'Make sure that {schema_urls[service_name]} is accessible.')
+                f'Make sure that {schema_urls[endpoint_name]} is accessible.')
         if app.raw.basePath == '/':
             getattr(app, 'raw').update_field('basePath', '')
         app.prepare()

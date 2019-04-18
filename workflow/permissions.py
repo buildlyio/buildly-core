@@ -1,38 +1,36 @@
+import logging
+from collections import defaultdict
+
 from rest_framework import permissions
 from rest_framework.relations import ManyRelatedField
-
 from django.http import QueryDict
 
-from workflow.models import (ROLE_ORGANIZATION_ADMIN, ROLE_VIEW_ONLY, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM,
-                             WorkflowTeam, Organization, WorkflowLevel1, WorkflowLevel2)
+from workflow.models import Organization, WorkflowLevel1, WorkflowLevel2, PERMISSIONS_VIEW_ONLY
 
-PERMISSIONS_ORG_ADMIN = {
-    'create': True,
-    'edit': True,
-    'remove': True,
-    'manageUsers': True,
-    'view': True,
-}
 
-PERMISSIONS_ADMIN = PERMISSIONS_ORG_ADMIN
+logger = logging.getLogger(__name__)
 
-PERMISSIONS_WORKFLOW_ADMIN = PERMISSIONS_ORG_ADMIN
 
-PERMISSIONS_WORKFLOW_TEAM = {
-    'create': True,
-    'edit': True,
-    'remove': False,
-    'manageUsers': False,
-    'view': True,
-}
+def merge_permissions(permissions1: str, permissions2: str) -> str:
+    """ Merge two CRUD permissions string representations"""
+    return ''.join(map(str, [max(int(i), int(j)) for i, j in zip(permissions1, permissions2)]))
 
-PERMISSIONS_VIEW_ONLY = {
-    'create': False,
-    'edit': False,
-    'remove': False,
-    'manageUsers': False,
-    'view': True,
-}
+
+def has_permission(permissions_: str, action: str) -> bool:
+    """ Check if CRUD action corresponds to permissions"""
+    actions = {'create': 0,
+               'list': 1,
+               'retrieve': 1,
+               'update': 2,
+               'partial_update': 2,
+               'destroy': 3,
+               }
+    try:
+        i = actions[action]
+    except KeyError:
+        logger.warning(f'No view action with such name: {action}')
+        return False
+    return bool(int(permissions_[i]))
 
 
 class IsSuperUserBrowseableAPI(permissions.BasePermission):
@@ -85,8 +83,7 @@ class AllowOnlyOrgAdmin(permissions.BasePermission):
         if request.user.is_active and request.user.is_superuser:
             return True
 
-        user_groups = request.user.groups.values_list('name', flat=True)
-        if ROLE_ORGANIZATION_ADMIN in user_groups:
+        if request.user.is_org_admin:
             return True
 
         return False
@@ -94,7 +91,7 @@ class AllowOnlyOrgAdmin(permissions.BasePermission):
 
 class IsOrgMember(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_anonymous:
+        if request.user.is_anonymous or not request.user.is_active:
             return False
 
         if request.user.is_active and request.user.is_superuser:
@@ -123,11 +120,6 @@ class IsOrgMember(permissions.BasePermission):
         try:
             if obj.__class__ in [Organization]:
                 return obj.id == user_org
-            elif obj.__class__ in [WorkflowTeam]:
-                if request.user.is_org_admin():
-                    return obj.workflow_user and obj.workflow_user.organization == user_org  # ?
-                else:
-                    return obj.organization.id == user_org
             elif hasattr(obj, 'organization'):
                 return obj.organization.id == user_org
         except AttributeError:
@@ -135,74 +127,86 @@ class IsOrgMember(permissions.BasePermission):
         return False
 
 
-class AllowCoreUserRoles(permissions.BasePermission):
-    def _get_workflowlevel1(self, view, request_data):
-        wflvl1_serializer = view.serializer_class().get_fields()['workflowlevel1']
+class CoreGroupsPermissions(permissions.BasePermission):
+
+    def _get_workflowlevel(self, view, request_data, field_name):
+        wflvl_serializer = view.serializer_class().get_fields()[field_name]
 
         # Check if the field is Many-To-Many or not
-        if wflvl1_serializer.__class__ == ManyRelatedField and isinstance(request_data, QueryDict):
-            primitive_value = request_data.getlist('workflowlevel1')
+        if wflvl_serializer.__class__ == ManyRelatedField and isinstance(request_data, QueryDict):
+            primitive_value = request_data.getlist(field_name)
         else:
-            primitive_value = request_data.get('workflowlevel1')
+            primitive_value = request_data.get(field_name)
 
         # Get objects using their URLs
-        return wflvl1_serializer.run_validation(primitive_value)
+        return wflvl_serializer.run_validation(primitive_value)
 
     def _get_workflowlevel1_from_level2(self, workflowlevel2_uuid):
         try:
-            workflowlevel2 = WorkflowLevel2.objects.get(
-                level2_uuid=workflowlevel2_uuid)
+            workflowlevel2 = WorkflowLevel2.objects.get(level2_uuid=workflowlevel2_uuid)
         except WorkflowLevel2.DoesNotExist:
             return None
         else:
             return workflowlevel2.workflowlevel1
 
     def has_permission(self, request, view):
-        if request.user.is_anonymous:
+        if request.user.is_anonymous or not request.user.is_active:
             return False
 
-        if request.user.is_active and request.user.is_superuser:
+        if request.user.is_global_admin:
             return True
 
-        user_groups = request.user.groups.values_list('name', flat=True)
+        # TODO: check if we can optimize following query using 'through' M2M Models
+        user_groups = request.user.core_groups.prefetch_related('workflowlevel1s', 'workflowlevel2s')
 
-        queryset = self._queryset(view)
-        model_cls = queryset.model
-        if view.action == 'create':
-            user_org = request.user.organization
+        # sort up permissions into more convenient way (default is read-only '0100')
+        # TODO: should it's always allowed to read?
+        viewonly_display_permissions = '{0:04b}'.format(PERMISSIONS_VIEW_ONLY)
+        global_permissions, org_permissions = viewonly_display_permissions, viewonly_display_permissions
+        wl1_permissions = defaultdict(lambda: viewonly_display_permissions)
+        wl2_permissions = defaultdict(lambda: viewonly_display_permissions)
+        for group in user_groups:
+            if group.is_global:
+                global_permissions = merge_permissions(global_permissions, group.display_permissions)
+            elif group.is_org_level:
+                org_permissions = merge_permissions(org_permissions, group.display_permissions)
+            else:
+                for wl1 in group.workflowlevel1s.all():
+                    wl1_permissions[wl1.pk] = merge_permissions(wl1_permissions[wl1.pk], group.display_permissions)
+                for wl2 in group.workflowlevel2s.all():
+                    wl2_permissions[wl2.pk] = merge_permissions(wl2_permissions[wl2.pk], group.display_permissions)
+
+        action = view.action
+        if has_permission(global_permissions, action):
+            return True
+
+        if has_permission(org_permissions, action):
+            return True
+
+        if action in 'create':
             data = request.data
 
-            if data.get('workflowlevel1') or data.get('workflowlevel2_uuid'):
+            # Check WorkflowLevel1 permissions
+            if data.get('workflowlevel1') or data.get('workflowlevel2'):
                 if data.get('workflowlevel1'):
-                    wflvl1 = self._get_workflowlevel1(view, data)
-                elif data.get('workflowlevel2_uuid'):
-                    wflvl1 = self._get_workflowlevel1_from_level2(data['workflowlevel2_uuid'])
+                    wflvl1 = self._get_workflowlevel(view, data, 'workflowlevel1')
+                else:
+                    wflvl1 = self._get_workflowlevel1_from_level2(data['workflowlevel2'])
 
                 if not wflvl1:
                     return False
-                # We use a list to fetch the workflow teams
                 elif not isinstance(wflvl1, list):
                     wflvl1 = [wflvl1]
 
-                team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user,
-                    workflowlevel1__in=wflvl1).values_list('role__name', flat=True)
+                for item in wflvl1:
+                    if has_permission(wl1_permissions[item.pk], action):
+                        return True
 
-                if model_cls in [WorkflowLevel2]:
-                    if (ROLE_ORGANIZATION_ADMIN in user_groups or
-                            ROLE_WORKFLOW_ADMIN in team_groups or
-                            ROLE_WORKFLOW_TEAM in team_groups):
-                        is_allowed_role = True
-                    else:
-                        is_allowed_role = False
-                    is_same_org = all(x.organization == user_org for x in wflvl1)
-                    return is_allowed_role and is_same_org
-                elif model_cls is WorkflowTeam:
-                    return (((ROLE_VIEW_ONLY not in team_groups and
-                              ROLE_WORKFLOW_TEAM not in team_groups) or
-                             ROLE_ORGANIZATION_ADMIN in user_groups) and
-                            all(x.organization == user_org for x in wflvl1))
+                # TODO: Check WorkflowLefel2 permissions
 
+            return False
+
+        # Otherwise check object permissions
         return True
 
     def _queryset(self, view):
@@ -211,8 +215,7 @@ class AllowCoreUserRoles(permissions.BasePermission):
         :param view:
         :return: QuerySet
         """
-        assert hasattr(view, 'get_queryset') \
-            or getattr(view, 'queryset', None) is not None, (
+        assert hasattr(view, 'get_queryset') or getattr(view, 'queryset', None) is not None, (
             'Cannot apply {} on a view that does not set '
             '`.queryset` or have a `.get_queryset()` method.'
         ).format(self.__class__.__name__)
@@ -224,55 +227,35 @@ class AllowCoreUserRoles(permissions.BasePermission):
                     view.__class__.__name__)
             )
             return queryset
+
         return view.queryset
 
     def has_object_permission(self, request, view, obj):
-        """
-        Object level permissions are used to determine if a user
-        should be allowed to act on a particular object
-        """
-        if request.user and request.user.is_authenticated:
-            if request.user.is_superuser:
-                return True
+        if request.user.is_anonymous or not request.user.is_active:
+            return False
 
-            queryset = self._queryset(view)
-            model_cls = queryset.model
+        # TODO: Need some optimization pre-fetching all user's core gropus
+        if request.user.is_global_admin:
+            return True
 
-            if request.user.is_org_admin():
-                return True
+        queryset = self._queryset(view)
+        model_cls = queryset.model
 
-            if model_cls is WorkflowTeam:
-                team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user,
-                    workflowlevel1=obj.workflowlevel1).values_list(
-                    'role__name', flat=True)
-                if ROLE_WORKFLOW_ADMIN in team_groups:
+        if request.user.is_org_admin:
+            return True
+
+        if model_cls is WorkflowLevel1:
+            groups = request.user.core_groups.all().intersection(obj.core_groups.all())
+            for group in groups:
+                if has_permission(group.display_permissions, view.action):
                     return True
-                else:
-                    return view.action == 'retrieve'
-            elif model_cls is WorkflowLevel1:
-                team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user,
-                    workflowlevel1=obj).values_list(
-                    'role__name', flat=True)
-                if ROLE_WORKFLOW_ADMIN in team_groups:
+        elif hasattr(obj, 'workflowlevel1'):
+            workflowlevel1 = obj.workflowlevel1
+            groups = request.user.core_groups.all().intersection(workflowlevel1.core_groups.all())
+            for group in groups:
+                if has_permission(group.display_permissions, view.action):
                     return True
-                elif ROLE_WORKFLOW_TEAM in team_groups:
-                    return view.action != 'destroy'
-
-            elif model_cls in [WorkflowLevel2]:
-                workflowlevel1 = obj.workflowlevel1
-                team_groups = WorkflowTeam.objects.filter(
-                    workflow_user=request.user,
-                    workflowlevel1=workflowlevel1).values_list(
-                    'role__name', flat=True)
-                if ROLE_WORKFLOW_ADMIN in team_groups:
-                    return True
-                elif ROLE_WORKFLOW_TEAM in team_groups:
-                    return view.action != 'destroy'
-                elif ROLE_VIEW_ONLY in team_groups:
-                    return view.action == 'retrieve'
-            else:
-                return True
+        else:
+            return True
 
         return False

@@ -17,11 +17,6 @@ TEST_USER_DATA = {
 
 
 @pytest.fixture
-def group_org_admin():
-    return factories.Group.create(name=wfm.ROLE_ORGANIZATION_ADMIN)
-
-
-@pytest.fixture
 def org():
     return factories.Organization(name=TEST_USER_DATA['organization_name'])
 
@@ -32,9 +27,12 @@ def org_member(org):
 
 
 @pytest.fixture
-def org_admin(group_org_admin, org):
-    coreuser = factories.CoreUser.create(organization=org)
-    coreuser.groups.add(group_org_admin)
+def org_admin(org):
+    group_org_admin, _ = wfm.CoreGroup.objects.get_or_create(organization=org, is_org_level=True,
+                                                             permissions=wfm.PERMISSIONS_ORG_ADMIN,
+                                                             defaults={'name':'Org Admin'})
+    coreuser = factories.CoreUser.create(organization=group_org_admin.organization)
+    coreuser.core_groups.add(group_org_admin)
     return coreuser
 
 
@@ -43,8 +41,3 @@ def reset_password_request(org_member):
     uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
     token = default_token_generator.make_token(org_member)
     return org_member, uid, token
-
-
-@pytest.fixture
-def superuser():
-    return factories.CoreUser.create(is_superuser=True)

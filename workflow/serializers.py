@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 import jwt
 from django.contrib.auth import password_validation, get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
@@ -28,23 +28,6 @@ class WorkflowLevel1Serializer(serializers.ModelSerializer):
     class Meta:
         model = wfm.WorkflowLevel1
         fields = '__all__'
-
-
-class WorkflowLevel1PermissionsSerializer(serializers.Serializer):
-    permissions = serializers.ListField(child=serializers.DictField())
-    role_org = serializers.CharField(required=False)
-
-    def validate_role_org(self, value):
-        POSSIBLE_ROLES = (
-            'Admin',
-            wfm.ROLE_ORGANIZATION_ADMIN,
-            wfm.ROLE_VIEW_ONLY
-        )
-        if value not in POSSIBLE_ROLES:
-            raise serializers.ValidationError(
-                'Invalid "{}" organization role. Possible values: {}'.format(
-                    value, POSSIBLE_ROLES))
-        return value
 
 
 class WorkflowLevel2Serializer(serializers.ModelSerializer):
@@ -101,8 +84,10 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
         # add org admin role to user if org is new
         if is_new_org:
-            group_org_admin = Group.objects.get(name=wfm.ROLE_ORGANIZATION_ADMIN)
-            coreuser.groups.add(group_org_admin)
+            group_org_admin = wfm.CoreGroup.objects.get(organization=organization,
+                                                        is_org_level=True,
+                                                        permissions=wfm.PERMISSIONS_ORG_ADMIN)
+            coreuser.core_groups.add(group_org_admin)
 
         return coreuser
 
