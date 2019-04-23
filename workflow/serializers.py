@@ -17,6 +17,29 @@ from workflow.email_utils import send_email, send_email_body
 User = get_user_model()
 
 
+class PermissionsField(serializers.JSONField):
+    """
+    Field for representing permissions as a JSON opbject
+    """
+    _keys = ('create', 'read', 'update', 'delete')
+
+    def to_representation(self, value):
+        permissions = list('{0:04b}'.format(value if value < 16 else 15))
+        return dict(zip(self._keys, map(bool, map(int, permissions))))
+
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        keys, values = data.items()
+        if not set(keys) == set(self._keys):
+            raise serializers.ValidationError("Permissions field: incorrect keys format")
+
+        if not any([type(item) == bool for item in values]):
+            raise serializers.ValidationError("Permissions field: incorrect values type")
+
+        permissions = ''.join([str(int(key)) for key in self._keys])
+        return int(permissions, 2)
+
+
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
@@ -39,10 +62,13 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
 class CoreGroupSerializer(serializers.ModelSerializer):
 
+    permissions = PermissionsField()
+
     class Meta:
         model = wfm.CoreGroup
         read_only_fields = ('uuid',)
-        exclude = ('create_date', 'edit_date')
+        fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
+                  'workflowlevel2s')
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
