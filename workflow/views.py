@@ -6,7 +6,6 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -58,21 +57,6 @@ class DefaultCursorPagination(CursorPagination):
     page_size = 30
     max_page_size = 100
     page_size_query_param = 'page_size'
-
-
-class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Existing permissions
-
-    retrieve:
-    Return the given permission
-
-    list:
-    Return a list of existing permissions
-    """
-    queryset = Permission.objects.all()
-    serializer_class = serializers.PermissionSerializer
-    permission_classes = (AllowAuthenticatedRead,)
 
 
 class WorkflowLevel1ViewSet(viewsets.ModelViewSet):

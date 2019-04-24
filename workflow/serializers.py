@@ -2,7 +2,6 @@ from urllib.parse import urljoin
 
 import jwt
 from django.contrib.auth import password_validation, get_user_model
-from django.contrib.auth.models import Permission
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
@@ -17,11 +16,15 @@ from workflow.email_utils import send_email, send_email_body
 User = get_user_model()
 
 
-class PermissionsField(serializers.JSONField):
+class PermissionsField(serializers.DictField):
     """
     Field for representing permissions as a JSON opbject
     """
     _keys = ('create', 'read', 'update', 'delete')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['child'] = serializers.BooleanField()
+        super().__init__(*args, **kwargs)
 
     def to_representation(self, value):
         permissions = list('{0:04b}'.format(value if value < 16 else 15))
@@ -29,21 +32,12 @@ class PermissionsField(serializers.JSONField):
 
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
-        keys, values = data.items()
+        keys = data.keys()
         if not set(keys) == set(self._keys):
             raise serializers.ValidationError("Permissions field: incorrect keys format")
 
-        if not any([type(item) == bool for item in values]):
-            raise serializers.ValidationError("Permissions field: incorrect values type")
-
-        permissions = ''.join([str(int(key)) for key in self._keys])
+        permissions = ''.join([str(int(data[key])) for key in self._keys])
         return int(permissions, 2)
-
-
-class PermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = '__all__'
 
 
 class WorkflowLevel1Serializer(serializers.ModelSerializer):
@@ -62,11 +56,11 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
 class CoreGroupSerializer(serializers.ModelSerializer):
 
-    permissions = PermissionsField()
+    permissions = PermissionsField(required=False)
 
     class Meta:
         model = wfm.CoreGroup
-        read_only_fields = ('uuid',)
+        read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
         fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
                   'workflowlevel2s')
 
