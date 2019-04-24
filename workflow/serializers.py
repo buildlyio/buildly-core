@@ -18,7 +18,9 @@ User = get_user_model()
 
 class PermissionsField(serializers.DictField):
     """
-    Field for representing permissions as a JSON opbject
+    Field for representing int-value permissions as a JSON object in the format.
+    For example:
+    9 -> '1001' (binary representation) -> `{'create': True, 'read': False, 'update': False, 'delete': True}`
     """
     _keys = ('create', 'read', 'update', 'delete')
 
