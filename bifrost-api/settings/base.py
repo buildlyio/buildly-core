@@ -327,3 +327,8 @@ else:
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
 DEFAULT_REPLYTO_EMAIL = os.getenv('DEFAULT_REPLYTO_EMAIL')
 
+# Swagger settings - for generate_swagger management command
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'gateway.urls.swagger_info',
+}
