@@ -124,7 +124,7 @@ class CoreGroup(models.Model):
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
     is_global = models.BooleanField('Is global group', default=False)
     is_org_level = models.BooleanField('Is organization level group', default=False)
-    permissions = models.PositiveSmallIntegerField('Permissions', default=4, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    permissions = models.PositiveSmallIntegerField('Permissions', default=PERMISSIONS_VIEW_ONLY, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
