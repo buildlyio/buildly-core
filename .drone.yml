@@ -9,7 +9,10 @@ pipeline:
       - flake8
       - pytest
     when:
-      event: [pull_request, push, tag]
+      event:
+      - pull_request
+      - push
+      - tag
     environment:
       ALLOWED_HOSTS: "*"
       API_URL: /api/docs
@@ -47,22 +50,7 @@ pipeline:
         0aYDOHUNAxK4MjbnYOHhfrKx8Ezj3jd7aKq2C7yRDZ6FbAL4SgRFxY8N6GbB6IGyC
         gpT6pmQ5pEVJmH7mIEUJxyXKbta7ebxULLULjXwnJYGhUgT2hPyCfptkWFhsZVV
 
-  build-old-docker-image-tag:
-    image: plugins/docker
-    insecure: true
-    registry: registry.tola.io
-    repo: registry.tola.io/humanitec-walhall/bifrost
-    file: Dockerfile
-    auto_tag: true
-    username:
-      from_secret: DOCKER_OLD_USERNAME
-    password:
-      from_secret: DOCKER_OLD_PASSWORD
-    when:
-      event: [tag]
-      status: [success]
-
-  build-new-docker-image-tag:
+  build-docker-image-tag:
     image: plugins/docker
     registry:
       from_secret: DOCKER_REGISTRY
@@ -76,8 +64,57 @@ pipeline:
     insecure: true
     file: Dockerfile
     when:
-      event: [tag]
-      status: [success]
+      event:
+      - tag
+      branch:
+      - master
+      status:
+      - success
+
+  deploy-docs:
+    image: python:3.6
+    commands:
+      - pip install -r requirements/base.txt --no-cache-dir
+      - python manage.py generate_swagger > swagger.json
+      - eval "$(ssh-agent -s)"
+      - mkdir -p /root/.ssh
+      - echo "$${SSH_KEY}\n" > /root/.ssh/id_rsa
+      - echo "$${SSH_PUBLIC_KEY}\n" > /root/.ssh/id_rsa.pub
+      - ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+      - chmod 600 /root/.ssh/id_rsa*
+      - ssh-add -k /root/.ssh/id_rsa
+      - git config --global user.email "engine@humanitec.com"
+      - git config --global user.name "HumanitecBot"
+      - git clone git@github.com:Humanitec/docs-site.git
+      - mkdir -p docs-site/hugo/content/walhall/bifrost/
+      - mkdir -p docs-site/api/walhall/bifrost/
+      - cd docs-site/hugo/content/walhall/bifrost/
+      - cp ../../../../../docs/_index.md .
+      - cd ../../../../api/walhall/bifrost
+      - cp ../../../../swagger.json swagger.json -r
+      - cd ../../../
+      - git add .
+      - git diff-index --quiet HEAD || git commit -m "Updated documentation for BiFrost"
+      - git push origin master
+    environment:
+      DATABASE_ENGINE: "postgresql"
+      DATABASE_NAME: "bifrost_api"
+      DATABASE_USER: "root"
+      DATABASE_PASSWORD: "root"
+      DATABASE_HOST: "postgres"
+      DATABASE_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: "bifrost-api.settings.base"
+      SECRET_KEY: "nothing"
+    secrets:
+    - SSH_KEY
+    - SSH_PUBLIC_KEY
+    when:
+      event:
+      - tag
+      branch:
+      - master
+      status:
+      - success
 
   notify:
     image: plugins/slack
@@ -85,9 +122,13 @@ pipeline:
     username: Drone-CI
     secrets: [SLACK_WEBHOOK]
     when:
-      event: [push, tag]
-      branch: [master]
-      status: [failure]
+      event:
+      - push
+      - tag
+      branch:
+      - master
+      status:
+      - failure
 
 services:
   postgres:

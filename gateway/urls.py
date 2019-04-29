@@ -8,12 +8,14 @@ from . import views
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+swagger_info = openapi.Info(
+    title="BiFrost API",
+    default_version='latest',
+    description="BiFrost is the core service of every Walhall application.",
+)
+
 schema_view = get_schema_view(
-    openapi.Info(
-        title="BiFrost API",
-        default_version='latest',
-        description="Test description",
-    ),
+    swagger_info,
     public=True,
     permission_classes=(permissions.AllowAny,),
     generator_class=generator.OpenAPISchemaGenerator
