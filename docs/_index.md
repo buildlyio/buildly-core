@@ -37,13 +37,9 @@ The BiFrost permissions model follows the [role-based access control (RBAC) patt
 
 In Walhall, permissions are granted to CoreUsers by their **CoreGroups.** Each CoreGroup can be associated with one or more WorkflowLevels. "Permissions" are defined as the ability to execute [CRUD operations](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) on WorkflowLevels.
 
-WorkflowLevel1s are top-level data model associations. All WorkflowLevel2s are child objects of a WorkflowLevel1. However, WorkflowLevel2s can also be children of other WorkflowLevel2s as part of a recursive permissions structure.
+WorkflowLevel1s are top-level data model associations. All WorkflowLevel2s are child objects of a WorkflowLevel1. However, WorkflowLevel2s can also be children of other WorkflowLevel2s as part of a recursive permissions structure. If a CoreGroup is given permissions to a WorkflowLevel, then those permissions will cascade down to all child WorkflowLevels.
 
-If a CoreGroup is given permissions to a WorkflowLevel1, then those permissions will cascade down to all child WorkflowLevel2s.
-
-If a CoreGroup is given permissions to a WorkflowLevel2, then those permissions will cascade down to all child WorkflowLevel2s, but they will **not** have permissions to the WorkflowLevel1.
-
-By default, all CoreGroups can only have permissions defined to entities within their Organization. You can define a **global CoreGroup** that has permissions to all organizations by setting the `is_org_level` and `is_global` properties to `true`.
+By default, all CoreGroups can only have permissions defined to entities within their Organization. You can define a **global CoreGroup** that has permissions to all organizations by setting the `is_global` property to `true`.
 
 ## API gateway
 
