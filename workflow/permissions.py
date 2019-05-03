@@ -160,7 +160,6 @@ class CoreGroupsPermissions(permissions.BasePermission):
         user_groups = request.user.core_groups.prefetch_related('workflowlevel1s', 'workflowlevel2s')
 
         # sort up permissions into more convenient way (default is read-only '0100')
-        # TODO: should it's always allowed to read?
         viewonly_display_permissions = '{0:04b}'.format(PERMISSIONS_VIEW_ONLY)
         global_permissions, org_permissions = viewonly_display_permissions, viewonly_display_permissions
         wl1_permissions = defaultdict(lambda: viewonly_display_permissions)
@@ -245,17 +244,15 @@ class CoreGroupsPermissions(permissions.BasePermission):
             return True
 
         if model_cls is WorkflowLevel1:
-            groups = request.user.core_groups.all().intersection(obj.core_groups.all())
-            for group in groups:
-                if has_permission(group.display_permissions, view.action):
-                    return True
+            # Permissions on WorkflowLevel1 itself are defined by Org-level permissions
+            groups = request.user.core_groups.filter(is_org_level=True)
         elif hasattr(obj, 'workflowlevel1'):
-            workflowlevel1 = obj.workflowlevel1
-            groups = request.user.core_groups.all().intersection(workflowlevel1.core_groups.all())
-            for group in groups:
-                if has_permission(group.display_permissions, view.action):
-                    return True
+            groups = request.user.core_groups.all().intersection(obj.workflowlevel1.core_groups.all())
         else:
             return True
+
+        for group in groups:
+            if has_permission(group.display_permissions, view.action):
+                return True
 
         return False
