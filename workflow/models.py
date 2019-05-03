@@ -102,14 +102,33 @@ class Organization(models.Model):
         verbose_name_plural = "Organizations"
         app_label = 'workflow'
 
+    def __str__(self):
+        return self.name
+
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
         super(Organization, self).save()
+        if is_new:
+            self._create_initial_groups()
 
-    def __str__(self):
-        return self.name
+    def _create_initial_groups(self):
+        CoreGroup.objects.create(
+            organization=self,
+            is_org_level=True,
+            name='Admins',
+            permissions=PERMISSIONS_ORG_ADMIN
+        )
+
+        CoreGroup.objects.create(
+            organization=self,
+            is_org_level=True,
+            is_default=True,
+            name='Users',
+            permissions=PERMISSIONS_VIEW_ONLY
+        )
 
 
 class CoreGroup(models.Model):
@@ -124,6 +143,7 @@ class CoreGroup(models.Model):
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE)
     is_global = models.BooleanField('Is global group', default=False)
     is_org_level = models.BooleanField('Is organization level group', default=False)
+    is_default = models.BooleanField('Is organization default group', default=False)
     permissions = models.PositiveSmallIntegerField('Permissions', default=PERMISSIONS_VIEW_ONLY, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -169,11 +189,14 @@ class CoreUser(AbstractUser):
         return self.username
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
-
         super(CoreUser, self).save()
+        if is_new:
+            # Add default groups
+            self.core_groups.add(*CoreGroup.objects.filter(organization=self.organization, is_default=True))
 
     @property
     def is_org_admin(self) -> bool:
