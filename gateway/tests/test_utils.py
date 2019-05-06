@@ -38,7 +38,7 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
 
         request = self.get_mock_request('/', APIGatewayView, self.core_user)
         wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
+            organization=self.core_user.organizations.all().first())
         validate_object_access(request, wflvl1)
 
     def test_validate_bifrost_wfl1_no_permission(self):

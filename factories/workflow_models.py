@@ -1,5 +1,5 @@
 from django.template.defaultfilters import slugify
-from factory import DjangoModelFactory, SubFactory, Faker, lazy_attribute
+from factory import DjangoModelFactory, Faker, lazy_attribute, post_generation, SubFactory
 
 from workflow.models import (
     CoreUser as CoreUserM,
@@ -43,6 +43,19 @@ class CoreUser(DjangoModelFactory):
 
 
 User = CoreUser  # for tests incompatibility
+
+    @post_generation
+    def organizations(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if isinstance(extracted, list):
+            # A list of country were passed in, use them
+            for organization in extracted:
+                self.organizations.add(organization)
+        else:
+            self.organizations.add(Organization())
 
 
 class WorkflowLevel1(DjangoModelFactory):

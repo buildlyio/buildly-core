@@ -22,8 +22,7 @@ def create_organization(core_user=None, *args, **kwargs):
     else:
         organization, created = Organization.objects.get_or_create(name=core_user.username)
 
-    core_user.organization = organization
-    core_user.save()
+    core_user.organizations.add(organization)
 
     return {
         'is_new_org': created,

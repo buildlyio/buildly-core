@@ -47,6 +47,12 @@ class OAuthUserEndpoint(ProtectedResourceView):
             'core_user': CoreUserSerializer(instance=user, context={'request': request}).data,
             'organization': OrganizationSerializer(instance=user.organization, context={'request': request}).data
         }
+        core_user = CoreUser.objects.all().filter(user=user)
+        if len(core_user) == 1:
+            body["core_user"] = CoreUserSerializer(
+                instance=core_user[0], context={'request': request}).data
+            body["organizations"] = [OrganizationSerializer(instance=organization, context={'request': request}).data
+                                     for organization in core_user[0].organizations.all()]
 
         return HttpResponse(json.dumps(body))
 

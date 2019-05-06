@@ -45,7 +45,7 @@ class WorkflowLevel2ListViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
-        wflvl1.organization = self.core_user.organization
+        wflvl1.organization = self.core_user.organizations.all().first()
         wflvl1.save()
         response = view(request)
         self.assertEqual(response.status_code, 200)

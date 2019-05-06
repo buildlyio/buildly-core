@@ -112,7 +112,12 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
                         headers=headers)
 
     def perform_create(self, serializer):
+<<<<<<< Updated upstream
         organization = self.request.user.organization
+=======
+        # TODO: Organization should be provided instead of using the first one
+        organization = self.request.user.core_user.organizations.all().first()
+>>>>>>> Stashed changes
         obj = serializer.save(organization=organization)
         obj.user_access.add(self.request.user)
 
@@ -623,6 +628,97 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.WorkflowTeamSerializer
 
 
+<<<<<<< Updated upstream
+=======
+class MilestoneViewSet(viewsets.ModelViewSet):
+    """
+    title:
+    Milestones are time bound relationships to workflow level 1 or 2
+
+    description:
+    A milestone can be associated with a workflow level 1 or 2 to provide additional time tracked goals for a workflow.
+    This can be used for example in a project workflow to track high level goals across a set of workflows.
+
+    retrieve:
+    Return the given milestone.
+
+    list:
+    Return a list of all the existing milestones.
+
+    create:
+    Create a new milestone instance.
+    """
+
+    def list(self, request, *args, **kwargs):
+        # Use this queryset or the django-filters lib will not work
+        queryset = self.filter_queryset(self.get_queryset())
+        if not request.user.is_superuser:
+            organization_id = wfm.CoreUser.objects. \
+                values_list('organization_id', flat=True). \
+                get(user=request.user)
+            queryset = queryset.filter(organization_id=organization_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    permission_classes = (IsOrgMember,)
+    queryset = wfm.Milestone.objects.all()
+    serializer_class = serializers.MilestoneSerializer
+
+
+class PortfolioViewSet(viewsets.ModelViewSet):
+    """
+    title:
+    Portfolio provides organizational structure or groupings for workflows
+
+    description:
+    A portfolio can be associated with a workflow level 1 or 2 to provide additional
+    organizational structure for a workflow.
+    This can be used for example in a project workflow to collect multiple workflows into one folder
+    or grouping or in a navigational grouping as a way to provide a secondary site or structure.
+
+    retrieve:
+    Return the given portfolio.
+
+    list:
+    Return a list of all the existing portfolios.
+
+    create:
+    Create a new portfolio instance.
+    """
+
+    def list(self, request, *args, **kwargs):
+        # Use this queryset or the django-filters lib will not work
+        queryset = self.filter_queryset(self.get_queryset())
+        if not request.user.is_superuser:
+            organization_id = wfm.CoreUser.objects. \
+                values_list('organization_id', flat=True). \
+                get(user=request.user)
+            queryset = queryset.filter(organization_id=organization_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)  # inherited from CreateModelMixin
+
+        portfolio = wfm.Portfolio.objects.get(pk=serializer.data['id'])
+        portfolio.organization = request.user.core_user.organizations.all().first()
+        portfolio.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+    permission_classes = (AllowCoreUserRoles, IsOrgMember)
+    queryset = wfm.Portfolio.objects.all()
+    serializer_class = serializers.PortfolioSerializer
+
+
+>>>>>>> Stashed changes
 """
 GraphQL views from Graphene
 """

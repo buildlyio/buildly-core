@@ -42,8 +42,7 @@ class OAuthTest(TestCase):
 
         # change user's organization
         users_org = factories.Organization(name='Test Org')
-        self.core_user.organization = users_org
-        self.core_user.save()
+        self.core_user.organizations.add(users_org)
 
         c = Client(HTTP_USER_AGENT='Test/1.0')
 
@@ -75,7 +74,7 @@ class OAuthTest(TestCase):
         self.assertEqual(response['organization'].name, settings.DEFAULT_ORG)
 
         coreuser.refresh_from_db()
-        self.assertEqual(coreuser.organization, response['organization'])
+        self.assertIn(response['organization'], coreuser.organizations.all())
 
     @override_settings(DEFAULT_ORG=None)
     def test_create_organization_new_username_org(self):
@@ -90,7 +89,7 @@ class OAuthTest(TestCase):
         self.assertEqual(response['organization'].name, coreuser.username)
 
         coreuser.refresh_from_db()
-        self.assertEqual(coreuser.organization, response['organization'])
+        self.assertIn(response['organization'], coreuser.organizations.all())
 
     @override_settings(DEFAULT_ORG=None)
     def test_create_organization_org_exists(self):
@@ -108,7 +107,7 @@ class OAuthTest(TestCase):
         self.assertEqual(response['organization'], org)
 
         coreuser.refresh_from_db()
-        self.assertEqual(coreuser.organization, org)
+        self.assertIn(org, coreuser.organizations.all())
 
     def test_create_organization_no_new_coreuser(self):
         coreuser = factories.CoreUser(first_name='John', last_name='Lennon')

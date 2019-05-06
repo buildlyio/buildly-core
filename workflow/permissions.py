@@ -5,7 +5,7 @@ from rest_framework import permissions
 from rest_framework.relations import ManyRelatedField
 from django.http import QueryDict
 
-from workflow.models import Organization, WorkflowLevel1, WorkflowLevel2, PERMISSIONS_VIEW_ONLY
+from workflow.models import CoreUser, Organization, WorkflowLevel1, WorkflowLevel2, PERMISSIONS_VIEW_ONLY
 
 
 logger = logging.getLogger(__name__)
@@ -98,13 +98,13 @@ class IsOrgMember(permissions.BasePermission):
             return True
 
         if view.action == 'create':
-            user_org = request.user.organization_id
+            user_orgs = CoreUser.objects.values_list('organizations_id', flat=True).get(user=request.user)
 
             if 'organization' in request.data:
                 org_serializer = view.get_serializer_class()().get_fields()['organization']
                 primitive_value = request.data.get('organization')
                 org = org_serializer.run_validation(primitive_value)
-                return org.id == user_org
+                return org.id in user_orgs
 
         return True
 

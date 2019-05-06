@@ -97,12 +97,19 @@ class CoreUserSerializer(serializers.ModelSerializer):
         validated_data['is_active'] = is_new_org or bool(invitation_token)
         # create core user
         coreuser = wfm.CoreUser.objects.create(
+<<<<<<< Updated upstream
             organization=organization,
             **validated_data
         )
         # set user password
         coreuser.set_password(validated_data['password'])
         coreuser.save()
+=======
+            user=user,
+            **validated_data
+        )
+        coreuser.organizations.add(organization)
+>>>>>>> Stashed changes
 
         # add org admin role to user if org is new
         if is_new_org:
@@ -148,10 +155,16 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             }
 
             # get specific subj and templates for user's organization
+<<<<<<< Updated upstream
             tpl = wfm.EmailTemplate.objects.filter(organization=user.organization,
                                                    type=wfm.TEMPLATE_RESET_PASSWORD).first()
             if not tpl:
                 tpl = wfm.EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
+=======
+            if hasattr(user, 'core_user'):
+                # TODO: We should know which organization template should be used instead of getting the first one
+                tpl = wfm.EmailTemplate.objects.filter(organization__in=user.core_user.organizations.all(),
+>>>>>>> Stashed changes
                                                        type=wfm.TEMPLATE_RESET_PASSWORD).first()
             if tpl and tpl.template:
                 context = Context(context)

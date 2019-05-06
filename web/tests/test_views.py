@@ -27,7 +27,7 @@ def org():
 
 @pytest.fixture
 def core_user(org):
-    return factories.CoreUser.create(organization=org)
+    return factories.CoreUser.create(organizations=[org])
 
 
 # ------------ Tests ------------------

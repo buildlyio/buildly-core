@@ -375,8 +375,8 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
     def test_update_workflowlevel1_program_team(self):
         wflvl1 = factories.WorkflowLevel1()
         group_wf_team = factories.CoreGroup(name='WF Team',
-                                             permissions=PERMISSIONS_WORKFLOW_TEAM,
-                                             organization=self.core_user.organization)
+                                            permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                            organization=self.core_user.organizations.all().first())
         self.core_user.core_groups.add(group_wf_team)
         wflvl1.core_groups.add(group_wf_team)
 
@@ -395,8 +395,8 @@ class WorkflowLevel1UpdateViewsTest(TestCase):
     def test_update_workflowlevel1_same_org_different_program_team(self):
         wflvl1_other = factories.WorkflowLevel1()
         group_wf_team = factories.CoreGroup(name='WF Team',
-                                             permissions=PERMISSIONS_WORKFLOW_TEAM,
-                                             organization=self.core_user.organization)
+                                            permissions=PERMISSIONS_WORKFLOW_TEAM,
+                                            organization=self.core_user.organizations.all().first())
         self.core_user.core_groups.add(group_wf_team)
         wflvl1_other.core_groups.add(group_wf_team)
 
