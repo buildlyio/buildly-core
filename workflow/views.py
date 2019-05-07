@@ -10,7 +10,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
-from django.urls import resolve, Resolver404
 import django_filters
 from rest_framework import mixins, permissions, status, viewsets, filters
 from rest_framework.decorators import action
@@ -171,10 +170,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     SERIALIZERS_MAP = {
         'default': serializers.CoreUserSerializer,
-        'coreuser-invite': serializers.CoreUserInvitationSerializer,
-        'coreuser-reset-password': serializers.CoreUserResetPasswordSerializer,
-        'coreuser-reset-password-check': serializers.CoreUserResetPasswordCheckSerializer,
-        'coreuser-reset-password-confirm': serializers.CoreUserResetPasswordConfirmSerializer,
+        'create': serializers.CoreUserWritableSerializer,
+        'update': serializers.CoreUserWritableSerializer,
+        'partial_update': serializers.CoreUserWritableSerializer,
+        'invite': serializers.CoreUserInvitationSerializer,
+        'reset_password': serializers.CoreUserResetPasswordSerializer,
+        'reset_password_check': serializers.CoreUserResetPasswordCheckSerializer,
+        'reset_password_confirm': serializers.CoreUserResetPasswordConfirmSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -342,40 +344,20 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
-        if self.request and self.request.method == 'POST':
-            try:
-                url_name = resolve(self.request.path).url_name
-            except Resolver404:
-                pass
-            else:
-                if url_name in self.SERIALIZERS_MAP:
-                    return self.SERIALIZERS_MAP[url_name]
-
-        return self.SERIALIZERS_MAP['default']
+        action_ = getattr(self, 'action', 'default')
+        return self.SERIALIZERS_MAP.get(action_, self.SERIALIZERS_MAP['default'])
 
     def get_permissions(self):
-        try:
-            url_name = resolve(self.request.path).url_name
-        except Resolver404:
-            pass
-        else:
+        if hasattr(self, 'action'):
             # different permissions when creating a new user or resetting password
-            if self.request.method == 'POST' and url_name in ['coreuser-create',
-                                                              'coreuser-reset-password',
-                                                              'coreuser-reset-password-check',
-                                                              'coreuser-reset-password-confirm']:
+            if self.action in ['create',
+                               'reset_password',
+                               'reset_password_check',
+                               'reset_password_confirm',
+                               'invite_check']:
                 return [permissions.AllowAny()]
 
-            # different permissions for checking token
-            if self.request.method == 'GET' and url_name == 'coreuser-invite-check':
-                return [permissions.AllowAny()]
-
-            # different permissions for the invitation process
-            if self.request.method == 'POST' and url_name == 'coreuser-invite':
-                return [AllowOnlyOrgAdmin()]
-
-            # only org admin can update core user's data
-            if self.request.method in ['PUT', 'PATCH'] and url_name == 'coreuser-detail':
+            if self.action in ['update', 'partial_update', 'invite']:
                 return [AllowOnlyOrgAdmin()]
 
         return super(CoreUserViewSet, self).get_permissions()

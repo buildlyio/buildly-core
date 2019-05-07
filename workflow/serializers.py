@@ -68,9 +68,11 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    """
+    Default CoreUser serializer
+    """
     is_active = serializers.BooleanField(required=False)
-    organization_name = serializers.CharField(source='organization.name', write_only=True)
+    core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
 
     def validate_invitation_token(self, value):
@@ -82,6 +84,28 @@ class CoreUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Token is expired.')
         return value
 
+    class Meta:
+        model = wfm.CoreUser
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
+                  'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
+                  'invitation_token')
+        read_only_fields = ('core_user_uuid', 'organization',)
+        depth = 1
+
+
+class CoreUserWritableSerializer(CoreUserSerializer):
+    """
+    Override default CoreUser serializer for writable actions (create, update, partial_update)
+    """
+    password = serializers.CharField(write_only=True)
+    organization_name = serializers.CharField(source='organization.name')
+    core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=wfm.CoreGroup.objects.all(), required=False)
+
+    class Meta:
+        model = wfm.CoreUser
+        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name')
+        read_only_fields = CoreUserSerializer.Meta.read_only_fields
+
     def create(self, validated_data):
         # get or create organization
         organization = validated_data.pop('organization')
@@ -92,10 +116,11 @@ class CoreUserSerializer(serializers.ModelSerializer):
             organization = wfm.Organization.objects.create(**organization)
             is_new_org = True
 
-        # create user
+        core_groups = validated_data.pop('core_groups', [])
+
+        # create core user
         invitation_token = validated_data.pop('invitation_token', None)
         validated_data['is_active'] = is_new_org or bool(invitation_token)
-        # create core user
         coreuser = wfm.CoreUser.objects.create(
             organization=organization,
             **validated_data
@@ -104,22 +129,18 @@ class CoreUserSerializer(serializers.ModelSerializer):
         coreuser.set_password(validated_data['password'])
         coreuser.save()
 
-        # add org admin role to user if org is new
+        # add org admin role to the user if org is new
         if is_new_org:
             group_org_admin = wfm.CoreGroup.objects.get(organization=organization,
                                                         is_org_level=True,
                                                         permissions=wfm.PERMISSIONS_ORG_ADMIN)
             coreuser.core_groups.add(group_org_admin)
 
-        return coreuser
+        # add requested groups to the user
+        for group in core_groups:
+            coreuser.core_groups.add(group)
 
-    class Meta:
-        model = wfm.CoreUser
-        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'password', 'is_active',
-                  'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'organization_name', 'invitation_token')
-        read_only_fields = ('core_user_uuid', 'organization', 'core_groups',)
-        depth = 1
+        return coreuser
 
 
 class CoreUserInvitationSerializer(serializers.Serializer):
