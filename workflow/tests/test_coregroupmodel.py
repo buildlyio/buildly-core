@@ -11,3 +11,15 @@ def test_coregroup_display_permissions():
 
     coregroup = factories.CoreGroup.create(permissions=20)
     assert coregroup.display_permissions == '1111'
+
+
+@pytest.mark.django_db()
+def test_coregroups_autocreation():
+    org = factories.Organization.create()
+    assert org.coregroup_set.count() == 2
+
+
+@pytest.mark.django_db()
+def test_default_courgroup():
+    user = factories.CoreUser.create()
+    assert user.core_groups.count() == 1

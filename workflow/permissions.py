@@ -251,8 +251,9 @@ class CoreGroupsPermissions(permissions.BasePermission):
         else:
             return True
 
-        for group in groups:
-            if has_permission(group.display_permissions, view.action):
-                return True
+        if hasattr(view, 'action'):
+            for group in groups:
+                if has_permission(group.display_permissions, view.action):
+                    return True
 
         return False
