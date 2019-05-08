@@ -98,105 +98,133 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
 
 
 @pytest.mark.django_db()
-def test_registration_fail(request_factory):
-    # check that 'password' and 'organization_name' fields are required
-    for field_name in ['password', 'organization_name']:
+class TestCoreUserCreate:
+
+    def test_registration_fail(self, request_factory):
+        # check that 'password' and 'organization_name' fields are required
+        for field_name in ['password', 'organization_name']:
+            data = TEST_USER_DATA.copy()
+            data.pop(field_name)
+            request = request_factory.post(reverse('coreuser-list'), data)
+            response = CoreUserViewSet.as_view({'post': 'create'})(request)
+            assert response.status_code == 400
+
+    def test_registration_of_first_org_user(self, request_factory):
+        request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 201
+
+        user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        assert user.email == TEST_USER_DATA['email']
+        assert user.first_name == TEST_USER_DATA['first_name']
+        assert user.last_name == TEST_USER_DATA['last_name']
+        assert user.organization.name == TEST_USER_DATA['organization_name']
+        assert user.is_active
+
+        # check this user is org admin
+        assert user.is_org_admin
+
+    def test_registration_of_second_org_user(self, request_factory, org_admin):
+        request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 201
+
+        user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        assert user.email == TEST_USER_DATA['email']
+        assert user.first_name == TEST_USER_DATA['first_name']
+        assert user.last_name == TEST_USER_DATA['last_name']
+        assert user.organization.name == TEST_USER_DATA['organization_name']
+        assert not user.is_active
+
+        # check this user is NOT org admin
+        assert not user.is_org_admin
+
+    def test_registration_of_invited_org_user(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
-        data.pop(field_name)
+        token = create_invitation_token(data['email'], org_admin.organization)
+        data['invitation_token'] = token
+
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
-        assert response.status_code == 400
+        assert response.status_code == 201
+
+        user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        assert user.email == TEST_USER_DATA['email']
+        assert user.first_name == TEST_USER_DATA['first_name']
+        assert user.last_name == TEST_USER_DATA['last_name']
+        assert user.organization.name == TEST_USER_DATA['organization_name']
+        assert user.is_active
+
+        # check this user is NOT org admin
+        assert not user.is_org_admin
+
+    def test_registration_with_core_groups(self, request_factory, org_admin):
+        data = TEST_USER_DATA.copy()
+        groups = factories.CoreGroup.create_batch(2, organization=org_admin.organization)
+        data['core_groups'] = [item.pk for item in groups]
+
+        request = request_factory.post(reverse('coreuser-list'), data)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 201
+
+        user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        # check that user has groups from the request
+        assert set(groups).issubset(set(list(user.core_groups.all())))
 
 
 @pytest.mark.django_db()
-def test_registration_of_first_org_user(request_factory):
-    request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
-    response = CoreUserViewSet.as_view({'post': 'create'})(request)
-    assert response.status_code == 201
+class TestCoreUserUpdate:
 
-    user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
-    assert user.email == TEST_USER_DATA['email']
-    assert user.first_name == TEST_USER_DATA['first_name']
-    assert user.last_name == TEST_USER_DATA['last_name']
-    assert user.organization.name == TEST_USER_DATA['organization_name']
-    assert user.is_active
+    def test_coreuser_update(self, request_factory, org_admin):
+        user = factories.CoreUser.create(is_active=False)
+        pk = user.pk
 
-    # check this user is org admin
-    assert user.is_org_admin
+        data = {
+            'is_active': True,
+        }
+        request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
+        request.user = org_admin
+        response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
+        assert response.status_code == 200
+        coreuser = wfm.CoreUser.objects.get(pk=pk)
+        assert coreuser.is_active
 
+    def test_coreuser_update_groups(self, request_factory, org_admin):
+        user = factories.CoreUser.create(is_active=False)
+        initial_groups = factories.CoreGroup.create_batch(2, organization=user.organization)
+        user.core_groups.add(*initial_groups)
+        pk = user.pk
 
-@pytest.mark.django_db()
-def test_registration_of_second_org_user(request_factory, org_admin):
-    request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
-    response = CoreUserViewSet.as_view({'post': 'create'})(request)
-    assert response.status_code == 201
-
-    user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
-    assert user.email == TEST_USER_DATA['email']
-    assert user.first_name == TEST_USER_DATA['first_name']
-    assert user.last_name == TEST_USER_DATA['last_name']
-    assert user.organization.name == TEST_USER_DATA['organization_name']
-    assert not user.is_active
-
-    # check this user is NOT org admin
-    assert not user.is_org_admin
-
-
-@pytest.mark.django_db()
-def test_registration_of_invited_org_user(request_factory, org_admin):
-    data = TEST_USER_DATA.copy()
-    token = create_invitation_token(data['email'], org_admin.organization)
-    data['invitation_token'] = token
-
-    request = request_factory.post(reverse('coreuser-list'), data)
-    response = CoreUserViewSet.as_view({'post': 'create'})(request)
-    assert response.status_code == 201
-
-    user = wfm.CoreUser.objects.get(username=TEST_USER_DATA['username'])
-    assert user.email == TEST_USER_DATA['email']
-    assert user.first_name == TEST_USER_DATA['first_name']
-    assert user.last_name == TEST_USER_DATA['last_name']
-    assert user.organization.name == TEST_USER_DATA['organization_name']
-    assert user.is_active
-
-    # check this user is NOT org admin
-    assert not user.is_org_admin
+        new_groups = factories.CoreGroup.create_batch(2, organization=user.organization)
+        data = {
+            'core_groups': [item.pk for item in new_groups],
+        }
+        request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
+        request.user = org_admin
+        response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
+        assert response.status_code == 200
+        coreuser = wfm.CoreUser.objects.get(pk=pk)
+        assert set(coreuser.core_groups.all()) == set(new_groups)
 
 
 @pytest.mark.django_db()
-def test_coreuser_update(request_factory, org_admin):
-    user = factories.CoreUser.create(is_active=False)
-    pk = user.pk
+class TestCoreUserInvite:
 
-    data = {
-        'is_active': True,
-    }
-    request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
-    request.user = org_admin
-    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
-    assert response.status_code == 200
-    coreuser = wfm.CoreUser.objects.get(pk=pk)
-    assert coreuser.is_active
+    def test_invitation(self, request_factory, org_admin):
+        data = {'emails': [TEST_USER_DATA['email']]}
+        request = request_factory.post(reverse('coreuser-invite'), data)
+        request.user = org_admin
+        response = CoreUserViewSet.as_view({'post': 'invite'})(request)
+        assert response.status_code == 200
+        assert len(response.data['invitations']) == 1
 
-
-@pytest.mark.django_db()
-def test_invitation(request_factory, org_admin):
-    data = {'emails': [TEST_USER_DATA['email']]}
-    request = request_factory.post(reverse('coreuser-invite'), data)
-    request.user = org_admin
-    response = CoreUserViewSet.as_view({'post': 'invite'})(request)
-    assert response.status_code == 200
-    assert len(response.data['invitations']) == 1
-
-
-@pytest.mark.django_db()
-def test_invitation_check(request_factory, org):
-    token = create_invitation_token(TEST_USER_DATA['email'], org)
-    request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
-    response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
-    assert response.status_code == 200
-    assert response.data['email'] == TEST_USER_DATA['email']
-    assert response.data['organization']['organization_uuid'] == str(org.organization_uuid)
+    def test_invitation_check(self, request_factory, org):
+        token = create_invitation_token(TEST_USER_DATA['email'], org)
+        request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
+        response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
+        assert response.status_code == 200
+        assert response.data['email'] == TEST_USER_DATA['email']
+        assert response.data['organization']['organization_uuid'] == str(org.organization_uuid)
 
 
 @pytest.mark.django_db()
