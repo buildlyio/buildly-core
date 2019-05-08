@@ -143,8 +143,7 @@ class WorkflowLevel1ListViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
-    @patch('workflow.views.DefaultCursorPagination.page_size',
-           new_callable=PropertyMock)
+    @patch('workflow.pagination.DefaultCursorPagination.page_size', new_callable=PropertyMock)
     def test_list_workflowlevel1_pagination(self, page_size_mock):
         """ For page_size 1 and pagination true, list wfl1 endpoint should
          return 1 wfl1 for each page"""
