@@ -28,7 +28,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'organization', 'is_global', 'is_org_level', 'is_default', 'permissions')
     display = 'Core Group'
     search_fields = ('name',)
 
