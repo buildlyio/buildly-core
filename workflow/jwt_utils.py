@@ -3,6 +3,7 @@ import datetime
 
 import jwt
 from django.conf import settings
+from oauth2_provider.models import RefreshToken
 
 from workflow.models import CoreUser, Organization
 from gateway.exceptions import PermissionDenied
@@ -23,8 +24,17 @@ def payload_enricher(request):
             'core_user_uuid': user['core_user_uuid'],
             'organization_uuid': user['organization__organization_uuid'],
         }
-    else:
-        return {}
+    elif request.POST.get('refresh_token'):
+        try:
+            refresh_token = RefreshToken.objects.get(token=request.POST.get('refresh_token'))
+            user = refresh_token.user
+            return {
+                'core_user_uuid': user.core_user_uuid,
+                'organization_uuid': user.organization.organization_uuid,
+            }
+        except RefreshToken.DoesNotExist:
+            logger.warning('RefreshToken not found.')
+    return {}
 
 
 def create_invitation_token(email_address: str, organization: Organization):
