@@ -89,5 +89,6 @@ class JWTUtilsTest(TestCase):
         expected_payload = {
             'core_user_uuid': str(self.core_user.core_user_uuid),
             'organization_uuid': str(self.core_user.organization.organization_uuid),
+            'username': self.core_user.username,
         }
         self.assertEqual(payload, expected_payload)
