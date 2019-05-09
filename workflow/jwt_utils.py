@@ -31,6 +31,7 @@ def payload_enricher(request):
             return {
                 'core_user_uuid': user.core_user_uuid,
                 'organization_uuid': user.organization.organization_uuid,
+                'username': user.username,
             }
         except RefreshToken.DoesNotExist:
             logger.warning('RefreshToken not found.')
