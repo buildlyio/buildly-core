@@ -1,6 +1,6 @@
 """pytest unit tests, to run:
 DJANGO_SETTINGS_MODULE=bifrost-api.settings.production pytest gateway/tests/test_utils.py -v --cov
-or: pytest gateway/tests/test_utils.py
+or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
 import json
@@ -78,7 +78,7 @@ def test_json_dump():
         "integer": 123,
         "array": ['1', 2, ],
         "uuid": uuid.UUID('50096bc6-848a-456f-ad36-3ac04607ff67'),
-        "datetime": datetime.datetime(2019, 2, 5, 12, 36, 0, 147972)
+        "datetime": datetime.datetime(2019, 2, 5, 12, 36, 0, 147972),
     }
 
     response = json.dumps(obj, cls=GatewayJSONEncoder)
@@ -88,6 +88,17 @@ def test_json_dump():
                         ' "uuid": "50096bc6-848a-456f-ad36-3ac04607ff67",' \
                         ' "datetime": "2019-02-05T12:36:00.147972"}'
     assert response == expected_response
+
+
+@pytest.mark.django_db()
+def test_json_dump_w_core_user():
+    core_user = factories.CoreUser(pk=5)
+    obj = {
+        "model_instance": core_user,
+    }
+    result = json.dumps(obj, cls=GatewayJSONEncoder)
+    expected_result = '{"model_instance": 5}'
+    assert result == expected_result
 
 
 def test_json_dump_exception():
