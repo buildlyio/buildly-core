@@ -5,6 +5,7 @@ import json
 import requests
 import logging
 
+from django.db import models
 from rest_framework.request import Request
 
 from workflow import views as wfv
@@ -105,6 +106,8 @@ class GatewayJSONEncoder(json.JSONEncoder):
             return obj.isoformat()
         if isinstance(obj, UUID):
             return str(obj)
+        if isinstance(obj, models.Model):  # for handling objects in M2M-fields
+            return obj.pk
         # for handling pyswagger.primitives
         if hasattr(obj, 'to_json'):
             return obj.to_json()
