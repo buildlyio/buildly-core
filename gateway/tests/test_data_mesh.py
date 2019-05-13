@@ -365,8 +365,7 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_expand_data_from_external_service(self, mock_perform_request,
-                                               mock_app):
+    def test_expand_data_from_external_service(self, mock_perform_request, mock_app):
         # update relationships
         self.lm.relationships['products'] = {
             'contact_uuid': 'crm.Contact'
@@ -521,12 +520,10 @@ class DataMeshTest(TestCase):
         assert json.loads(response.content) == expected_data
 
     @patch('pyswagger.App.load')
-    @patch('gateway.utils')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_load_swagger_resource_of_external_service(
-            self, mock_perform_request, mock_utils, mock_app):
+    def test_load_swagger_resource_of_external_service(self, mock_perform_request, mock_app):
         # create extra service
-        crm_lm = factories.LogicModule(
+        factories.LogicModule(
             name='Contacts and Appointments Service',
             endpoint='http://crm.example.com',
             endpoint_name='crm',
@@ -539,15 +536,6 @@ class DataMeshTest(TestCase):
         }
         self.lm.save()
 
-        # mock schema urls and app
-        product_schema_url = {
-            self.lm.endpoint_name: self.lm.endpoint
-        }
-        crm_schema_url = {
-            'crm': crm_lm.endpoint
-        }
-        mock_utils.get_swagger_urls.side_effect = [product_schema_url,
-                                                   crm_schema_url]
         mock_app.return_value = Mock(App)
 
         # mock service response
@@ -585,8 +573,7 @@ class DataMeshTest(TestCase):
     @patch('pyswagger.App.load')
     @patch('gateway.utils')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_load_swagger_resource_aggregate_raises_exception(
-            self, mock_perform_request, mock_utils, mock_app):
+    def test_load_swagger_resource_aggregate_raises_exception(self, mock_perform_request, mock_utils, mock_app):
         # mock schema urls and app
         product_schema_url = {
             self.lm.endpoint_name: self.lm.endpoint

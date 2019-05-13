@@ -14,7 +14,7 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 import factories
 from gateway.exceptions import GatewayError
-from gateway.utils import GatewayJSONEncoder, validate_object_access
+from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls
 from gateway.views import APIGatewayView
 
 
@@ -113,3 +113,19 @@ def test_json_dump_exception():
         json.dumps(test_obj, cls=GatewayJSONEncoder)
 
     assert error_message in str(exc.value)
+
+
+@pytest.mark.django_db()
+class TestGettingSwaggerURLs:
+
+    def test_get_swagger_url_by_logic_module(self):
+        module = factories.LogicModule.create()
+        url = get_swagger_url_by_logic_module(module)
+        assert url.startswith(module.endpoint)
+
+    def test_get_swagger_urls(self):
+        modules = factories.LogicModule.create_batch(3)
+        urls = get_swagger_urls()
+        for module in modules:
+            assert module.endpoint_name in urls
+            assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
