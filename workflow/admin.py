@@ -30,14 +30,14 @@ class OrganizationAdmin(admin.ModelAdmin):
 class CoreGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'organization', 'is_global', 'is_org_level', 'is_default', 'permissions')
     display = 'Core Group'
-    search_fields = ('name',)
+    search_fields = ('name', 'organization__name', )
 
 
 class CoreUserAdmin(UserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'organization', 'is_active')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
-    search_fields = ('first_name', 'first_name', 'username', 'title')
+    search_fields = ('first_name', 'first_name', 'username', 'title', 'organization__name', )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization')}),
@@ -60,14 +60,14 @@ class CoreUserAdmin(UserAdmin):
         return fieldsets
 
 
-class WorkflowLevel1Admin(admin.ModelAdmin):
+class WorkflowLevel1Admin(SimpleHistoryAdmin):
     list_display = ('name',)
     display = 'Workflow Level1'
     list_filter = ('name',)
     search_fields = ('name',)
 
 
-class WorkflowLevel2Admin(admin.ModelAdmin):
+class WorkflowLevel2Admin(SimpleHistoryAdmin):
     list_display = ('name',)
     display = 'Workflow Level1'
     list_filter = ('name',)
@@ -80,8 +80,8 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Organization, OrganizationAdmin)
-admin.site.register(WorkflowLevel2, SimpleHistoryAdmin)
-admin.site.register(WorkflowLevel1, SimpleHistoryAdmin)
+admin.site.register(WorkflowLevel2, WorkflowLevel2Admin)
+admin.site.register(WorkflowLevel1, WorkflowLevel1Admin)
 admin.site.register(WorkflowLevel2Sort)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
