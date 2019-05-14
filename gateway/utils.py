@@ -1,3 +1,4 @@
+from typing import Dict
 from uuid import UUID
 
 import datetime
@@ -28,31 +29,33 @@ MODEL_VIEWSETS_DICT = {
 }
 
 
-def get_swagger_urls(service: str = None) -> dict:
+def get_swagger_url_by_logic_module(module: LogicModule) -> str:
+    """
+    Construct the endpoint URL of the service
+
+    :param LogicModule module: the logic module (service)
+    :return: OpenAPI schema URL for the logic module
+    """
+    return '{}/{}/{}.{}'.format(
+        module.endpoint, SWAGGER_LOOKUP_PATH,
+        SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT
+    )
+
+
+def get_swagger_urls() -> Dict[str, str]:
     """
     Get the endpoint of the service in the database and append
     with the OpenAPI path
 
-    :param str service: the name of the service
     :return: dict
              Key-value pair with service name and OpenAPI schema URL of it
     """
-    if service is None:
-        modules = LogicModule.objects.values('endpoint', 'endpoint_name').all()
-    else:
-        modules = LogicModule.objects.values('endpoint', 'endpoint_name').filter(endpoint_name=service)
-
-    if len(modules) == 0 and service is not None:
-        msg = 'Service "{}" not found.'.format(service)
-        raise exceptions.ServiceDoesNotExist(msg, 404)
+    modules = LogicModule.objects.all()
 
     module_urls = dict()
     for module in modules:
-        swagger_url = '{}/{}/{}.{}'.format(
-            module['endpoint'], SWAGGER_LOOKUP_PATH,
-            SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT
-        )
-        module_urls[module['endpoint_name']] = swagger_url
+        swagger_url = get_swagger_url_by_logic_module(module)
+        module_urls[module.endpoint_name] = swagger_url
 
     return module_urls
 

@@ -67,7 +67,11 @@ class APIGatewayView(views.APIView):
     """
 
     permission_classes = (permissions.IsAuthenticated,)
-    schema = None
+    _logic_modules = None
+
+    def __init__(self, *args, **kwargs):
+        self._logic_modules = dict()
+        super().__init__(*args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         return self.make_service_request(request, *args, **kwargs)
@@ -98,9 +102,7 @@ class APIGatewayView(views.APIView):
 
         # load Swagger resource file and init swagger client
         try:
-            app = self._load_swagger_resource(
-                kwargs['service']
-            )
+            app = self._load_swagger_resource(kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
             logger.error(e.content)
             return HttpResponse(content=e.content,
@@ -129,20 +131,22 @@ class APIGatewayView(views.APIView):
                 logger.error(e.content)
 
         if response.data is not None:
-            content = json.dumps(response.data,
-                                 cls=utils.GatewayJSONEncoder)
+            content = json.dumps(response.data, cls=utils.GatewayJSONEncoder)
         else:
             content = response.raw
 
         content_type = ''.join(response.header.get('Content-Type', []))
-        return HttpResponse(content=content,
-                            status=response.status,
-                            content_type=content_type)
+        return HttpResponse(content=content, status=response.status, content_type=content_type)
 
-    def _aggregate_response_data(self, request: Request,
-                                 response: PySwaggerResponse,
-                                 client: Client,
-                                 **kwargs):
+    def _get_logic_module(self, service_name: str) -> gtm.LogicModule:
+        if service_name not in self._logic_modules:
+            try:
+                self._logic_modules[service_name] = gtm.LogicModule.objects.get(endpoint_name=service_name)
+            except gtm.LogicModule.DoesNotExist:
+                raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
+        return self._logic_modules[service_name]
+
+    def _aggregate_response_data(self, request: Request, response: PySwaggerResponse, client: Client, **kwargs):
         """
         Aggregate data from first response
 
@@ -163,11 +167,7 @@ class APIGatewayView(views.APIView):
         else:
             resp_data = response.data
 
-        try:
-            logic_module = gtm.LogicModule.objects.get(endpoint_name=service_name)
-        except gtm.LogicModule.DoesNotExist:
-            msg = 'Service "{}" not found.'.format(service_name)
-            raise exceptions.ServiceDoesNotExist(msg)
+        logic_module = self._get_logic_module(service_name)
 
         # TODO: Implement depth validation
         # TODO: Implement authorization when retrieve Bifrost data
@@ -285,14 +285,16 @@ class APIGatewayView(views.APIView):
         :return PySwagger.App: an app instance
         """
         # load Swagger resource file
-        schema_urls = utils.get_swagger_urls(endpoint_name)
+
+        logic_module = self._get_logic_module(endpoint_name)
+        schema_url = utils.get_swagger_url_by_logic_module(logic_module)
 
         # load swagger json as a raw App and prepare it
         try:
-            app = App.load(schema_urls[endpoint_name])
+            app = App.load(schema_url)
         except URLError:
             raise URLError(
-                f'Make sure that {schema_urls[endpoint_name]} is accessible.')
+                f'Make sure that {schema_url} is accessible.')
         if app.raw.basePath == '/':
             getattr(app, 'raw').update_field('basePath', '')
         app.prepare()
@@ -415,8 +417,7 @@ class APIGatewayView(views.APIView):
         }
         return headers
 
-    def _perform_service_request(self, app: App, request: Request,
-                                 client: Client, **kwargs):
+    def _perform_service_request(self, app: App, request: Request, client: Client, **kwargs):
         """
         Perform request to the service using the PySwagger client.
 
