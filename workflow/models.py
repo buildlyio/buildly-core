@@ -3,7 +3,7 @@ from typing import Union
 
 from django.db import models
 from django.contrib.postgres import fields
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser, Group
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.contrib.sites.models import Site
@@ -242,6 +242,16 @@ class Internationalization(models.Model):
         super(Internationalization, self).save()
 
 
+class WorkflowLevelType(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    name = models.CharField("Name", max_length=255, help_text="Name of workflow2 type")
+    create_date = models.DateTimeField(default=timezone.now)
+    edit_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('create_date', )
+
+
 class WorkflowLevel1(models.Model):
     level1_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel1 UUID', default=uuid.uuid4, unique=True)
     unique_id = models.CharField("ID", max_length=255, blank=True, null=True, help_text="User facing unique ID field if needed")
@@ -292,6 +302,9 @@ class WorkflowLevel2(models.Model):
     created_by = models.ForeignKey(CoreUser, related_name='workflowlevel2', null=True, blank=True, on_delete=models.SET_NULL)
     edit_date = models.DateTimeField("Last Edit Date", null=True, blank=True)
     core_groups = models.ManyToManyField(CoreGroup, verbose_name='Core groups', blank=True, related_name='workflowlevel2s', related_query_name='workflowlevel2s')
+    start_date = models.DateTimeField("Start Date", null=True, blank=True)
+    end_date = models.DateTimeField("End Date", null=True, blank=True)
+    type = models.ForeignKey(WorkflowLevelType, null=True, blank=True, on_delete=models.SET_NULL, related_name='workflowlevel2s',)
 
     class Meta:
         ordering = ('name',)
