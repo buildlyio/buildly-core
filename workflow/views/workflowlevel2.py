@@ -4,6 +4,7 @@ from rest_framework import viewsets, filters
 from rest_framework.response import Response
 import django_filters
 
+from workflow.filters import WorkflowLevel2Filter
 from workflow.models import WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, ROLE_ORGANIZATION_ADMIN
 from workflow.serializers import WorkflowLevel2Serializer, WorkflowLevel2SortSerializer
 from workflow.permissions import IsOrgMember, CoreGroupsPermissions
@@ -60,10 +61,12 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=getattr(self.request.user, 'core_user', None))
 
-    filterset_fields = ('level2_uuid', 'workflowlevel1__name', 'workflowlevel1__id')
     ordering = ('name',)
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.OrderingFilter)
+    filter_backends = (
+        django_filters.rest_framework.DjangoFilterBackend,
+        filters.OrderingFilter
+    )
+    filter_class = WorkflowLevel2Filter
     queryset = WorkflowLevel2.objects.all()
     permission_classes = (CoreGroupsPermissions, IsOrgMember)
     serializer_class = WorkflowLevel2Serializer
