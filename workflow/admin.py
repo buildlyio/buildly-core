@@ -44,6 +44,7 @@ class CoreUserAdmin(UserAdmin):
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
     )
+    filter_horizontal = ('core_groups', 'user_permissions', )
 
     def get_fieldsets(self, request, obj=None):
 
