@@ -17,7 +17,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     objects in the application core.
 
     description:
-    A Workflow level 2 can have one parent workflow leve 1 and multiple related workflow
+    A Workflow level 2 can have one parent workflow level 1 and multiple related workflow
     level 2's and be associated with a specific organization or set for an entire application.
 
     retrieve:

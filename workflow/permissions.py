@@ -201,7 +201,7 @@ class CoreGroupsPermissions(permissions.BasePermission):
                     if has_permission(wl1_permissions[item.pk], action):
                         return True
 
-                # TODO: Check WorkflowLefel2 permissions
+                # TODO: Check WorkflowLevel2 permissions
 
             return False
 

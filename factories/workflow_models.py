@@ -10,7 +10,7 @@ from workflow.models import (
     WorkflowTeam as WorkflowTeamM,
     WorkflowLevel2Sort as WorkflowLevel2SortM,
     Internationalization as InternationalizationM,
-)
+    WorkflowLevelType)
 from .django_models import Group
 
 
@@ -43,6 +43,11 @@ class CoreUser(DjangoModelFactory):
 
 
 User = CoreUser  # for tests incompatibility
+
+
+class WorkflowLevelType(DjangoModelFactory):
+    class Meta:
+        model = WorkflowLevelType
 
 
 class WorkflowLevel1(DjangoModelFactory):
