@@ -1,6 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, filters
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 import django_filters
 
@@ -8,7 +9,7 @@ from workflow.filters import WorkflowLevel2Filter
 from workflow.models import WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, ROLE_ORGANIZATION_ADMIN
 from workflow.serializers import WorkflowLevel2Serializer, WorkflowLevel2SortSerializer
 from workflow.permissions import IsOrgMember, CoreGroupsPermissions
-from workflow.pagination import DefaultCursorPagination
+from workflow.pagination import DefaultLimitOffsetPagination
 
 
 class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
@@ -70,7 +71,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     queryset = WorkflowLevel2.objects.all()
     permission_classes = (CoreGroupsPermissions, IsOrgMember)
     serializer_class = WorkflowLevel2Serializer
-    pagination_class = DefaultCursorPagination
+    pagination_class = DefaultLimitOffsetPagination
 
 
 class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):
