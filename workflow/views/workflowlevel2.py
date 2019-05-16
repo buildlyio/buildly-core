@@ -1,7 +1,6 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, filters
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 import django_filters
 
@@ -43,15 +42,15 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
             organization_id = request.user.organization_id
             queryset = queryset.filter(workflowlevel1__organization_id=organization_id)
 
-        paginate = request.GET.get('paginate')
-        if paginate and (paginate.lower() == 'true' or paginate == '1'):
+        all_results = request.GET.get('all')
+        if all_results and (all_results.lower() == 'true' or all_results == '1'):
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
