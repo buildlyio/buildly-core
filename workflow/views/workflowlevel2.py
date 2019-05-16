@@ -8,7 +8,7 @@ from workflow.filters import WorkflowLevel2Filter
 from workflow.models import WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, ROLE_ORGANIZATION_ADMIN
 from workflow.serializers import WorkflowLevel2Serializer, WorkflowLevel2SortSerializer
 from workflow.permissions import IsOrgMember, CoreGroupsPermissions
-from workflow.pagination import DefaultCursorPagination
+from workflow.pagination import DefaultLimitOffsetPagination
 
 
 class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
@@ -42,15 +42,15 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
             organization_id = request.user.organization_id
             queryset = queryset.filter(workflowlevel1__organization_id=organization_id)
 
-        paginate = request.GET.get('paginate')
-        if paginate and (paginate.lower() == 'true' or paginate == '1'):
+        all_results = request.GET.get('all')
+        if all_results and (all_results.lower() == 'true' or all_results == '1'):
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -70,7 +70,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     queryset = WorkflowLevel2.objects.all()
     permission_classes = (CoreGroupsPermissions, IsOrgMember)
     serializer_class = WorkflowLevel2Serializer
-    pagination_class = DefaultCursorPagination
+    pagination_class = DefaultLimitOffsetPagination
 
 
 class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):

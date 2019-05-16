@@ -198,6 +198,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'workflow.permissions.IsSuperUserBrowseableAPI',
     )
+    # ToDo: Think about `DEFAULT_PAGINATION_CLASS as env variable and
+    #       customizable values with reasonable defaults
 }
 
 # Front-end application URL

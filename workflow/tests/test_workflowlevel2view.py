@@ -28,7 +28,7 @@ class WorkflowLevel2ListViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_list_workflowlevel2_org_admin(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
@@ -42,15 +42,15 @@ class WorkflowLevel2ListViewsTest(TestCase):
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
-        print(response.data)
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
         wflvl1.organization = self.core_user.organization
         wflvl1.save()
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_workflowlevel2_program_admin(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
@@ -66,12 +66,12 @@ class WorkflowLevel2ListViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
         factories.WorkflowLevel2(workflowlevel1=wflvl1)
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_workflowlevel2_program_team(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
@@ -87,12 +87,12 @@ class WorkflowLevel2ListViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
         factories.WorkflowLevel2(workflowlevel1=wflvl1)
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_workflowlevel2_view_only(self):
         request = self.factory.get('/api/workflowlevel2/')
@@ -108,46 +108,39 @@ class WorkflowLevel2ListViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
         factories.WorkflowLevel2(workflowlevel1=wflvl1)
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
-    @patch('workflow.pagination.DefaultCursorPagination.page_size', new_callable=PropertyMock)
-    def test_list_workflowlevel2_pagination(self, page_size_mock):
-        """ For page_size 1 and pagination true, list wfl3 endpoint should
+    @patch('workflow.pagination.DefaultLimitOffsetPagination.default_limit', new_callable=PropertyMock)
+    def test_list_workflowlevel2_pagination(self, default_limit_mock):
+        """ For default_limit 1 and pagination by default, list wfl2 endpoint should
          return 1 wfl2 for each page"""
-        # set page_size =1
-        page_size_mock.return_value = 1
-        wfl1_1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
-        wfl2_1 = factories.WorkflowLevel2(name='1. wfl2',
-                                          workflowlevel1=wfl1_1)
-        wfl2_2 = factories.WorkflowLevel2(name='2. wfl2',
-                                          workflowlevel1=wfl1_1)
+        # set default_limit =1
+        default_limit_mock.return_value = 1
+        wfl1_1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+        wfl2_1 = factories.WorkflowLevel2(name='1. wfl2', workflowlevel1=wfl1_1)
+        wfl2_2 = factories.WorkflowLevel2(name='2. wfl2', workflowlevel1=wfl1_1)
 
         group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
                                               permissions=PERMISSIONS_ORG_ADMIN,
                                               organization=self.core_user.organization)
         self.core_user.core_groups.add(group_org_admin)
 
-        request = self.factory.get('?paginate=true')
+        request = self.factory.get('')
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
 
-        # page_size = 1, so it should return just one wfl1
+        # default_limit = 1, so it should return just one wfl2
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['name'], wfl2_1.name)
 
-        m = re.search('=(.*)&', response.data['next'])
-        cursor = m.group(1)
-
-        request = self.factory.get('?cursor={}&paginate=true'.format(
-            cursor))
+        request = self.factory.get(response.data['next'])
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
@@ -706,8 +699,8 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], wkflvl2.name)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], wkflvl2.name)
 
     def test_filter_workflowlevel2_wkflvl1_id_org_admin(self):
         group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
@@ -731,8 +724,8 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], wkflvl2.name)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], wkflvl2.name)
 
     def test_filter_workflowlevel2_level2_uuid_org_admin(self):
         group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
@@ -756,8 +749,8 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], wkflvl2.name)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], wkflvl2.name)
 
     def test_filter_workflowlevel2_create_date_range_org_admin(self):
         group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
@@ -787,5 +780,5 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['level2_uuid'], str(wkflvl22.level2_uuid))
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['level2_uuid'], str(wkflvl22.level2_uuid))
