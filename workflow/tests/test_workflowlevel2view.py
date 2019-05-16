@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 from unittest.mock import patch, PropertyMock
 
 from django.test import TestCase
@@ -757,3 +758,34 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], wkflvl2.name)
+
+    def test_filter_workflowlevel2_create_date_range_org_admin(self):
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
+
+        wkflvl1 = factories.WorkflowLevel1(
+            organization=self.core_user.organization)
+
+        date1 = '2019-05-01'
+        date2 = '2019-05-02'
+        date3 = '2019-05-03'
+
+        factories.WorkflowLevel2(
+            workflowlevel1=wkflvl1, create_date=date1)
+        wkflvl22 = factories.WorkflowLevel2(
+            workflowlevel1=wkflvl1, create_date=date2, level2_uuid=222)
+        factories.WorkflowLevel2(
+            workflowlevel1=wkflvl1, create_date=date3)
+
+        request = self.factory.get(
+            f'{reverse("workflowlevel2-list")}?create_date_gte={date2}&create_date_lte={date2}'
+        )
+        request.user = self.core_user
+        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['level2_uuid'], str(wkflvl22.level2_uuid))
