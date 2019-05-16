@@ -58,8 +58,6 @@ class WorkflowLevelTypeSerializer(serializers.ModelSerializer):
 
 class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
-    type = WorkflowLevelTypeSerializer(required=False, allow_null=True)
-
     class Meta:
         model = wfm.WorkflowLevel2
         fields = '__all__'

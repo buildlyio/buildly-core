@@ -180,11 +180,12 @@ class WorkflowLevel2CreateViewsTest(TestCase):
         self.core_user.core_groups.add(group_org_admin)
 
         request = self.factory.post(reverse('workflowlevel2-list'))
+        wfltype = factories.WorkflowLevelType()
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         data = {'name': 'Help Syrians',
-                'workflowlevel1': wflvl1.pk}
-
+                'workflowlevel1': wflvl1.pk,
+                'type': wfltype.uuid, }
         request = self.factory.post(reverse('workflowlevel2-list'), data)
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'post': 'create'})
@@ -192,6 +193,7 @@ class WorkflowLevel2CreateViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], u'Help Syrians')
+        self.assertEqual(response.data['type'], wfltype.uuid)
 
     def test_create_workflowlevel2_program_admin(self):
         request = self.factory.post(reverse('workflowlevel2-list'))
@@ -358,9 +360,11 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
         workflowlevel2 = factories.WorkflowLevel2(workflowlevel1=wflvl1)
+        wfltype = factories.WorkflowLevelType()
 
         data = {'name': 'Community awareness program conducted to plant trees',
-                'workflowlevel1': wflvl1.pk}
+                'workflowlevel1': wflvl1.pk,
+                'type': wfltype.uuid}
 
         request = self.factory.put(
             reverse('workflowlevel2-detail', args=(workflowlevel2.pk,)), data
@@ -372,6 +376,7 @@ class WorkflowLevel2UpdateViewsTest(TestCase):
 
         workflowlevel2 = WorkflowLevel2.objects.get(pk=response.data['id'])
         self.assertEqual(workflowlevel2.name, data['name'])
+        self.assertEqual(workflowlevel2.type, wfltype)
 
     def test_update_workflowlevel2_diff_org_admin(self):
         group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
