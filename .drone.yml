@@ -112,7 +112,7 @@ pipeline:
       status:
       - success
 
-  notify:
+  notify-slack:
     image: plugins/slack
     channel: drone-ci
     username: Drone-CI
@@ -125,6 +125,22 @@ pipeline:
       - master
       status:
       - failure
+
+  notify-walhall:
+    image: python:3.6
+    commands:
+      - echo $DRONE_REPO
+      - echo $DRONE_TAG
+      - pip install requests
+      - cd scripts/
+      - python notify_walhall.py -r $DRONE_REPO -t $DRONE_TAG
+    secrets:
+    - REPO_SIGNER
+    when:
+      event:
+      - tag
+      status:
+      - success
 
 services:
   postgres:
