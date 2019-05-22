@@ -40,7 +40,7 @@ def main(repo: str, tag: str) -> None:
     for url in WEBHOOK_URLS:
         r = requests.post(url, json=payload, headers=headers)
         if r.status_code // 100 == 2:
-            print("{url}: OK")
+            print(f'{url}: OK')
         else:
             print(f'{url}: error response')
             print(r.text)
