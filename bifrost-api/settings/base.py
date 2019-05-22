@@ -226,23 +226,35 @@ JWT_AUTH_DISABLED = False
 JWT_PRIVATE_KEY_RSA_BIFROST = os.getenv('JWT_PRIVATE_KEY_RSA_BIFROST')
 JWT_PUBLIC_KEY_RSA_BIFROST = os.getenv('JWT_PUBLIC_KEY_RSA_BIFROST')
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {
-            'min_length': 6,
-        }
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+
+# Password Validators
+AUTH_PASSWORD_VALIDATORS = []
+
+AUTH_PASSWORD_VALIDATORS_MAP = {
+    'USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR':
+        {
+            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        },
+    'USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR':
+        {
+            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+            'OPTIONS': {
+                'min_length': int(os.getenv('PASSWORD_MINIMUM_LENGTH', 6)),
+            }
+        },
+    'USE_PASSWORD_COMMON_VALIDATOR':
+        {
+            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        },
+    'USE_PASSWORD_NUMERIC_VALIDATOR':
+        {
+            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        },
+}
+
+for password_validator_env_var, password_validator in AUTH_PASSWORD_VALIDATORS_MAP.items():
+    if os.getenv(password_validator_env_var, 'True') == 'True':
+        AUTH_PASSWORD_VALIDATORS.append(password_validator)
 
 
 # Social Auth
