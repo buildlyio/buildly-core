@@ -67,6 +67,7 @@ class APIGatewayView(views.APIView):
     """
 
     permission_classes = (permissions.IsAuthenticated,)
+    schema = None
     _logic_modules = None
 
     def __init__(self, *args, **kwargs):
