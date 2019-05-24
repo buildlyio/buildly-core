@@ -426,11 +426,16 @@ class APIGatewayView(views.APIView):
         """
         req, resp = self._get_req_and_rep(app, request, **kwargs)
 
-        headers = self._get_service_request_headers(request)
-        try:
-            return client.request((req, resp), headers=headers)
-        except Exception as e:
-            error_msg = (f'An error occurred when redirecting the request to '
-                         f'or receiving the response from the service.\n'
-                         f'Origin: ({e.__class__.__name__}: {e})')
-            raise exceptions.PySwaggerError(error_msg)
+        req.prepare()  # prepare request to get URL from it for checking cache (we don't care about schema for this)
+        key_url = req.url
+
+        if key_url not in self._data:
+            headers = self._get_service_request_headers(request)
+            try:
+                self._data[key_url] = client.request((req, resp), headers=headers)
+            except Exception as e:
+                error_msg = (f'An error occurred when redirecting the request to '
+                             f'or receiving the response from the service.\n'
+                             f'Origin: ({e.__class__.__name__}: {e})')
+                raise exceptions.PySwaggerError(error_msg)
+        return self._data[key_url]
