@@ -40,6 +40,6 @@ COREUSER_RESETPASS_RESPONSE = {200: Schema(
     type='object',
     properties={
         'detail': Schema(type='string'),
-        'count': Schema(type='int')
+        'count': Schema(type='number')
     })
 }
