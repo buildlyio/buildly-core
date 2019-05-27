@@ -69,9 +69,11 @@ class APIGatewayView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     schema = None
     _logic_modules = None
+    _data = None
 
     def __init__(self, *args, **kwargs):
         self._logic_modules = dict()
+        self._data = dict()
         super().__init__(*args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -159,14 +161,11 @@ class APIGatewayView(views.APIView):
         """
         service_name = kwargs['service']
 
-        if isinstance(response.data, dict):
-            if 'results' in response.data:
+        resp_data = response.data
+        if isinstance(resp_data, dict):
+            if 'results' in resp_data:
                 # DRF API payload structure
-                resp_data = response.data.get('results', None)
-            else:
-                resp_data = response.data
-        else:
-            resp_data = response.data
+                resp_data = resp_data.get('results', None)
 
         logic_module = self._get_logic_module(service_name)
 
@@ -290,17 +289,19 @@ class APIGatewayView(views.APIView):
         logic_module = self._get_logic_module(endpoint_name)
         schema_url = utils.get_swagger_url_by_logic_module(logic_module)
 
-        # load swagger json as a raw App and prepare it
-        try:
-            app = App.load(schema_url)
-        except URLError:
-            raise URLError(
-                f'Make sure that {schema_url} is accessible.')
-        if app.raw.basePath == '/':
-            getattr(app, 'raw').update_field('basePath', '')
-        app.prepare()
+        if schema_url not in self._data:
+            # load swagger json as a raw App and prepare it
+            try:
+                app = App.load(schema_url)
+            except URLError:
+                raise URLError(
+                    f'Make sure that {schema_url} is accessible.')
+            if app.raw.basePath == '/':
+                getattr(app, 'raw').update_field('basePath', '')
+            app.prepare()
+            self._data[schema_url] = app
 
-        return app
+        return self._data[schema_url]
 
     def _validate_incoming_request(self, request, **kwargs):
         """
@@ -368,8 +369,8 @@ class APIGatewayView(views.APIView):
         :param kwargs: info about request like obj's PK, service and model
         :return: a tuple with pyswagger Request and Response obj
         """
-        pk = kwargs['pk']
-        model = kwargs['model'].lower() if kwargs.get('model') else ''
+        pk = kwargs.get('pk')
+        model = kwargs.get('model', '').lower()
         method = request.META['REQUEST_METHOD'].lower()
         data = self._get_swagger_data(request)
 
@@ -377,19 +378,13 @@ class APIGatewayView(views.APIView):
             # resolve the path
             path = '/%s/' % model
             path_item = app.s(path)
-
-            # call operation
-            if not (hasattr(path_item, method) and callable(getattr(path_item, method))):
-                raise exceptions.EndpointNotFound(f'Endpoint not found: {method.upper()} {path}')
-            return getattr(path_item, method).__call__(**data)
-        elif pk is not None:
+        else:
             try:
                 int(pk)
             except ValueError:
                 pk_name = 'uuid'
             else:
                 pk_name = 'id'
-
             # evaluates to '/siteprofiles/uuid/' or '/siteprofiles/id/'
             path = '/{0}/{{{1}}}/'.format(model, pk_name)
             data.update({pk_name: pk})
@@ -398,8 +393,10 @@ class APIGatewayView(views.APIView):
             except KeyError:
                 raise exceptions.EndpointNotFound(f'Endpoint not found: {method.upper()} {path}')
 
-            # call operation
-            return getattr(path_item, method).__call__(**data)
+        # call operation
+        if not (hasattr(path_item, method) and callable(getattr(path_item, method))):
+            raise exceptions.EndpointNotFound(f'Endpoint not found: {method.upper()} {path}')
+        return getattr(path_item, method).__call__(**data)
 
     def _get_service_request_headers(self, request):
         """
@@ -429,11 +426,16 @@ class APIGatewayView(views.APIView):
         """
         req, resp = self._get_req_and_rep(app, request, **kwargs)
 
-        headers = self._get_service_request_headers(request)
-        try:
-            return client.request((req, resp), headers=headers)
-        except Exception as e:
-            error_msg = (f'An error occurred when redirecting the request to '
-                         f'or receiving the response from the service.\n'
-                         f'Origin: ({e.__class__.__name__}: {e})')
-            raise exceptions.PySwaggerError(error_msg)
+        req.prepare()  # prepare request to get URL from it for checking cache (we don't care about schema for this)
+        key_url = req.url
+
+        if key_url not in self._data:
+            headers = self._get_service_request_headers(request)
+            try:
+                self._data[key_url] = client.request((req, resp), headers=headers)
+            except Exception as e:
+                error_msg = (f'An error occurred when redirecting the request to '
+                             f'or receiving the response from the service.\n'
+                             f'Origin: ({e.__class__.__name__}: {e})')
+                raise exceptions.PySwaggerError(error_msg)
+        return self._data[key_url]
