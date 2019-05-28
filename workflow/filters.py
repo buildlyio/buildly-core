@@ -21,7 +21,6 @@ class WorkflowLevel2Filter(django_filters.FilterSet):
         model = WorkflowLevel2
 
         fields = [
-            'level2_uuid',
             'workflowlevel1__name',
             'workflowlevel1__id',
             'create_date',

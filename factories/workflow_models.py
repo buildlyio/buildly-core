@@ -80,7 +80,7 @@ class WorkflowLevel2Sort(DjangoModelFactory):
         model = WorkflowLevel2SortM
 
     workflowlevel1 = SubFactory(WorkflowLevel1)
-    workflowlevel2_parent_id = SubFactory(WorkflowLevel2)
+    workflowlevel2_parent = SubFactory(WorkflowLevel2)
 
 
 class Internationalization(DjangoModelFactory):

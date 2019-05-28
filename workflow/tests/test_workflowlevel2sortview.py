@@ -1,3 +1,5 @@
+import uuid
+
 from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
@@ -114,7 +116,7 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
         request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1()
 
-        data = {'workflowlevel2_id': 1,
+        data = {'workflowlevel2_pk': uuid.uuid4(),
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2/', data)
@@ -123,14 +125,14 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['workflowlevel2_id'], 1)
+        self.assertEqual(response.data['workflowlevel2_pk'], str(data['workflowlevel2_pk']))
 
     def test_create_workflowlevel2sort_normal_user(self):
         request = self.factory.post('/workflowlevel2sort/')
         wflvl1 = factories.WorkflowLevel1(
             organization=self.core_user.organization)
 
-        data = {'workflowlevel2_id': 1,
+        data = {'workflowlevel2_pk': uuid.uuid4(),
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2/', data)
@@ -139,7 +141,7 @@ class WorkflowLevel2SortCreateViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['workflowlevel2_id'], 1)
+        self.assertEqual(response.data['workflowlevel2_pk'], str(data['workflowlevel2_pk']))
 
 
 class WorkflowLevel2SortUpdateViewsTest(TestCase):
@@ -154,7 +156,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
                                               organization=self.core_user.organization)
         self.core_user.core_groups.add(group_org_admin)
 
-        data = {'workflowlevel2_id': 1}
+        data = {'workflowlevel2_pk': 1}
 
         request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.core_user
@@ -172,19 +174,19 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
         workflowlevel2sort = \
             factories.WorkflowLevel2Sort(workflowlevel1=wflvl1)
 
-        data = {'workflowlevel2_id': 1,
+        data = {'workflowlevel2_pk': uuid.uuid4(),
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
+
         response = view(request, pk=workflowlevel2sort.pk)
         self.assertEqual(response.status_code, 200)
 
         workflowlevel2sort = WorkflowLevel2Sort.objects.get(
             pk=response.data['id'])
-        self.assertEqual(workflowlevel2sort.workflowlevel2_id,
-                          data['workflowlevel2_id'])
+        self.assertEqual(str(workflowlevel2sort.workflowlevel2_pk), str(data['workflowlevel2_pk']))
 
     def test_update_workflowlevel2sort_normal_user(self):
         request = self.factory.post('/workflowlevel2sort/')
@@ -193,19 +195,20 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
         workflowlevel2sort = factories.WorkflowLevel2Sort(
             workflowlevel1=wflvl1)
 
-        data = {'workflowlevel2_id': 1,
+        data = {'workflowlevel2_pk': uuid.uuid4(),
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2sort/', data)
         request.user = self.core_user
         view = WorkflowLevel2SortViewSet.as_view({'post': 'update'})
         response = view(request, pk=workflowlevel2sort.pk)
+
         self.assertEqual(response.status_code, 200)
 
         workflowlevel2sort = WorkflowLevel2Sort.objects.get(
             pk=response.data['id'])
-        self.assertEqual(workflowlevel2sort.workflowlevel2_id,
-                          data['workflowlevel2_id'])
+        self.assertEqual(workflowlevel2sort.workflowlevel2_pk,
+                          data['workflowlevel2_pk'])
 
     def test_update_workflowlevel2sort_diff_org_normal_user(self):
         request = self.factory.post('/workflowlevel2sort/')
@@ -214,7 +217,7 @@ class WorkflowLevel2SortUpdateViewsTest(TestCase):
         workflowlevel2sort = factories.WorkflowLevel2Sort(
             workflowlevel1=wflvl1)
 
-        data = {'workflowlevel2_id': 1,
+        data = {'workflowlevel2_pk': uuid.uuid4(),
                 'workflowlevel1': wflvl1.pk}
 
         request = self.factory.post('/workflowlevel2sort/', data)

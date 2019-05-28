@@ -291,8 +291,8 @@ class WorkflowLevel1(models.Model):
 
 
 class WorkflowLevel2(models.Model):
+    level2_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='WorkflowLevel2 UUID', help_text="Unique ID")
     description = models.TextField("Description", blank=True, null=True, help_text="Description of the workflow level use")
-    level2_uuid = models.CharField(max_length=255, editable=False, verbose_name='WorkflowLevel2 UUID', default=uuid.uuid4, unique=True, blank=True, help_text="Unique ID")
     name = models.CharField("Name", max_length=255, help_text="Name of workflow level as it relates to workflow level 1")
     notes = models.TextField(blank=True, null=True)
     parent_workflowlevel2 = models.IntegerField("Parent", default=0, blank=True, help_text="Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships")
@@ -317,9 +317,6 @@ class WorkflowLevel2(models.Model):
         self.edit_date = timezone.now()
 
         super(WorkflowLevel2, self).save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        super(WorkflowLevel2, self).delete(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -371,14 +368,14 @@ class WorkflowTeam(models.Model):
 
 class WorkflowLevel2Sort(models.Model):
     workflowlevel1 = models.ForeignKey(WorkflowLevel1, null=True, on_delete=models.CASCADE, blank=True)
-    workflowlevel2_parent_id = models.ForeignKey(WorkflowLevel2, on_delete=models.CASCADE, null=True, blank=True)
-    workflowlevel2_id = models.IntegerField("ID to be Sorted", default=0)
+    workflowlevel2_parent = models.ForeignKey(WorkflowLevel2, on_delete=models.CASCADE, null=True, blank=True)
+    workflowlevel2_pk = models.UUIDField("UUID to be Sorted", default='00000000-0000-4000-8000-000000000000')
     sort_array = JSONField(null=True, blank=True, help_text="Sorted JSON array of workflow levels")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ('workflowlevel1', 'workflowlevel2_id')
+        ordering = ('workflowlevel1', 'workflowlevel2_pk')
         verbose_name = "Workflow Level Sort"
         verbose_name_plural = "Workflow Level Sort"
 

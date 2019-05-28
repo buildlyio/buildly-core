@@ -1,3 +1,5 @@
+import uuid
+
 import factories
 import json
 from urllib import error
@@ -23,7 +25,7 @@ class DataMeshTest(TestCase):
         self.client.force_authenticate(user=self.core_user)
         self.response_data = {
             'id': 1,
-            'workflowlevel2_uuid': 1,
+            'workflowlevel2_uuid': str(uuid.uuid4()),
             'name': 'test',
             'contact_uuid': 1
         }
@@ -400,7 +402,7 @@ class DataMeshTest(TestCase):
         # validate result
         expected_data = {
             'id': 1,
-            'workflowlevel2_uuid': 1,
+            'workflowlevel2_uuid': self.response_data['workflowlevel2_uuid'],
             'name': 'test',
             'contact_uuid': expand_data
         }
@@ -450,7 +452,7 @@ class DataMeshTest(TestCase):
         # validate result
         expected_data = {
             'id': 1,
-            'workflowlevel2_uuid': 1,
+            'workflowlevel2_uuid': self.response_data['workflowlevel2_uuid'],
             'name': 'test',
             'contact_uuid': expand_data
         }
@@ -468,6 +470,12 @@ class DataMeshTest(TestCase):
         headers = {'Content-Type': ['application/json']}
         pyswagger_response = Mock(PySwaggerResponse)
         pyswagger_response.status = 200
+        response_data = {
+            'id': 1,
+            'workflowlevel2_uuid': uuid.uuid4(),
+            'name': 'test',
+            'contact_uuid': 3
+        }
         pyswagger_response.data = self.response_data
         pyswagger_response.header = headers
         mock_perform_request.return_value = pyswagger_response
@@ -477,12 +485,7 @@ class DataMeshTest(TestCase):
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
-        expected_data = {
-            'id': 1,
-            'workflowlevel2_uuid': 1,
-            'name': 'test',
-            'contact_uuid': 1
-        }
+        expected_data = self.response_data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected_data)
 
@@ -510,12 +513,7 @@ class DataMeshTest(TestCase):
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
-        expected_data = {
-            'id': 1,
-            'workflowlevel2_uuid': 1,
-            'name': 'test',
-            'contact_uuid': 1
-        }
+        expected_data = self.response_data
         assert response.status_code == 200
         assert json.loads(response.content) == expected_data
 
@@ -563,7 +561,7 @@ class DataMeshTest(TestCase):
         # validate result
         expected_data = {
             'id': 1,
-            'workflowlevel2_uuid': 1,
+            'workflowlevel2_uuid': self.response_data['workflowlevel2_uuid'],
             'name': 'test',
             'contact_uuid': expand_data
         }
@@ -597,12 +595,7 @@ class DataMeshTest(TestCase):
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
-        expected_data = {
-            'id': 1,
-            'workflowlevel2_uuid': 1,
-            'name': 'test',
-            'contact_uuid': 1
-        }
+        expected_data = self.response_data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), expected_data)
 
