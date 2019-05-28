@@ -10,7 +10,7 @@ aliases = [
 
 ## Overview
 
-BiFrost is an API gateway and core authentication layer for a microservice architecture. 
+BiFrost is an API gateway and core authentication layer for microservice architectures. 
 
 When you add BiFrost to your [Walhall application](/walhall), it registers every endpoint from the microservices through an auto-discovery process and combines them into a single API. BiFrost updates the API whenever a service is updated (i.e., a tag is pushed in GitHub).
 
