@@ -260,7 +260,8 @@ class WorkflowLevel2NameSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = wfm.WorkflowLevel2
-        fields = ('id', 'name')
+        fields = ('level2_uuid', 'name')
+        read_only_fields = ('level2_uuid', )
 
 
 class WorkflowLevel2SortSerializer(serializers.ModelSerializer):
@@ -268,6 +269,7 @@ class WorkflowLevel2SortSerializer(serializers.ModelSerializer):
     class Meta:
         model = wfm.WorkflowLevel2Sort
         fields = '__all__'
+        read_only_fields = ('level2_uuid', )
 
 
 class WorkflowTeamSerializer(serializers.ModelSerializer):

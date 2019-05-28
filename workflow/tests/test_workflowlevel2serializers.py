@@ -18,7 +18,6 @@ class Workflowlevel2SerializerTest(TestCase):
         data = serializer.data
 
         keys = [
-            'id',
             'name',
             'level2_uuid',
             'workflowlevel1',
@@ -50,7 +49,7 @@ class WorkflowLevel2NameSerializerTest(TestCase):
         data = serializer.data
 
         keys = [
-            'id',
+            'level2_uuid',
             'name'
         ]
 
