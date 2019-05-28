@@ -100,12 +100,12 @@ pipeline:
       - git config --global user.email "engine@humanitec.com"
       - git config --global user.name "HumanitecBot"
       - git clone git@github.com:Humanitec/docs-site.git
-      - mkdir -p docs-site/hugo/content/walhall/bifrost/
-      - mkdir -p docs-site/api/walhall/bifrost/
-      - cd docs-site/hugo/content/walhall/bifrost/
-      - cp ../../../../../docs/_index.md .
-      - cd ../../../../api/walhall/bifrost
-      - cp ../../../../swagger.json swagger.json -r
+      - mkdir -p docs-site/hugo/content/bifrost/
+      - mkdir -p docs-site/api/bifrost/
+      - cd docs-site/hugo/content/bifrost/
+      - cp ../../../../docs/_index.md .
+      - cd ../../../api/bifrost
+      - cp ../../../swagger.json swagger.json -r
       - cd ../../../
       - git add .
       - git diff-index --quiet HEAD || git commit -m "Updated documentation for BiFrost"
