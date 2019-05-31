@@ -67,12 +67,12 @@ def auth_allowed(backend, details, response, *args, **kwargs):
         # domains and add the organization uuid in the details
         if allowed:
             org_uuid = Organization.objects.values_list(
-                'organization_uuid', flat=True).get(name=settings.DEFAULT_ORG)
+                'uuid', flat=True).get(name=settings.DEFAULT_ORG)
             details.update({'organization_uuid': org_uuid})
         else:
             try:
                 org_uuid = Organization.objects.values_list(
-                    'organization_uuid', flat=True).get(
+                    'uuid', flat=True).get(
                     oauth_domains__contains=[domain])
                 details.update({'organization_uuid': org_uuid})
                 allowed = True
