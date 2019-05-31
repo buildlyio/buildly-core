@@ -60,7 +60,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         request = self.factory.get('')
         request.user = self.core_user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
-        response = view(request, pk=self.core_user.organization.id)
+        response = view(request, pk=self.core_user.organization.pk)
         subscription = response.data
 
         self.assertEqual(response.status_code, 200)
@@ -83,7 +83,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         request = self.factory.get('')
         request.user = self.core_user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
-        response = view(request, pk=self.core_user.organization.id)
+        response = view(request, pk=self.core_user.organization.pk)
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data['detail'], 'No subscription was found.')
@@ -98,7 +98,7 @@ class OrganizationSubscriptionViewTest(TestCase):
         request = self.factory.get('')
         request.user = self.core_user
         view = OrganizationViewSet.as_view({'get': 'subscription'})
-        response = view(request, pk=self.core_user.organization.id)
+        response = view(request, pk=self.core_user.organization.pk)
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data['detail'], 'No subscription was found.')

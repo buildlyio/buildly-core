@@ -674,7 +674,7 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
 
 class WorkflowLevel2FilterViewsTest(TestCase):
     def setUp(self):
-        factories.Organization(id=1)
+        factories.Organization()
         self.factory = APIRequestFactory()
         self.core_user = factories.CoreUser()
 
