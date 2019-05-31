@@ -22,7 +22,7 @@ def payload_enricher(request):
             raise PermissionDenied('No matching CoreUser found.')
         return {
             'core_user_uuid': user['core_user_uuid'],
-            'organization_uuid': user['organization__organization_uuid'],
+            'organization_uuid': str(user['organization__organization_uuid']),
         }
     elif request.POST.get('refresh_token'):
         try:
@@ -30,7 +30,7 @@ def payload_enricher(request):
             user = refresh_token.user
             return {
                 'core_user_uuid': user.core_user_uuid,
-                'organization_uuid': user.organization.organization_uuid,
+                'organization_uuid': str(user.organization.organization_uuid),
                 'username': user.username,
             }
         except RefreshToken.DoesNotExist:

@@ -150,7 +150,7 @@ class OAuthTest(TestCase):
     def test_auth_allowed_multi_oauth_domain(self):
         self.org.oauth_domains = ['testenv.com']
         self.org.save()
-        factories.Organization(organization_uuid='6789', name='Another Org',
+        factories.Organization(name='Another Org',
                                oauth_domains=['testenv.com'])
 
         backend = self.BackendTest()
