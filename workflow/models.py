@@ -88,7 +88,7 @@ class Organization(models.Model):
     name = models.CharField("Organization Name", max_length=255, blank=True, default="Humanitec", help_text="Each end user must be grouped into an organization")
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Descirption of organization")
     organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")
-    industry = models.ManyToManyField(Industry, blank=True, help_text="Type of Industry the organization belongs to if any")
+    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations', help_text="Type of Industry the organization belongs to if any")
     level_1_label = models.CharField("Workflow Level 1 label", default="Program", max_length=255, blank=True, help_text="Label to display if needed for workflow i.e. Top Level Navigation, Primary, Program, etc. ")
     level_2_label = models.CharField("Workflow Level 2 label", default="Project", max_length=255, blank=True, help_text="Label to display if needed for workflow i.e. Second Level Navigation, Major,  Project, etc. ")
     level_3_label = models.CharField("Workflow Level 3 label", default="Component", max_length=255, blank=True, help_text="Label to display if needed for workflow i.e. Third Level Navigation, Minor,  Activity, etc. ")
@@ -110,7 +110,7 @@ class Organization(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
+        is_new = self._state.adding
         if self.create_date is None:
             self.create_date = timezone.now()
         self.edit_date = timezone.now()
@@ -410,7 +410,7 @@ class EmailTemplate(models.Model):
     template_html = models.TextField("Reset password e-mail template (HTML)", null=True, blank=True)
 
     class Meta:
-        unique_together = ('organization', "type")
+        unique_together = ('organization', 'type', )
         verbose_name = "Email Template"
         verbose_name_plural = "Email Templates"
 

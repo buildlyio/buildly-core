@@ -119,9 +119,9 @@ class IsOrgMember(permissions.BasePermission):
         user_org = request.user.organization_id
         try:
             if obj.__class__ in [Organization]:
-                return obj.uuid == user_org
+                return obj.pk == user_org
             elif hasattr(obj, 'organization'):
-                return obj.organization.uuid == user_org
+                return obj.organization.pk == user_org
         except AttributeError:
             pass
         return False

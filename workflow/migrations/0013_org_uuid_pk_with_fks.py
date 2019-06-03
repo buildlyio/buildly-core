@@ -16,7 +16,6 @@ def read_organization_email_template(apps, schema_editor):
     for email_template in email_templates:
         organization = organization_model.objects.get(id=email_template.organization_id)
         organization_email_template_map[email_template.pk] = organization.uuid
-        # organization_email_template_map[email_template.pk] = email_template.organization.uuid
     print(organization_email_template_map)
 
 
@@ -116,6 +115,28 @@ def save_organization_core_user(apps, schema_editor):
         core_user.save()
 
 
+industry_organization_map = {}
+
+
+def read_organization_industry(apps, schema_editor):
+    """Save relations to local variable."""
+    industry_model = apps.get_model('workflow', 'Industry')
+    db_alias = schema_editor.connection.alias
+    industries = industry_model.objects.using(db_alias).all()
+    for industry in industries:
+        industry_organization_map[industry.pk] = list(industry.organization_set.values_list('uuid', flat=True))
+    print('industry_organization_map:' + str(industry_organization_map))
+
+
+def save_organization_industry(apps, schema_editor):
+    """Read relations from local variable and save."""
+    organization_model = apps.get_model('workflow', 'Organization')
+    db_alias = schema_editor.connection.alias
+    for industry_pk, organization_array in industry_organization_map.items():
+        for organization_uuid in organization_array:
+            organization_model.objects.using(db_alias).get(pk=organization_uuid).industries.add(industry_pk)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -131,6 +152,8 @@ class Migration(migrations.Migration):
                              migrations.RunPython.noop),
         migrations.RunPython(read_organization_core_user,
                              migrations.RunPython.noop),
+        migrations.RunPython(read_organization_industry,
+                             migrations.RunPython.noop),
 
         migrations.RemoveField(
             model_name='organization',
@@ -144,6 +167,10 @@ class Migration(migrations.Migration):
         ),
 
         # FK EmailTemplate
+        migrations.AlterUniqueTogether(  # Remove unique_together constraints for setting them newly
+            name='emailtemplate',
+            unique_together=set(),
+        ),
         migrations.RemoveField(
             model_name='EmailTemplate',
             name='organization',
@@ -152,8 +179,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='EmailTemplate',
             name='organization',
-            field=models.ForeignKey(blank=True, null=True, 
-                                    on_delete=models.CASCADE, verbose_name='Organization', 
+            field=models.ForeignKey(blank=True, null=True,
+                                    on_delete=models.CASCADE, verbose_name='Organization',
                                     to='workflow.Organization'),
         ),
         # FK WorkflowLevel1
@@ -192,6 +219,16 @@ class Migration(migrations.Migration):
                                     help_text='Related Org to associate with',
                                     to='workflow.Organization'),
         ),
+        # M2M Industry
+        migrations.RemoveField(
+            model_name='organization',
+            name='industry',
+        ),
+        migrations.AddField(
+            model_name='organization',
+            name='industries',
+            field=models.ManyToManyField(blank=True, help_text='Type of Industry the organization belongs to if any', related_name='organizations', to='workflow.Industry'),
+        ),
 
         migrations.RunPython(save_organization_email_template,
                              migrations.RunPython.noop),
@@ -201,13 +238,21 @@ class Migration(migrations.Migration):
                              migrations.RunPython.noop),
         migrations.RunPython(save_organization_core_user,
                              migrations.RunPython.noop),
-        
-        # remove blank from EmailTemplate.organization
+        migrations.RunPython(save_organization_industry,
+                             migrations.RunPython.noop),
+
+        # remove blank again from EmailTemplate.organization
         migrations.AlterField(
             model_name='EmailTemplate',
             name='organization',
             field=models.ForeignKey(on_delete=models.CASCADE, verbose_name='Organization',
                                     to='workflow.Organization',
                                     help_text='Related Org to associate with'),
+        ),
+
+        # set unique_together on EmailTemplate again
+        migrations.AlterUniqueTogether(
+            name='emailtemplate',
+            unique_together={('organization', 'type')},
         ),
     ]
