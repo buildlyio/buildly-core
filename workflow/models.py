@@ -84,7 +84,7 @@ class Organization(models.Model):
     The organization instance. There could be multiple organizations inside one application.
     When organization is created two CoreGroups are created automatically: Admins group and default Users group.
     """
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
+    organization_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
     name = models.CharField("Organization Name", max_length=255, blank=True, default="Humanitec", help_text="Each end user must be grouped into an organization")
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Descirption of organization")
     organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")

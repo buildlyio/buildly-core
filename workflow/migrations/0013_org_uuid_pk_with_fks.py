@@ -16,7 +16,6 @@ def read_organization_email_template(apps, schema_editor):
     for email_template in email_templates:
         organization = organization_model.objects.get(id=email_template.organization_id)
         organization_email_template_map[email_template.pk] = organization.uuid
-    print(organization_email_template_map)
 
 
 def save_organization_email_template(apps, schema_editor):
@@ -44,7 +43,6 @@ def read_organization_workflowlevel1(apps, schema_editor):
         if workflowlevel1.organization_id:
             organization = organization_model.objects.get(id=workflowlevel1.organization_id)
             organization_workflowlevel1_map[workflowlevel1.pk] = organization.uuid
-    print(organization_workflowlevel1_map)
 
 
 def save_organization_workflowlevel1(apps, schema_editor):
@@ -72,7 +70,6 @@ def read_organization_core_group(apps, schema_editor):
         if core_group.organization_id:
             organization = organization_model.objects.get(id=core_group.organization_id)
             organization_core_group_map[core_group.pk] = organization.uuid
-    print(organization_core_group_map)
 
 
 def save_organization_core_group(apps, schema_editor):
@@ -100,7 +97,6 @@ def read_organization_core_user(apps, schema_editor):
         if core_user.organization_id:
             organization = organization_model.objects.get(id=core_user.organization_id)
             organization_core_user_map[core_user.pk] = organization.uuid
-    print(organization_core_user_map)
 
 
 def save_organization_core_user(apps, schema_editor):
@@ -125,7 +121,6 @@ def read_organization_industry(apps, schema_editor):
     industries = industry_model.objects.using(db_alias).all()
     for industry in industries:
         industry_organization_map[industry.pk] = list(industry.organization_set.values_list('uuid', flat=True))
-    print('industry_organization_map:' + str(industry_organization_map))
 
 
 def save_organization_industry(apps, schema_editor):
