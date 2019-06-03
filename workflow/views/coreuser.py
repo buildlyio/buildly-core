@@ -126,8 +126,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                             status.HTTP_401_UNAUTHORIZED)
 
         organization = Organization.objects\
-            .values('organization_uuid', 'name')\
-            .get(organization_uuid=decoded['org_uuid']) \
+            .values('uuid', 'name')\
+            .get(uuid=decoded['org_uuid']) \
             if decoded['org_uuid'] else None
 
         return Response({
@@ -245,7 +245,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         return super(CoreUserViewSet, self).get_permissions()
 
-    filterset_fields = ('organization__id',)
+    filterset_fields = ('organization__uuid',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)

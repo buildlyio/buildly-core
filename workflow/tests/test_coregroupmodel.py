@@ -20,6 +20,6 @@ def test_coregroups_autocreation():
 
 
 @pytest.mark.django_db()
-def test_default_courgroup():
+def test_default_coregroup():
     user = factories.CoreUser.create()
     assert user.core_groups.count() == 1

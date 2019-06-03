@@ -41,7 +41,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_global_admin:
             organization_id = request.user.organization_id
-            queryset = queryset.filter(id=organization_id)
+            queryset = queryset.filter(pk=organization_id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

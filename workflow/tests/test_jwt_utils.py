@@ -49,7 +49,7 @@ class JWTUtilsTest(TestCase):
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(self.core_user.core_user_uuid),
-            'organization_uuid': str(self.core_user.organization.organization_uuid),
+            'organization_uuid': str(self.core_user.organization.uuid),
         }
         self.assertEqual(payload, expected_payload)
 
@@ -67,7 +67,7 @@ class JWTUtilsTest(TestCase):
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(self.core_user.core_user_uuid),
-            'organization_uuid': str(self.core_user.organization.organization_uuid),
+            'organization_uuid': str(self.core_user.organization.uuid),
         }
         self.assertEqual(payload, expected_payload)
 
@@ -79,7 +79,7 @@ class JWTUtilsTest(TestCase):
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(self.core_user.core_user_uuid),
-            'organization_uuid': str(self.core_user.organization.organization_uuid),
+            'organization_uuid': str(self.core_user.organization.uuid),
         }
         self.assertEqual(payload, expected_payload)
 
@@ -88,7 +88,7 @@ class JWTUtilsTest(TestCase):
         payload = payload_enricher(request)
         expected_payload = {
             'core_user_uuid': str(self.core_user.core_user_uuid),
-            'organization_uuid': str(self.core_user.organization.organization_uuid),
+            'organization_uuid': str(self.core_user.organization.uuid),
             'username': self.core_user.username,
         }
         self.assertEqual(payload, expected_payload)

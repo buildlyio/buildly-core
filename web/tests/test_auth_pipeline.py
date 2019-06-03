@@ -29,7 +29,7 @@ class OAuthTest(TestCase):
     def setUp(self):
         logging.disable(logging.WARNING)
         self.core_user = factories.CoreUser()
-        self.org = factories.Organization(organization_uuid='12345')
+        self.org = factories.Organization(uuid='12345')
         self.app = factories.Application(user=self.core_user, )
 
     def tearDown(self):
@@ -150,7 +150,7 @@ class OAuthTest(TestCase):
     def test_auth_allowed_multi_oauth_domain(self):
         self.org.oauth_domains = ['testenv.com']
         self.org.save()
-        factories.Organization(organization_uuid='6789', name='Another Org',
+        factories.Organization(name='Another Org',
                                oauth_domains=['testenv.com'])
 
         backend = self.BackendTest()
