@@ -224,7 +224,7 @@ class TestCoreUserInvite:
         response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
         assert response.status_code == 200
         assert response.data['email'] == TEST_USER_DATA['email']
-        assert response.data['organization']['uuid'] == org.uuid
+        assert response.data['organization']['organization_uuid'] == org.organization_uuid
 
 
 @pytest.mark.django_db()
