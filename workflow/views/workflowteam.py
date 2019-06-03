@@ -48,7 +48,7 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    filterset_fields = ('workflowlevel1__organization__id',)
+    filterset_fields = ('workflowlevel1__organization__uuid',)
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (CoreGroupsPermissions,)
     queryset = WorkflowTeam.objects.all()
