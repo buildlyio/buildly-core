@@ -4,6 +4,7 @@ import json
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.test import Client, RequestFactory, TestCase
+from oauth2_provider.views.mixins import OAuthLibMixin
 
 from rest_framework.reverse import reverse
 
@@ -50,6 +51,17 @@ class HealthCheckViewTest(TestCase):
         c = Client()
         response = c.get('/health_check/')
         self.assertEqual(response.status_code, 200)
+
+
+class TestOAuthUserEndpoint(object):
+
+    @pytest.mark.django_db()
+    def test_get_oauth_user(self, request_factory, core_user, monkeypatch):
+        request = request_factory.get('oauthuser')
+        request.user = core_user
+        monkeypatch.setattr(OAuthLibMixin, 'verify_request', lambda x, y: [True, request])
+        response = views.OAuthUserEndpoint.as_view()(request)
+        assert response.status_code == 200
 
 
 class TestOAuthComplete(object):

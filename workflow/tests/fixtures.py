@@ -27,6 +27,11 @@ def org_member(org):
 
 
 @pytest.fixture
+def core_group(org):
+    return factories.CoreGroup(organization=org)
+
+
+@pytest.fixture
 def org_admin(org):
     group_org_admin, _ = wfm.CoreGroup.objects.get_or_create(organization=org, is_org_level=True,
                                                              permissions=wfm.PERMISSIONS_ORG_ADMIN,

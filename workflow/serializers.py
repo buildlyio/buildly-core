@@ -11,7 +11,7 @@ from django.template import Template, Context
 from rest_framework import serializers
 from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
-
+from workflow.models import Organization
 
 User = get_user_model()
 
@@ -63,9 +63,18 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+
+    def to_representation(self, value):
+        return str(super().to_representation(value))
+
+
 class CoreGroupSerializer(serializers.ModelSerializer):
 
     permissions = PermissionsField(required=False)
+    organization = UUIDPrimaryKeyRelatedField(required=False,
+                                              queryset=Organization.objects.all(),
+                                              help_text="Related Org to associate with")
 
     class Meta:
         model = wfm.CoreGroup
