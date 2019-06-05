@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
@@ -13,12 +15,16 @@ TEST_USER_DATA = {
     'username': 'johnsnow',
     'password': '123qwe',
     'organization_name': 'Humanitec',
+    'organization_uuid': uuid.uuid4(),
 }
 
 
 @pytest.fixture
 def org():
-    return factories.Organization(name=TEST_USER_DATA['organization_name'])
+    return factories.Organization(
+        name=TEST_USER_DATA['organization_name'],
+        organization_uuid=TEST_USER_DATA['organization_uuid'],
+    )
 
 
 @pytest.fixture
