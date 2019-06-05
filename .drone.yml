@@ -127,20 +127,13 @@ pipeline:
       - tag
       status:
       - success
-
-  notify-slack:
+  notify:
     image: plugins/slack
     channel: drone-ci
     username: Drone-CI
     secrets: [SLACK_WEBHOOK]
     when:
-      event:
-      - push
-      - tag
-      branch:
-      - master
-      status:
-      - failure
+    status: [failure]
 
 services:
   postgres:
