@@ -43,6 +43,6 @@ def org_admin(org):
 
 @pytest.fixture
 def reset_password_request(org_member):
-    uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+    uid = urlsafe_base64_encode(force_bytes(org_member.pk))
     token = default_token_generator.make_token(org_member)
     return org_member, uid, token

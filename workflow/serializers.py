@@ -177,7 +177,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 
         count = 0
         for user in User.objects.filter(email=email, is_active=True):
-            uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             context = {
                 'password_reset_link': resetpass_url.format(uid=uid, token=token),
