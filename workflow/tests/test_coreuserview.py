@@ -244,7 +244,7 @@ class TestResetPassword(object):
         assert message.to == [email]
 
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+        uid = urlsafe_base64_encode(force_bytes(org_member.pk))
         token = default_token_generator.make_token(org_member)
         assert f'{resetpass_url}{uid}/{token}/' in message.body
         assert 'Thanks for using our site!' in message.body
@@ -272,7 +272,7 @@ class TestResetPassword(object):
         assert message.to == [email]
 
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+        uid = urlsafe_base64_encode(force_bytes(org_member.pk))
         token = default_token_generator.make_token(org_member)
         assert message.subject == 'Custom subject'
         assert 'Custom template' in message.body
@@ -303,7 +303,7 @@ class TestResetPassword(object):
         assert message.to == [email]
 
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        uid = urlsafe_base64_encode(force_bytes(org_member.pk)).decode()
+        uid = urlsafe_base64_encode(force_bytes(org_member.pk))
         token = default_token_generator.make_token(org_member)
         assert message.subject == 'Custom subject'
         assert 'Custom template' in message.body
