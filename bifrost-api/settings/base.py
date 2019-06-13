@@ -65,6 +65,7 @@ INSTALLED_APPS_LOCAL = [
     'gateway',
     'web',
     'workflow',
+    'datamesh',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + \
