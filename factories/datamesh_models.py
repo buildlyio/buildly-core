@@ -3,6 +3,7 @@ from factory import DjangoModelFactory, SubFactory, Faker
 from datamesh.models import (LogicModuleModel as LogicModulModelM,
                              Relationship as RelationshipM,
                              JoinRecord as JoinRecordM)
+from factories import Organization
 from gateway.models import LogicModule as LogicModuleM
 
 
@@ -30,6 +31,9 @@ class Relationship(DjangoModelFactory):
 
 class JoinRecord(DjangoModelFactory):
     relationship = SubFactory(Relationship)
+    organization = SubFactory(Organization)
+    record_id = 1
+    related_record_id = 2
 
     class Meta:
         model = JoinRecordM
