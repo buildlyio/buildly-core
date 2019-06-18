@@ -30,3 +30,8 @@ class ServiceDoesNotExist(GatewayError):
 class PermissionDenied(GatewayError):
     def __init__(self, msg):
         super(PermissionDenied, self).__init__(msg, 403)
+
+
+class DataMeshError(GatewayError):
+    def __init__(self, msg):
+        super().__init__(msg=msg, status=500)

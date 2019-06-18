@@ -8,10 +8,11 @@ from workflow.models import Organization
 
 
 class LogicModuleModel(models.Model):
-    logic_module_model_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    logic_module_model_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     logic_module = models.ForeignKey(LogicModule, related_name='models', on_delete=models.CASCADE)
     model = models.CharField(max_length=128)
-    endpoint = models.CharField(max_length=255, blank=True, help_text="Endpoint of the model")
+    endpoint = models.CharField(max_length=255, blank=True, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
+    lookup_field_name = models.SlugField(max_length=64, default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'")
 
     class Meta:
         unique_together = (
@@ -20,11 +21,12 @@ class LogicModuleModel(models.Model):
         )
 
     def __str__(self):
-        return f'{self.logic_module} - {self.model}'
+        return f'{self.logic_module} - {self.model} - /{self.logic_module.endpoint_name}{self.endpoint}'
 
 
 class Relationship(models.Model):
-    relationship_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    key = models.SlugField(max_length=64, help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_relationship'.")
+    relationship_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     origin_model = models.ForeignKey(LogicModuleModel, related_name='joins_origins', on_delete=models.CASCADE)
     related_model = models.ForeignKey(LogicModuleModel, related_name='joins_relateds', on_delete=models.CASCADE)
 
@@ -40,7 +42,7 @@ class Relationship(models.Model):
 
 
 class JoinRecord(models.Model):
-    join_records_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    join_records_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     relationship = models.ForeignKey(Relationship, related_name='joinrecords', on_delete=models.CASCADE)
     record_id = models.PositiveIntegerField(blank=True, null=True)
     record_uuid = models.UUIDField(blank=True, null=True)

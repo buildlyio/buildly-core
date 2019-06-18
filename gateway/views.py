@@ -17,6 +17,7 @@ from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from pyswagger.io import Response as PySwaggerResponse
 
+from datamesh.models import LogicModuleModel, Relationship, JoinRecord
 from workflow.permissions import IsSuperUser
 
 from . import exceptions
@@ -133,6 +134,18 @@ class APIGatewayView(views.APIView):
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
+        # aggregate/join with the JoinRecord-models
+        if request.query_params.get('join', None) is not None:
+            try:
+                self._join_response_data(
+                    request=request,
+                    response=response,
+                    client=client,
+                    **kwargs
+                )
+            except exceptions.ServiceDoesNotExist as e:
+                logger.error(e.content)
+
         if response.data is not None:
             content = json.dumps(response.data, cls=utils.GatewayJSONEncoder)
         else:
@@ -148,6 +161,76 @@ class APIGatewayView(views.APIView):
             except gtm.LogicModule.DoesNotExist:
                 raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
         return self._logic_modules[service_name]
+
+    def _join_response_data(self, request: Request, response: PySwaggerResponse, client: Client, **kwargs):
+        """
+        Same like: _aggregate_response_data, but this method uses the new Data Mesh
+        models instead of the LogicModule.relationship - field.
+
+        Aggregate data from first response.
+
+        :param rest_framework.Request request: incoming request info
+        :param PySwaggerResponse response: fist response
+        :param pyswagger.Client client: client based on requests
+        :param kwargs: extra arguments ['service', 'model', 'pk']
+        :return PySwaggerResponse: response with expanded data
+        """
+        service_name = kwargs['service']
+
+        resp_data = response.data
+        if isinstance(resp_data, dict):
+            if 'results' in resp_data:
+                # DRF API payload structure
+                resp_data = resp_data.get('results', None)
+
+        logic_module = self._get_logic_module(service_name)
+
+        # find out forwards relations through logic module from request as origin
+        endpoint = request.path[len(f'/{logic_module.endpoint_name}'):]
+        endpoint = endpoint[:endpoint.index('/', 1) + 1]
+        logic_module_model = LogicModuleModel.objects.get(logic_module=logic_module,
+                                                          endpoint=endpoint)
+        # ToDo: list-methods
+        relationships = Relationship.objects.filter(origin_model=logic_module_model)
+
+        origin_pk = response.data.get(logic_module_model.lookup_field_name)
+        if not origin_pk:
+            raise exceptions.DataMeshError(
+                f'DataMeshConfigurationError: lookup_field_name "{logic_module_model.lookup_field_name}" '
+                f'not found in response.')
+        if utils.valid_uuid4(str(origin_pk)):
+            join_records = JoinRecord.objects.filter(relationship__in=relationships).filter(record_uuid=str(origin_pk))
+        else:
+            join_records = JoinRecord.objects.filter(relationship__in=relationships).filter(record_id=str(origin_pk))
+
+        # now backwards get related objects through join_records
+        if join_records:
+            related_objects = []
+            for join_record in join_records:
+                related_model = join_record.relationship.related_model
+                app = self._load_swagger_resource(related_model.logic_module.name)
+
+                # remove query_params from original request
+                request._request.GET = QueryDict(mutable=True)
+
+                request_kwargs = {
+                    'pk': str(join_record.related_record_id or join_record.related_record_uuid),
+                    'model': related_model.endpoint.strip('/'),
+                    'method': request.META['REQUEST_METHOD'].lower()
+                }
+
+                # create and perform a service request
+                response = self._perform_service_request(
+                    app=app,
+                    request=request,
+                    client=client,
+                    **request_kwargs
+                )
+                related_objects.append(dict(response.data))
+
+            # aggregate
+            resp_data[join_record.relationship.key] = related_objects
+        return
 
     def _aggregate_response_data(self, request: Request, response: PySwaggerResponse, client: Client, **kwargs):
         """
@@ -202,7 +285,7 @@ class APIGatewayView(views.APIView):
         Use extension maps to fetch data from different services and
         replace the relationship key by real data.
 
-        :param Resquest request: incoming request
+        :param Request request: incoming request
         :param Client client: client based on requests
         :param list extend_models: list of dicts with relationships info
         :return dict: relations with their data
@@ -331,8 +414,8 @@ class APIGatewayView(views.APIView):
         # remove specific gateway query params
         if data.get('aggregate', None):
             data.pop('aggregate')
-        if data.get('depth', None):
-            data.pop('depth')
+        if data.get('join', None) is not None:
+            data.pop('join')
 
         if method in ['post', 'put', 'patch']:
             qd_body = request.data if hasattr(request, 'data') else dict()
@@ -379,9 +462,7 @@ class APIGatewayView(views.APIView):
             path = '/%s/' % model
             path_item = app.s(path)
         else:
-            try:
-                int(pk)
-            except ValueError:
+            if utils.valid_uuid4(pk):
                 pk_name = 'uuid'
             else:
                 pk_name = 'id'

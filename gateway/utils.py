@@ -1,3 +1,4 @@
+import re
 from typing import Dict
 from uuid import UUID
 
@@ -115,3 +116,10 @@ class GatewayJSONEncoder(json.JSONEncoder):
         if hasattr(obj, 'to_json'):
             return obj.to_json()
         return json.JSONEncoder.default(self, obj)
+
+
+def valid_uuid4(uuid_string):
+    uuid4hex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z',  # noqa
+                          re.I)
+    match = uuid4hex.match(uuid_string)
+    return bool(match)
