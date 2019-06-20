@@ -1,8 +1,9 @@
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from workflow.models import CoreGroup
 from workflow.serializers import CoreGroupSerializer
-from workflow.permissions import CoreGroupsPermissions
+from workflow.permissions import CoreGroupsPermissions, IsOrgMember
 
 
 class CoreGroupViewSet(viewsets.ModelViewSet):
@@ -13,4 +14,12 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
     """
     queryset = CoreGroup.objects.all()
     serializer_class = CoreGroupSerializer
-    permission_classes = (CoreGroupsPermissions,)
+    permission_classes = (CoreGroupsPermissions, IsOrgMember)
+
+    def list(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+        if not request.user.is_global_admin:
+            # TODO: Shall user also view global groups?
+            queryset = queryset.filter(organization_id=request.user.organization_id)
+        return Response(self.get_serializer(queryset, many=True).data)

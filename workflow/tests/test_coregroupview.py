@@ -195,8 +195,8 @@ class TestCoreGroupUpdateView:
 class TestCoreGroupListView:
 
     def test_coregroup_list(self, request_factory, org_admin):
-        factories.CoreGroup.create(name='Group 1')
-        factories.CoreGroup.create(name='Group 2')
+        factories.CoreGroup.create(name='Group 1', organization=org_admin.organization)
+        factories.CoreGroup.create(name='Group 2', organization=org_admin.organization)
 
         request = request_factory.get(reverse('coregroup-list'))
         request.user = org_admin
@@ -204,6 +204,26 @@ class TestCoreGroupListView:
         assert response.status_code == 200
         assert len(response.data) == 4  # Admins and Users groups + 2 new
 
+    def test_coregroup_list_another_org(self, request_factory, org_admin):
+        another_org = factories.Organization(name='Another org')
+        factories.CoreGroup.create(name='Group 1', organization=org_admin.organization)
+        factories.CoreGroup.create(name='Group 2', organization=another_org)
+
+        request = request_factory.get(reverse('coregroup-list'))
+        request.user = org_admin
+        response = CoreGroupViewSet.as_view({'get': 'list'})(request)
+        assert response.status_code == 200
+        assert len(response.data) == 3  # Admins and Users groups + 1 new
+
+    def test_coregroup_list_global(self, request_factory, org_admin):
+        factories.CoreGroup.create(name='Group 1', organization=org_admin.organization)
+        factories.CoreGroup.create(name='Group Global', organization=None, is_global=True)
+
+        request = request_factory.get(reverse('coregroup-list'))
+        request.user = org_admin
+        response = CoreGroupViewSet.as_view({'get': 'list'})(request)
+        assert response.status_code == 200
+        assert len(response.data) == 3  # Admins and Users groups + 1 new
 
 @pytest.mark.django_db()
 class TestCoreGroupDetailView:
@@ -215,6 +235,15 @@ class TestCoreGroupDetailView:
         request.user = org_admin
         response = CoreGroupViewSet.as_view({'get': 'retrieve'})(request, pk=coregroup.pk)
         assert response.status_code == 200
+
+    def test_coregroup_detail_another_org(self, request_factory, org_admin):
+        another_org = factories.Organization(name='Another org')
+        coregroup = factories.CoreGroup.create(organization=another_org)
+
+        request = request_factory.get(reverse('coregroup-detail', args=(coregroup.pk,)))
+        request.user = org_admin
+        response = CoreGroupViewSet.as_view({'get': 'retrieve'})(request, pk=coregroup.pk)
+        assert response.status_code == 403
 
 
 @pytest.mark.django_db()
