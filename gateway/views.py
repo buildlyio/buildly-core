@@ -17,7 +17,7 @@ from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from pyswagger.io import Response as PySwaggerResponse
 
-from datamesh.models import LogicModuleModel, Relationship, JoinRecord
+from datamesh.models import LogicModuleModel, JoinRecord
 from workflow.permissions import IsSuperUser
 
 from . import exceptions
@@ -180,7 +180,7 @@ class APIGatewayView(views.APIView):
         resp_data = response.data
         if isinstance(resp_data, dict):
             if 'results' in resp_data:
-                # DRF API payload structure
+                # In case of pagination take 'results' as a items data
                 resp_data = resp_data.get('results', None)
 
         logic_module = self._get_logic_module(service_name)
@@ -188,48 +188,49 @@ class APIGatewayView(views.APIView):
         # find out forwards relations through logic module from request as origin
         endpoint = request.path[len(f'/{logic_module.endpoint_name}'):]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        logic_module_model = LogicModuleModel.objects.get(logic_module=logic_module,
-                                                          endpoint=endpoint)
-        # ToDo: list-methods
-        relationships = Relationship.objects.filter(origin_model=logic_module_model)
+        logic_module_model = LogicModuleModel.objects.prefetch_related('joins_origins')\
+            .get(logic_module=logic_module, endpoint=endpoint)
+        relationships = logic_module_model.joins_origins.all()
+        origin_lookup_field = logic_module_model.lookup_field_name
 
-        origin_pk = response.data.get(logic_module_model.lookup_field_name)
+        origin_pk = resp_data.get(origin_lookup_field)
         if not origin_pk:
             raise exceptions.DataMeshError(
-                f'DataMeshConfigurationError: lookup_field_name "{logic_module_model.lookup_field_name}" '
+                f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
                 f'not found in response.')
-        if utils.valid_uuid4(str(origin_pk)):
-            join_records = JoinRecord.objects.filter(relationship__in=relationships).filter(record_uuid=str(origin_pk))
-        else:
-            join_records = JoinRecord.objects.filter(relationship__in=relationships).filter(record_id=str(origin_pk))
+        for relationship in relationships:
+            if utils.valid_uuid4(str(origin_pk)):
+                join_records = JoinRecord.objects.filter(relationship=relationship).filter(record_uuid=str(origin_pk))
+            else:
+                join_records = JoinRecord.objects.filter(relationship=relationship).filter(record_id=str(origin_pk))
 
-        # now backwards get related objects through join_records
-        if join_records:
-            related_objects = []
-            for join_record in join_records:
-                related_model = join_record.relationship.related_model
-                app = self._load_swagger_resource(related_model.logic_module.name)
+            # now backwards get related objects through join_records
+            if join_records:
+                related_objects = []
+                for join_record in join_records:
+                    related_model = relationship.related_model
+                    app = self._load_swagger_resource(related_model.logic_module.name)
 
-                # remove query_params from original request
-                request._request.GET = QueryDict(mutable=True)
+                    # remove query_params from original request
+                    request._request.GET = QueryDict(mutable=True)
 
-                request_kwargs = {
-                    'pk': str(join_record.related_record_id or join_record.related_record_uuid),
-                    'model': related_model.endpoint.strip('/'),
-                    'method': request.META['REQUEST_METHOD'].lower()
-                }
+                    request_kwargs = {
+                        'pk': str(join_record.related_record_id or join_record.related_record_uuid),
+                        'model': related_model.endpoint.strip('/'),
+                        'method': request.META['REQUEST_METHOD'].lower()
+                    }
 
-                # create and perform a service request
-                response = self._perform_service_request(
-                    app=app,
-                    request=request,
-                    client=client,
-                    **request_kwargs
-                )
-                related_objects.append(dict(response.data))
+                    # create and perform a service request
+                    response = self._perform_service_request(
+                        app=app,
+                        request=request,
+                        client=client,
+                        **request_kwargs
+                    )
+                    related_objects.append(dict(response.data))
 
-            # aggregate
-            resp_data[join_record.relationship.key] = related_objects
+                # aggregate
+                resp_data[relationship.key] = related_objects
         return
 
     def _aggregate_response_data(self, request: Request, response: PySwaggerResponse, client: Client, **kwargs):
