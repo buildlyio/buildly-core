@@ -7,6 +7,7 @@ from urllib.error import URLError
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http.request import QueryDict
+from django.db.models import QuerySet
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
 from rest_framework.request import Request
@@ -75,6 +76,7 @@ class APIGatewayView(views.APIView):
     def __init__(self, *args, **kwargs):
         self._logic_modules = dict()
         self._data = dict()
+        self.client = Client()
         super().__init__(*args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -112,13 +114,11 @@ class APIGatewayView(views.APIView):
             return HttpResponse(content=e.content,
                                 status=e.status,
                                 content_type=e.content_type)
-        client = Client()
 
         # create and perform a service request
         response = self._perform_service_request(
             app=app,
             request=request,
-            client=client,
             **kwargs
         )
 
@@ -128,7 +128,6 @@ class APIGatewayView(views.APIView):
                 self._aggregate_response_data(
                     request=request,
                     response=response,
-                    client=client,
                     **kwargs
                 )
             except exceptions.ServiceDoesNotExist as e:
@@ -140,7 +139,6 @@ class APIGatewayView(views.APIView):
                 self._join_response_data(
                     request=request,
                     response=response,
-                    client=client,
                     **kwargs
                 )
             except exceptions.ServiceDoesNotExist as e:
@@ -162,7 +160,7 @@ class APIGatewayView(views.APIView):
                 raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
         return self._logic_modules[service_name]
 
-    def _join_response_data(self, request: Request, response: PySwaggerResponse, client: Client, **kwargs):
+    def _join_response_data(self, request: Request, response: PySwaggerResponse, **kwargs):
         """
         Same like: _aggregate_response_data, but this method uses the new Data Mesh
         models instead of the LogicModule.relationship - field.
@@ -171,7 +169,6 @@ class APIGatewayView(views.APIView):
 
         :param rest_framework.Request request: incoming request info
         :param PySwaggerResponse response: fist response
-        :param pyswagger.Client client: client based on requests
         :param kwargs: extra arguments ['service', 'model', 'pk']
         :return PySwaggerResponse: response with expanded data
         """
@@ -193,7 +190,20 @@ class APIGatewayView(views.APIView):
         relationships = logic_module_model.joins_origins.all()
         origin_lookup_field = logic_module_model.lookup_field_name
 
-        origin_pk = resp_data.get(origin_lookup_field)
+        if isinstance(resp_data, dict):
+            # detailed view
+            self._add_nested_data(request, resp_data, relationships, origin_lookup_field)
+        elif isinstance(resp_data, list):
+            # list view
+            for data_item in resp_data:
+                self._add_nested_data(request, data_item, relationships, origin_lookup_field)
+
+        return
+
+    def _add_nested_data(self, request: Request, data_item: dict, relationships: QuerySet,
+                         origin_lookup_field: str) -> None:
+        """ Nests data retrieved from related services """
+        origin_pk = data_item.get(origin_lookup_field)
         if not origin_pk:
             raise exceptions.DataMeshError(
                 f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
@@ -215,7 +225,8 @@ class APIGatewayView(views.APIView):
                     request._request.GET = QueryDict(mutable=True)
 
                     request_kwargs = {
-                        'pk': str(join_record.related_record_id or join_record.related_record_uuid),
+                        'pk': (str(join_record.related_record_id) if join_record.related_record_id is not None
+                               else str(join_record.related_record_uuid)),
                         'model': related_model.endpoint.strip('/'),
                         'method': request.META['REQUEST_METHOD'].lower()
                     }
@@ -224,22 +235,22 @@ class APIGatewayView(views.APIView):
                     response = self._perform_service_request(
                         app=app,
                         request=request,
-                        client=client,
                         **request_kwargs
                     )
-                    related_objects.append(dict(response.data))
+                    if response.data:
+                        related_objects.append(dict(response.data))
+                    else:
+                        logger.error(f'No response data for join record (request params: {request_kwargs})')
 
                 # aggregate
-                resp_data[relationship.key] = related_objects
-        return
+                data_item[relationship.key] = related_objects
 
-    def _aggregate_response_data(self, request: Request, response: PySwaggerResponse, client: Client, **kwargs):
+    def _aggregate_response_data(self, request: Request, response: PySwaggerResponse, **kwargs):
         """
         Aggregate data from first response
 
         :param rest_framework.Request request: incoming request info
         :param PySwaggerResponse response: fist response
-        :param pyswagger.Client client: client based on requests
         :param kwargs: extra arguments ['service', 'model', 'pk']
         :return PySwaggerResponse: response with expanded data
         """
@@ -262,7 +273,7 @@ class APIGatewayView(views.APIView):
                     model_name=kwargs['model'],
                     data=data
                 )
-                r = self._expand_data(request, client, extension_map)
+                r = self._expand_data(request, extension_map)
                 data.update(**r)
         elif isinstance(resp_data, dict):
             extension_map = self._generate_extension_map(
@@ -270,7 +281,7 @@ class APIGatewayView(views.APIView):
                 model_name=kwargs['model'],
                 data=resp_data
             )
-            r = self._expand_data(request, client, extension_map)
+            r = self._expand_data(request, extension_map)
             resp_data.update(**r)
 
     def _get_bifrost_uuid_name(self, model):
@@ -280,14 +291,12 @@ class APIGatewayView(views.APIView):
                     field.default == uuid.uuid4:
                 return field.name
 
-    def _expand_data(self, request: Request, client: Client,
-                     extend_models: list):
+    def _expand_data(self, request: Request, extend_models: list):
         """
         Use extension maps to fetch data from different services and
         replace the relationship key by real data.
 
         :param Request request: incoming request
-        :param Client client: client based on requests
         :param list extend_models: list of dicts with relationships info
         :return dict: relations with their data
         """
@@ -323,7 +332,6 @@ class APIGatewayView(views.APIView):
                 res = self._perform_service_request(
                     app=app,
                     request=request,
-                    client=client,
                     **extend_model
                 )
                 data = res.data
@@ -497,13 +505,12 @@ class APIGatewayView(views.APIView):
         }
         return headers
 
-    def _perform_service_request(self, app: App, request: Request, client: Client, **kwargs):
+    def _perform_service_request(self, app: App, request: Request, **kwargs):
         """
         Perform request to the service using the PySwagger client.
 
         :param pyswagger.App app: an instance of App
         :param rest_framework.Request request: incoming request info
-        :param pyswagger.Client client: client based on requests
         :return pyswagger.Response: response from the service
         """
         req, resp = self._get_req_and_rep(app, request, **kwargs)
@@ -514,7 +521,7 @@ class APIGatewayView(views.APIView):
         if key_url not in self._data:
             headers = self._get_service_request_headers(request)
             try:
-                self._data[key_url] = client.request((req, resp), headers=headers)
+                self._data[key_url] = self.client.request((req, resp), headers=headers)
             except Exception as e:
                 error_msg = (f'An error occurred when redirecting the request to '
                              f'or receiving the response from the service.\n'
