@@ -1,18 +1,12 @@
 import pytest
 
 from django.core.handlers.wsgi import WSGIRequest
-from django.test import Client
 from rest_framework.test import APIRequestFactory
 
 
 @pytest.fixture(scope='session')
 def request_factory():
     return APIRequestFactory()
-
-
-@pytest.fixture(scope='session')
-def client_factory():
-    return Client()
 
 
 @pytest.fixture(scope='session')
