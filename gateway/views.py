@@ -518,13 +518,19 @@ class APIGatewayView(views.APIView):
         req.prepare(handle_files=False)  # prepare request to get URL from it for checking cache
         key_url = req.url
 
-        if key_url not in self._data:
+        if request.META['REQUEST_METHOD'].lower() == 'get' and key_url in self._data:
+            # Caching is only for GET requests
+            return self._data[key_url]
+        else:
             headers = self._get_service_request_headers(request)
             try:
-                self._data[key_url] = self.client.request((req, resp), headers=headers)
+                data = self.client.request((req, resp), headers=headers)
             except Exception as e:
                 error_msg = (f'An error occurred when redirecting the request to '
                              f'or receiving the response from the service.\n'
                              f'Origin: ({e.__class__.__name__}: {e})')
                 raise exceptions.PySwaggerError(error_msg)
-        return self._data[key_url]
+            if request.META['REQUEST_METHOD'].lower() == 'get':
+                # Cache only GET requests
+                self._data[key_url] = data
+            return data
