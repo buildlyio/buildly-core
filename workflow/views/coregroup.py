@@ -23,3 +23,8 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
             # TODO: Shall user also view global groups?
             queryset = queryset.filter(organization_id=request.user.organization_id)
         return Response(self.get_serializer(queryset, many=True).data)
+
+    def perform_create(self, serializer):
+        """ override this method to set organization from request """
+        organization = self.request.user.organization
+        serializer.save(organization=organization)
