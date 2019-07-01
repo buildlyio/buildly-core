@@ -176,7 +176,7 @@ class TestCoreUserCreate:
 class TestCoreUserUpdate:
 
     def test_coreuser_update(self, request_factory, org_admin):
-        user = factories.CoreUser.create(is_active=False)
+        user = factories.CoreUser.create(is_active=False, organization=org_admin.organization, username='org_user')
         pk = user.pk
 
         data = {
@@ -189,8 +189,21 @@ class TestCoreUserUpdate:
         coreuser = wfm.CoreUser.objects.get(pk=pk)
         assert coreuser.is_active
 
+    def test_coreuser_update_dif_org(self, request_factory, org_admin):
+        dif_org = factories.Organization(name='Another Org')
+        user = factories.CoreUser.create(is_active=False, organization=dif_org, username='another_org_user')
+        pk = user.pk
+
+        data = {
+            'is_active': True,
+        }
+        request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
+        request.user = org_admin
+        response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
+        assert response.status_code == 403
+
     def test_coreuser_update_groups(self, request_factory, org_admin):
-        user = factories.CoreUser.create(is_active=False)
+        user = factories.CoreUser.create(is_active=False, organization=org_admin.organization, username='user_org')
         initial_groups = factories.CoreGroup.create_batch(2, organization=user.organization)
         user.core_groups.add(*initial_groups)
         pk = user.pk

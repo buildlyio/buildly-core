@@ -15,7 +15,7 @@ from workflow.models import CoreUser, Organization
 from workflow.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                                   CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
                                   CoreUserResetPasswordConfirmSerializer)
-from workflow.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin
+from workflow.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from workflow.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                               DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from workflow.jwt_utils import create_invitation_token
@@ -241,7 +241,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 return [permissions.AllowAny()]
 
             if self.action in ['update', 'partial_update', 'invite']:
-                return [AllowOnlyOrgAdmin()]
+                return [AllowOnlyOrgAdmin(), IsOrgMember()]
 
         return super(CoreUserViewSet, self).get_permissions()
 

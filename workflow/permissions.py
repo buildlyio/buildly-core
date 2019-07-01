@@ -80,7 +80,7 @@ class AllowOnlyOrgAdmin(permissions.BasePermission):
         if request.user.is_anonymous:
             return False
 
-        if request.user.is_active and request.user.is_superuser:
+        if request.user.is_active and request.user.is_global_admin:
             return True
 
         if request.user.is_org_admin:
@@ -94,7 +94,7 @@ class IsOrgMember(permissions.BasePermission):
         if request.user.is_anonymous or not request.user.is_active:
             return False
 
-        if request.user.is_active and request.user.is_superuser:
+        if request.user.is_active and request.user.is_global_admin:
             return True
 
         if view.action == 'create':
@@ -114,7 +114,7 @@ class IsOrgMember(permissions.BasePermission):
         should be allowed to act on a particular object
         """
 
-        if request.user.is_active and request.user.is_superuser:
+        if request.user.is_active and request.user.is_global_admin:
             return True
         user_org = request.user.organization_id
         try:

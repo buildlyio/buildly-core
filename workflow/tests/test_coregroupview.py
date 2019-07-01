@@ -101,7 +101,7 @@ class TestCoreGroupViewsPermissions:
 @pytest.mark.django_db()
 class TestCoreGroupCreateView:
 
-    def test_coregroup_create_fail(self, request_factory, org_admin):
+    def test_coregroup_create_fail_empty(self, request_factory, org_admin):
         request = request_factory.post(reverse('coregroup-list'), {}, format='json')
         request.user = org_admin
         response = CoreGroupViewSet.as_view({'post': 'create'})(request)
@@ -115,6 +115,7 @@ class TestCoreGroupCreateView:
         assert response.status_code == 201
         coregroup = wfm.CoreGroup.objects.get(name='New Group')
         assert coregroup.permissions == 4  # check default permissions
+        assert coregroup.organization == org_admin.organization
 
     def test_coregroup_create_fail(self, request_factory, org_admin):
         request = request_factory.post(reverse('coregroup-list'),
@@ -143,6 +144,7 @@ class TestCoreGroupCreateView:
         assert response.status_code == 201
         coregroup = wfm.CoreGroup.objects.get(name='New Group')
         assert coregroup.permissions == 9
+        assert coregroup.organization == org_admin.organization
 
     def test_coregroup_create_int(self, request_factory, org_admin):
         # int values should also work as well as boolean
@@ -156,6 +158,7 @@ class TestCoreGroupCreateView:
         assert response.status_code == 201
         coregroup = wfm.CoreGroup.objects.get(name='New Group')
         assert coregroup.permissions == 9
+        assert coregroup.organization == org_admin.organization
 
 
 @pytest.mark.django_db()
