@@ -66,11 +66,11 @@ class TestOAuthUserEndpoint(object):
 
 class TestOAuthComplete(object):
 
-    def test_no_code_fail(self, client_factory):
+    def test_no_code_fail(self, client):
         oauth_url = reverse('oauth_complete', args=('github',))
         expected_data = {'detail': 'Authorization code has to be provided.'}
 
-        response = client_factory.get(oauth_url)
+        response = client.get(oauth_url)
 
         data = json.loads(response.content)
         assert response.status_code == 400
