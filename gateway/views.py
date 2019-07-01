@@ -341,8 +341,7 @@ class APIGatewayView(views.APIView):
 
         return result
 
-    def _generate_extension_map(self, logic_module: gtm.LogicModule,
-                                model_name: str, data: dict):
+    def _generate_extension_map(self, logic_module: gtm.LogicModule, model_name: str, data: dict):
         """
         Generate a list of relationship map of a specific service model.
 

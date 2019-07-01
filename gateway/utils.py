@@ -8,6 +8,7 @@ import requests
 import logging
 
 from django.db import models
+from django.http.request import QueryDict
 from rest_framework.request import Request
 
 from workflow import views as wfv
@@ -123,3 +124,55 @@ def valid_uuid4(uuid_string):
                           re.I)
     match = uuid4hex.match(uuid_string)
     return bool(match)
+
+
+def get_request_data(request: Request) -> dict:
+    """
+    Create the data structure to be used in Swagger request. GET and  DELETE
+    requests don't required body, so the data structure will have just
+    query parameter if passed to swagger request.
+
+    :param rest_framework.Request request: request info
+    :return dict: request body structured for PySwagger
+    """
+    method = request.META['REQUEST_METHOD'].lower()
+    data = request.query_params.dict()
+
+    data.pop('aggregate', None)
+    data.pop('join', None)
+
+    if method in ['post', 'put', 'patch']:
+        qd_body = request.data if hasattr(request, 'data') else dict()
+        body = qd_body.dict() if isinstance(qd_body, QueryDict) else qd_body
+        data.update(body)
+
+        if request.content_type == 'application/json' and data:
+            data = {
+                'data': data
+            }
+
+        # handle uploaded files
+        if request.FILES:
+            for key, value in request.FILES.items():
+                data[key] = {
+                    'header': {
+                        'Content-Type': value.content_type,
+                    },
+                    'data': value,
+                    'filename': value.name,
+                }
+
+    return data
+
+
+def is_valid_for_cache(request: Request) -> bool:
+    """ Checks if request is valid for caching operations """
+    return request.method.lower() == 'get' and not request.query_params
+
+
+def generate_cache_key(**kwargs):
+    """ Generates key for caching from URL keywords args"""
+    key = '/{}/{}/'.format(kwargs.get('service'), kwargs.get('model'))
+    if 'pk' in kwargs:
+        key = '{}{}/'.format(key, kwargs['pk'])
+    return key
