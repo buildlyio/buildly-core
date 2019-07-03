@@ -3,7 +3,7 @@ from rest_framework import permissions, routers
 
 from . import API_GATEWAY_RESERVED_NAMES
 from . import generator
-from . import views
+from . import views, views_beta
 
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -27,6 +27,15 @@ router = routers.SimpleRouter()
 router.register(r'logicmodule', views.LogicModuleViewSet)
 
 urlpatterns = [
+    re_path(
+        rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
+        r"beta/"
+        r"(?P<service>[^/?#]+)/"  # service (timetracking)
+        r"(?P<model>[^/?#]+)/?"  # model (timeevent)
+        r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
+        r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
+        r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
+        views_beta.APIGatewayView.as_view(), name='api-gateway-beta'),
     re_path(
         rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
