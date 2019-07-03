@@ -107,7 +107,7 @@ def test_json_dump_exception():
         pass
 
     test_obj = TestObj()
-    error_message = 'Object of type \'TestObj\' is not JSON serializable'
+    error_message = 'Object of type TestObj is not JSON serializable'
 
     with pytest.raises(TypeError) as exc:
         json.dumps(test_obj, cls=GatewayJSONEncoder)
