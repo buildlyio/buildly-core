@@ -20,7 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 class GatewayResponse(object):
-    """"""
+    """
+    Response object used with GatewayRequest
+    """
 
     def __init__(self, content: Any, status_code: int, headers: Dict[str, str]):
         self.content = content
@@ -29,7 +31,11 @@ class GatewayResponse(object):
 
 
 class BaseGatewayRequest(object):
-    """"""
+    """
+    Base class for implementing gateway logic for redirecting incoming request to underlying micro-services.
+    First it retrieves a Swagger specification of the micro-service
+    to validate incoming request's operation against it.
+    """
 
     def __init__(self, request: Request, **kwargs):
         self.request = request
@@ -38,42 +44,17 @@ class BaseGatewayRequest(object):
         self._specs = dict()
         self._data = dict()
 
-    def perform(self):
-        raise NotImplementedError('You need to implement this method')
-
-
-class GatewayRequest(BaseGatewayRequest):
-    """
-    Allows to perform synchronous requests to underlying services with requests package
-    """
-
     def perform(self) -> GatewayResponse:
         """
         Makes request to underlying service(s) and returns aggregated response
         """
-
         # init swagger spec from the service swagger doc file
         try:
             spec = self._get_swagger_spec(self.url_kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
             return GatewayResponse(e.content, e.status, {'Content-Type': e.content_type})
 
-        # create and perform a service data request
-        content, status_code, headers = self._data_request(spec=spec, **self.url_kwargs)
-
-        # aggregate/join with the JoinRecord-models
-        if 'join' in self.request.query_params and status_code == 200 and type(content) in [dict, list]:
-            try:
-                self._join_response_data(resp_data=content)
-            except exceptions.ServiceDoesNotExist as e:
-                logger.error(e.content)
-
-        # TODO: old DataMesh aggregation should be here until it's replaced by the new DataMesh
-
-        if type(content) in [dict, list]:
-            content = json.dumps(content, cls=utils.GatewayJSONEncoder)
-
-        return GatewayResponse(content, status_code, headers)
+        return self._get_data(spec)
 
     def _get_logic_module(self, service_name: str) -> LogicModule:
         """
@@ -112,6 +93,76 @@ class GatewayRequest(BaseGatewayRequest):
 
         return self._specs[schema_url]
 
+    def _get_data(self, spec):
+        raise NotImplementedError('You need to implement this method')
+
+    def is_valid_for_cache(self) -> bool:
+        """ Checks if request is valid for caching operations """
+        return self.request.method.lower() == 'get' and not self.request.query_params
+
+    def get_request_data(self) -> dict:
+        """
+        Create the data structure to be used in Swagger request. GET and  DELETE
+        requests don't require body, so the data structure will have just
+        query parameters if passed to swagger request.
+
+        :param rest_framework.Request request: request info
+        :return dict: request body structured for PySwagger
+        """
+        method = self.request.META['REQUEST_METHOD'].lower()
+        data = self.request.query_params.dict()
+
+        data.pop('aggregate', None)
+        data.pop('join', None)
+
+        if method in ['post', 'put', 'patch']:
+            query_dict_body = self.request.data if hasattr(self.request, 'data') else dict()
+            body = query_dict_body.dict() if isinstance(query_dict_body, QueryDict) else query_dict_body
+            data.update(body)
+
+            if self.request.content_type == 'application/json' and data:
+                data = {
+                    'data': data
+                }
+
+            # handle uploaded files
+            if self.request.FILES:
+                for key, value in self.request.FILES.items():
+                    data[key] = {
+                        'header': {
+                            'Content-Type': value.content_type,
+                        },
+                        'data': value,
+                        'filename': value.name,
+                    }
+
+        return data
+
+
+class GatewayRequest(BaseGatewayRequest):
+    """
+    Allows to perform synchronous requests to underlying services with requests package
+    """
+
+    def _get_data(self, spec: Spec) -> GatewayResponse:
+
+        # create and perform a service data request
+        content, status_code, headers = self._data_request(spec=spec, **self.url_kwargs)
+
+        # aggregate/join with the JoinRecord-models
+        if 'join' in self.request.query_params and status_code == 200 and type(content) in [dict, list]:
+            try:
+                self._join_response_data(resp_data=content)
+            except exceptions.ServiceDoesNotExist as e:
+                logger.error(e.content)
+
+        # TODO: old DataMesh aggregation should be here until it's replaced by the new DataMesh
+
+        if type(content) in [dict, list]:
+            content = json.dumps(content, cls=utils.GatewayJSONEncoder)
+
+        return GatewayResponse(content, status_code, headers)
+
     def _data_request(self, spec: Spec, **kwargs) -> Tuple[Any, int, Dict[str, str]]:
         """
         Perform request to the service, use Swagger spec for validating operation
@@ -138,7 +189,7 @@ class GatewayRequest(BaseGatewayRequest):
         # Build URL for the operation to request data from the service
         url = spec.api_url.rstrip('/') + path_name
         for k, v in path_kwargs.items():
-            url = url.replace(f'{{{k}}}', f'{v}')
+            url = url.replace(f'{{{k}}}', v)
 
         # Check request cache if applicable
         if self.is_valid_for_cache() and url in self._data:
@@ -250,44 +301,14 @@ class GatewayRequest(BaseGatewayRequest):
                 # aggregate
                 data_item[relationship.key] = related_objects
 
-    def is_valid_for_cache(self) -> bool:
-        """ Checks if request is valid for caching operations """
-        return self.request.method.lower() == 'get' and not self.request.query_params
 
-    def get_request_data(self) -> dict:
+class AsyncGatewayRequest(BaseGatewayRequest):
+    """
+    Allows to perform asynchronous requests to underlying services with asyncio and aiohttp package
+    """
+
+    def _get_data(self, spec: Spec) -> GatewayResponse:
         """
-        Create the data structure to be used in Swagger request. GET and  DELETE
-        requests don't required body, so the data structure will have just
-        query parameter if passed to swagger request.
-
-        :param rest_framework.Request request: request info
-        :return dict: request body structured for PySwagger
+        Makes request to underlying service(s) and returns aggregated response
         """
-        method = self.request.META['REQUEST_METHOD'].lower()
-        data = self.request.query_params.dict()
-
-        data.pop('aggregate', None)
-        data.pop('join', None)
-
-        if method in ['post', 'put', 'patch']:
-            qd_body = self.request.data if hasattr(self.request, 'data') else dict()
-            body = qd_body.dict() if isinstance(qd_body, QueryDict) else qd_body
-            data.update(body)
-
-            if self.request.content_type == 'application/json' and data:
-                data = {
-                    'data': data
-                }
-
-            # handle uploaded files
-            if self.request.FILES:
-                for key, value in self.request.FILES.items():
-                    data[key] = {
-                        'header': {
-                            'Content-Type': value.content_type,
-                        },
-                        'data': value,
-                        'filename': value.name,
-                    }
-
-        return data
+        raise NotImplementedError('Not implemented yet')
