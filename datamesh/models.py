@@ -1,7 +1,7 @@
 import uuid
 
 from django.db import models
-from django.db.models import CheckConstraint, Q
+from django.db.models import CheckConstraint, Q, UniqueConstraint
 
 from gateway.models import LogicModule
 from workflow.models import Organization
@@ -16,8 +16,8 @@ class LogicModuleModel(models.Model):
 
     class Meta:
         unique_together = (
-            'logic_module', 
-            'model', 
+            'logic_module',
+            'model',
         )
 
     def __str__(self):
@@ -32,7 +32,7 @@ class Relationship(models.Model):
 
     def __str__(self):
         return f'{self.origin_model} -> {self.related_model}'
-    
+
     class Meta:
         unique_together = (
             'relationship_uuid',
@@ -51,15 +51,45 @@ class JoinRecord(models.Model):
     organization = models.ForeignKey(Organization, null=True, blank=True, help_text="Related Organization with access", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (
-            'relationship',
-            'record_id',
-            'record_uuid',
-            'related_record_id',
-            'related_record_uuid',
-            'organization',
-        )
+        # 4 UniqueConstraints for unique_together for 'relationship','organization',
+        # 'record_id', 'record_uuid', 'related_record_id', 'related_record_uuid'
         constraints = [
+            UniqueConstraint(
+                fields=(
+                    'relationship',
+                    'record_id',
+                    'related_record_id',
+                ),
+                name='unique_join_record_ids',
+                condition=Q(record_uuid=None, related_record_uuid=None)
+            ),
+            UniqueConstraint(
+                fields=(
+                    'relationship',
+                    'record_uuid',
+                    'related_record_uuid',
+                ),
+                name='unique_join_record_uuids',
+                condition=Q(record_id=None, related_record_id=None)
+            ),
+            UniqueConstraint(
+                fields=(
+                    'relationship',
+                    'record_id',
+                    'related_record_uuid',
+                ),
+                name='unique_join_record_id_uuid',
+                condition=Q(record_uuid=None, related_record_id=None)
+            ),
+            UniqueConstraint(
+                fields=(
+                    'relationship',
+                    'record_uuid',
+                    'related_record_id',
+                ),
+                name='unique_join_record_uuid_id',
+                condition=Q(record_id=None, related_record_uuid=None)
+            ),
             CheckConstraint(
                 name='one_record_primary_key',
                 check=~Q(record_id=None, record_uuid=None) & (~(~Q(record_id=None) & ~Q(record_uuid=None)))

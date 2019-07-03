@@ -74,3 +74,71 @@ def test_one_record_primary_key_check_constraint_fail_filled_related_id_and_rela
                 organization=org,
             )
     assert JoinRecord.objects.count() == 0
+
+
+@pytest.mark.django_db()
+def test_unique_together_join_record_id_id(relationship, org):
+    JoinRecord.objects.create(
+        record_id=1,
+        related_record_id=1,
+        relationship=relationship,
+    )
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            JoinRecord.objects.create(
+                record_id=1,
+                related_record_id=1,
+                relationship=relationship,
+            )
+    assert JoinRecord.objects.count() == 1
+
+
+@pytest.mark.django_db()
+def test_unique_together_join_record_uuid_uuid(relationship, org):
+    JoinRecord.objects.create(
+        record_uuid=1,
+        related_record_uuid=1,
+        relationship=relationship,
+    )
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            JoinRecord.objects.create(
+                record_uuid=1,
+                related_record_uuid=1,
+                relationship=relationship,
+            )
+    assert JoinRecord.objects.count() == 1
+
+
+@pytest.mark.django_db()
+def test_unique_together_join_record_id_uuid(relationship, org):
+    JoinRecord.objects.create(
+        record_id=1,
+        related_record_uuid=1,
+        relationship=relationship,
+    )
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            JoinRecord.objects.create(
+                record_id=1,
+                related_record_uuid=1,
+                relationship=relationship,
+            )
+    assert JoinRecord.objects.count() == 1
+
+
+@pytest.mark.django_db()
+def test_unique_together_join_record_uuid_id(relationship, org):
+    JoinRecord.objects.create(
+        record_uuid=1,
+        related_record_id=1,
+        relationship=relationship,
+    )
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            JoinRecord.objects.create(
+                record_uuid=1,
+                related_record_id=1,
+                relationship=relationship,
+            )
+    assert JoinRecord.objects.count() == 1
