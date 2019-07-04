@@ -4,6 +4,7 @@ from django.core.management import BaseCommand
 
 from datamesh.models import JoinRecord, Relationship, LogicModuleModel
 from gateway.models import LogicModule
+from workflow.models import Organization
 
 DEFAULT_FILE_NAME = 'data/contacts.json'
 
@@ -15,7 +16,12 @@ class Command(BaseCommand):
     To get the file, get the pod-name of the crm_service in your kubernetes namespace and run:
         kubectl exec -n <namespace> -it <pod-name> -- bash -c "python manage.py dumpdata
             --format=json --indent=4 contact.Contact" > contacts.json
-    """
+
+    Example:
+    kubectl exec -n kupfer-dev -it crm-service-cf5576999-vj5s4 -- bash -c "python manage.py dumpdata --format=json --indent=4 contact.Contact" > data/contacts.json
+    kubectl cp data/contacts.json kupfer-dev/bifrost-7b96bb7487-f7c6m:/code/contacts.json
+    kubectl exec -n kupfer-dev -it bifrost-7b96bb7487-f7c6m bash -- -c "python manage.py loadrelationships --file=contacts.json"
+    """  # noqa
 
     counter = 0
 
@@ -53,13 +59,17 @@ class Command(BaseCommand):
         )
         # create JoinRecords with contact.id and siteprofile_uuid for all contacts
         for contact in contacts:
+            try:
+                organization = Organization.objects.get(pk=contact['fields']['organization_uuid'])
+            except Organization.DoesNotExist:
+                break
             self.counter += 1
             for siteprofile_uuid in json.loads(contact['fields']['siteprofile_uuids']):
                 join_record, _ = JoinRecord.objects.get_or_create(
                     relationship=relationship,
                     record_id=contact['pk'],
                     related_record_uuid=siteprofile_uuid,
-                    organization=contact['fields']['organization_uuid']
+                    defaults={'organization': organization}
                 )
                 print(join_record)
         print(f'{self.counter} Contacts parsed and written to the JoinRecords.')
