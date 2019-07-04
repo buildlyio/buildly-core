@@ -205,7 +205,10 @@ class GatewayRequest(BaseGatewayRequest):
         # Make request to the service
         method = getattr(requests, method)
         try:
-            response = method(url, data=request_data, headers=headers)
+            if self.request.FILES:
+                response = method(url, data=request_data, headers=headers, files=self.request.FILES)
+            else:
+                response = method(url, data=request_data, headers=headers)
         except Exception as e:
             error_msg = (f'An error occurred when redirecting the request to '
                          f'or receiving the response from the service.\n'
@@ -215,7 +218,7 @@ class GatewayRequest(BaseGatewayRequest):
         try:
             content = response.json()
         except ValueError:
-            content = response.text
+            content = response.content
         return_data = (content, response.status_code, response.headers)
 
         # Cache data if request is cache-valid
