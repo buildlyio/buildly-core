@@ -67,7 +67,10 @@ class Command(BaseCommand):
                 print(f'Organization({organization_uuid}) not found.')
                 continue
             self.counter += 1
-            for siteprofile_uuid in json.loads(contact['fields']['siteprofile_uuids']):
+            siteprofile_uuids = contact['fields']['siteprofile_uuids']
+            if not siteprofile_uuids:
+                continue
+            for siteprofile_uuid in json.loads(siteprofile_uuids):
                 join_record, _ = JoinRecord.objects.get_or_create(
                     relationship=relationship,
                     record_id=contact['pk'],
