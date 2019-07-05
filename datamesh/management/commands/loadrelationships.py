@@ -57,6 +57,7 @@ class Command(BaseCommand):
             related_model=related_model,
             key='siteprofile_relationship'
         )
+        eligible_join_records = []
         # create JoinRecords with contact.id and siteprofile_uuid for all contacts
         for contact in contacts:
             try:
@@ -74,4 +75,8 @@ class Command(BaseCommand):
                     defaults={'organization': organization}
                 )
                 print(join_record)
+                eligible_join_records.append(join_record.pk)
         print(f'{self.counter} Contacts parsed and written to the JoinRecords.')
+        # delete not eligible JoinRecords in this relationship
+        deleted, _ = JoinRecord.objects.exclude(pk__in=eligible_join_records).filter(relationship=relationship).delete()
+        print(f'{deleted} JoinRecord(s) deleted.')
