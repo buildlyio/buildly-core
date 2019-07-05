@@ -2,17 +2,17 @@ import json
 
 
 class GatewayError(Exception):
+    default_status_code = 500
+
     def __init__(self, msg, status: int = None):
         content = {'detail': msg}
         self.content = json.dumps(content)
-        self.status = status
+        self.status = status or self.default_status_code
         self.content_type = 'application/json'
 
 
 class EndpointNotFound(GatewayError):
-
-    def __init__(self, msg='Endpoint not found'):
-        super().__init__(msg=msg, status=404)
+    default_status_code = 404
 
 
 class PySwaggerError(GatewayError):
@@ -24,14 +24,12 @@ class RequestValidationError(GatewayError):
 
 
 class ServiceDoesNotExist(GatewayError):
-    pass
+    default_status_code = 404
 
 
 class PermissionDenied(GatewayError):
-    def __init__(self, msg):
-        super(PermissionDenied, self).__init__(msg, 403)
+    default_status_code = 403
 
 
 class DataMeshError(GatewayError):
-    def __init__(self, msg):
-        super().__init__(msg=msg, status=500)
+    pass
