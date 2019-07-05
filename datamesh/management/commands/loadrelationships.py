@@ -60,9 +60,11 @@ class Command(BaseCommand):
         # create JoinRecords with contact.id and siteprofile_uuid for all contacts
         for contact in contacts:
             try:
-                organization = Organization.objects.get(pk=contact['fields']['organization_uuid'])
+                organization_uuid = contact['fields']['organization_uuid']
+                organization = Organization.objects.get(pk=organization_uuid)
             except Organization.DoesNotExist:
-                break
+                print(f'Organization({organization_uuid}) not found.')
+                continue
             self.counter += 1
             for siteprofile_uuid in json.loads(contact['fields']['siteprofile_uuids']):
                 join_record, _ = JoinRecord.objects.get_or_create(
