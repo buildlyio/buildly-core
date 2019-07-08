@@ -200,15 +200,22 @@ class GatewayRequest(BaseGatewayRequest):
         headers = {
             'Authorization': get_authorization_header(self.request).decode('utf-8'),
         }
-        request_data = self.get_request_data()
+
+        if self.request.content_type == 'application/json':
+            headers['content-type'] = 'application/json'
+            request_data = json.dumps(self.request.data)
+        else:  # p.e. self.request.content_type.startswith('multipart/form-data')
+            request_data = self.get_request_data()
 
         # Make request to the service
         method = getattr(requests, method)
+
         try:
-            if self.request.FILES:
-                response = method(url, data=request_data, headers=headers, files=self.request.FILES)
-            else:
-                response = method(url, data=request_data, headers=headers)
+            response = method(url,
+                              headers=headers,
+                              params=self.request.query_params,
+                              data=request_data,
+                              files=self.request.FILES)
         except Exception as e:
             error_msg = (f'An error occurred when redirecting the request to '
                          f'or receiving the response from the service.\n'
