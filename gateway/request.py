@@ -109,6 +109,9 @@ class BaseGatewayRequest(object):
         :param rest_framework.Request request: request info
         :return dict: request body structured for PySwagger
         """
+        if self.request.content_type == 'application/json':
+            return json.dumps(self.request.data)
+
         method = self.request.META['REQUEST_METHOD'].lower()
         data = self.request.query_params.dict()
 
@@ -119,11 +122,6 @@ class BaseGatewayRequest(object):
             query_dict_body = self.request.data if hasattr(self.request, 'data') else dict()
             body = query_dict_body.dict() if isinstance(query_dict_body, QueryDict) else query_dict_body
             data.update(body)
-
-            if self.request.content_type == 'application/json' and data:
-                data = {
-                    'data': data
-                }
 
             # handle uploaded files
             if self.request.FILES:
@@ -163,6 +161,15 @@ class GatewayRequest(BaseGatewayRequest):
 
         return GatewayResponse(content, status_code, headers)
 
+    def get_headers(self) -> dict:
+        """Get data and headers from the incoming request."""
+        headers = {
+            'Authorization': get_authorization_header(self.request).decode('utf-8'),
+        }
+        if self.request.content_type == 'application/json':
+            headers['content-type'] = 'application/json'
+        return headers
+
     def _data_request(self, spec: Spec, **kwargs) -> Tuple[Any, int, Dict[str, str]]:
         """
         Perform request to the service, use Swagger spec for validating operation
@@ -196,25 +203,14 @@ class GatewayRequest(BaseGatewayRequest):
             logger.debug(f'Taking data from cache: {url}')
             return self._data[url]
 
-        # Get data and headers from the incoming request
-        headers = {
-            'Authorization': get_authorization_header(self.request).decode('utf-8'),
-        }
-
-        if self.request.content_type == 'application/json':
-            headers['content-type'] = 'application/json'
-            request_data = json.dumps(self.request.data)
-        else:  # p.e. self.request.content_type.startswith('multipart/form-data')
-            request_data = self.get_request_data()
-
         # Make request to the service
         method = getattr(requests, method)
 
         try:
             response = method(url,
-                              headers=headers,
+                              headers=self.get_headers(),
                               params=self.request.query_params,
-                              data=request_data,
+                              data=self.get_request_data(),
                               files=self.request.FILES)
         except Exception as e:
             error_msg = (f'An error occurred when redirecting the request to '
