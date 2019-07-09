@@ -11,7 +11,7 @@ class LogicModuleModel(models.Model):
     logic_module_model_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     logic_module = models.ForeignKey(LogicModule, related_name='models', on_delete=models.CASCADE)
     model = models.CharField(max_length=128)
-    endpoint = models.CharField(max_length=255, blank=True, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
+    endpoint = models.CharField(max_length=255, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
     lookup_field_name = models.SlugField(max_length=64, default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'")
 
     class Meta:
