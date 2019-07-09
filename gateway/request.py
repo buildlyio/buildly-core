@@ -46,7 +46,7 @@ class BaseGatewayRequest(object):
 
     def perform(self) -> GatewayResponse:
         """
-        Makes request to underlying service(s) and returns aggregated response
+        Make request to underlying service(s) and returns aggregated response.
         """
         # init swagger spec from the service swagger doc file
         try:
@@ -58,7 +58,7 @@ class BaseGatewayRequest(object):
 
     def _get_logic_module(self, service_name: str) -> LogicModule:
         """
-        Retrieve LogicModule by service name
+        Retrieve LogicModule by service name.
         """
         if service_name not in self._logic_modules:
             try:
@@ -69,7 +69,7 @@ class BaseGatewayRequest(object):
 
     def _get_swagger_spec(self, endpoint_name: str) -> Spec:
         """
-        Get Swagger spec of specified service
+        Get Swagger spec of specified service.
         """
         logic_module = self._get_logic_module(endpoint_name)
         schema_url = utils.get_swagger_url_by_logic_module(logic_module)
@@ -267,7 +267,9 @@ class GatewayRequest(BaseGatewayRequest):
         return
 
     def _add_nested_data(self, data_item: dict, relationships: QuerySet, origin_lookup_field: str) -> None:
-        """ Nests data retrieved from related services """
+        """
+        Nest data retrieved from related services.
+        """
         origin_pk = data_item.get(origin_lookup_field)
         if not origin_pk:
             raise exceptions.DataMeshError(
