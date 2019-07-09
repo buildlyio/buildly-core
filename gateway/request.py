@@ -46,7 +46,7 @@ class BaseGatewayRequest(object):
 
     def perform(self) -> GatewayResponse:
         """
-        Makes request to underlying service(s) and returns aggregated response
+        Make request to underlying service(s) and returns aggregated response.
         """
         # init swagger spec from the service swagger doc file
         try:
@@ -58,7 +58,7 @@ class BaseGatewayRequest(object):
 
     def _get_logic_module(self, service_name: str) -> LogicModule:
         """
-        Retrieve LogicModule by service name
+        Retrieve LogicModule by service name.
         """
         if service_name not in self._logic_modules:
             try:
@@ -69,7 +69,7 @@ class BaseGatewayRequest(object):
 
     def _get_swagger_spec(self, endpoint_name: str) -> Spec:
         """
-        Get Swagger spec of specified service
+        Get Swagger spec of specified service.
         """
         logic_module = self._get_logic_module(endpoint_name)
         schema_url = utils.get_swagger_url_by_logic_module(logic_module)
@@ -109,6 +109,9 @@ class BaseGatewayRequest(object):
         :param rest_framework.Request request: request info
         :return dict: request body structured for PySwagger
         """
+        if self.request.content_type == 'application/json':
+            return json.dumps(self.request.data)
+
         method = self.request.META['REQUEST_METHOD'].lower()
         data = self.request.query_params.dict()
 
@@ -119,11 +122,6 @@ class BaseGatewayRequest(object):
             query_dict_body = self.request.data if hasattr(self.request, 'data') else dict()
             body = query_dict_body.dict() if isinstance(query_dict_body, QueryDict) else query_dict_body
             data.update(body)
-
-            if self.request.content_type == 'application/json' and data:
-                data = {
-                    'data': data
-                }
 
             # handle uploaded files
             if self.request.FILES:
@@ -163,6 +161,15 @@ class GatewayRequest(BaseGatewayRequest):
 
         return GatewayResponse(content, status_code, headers)
 
+    def get_headers(self) -> dict:
+        """Get data and headers from the incoming request."""
+        headers = {
+            'Authorization': get_authorization_header(self.request).decode('utf-8'),
+        }
+        if self.request.content_type == 'application/json':
+            headers['content-type'] = 'application/json'
+        return headers
+
     def _data_request(self, spec: Spec, **kwargs) -> Tuple[Any, int, Dict[str, str]]:
         """
         Perform request to the service, use Swagger spec for validating operation
@@ -196,19 +203,15 @@ class GatewayRequest(BaseGatewayRequest):
             logger.debug(f'Taking data from cache: {url}')
             return self._data[url]
 
-        # Get data and headers from the incoming request
-        headers = {
-            'Authorization': get_authorization_header(self.request).decode('utf-8'),
-        }
-        request_data = self.get_request_data()
-
         # Make request to the service
         method = getattr(requests, method)
+
         try:
-            if self.request.FILES:
-                response = method(url, data=request_data, headers=headers, files=self.request.FILES)
-            else:
-                response = method(url, data=request_data, headers=headers)
+            response = method(url,
+                              headers=self.get_headers(),
+                              params=self.request.query_params,
+                              data=self.get_request_data(),
+                              files=self.request.FILES)
         except Exception as e:
             error_msg = (f'An error occurred when redirecting the request to '
                          f'or receiving the response from the service.\n'
@@ -264,7 +267,9 @@ class GatewayRequest(BaseGatewayRequest):
         return
 
     def _add_nested_data(self, data_item: dict, relationships: QuerySet, origin_lookup_field: str) -> None:
-        """ Nests data retrieved from related services """
+        """
+        Nest data retrieved from related services.
+        """
         origin_pk = data_item.get(origin_lookup_field)
         if not origin_pk:
             raise exceptions.DataMeshError(
