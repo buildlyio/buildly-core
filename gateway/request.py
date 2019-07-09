@@ -1,20 +1,19 @@
 import logging
 import json
 from urllib.error import URLError
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Tuple, Union, List
 
 import requests
 from bravado_core.spec import Spec
 from django.http.request import QueryDict
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from rest_framework.request import Request
 from rest_framework.authentication import get_authorization_header
 
 from . import exceptions
 from . import utils
 from .models import LogicModule
-from datamesh.models import LogicModuleModel, JoinRecord
-
+from datamesh.models import LogicModuleModel, JoinRecord, Relationship
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +204,6 @@ class GatewayRequest(BaseGatewayRequest):
 
         # Make request to the service
         method = getattr(requests, method)
-
         try:
             response = method(url,
                               headers=self.get_headers(),
@@ -252,9 +250,9 @@ class GatewayRequest(BaseGatewayRequest):
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
         endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        logic_module_model = LogicModuleModel.objects.prefetch_related('joins_origins')\
-            .get(logic_module=logic_module, endpoint=endpoint)
-        relationships = logic_module_model.joins_origins.all()
+        logic_module_model = LogicModuleModel.objects.get(
+            logic_module=logic_module, endpoint=endpoint)
+        relationships = self._get_relationships(logic_module_model)
         origin_lookup_field = logic_module_model.lookup_field_name
 
         if isinstance(resp_data, dict):
@@ -266,7 +264,37 @@ class GatewayRequest(BaseGatewayRequest):
                 self._add_nested_data(data_item, relationships, origin_lookup_field)
         return
 
-    def _add_nested_data(self, data_item: dict, relationships: QuerySet, origin_lookup_field: str) -> None:
+    @staticmethod
+    def _get_relationships(logic_module_model: LogicModuleModel) -> List[Tuple[Relationship, bool]]:
+        """
+        Get relationships with direction.
+        :param logic_module_model: The Logic Module Model for the relations
+        :return list: list of tuples with relationship and \
+            boolean for forward or reverse direction (True = forwards, False = backwards)
+        """
+        relationships = Relationship.objects.filter(
+            Q(origin_model=logic_module_model) | Q(related_model=logic_module_model)
+        )
+        relationships_with_direction = list()
+        for relationship in relationships:
+            relationships_with_direction.append((relationship, relationship.origin_model == logic_module_model))
+        return relationships_with_direction
+
+    @staticmethod
+    def _get_join_records(origin_pk: Any, relationship: Relationship, is_forward_relationship: bool) -> QuerySet:
+        if utils.valid_uuid4(str(origin_pk)):
+            pk_field = 'record_uuid'
+        else:
+            pk_field = 'record_id'
+        if not is_forward_relationship:
+            pk_field = 'related_' + pk_field
+        filter_dict = {pk_field: str(origin_pk)}
+        return JoinRecord.objects.filter(relationship=relationship).filter(**filter_dict)
+
+    def _add_nested_data(self,
+                         data_item: dict,
+                         relationships: List[Tuple[Relationship, bool]],
+                         origin_lookup_field: str) -> None:
         """
         Nest data retrieved from related services.
         """
@@ -275,25 +303,32 @@ class GatewayRequest(BaseGatewayRequest):
             raise exceptions.DataMeshError(
                 f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
                 f'not found in response.')
-        for relationship in relationships:
-            if utils.valid_uuid4(str(origin_pk)):
-                join_records = JoinRecord.objects.filter(relationship=relationship).filter(record_uuid=str(origin_pk))
-            else:
-                join_records = JoinRecord.objects.filter(relationship=relationship).filter(record_id=str(origin_pk))
+        for relationship, is_forward_lookup in relationships:
+            join_records = self._get_join_records(origin_pk, relationship, is_forward_lookup)
 
             # now backwards get related objects through join_records
             if join_records:
                 related_objects = []
-                for join_record in join_records:
+
+                # find out if pk is id or uuid and prepare lookup according to direction
+                if is_forward_lookup:
                     related_model = relationship.related_model
-                    spec = self._get_swagger_spec(related_model.logic_module.name)
+                    related_lookup_is_id = join_records[0].related_record_id is not None
+                    related_record_field = 'related_record_id' if related_lookup_is_id else 'related_record_uuid'
+                else:
+                    related_model = relationship.origin_model
+                    related_lookup_is_id = join_records[0].record_id is not None
+                    related_record_field = 'record_id' if related_lookup_is_id else 'record_uuid'
+
+                spec = self._get_swagger_spec(related_model.logic_module.name)
+
+                for join_record in join_records:
 
                     # remove query_params from original request
                     self.request._request.GET = QueryDict(mutable=True)
 
                     request_kwargs = {
-                        'pk': (str(join_record.related_record_id) if join_record.related_record_id is not None
-                               else str(join_record.related_record_uuid)),
+                        'pk': (str(getattr(join_record, related_record_field))),
                         'model': related_model.endpoint.strip('/'),
                         'method': self.request.META['REQUEST_METHOD'].lower(),
                         'service': related_model.logic_module.name,
