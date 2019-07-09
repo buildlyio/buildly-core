@@ -46,11 +46,15 @@ class Command(BaseCommand):
 
         origin_model, _ = LogicModuleModel.objects.get_or_create(
             model='Contact',
-            logic_module=crm_logic_module
+            logic_module=crm_logic_module,
+            endpoint='/contact/',
+            lookup_field_name='id',
         )
         related_model, _ = LogicModuleModel.objects.get_or_create(
             model='SiteProfile',
-            logic_module=location_logic_module
+            logic_module=location_logic_module,
+            endpoint='/siteprofiles/',
+            lookup_field_name='uuid',
         )
         relationship, _ = Relationship.objects.get_or_create(
             origin_model=origin_model,
