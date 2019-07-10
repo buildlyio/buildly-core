@@ -2,13 +2,12 @@ import json
 import logging
 import uuid
 from urllib.error import URLError
-from typing import Any, Tuple, List
+from typing import Tuple, List
 
 
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http.request import QueryDict
-from django.db.models import QuerySet, Q
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
 from rest_framework.request import Request
@@ -20,6 +19,7 @@ from pyswagger.contrib.client.requests import Client
 from pyswagger.io import Response as PySwaggerResponse
 
 from datamesh.models import LogicModuleModel, JoinRecord, Relationship
+from datamesh import utils as datamesh_utils
 from workflow.permissions import IsSuperUser
 
 from . import exceptions
@@ -161,33 +161,6 @@ class APIGatewayView(views.APIView):
                 raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
         return self._logic_modules[service_name]
 
-    @staticmethod
-    def _get_relationships(logic_module_model: LogicModuleModel) -> List[Tuple[Relationship, bool]]:
-        """
-        Get relationships with direction.
-        :param logic_module_model: The Logic Module Model for the relations
-        :return list: list of tuples with relationship and \
-            boolean for forward or reverse direction (True = forwards, False = backwards)
-        """
-        relationships = Relationship.objects.filter(
-            Q(origin_model=logic_module_model) | Q(related_model=logic_module_model)
-        )
-        relationships_with_direction = list()
-        for relationship in relationships:
-            relationships_with_direction.append((relationship, relationship.origin_model == logic_module_model))
-        return relationships_with_direction
-
-    @staticmethod
-    def _get_join_records(origin_pk: Any, relationship: Relationship, is_forward_relationship: bool) -> QuerySet:
-        if utils.valid_uuid4(str(origin_pk)):
-            pk_field = 'record_uuid'
-        else:
-            pk_field = 'record_id'
-        if not is_forward_relationship:
-            pk_field = 'related_' + pk_field
-        filter_dict = {pk_field: str(origin_pk)}
-        return JoinRecord.objects.filter(relationship=relationship).filter(**filter_dict)
-
     def _join_response_data(self, request: Request, response: PySwaggerResponse, **kwargs) -> None:
         """
         Same like: _aggregate_response_data, but this method uses the new Data Mesh
@@ -215,7 +188,7 @@ class APIGatewayView(views.APIView):
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         logic_module_model = LogicModuleModel.objects.prefetch_related('joins_origins')\
             .get(logic_module=logic_module, endpoint=endpoint)
-        relationships = self._get_relationships(logic_module_model)
+        relationships = logic_module_model.get_relationships()
         origin_lookup_field = logic_module_model.lookup_field_name
 
         if isinstance(resp_data, dict):
@@ -240,21 +213,14 @@ class APIGatewayView(views.APIView):
                 f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
                 f'not found in response.')
         for relationship, is_forward_lookup in relationships:
-            join_records = self._get_join_records(origin_pk, relationship, is_forward_lookup)
+            join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
 
             # now backwards get related objects through join_records
             if join_records:
                 related_objects = []
 
-                # find out if pk is id or uuid and prepare lookup according to direction
-                if is_forward_lookup:
-                    related_model = relationship.related_model
-                    related_lookup_is_id = join_records[0].related_record_id is not None
-                    related_record_field = 'related_record_id' if related_lookup_is_id else 'related_record_uuid'
-                else:
-                    related_model = relationship.origin_model
-                    related_lookup_is_id = join_records[0].record_id is not None
-                    related_record_field = 'record_id' if related_lookup_is_id else 'record_uuid'
+                related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
+                    is_forward_lookup, relationship, join_records[0])
 
                 app = self._load_swagger_resource(related_model.logic_module.name)
 

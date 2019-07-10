@@ -6,7 +6,6 @@ from typing import Any, Dict, Tuple, Union, List
 import requests
 from bravado_core.spec import Spec
 from django.http.request import QueryDict
-from django.db.models import QuerySet, Q
 from rest_framework.request import Request
 from rest_framework.authentication import get_authorization_header
 
@@ -14,6 +13,7 @@ from . import exceptions
 from . import utils
 from .models import LogicModule
 from datamesh.models import LogicModuleModel, JoinRecord, Relationship
+from datamesh import utils as datamesh_utils
 
 logger = logging.getLogger(__name__)
 
@@ -252,7 +252,7 @@ class GatewayRequest(BaseGatewayRequest):
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         logic_module_model = LogicModuleModel.objects.get(
             logic_module=logic_module, endpoint=endpoint)
-        relationships = self._get_relationships(logic_module_model)
+        relationships = logic_module_model.get_relationships()
         origin_lookup_field = logic_module_model.lookup_field_name
 
         if isinstance(resp_data, dict):
@@ -263,33 +263,6 @@ class GatewayRequest(BaseGatewayRequest):
             for data_item in resp_data:
                 self._add_nested_data(data_item, relationships, origin_lookup_field)
         return
-
-    @staticmethod
-    def _get_relationships(logic_module_model: LogicModuleModel) -> List[Tuple[Relationship, bool]]:
-        """
-        Get relationships with direction.
-        :param logic_module_model: The Logic Module Model for the relations
-        :return list: list of tuples with relationship and \
-            boolean for forward or reverse direction (True = forwards, False = backwards)
-        """
-        relationships = Relationship.objects.filter(
-            Q(origin_model=logic_module_model) | Q(related_model=logic_module_model)
-        )
-        relationships_with_direction = list()
-        for relationship in relationships:
-            relationships_with_direction.append((relationship, relationship.origin_model == logic_module_model))
-        return relationships_with_direction
-
-    @staticmethod
-    def _get_join_records(origin_pk: Any, relationship: Relationship, is_forward_relationship: bool) -> QuerySet:
-        if utils.valid_uuid4(str(origin_pk)):
-            pk_field = 'record_uuid'
-        else:
-            pk_field = 'record_id'
-        if not is_forward_relationship:
-            pk_field = 'related_' + pk_field
-        filter_dict = {pk_field: str(origin_pk)}
-        return JoinRecord.objects.filter(relationship=relationship).filter(**filter_dict)
 
     def _add_nested_data(self,
                          data_item: dict,
@@ -304,21 +277,14 @@ class GatewayRequest(BaseGatewayRequest):
                 f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
                 f'not found in response.')
         for relationship, is_forward_lookup in relationships:
-            join_records = self._get_join_records(origin_pk, relationship, is_forward_lookup)
+            join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
 
             # now backwards get related objects through join_records
             if join_records:
                 related_objects = []
 
-                # find out if pk is id or uuid and prepare lookup according to direction
-                if is_forward_lookup:
-                    related_model = relationship.related_model
-                    related_lookup_is_id = join_records[0].related_record_id is not None
-                    related_record_field = 'related_record_id' if related_lookup_is_id else 'related_record_uuid'
-                else:
-                    related_model = relationship.origin_model
-                    related_lookup_is_id = join_records[0].record_id is not None
-                    related_record_field = 'record_id' if related_lookup_is_id else 'record_uuid'
+                related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
+                    is_forward_lookup, relationship, join_records[0])
 
                 spec = self._get_swagger_spec(related_model.logic_module.name)
 
