@@ -1,8 +1,10 @@
 import uuid
+from typing import Tuple, List
 
 from django.db import models
 from django.db.models import CheckConstraint, Q, UniqueConstraint
 
+from datamesh.managers import JoinRecordManager
 from gateway.models import LogicModule
 from workflow.models import Organization
 
@@ -22,6 +24,23 @@ class LogicModuleModel(models.Model):
 
     def __str__(self):
         return f'{self.logic_module} - {self.model} - /{self.logic_module.endpoint_name}{self.endpoint}'
+
+    def get_relationships(self) -> List[Tuple[models.Model, bool]]:
+        """
+        Get relationships with direction.
+        :param self: The Logic Module Model for the relations
+        :return list: list of tuples with relationship and \
+            boolean for forward or reverse direction (True = forwards, False = backwards)
+        """
+        relationships = Relationship.objects.filter(
+            Q(origin_model=self) | Q(related_model=self)
+        )
+        relationships_with_direction = list()
+        for relationship in relationships:
+            relationships_with_direction.append((relationship,
+                                                 relationship.origin_model == self))
+
+        return relationships_with_direction
 
 
 class Relationship(models.Model):
@@ -49,6 +68,8 @@ class JoinRecord(models.Model):
     related_record_id = models.PositiveIntegerField(blank=True, null=True)
     related_record_uuid = models.UUIDField(blank=True, null=True)
     organization = models.ForeignKey(Organization, null=True, blank=True, help_text="Related Organization with access", on_delete=models.CASCADE)
+
+    objects = JoinRecordManager()
 
     class Meta:
         # 4 UniqueConstraints for unique_together for 'relationship','organization',

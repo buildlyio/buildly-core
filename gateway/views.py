@@ -1,13 +1,13 @@
 import json
 import logging
 import uuid
-
 from urllib.error import URLError
+from typing import Tuple, List
+
 
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http.request import QueryDict
-from django.db.models import QuerySet
 from rest_framework import permissions, views, viewsets
 from rest_framework.authentication import get_authorization_header
 from rest_framework.request import Request
@@ -18,7 +18,8 @@ from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from pyswagger.io import Response as PySwaggerResponse
 
-from datamesh.models import LogicModuleModel, JoinRecord
+from datamesh.models import LogicModuleModel, JoinRecord, Relationship
+from datamesh import utils as datamesh_utils
 from workflow.permissions import IsSuperUser
 
 from . import exceptions
@@ -160,7 +161,7 @@ class APIGatewayView(views.APIView):
                 raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
         return self._logic_modules[service_name]
 
-    def _join_response_data(self, request: Request, response: PySwaggerResponse, **kwargs):
+    def _join_response_data(self, request: Request, response: PySwaggerResponse, **kwargs) -> None:
         """
         Same like: _aggregate_response_data, but this method uses the new Data Mesh
         models instead of the LogicModule.relationship - field.
@@ -187,7 +188,7 @@ class APIGatewayView(views.APIView):
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         logic_module_model = LogicModuleModel.objects.prefetch_related('joins_origins')\
             .get(logic_module=logic_module, endpoint=endpoint)
-        relationships = logic_module_model.joins_origins.all()
+        relationships = logic_module_model.get_relationships()
         origin_lookup_field = logic_module_model.lookup_field_name
 
         if isinstance(resp_data, dict):
@@ -200,7 +201,10 @@ class APIGatewayView(views.APIView):
 
         return
 
-    def _add_nested_data(self, request: Request, data_item: dict, relationships: QuerySet,
+    def _add_nested_data(self,
+                         request: Request,
+                         data_item: dict,
+                         relationships: List[Tuple[Relationship, bool]],
                          origin_lookup_field: str) -> None:
         """ Nests data retrieved from related services """
         origin_pk = data_item.get(origin_lookup_field)
@@ -208,25 +212,25 @@ class APIGatewayView(views.APIView):
             raise exceptions.DataMeshError(
                 f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
                 f'not found in response.')
-        for relationship in relationships:
-            if utils.valid_uuid4(str(origin_pk)):
-                join_records = JoinRecord.objects.filter(relationship=relationship).filter(record_uuid=str(origin_pk))
-            else:
-                join_records = JoinRecord.objects.filter(relationship=relationship).filter(record_id=str(origin_pk))
+        for relationship, is_forward_lookup in relationships:
+            join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
 
             # now backwards get related objects through join_records
             if join_records:
                 related_objects = []
+
+                related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
+                    is_forward_lookup, relationship, join_records[0])
+
+                app = self._load_swagger_resource(related_model.logic_module.name)
+
                 for join_record in join_records:
-                    related_model = relationship.related_model
-                    app = self._load_swagger_resource(related_model.logic_module.name)
 
                     # remove query_params from original request
                     request._request.GET = QueryDict(mutable=True)
 
                     request_kwargs = {
-                        'pk': (str(join_record.related_record_id) if join_record.related_record_id is not None
-                               else str(join_record.related_record_uuid)),
+                        'pk': (str(getattr(join_record, related_record_field))),
                         'model': related_model.endpoint.strip('/'),
                         'method': request.META['REQUEST_METHOD'].lower()
                     }
