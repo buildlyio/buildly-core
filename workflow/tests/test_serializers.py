@@ -1,7 +1,8 @@
 import pytest
 
-from workflow.serializers import OrganizationSerializer, CoreGroupSerializer, CoreUserSerializer
-from .fixtures import org, core_group, org_member
+from workflow.serializers import OrganizationSerializer, CoreGroupSerializer, CoreUserSerializer, \
+    WorkflowLevel2Serializer, WorkflowLevelTypeSerializer
+from .fixtures import org, core_group, org_member, wfl2, wfl_type
 
 
 @pytest.mark.django_db()
@@ -9,7 +10,8 @@ def test_org_serializer(request_factory, org):
     request = request_factory.get('')
     serializer = OrganizationSerializer(org, context={'request': request})
     data = serializer.data
-    keys = ['organization_uuid',
+    keys = ['id',
+            'organization_uuid',
             'name',
             'description',
             'organization_url',
@@ -68,3 +70,43 @@ def test_core_user_serializer(request_factory, org_member):
             ]
     assert set(data.keys()) == set(keys)
     assert isinstance(data['organization'], dict)
+
+
+@pytest.mark.django_db()
+def test_workflow_level2_serializer(request_factory, wfl2):
+    request = request_factory.get('')
+    serializer = WorkflowLevel2Serializer(wfl2, context={'request': request})
+    data = serializer.data
+    keys = ["id",
+            "level2_uuid",
+            "description",
+            "name",
+            "notes",
+            "parent_workflowlevel2",
+            "short_name",
+            "create_date",
+            "edit_date",
+            "start_date",
+            "end_date",
+            "workflowlevel1",
+            "created_by",
+            "type",
+            "core_groups",
+            ]
+    assert set(data.keys()) == set(keys)
+    assert data["id"] == data["level2_uuid"]
+
+
+@pytest.mark.django_db()
+def test_workflow_level_type_serializer(request_factory, wfl_type):
+    request = request_factory.get('')
+    serializer = WorkflowLevelTypeSerializer(wfl_type, context={'request': request})
+    data = serializer.data
+    keys = ["id",
+            "uuid",
+            "name",
+            "create_date",
+            "edit_date",
+            ]
+    assert set(data.keys()) == set(keys)
+    assert data["id"] == data["uuid"]

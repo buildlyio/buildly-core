@@ -60,3 +60,13 @@ def auth_api_client():
     api_client = APIClient()
     api_client.force_authenticate(user=factories.CoreUser.create())
     return api_client
+
+
+@pytest.fixture
+def wfl2():
+    return factories.WorkflowLevel2()
+
+
+@pytest.fixture
+def wfl_type():
+    return factories.WorkflowLevelType()

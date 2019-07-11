@@ -50,6 +50,7 @@ class WorkflowLevel1Serializer(serializers.ModelSerializer):
 
 
 class WorkflowLevelTypeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='uuid', read_only=True)
 
     class Meta:
         model = wfm.WorkflowLevelType
@@ -57,6 +58,7 @@ class WorkflowLevelTypeSerializer(serializers.ModelSerializer):
 
 
 class WorkflowLevel2Serializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='level2_uuid', read_only=True)
 
     class Meta:
         model = wfm.WorkflowLevel2
@@ -252,6 +254,7 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='organization_uuid', read_only=True)
 
     class Meta:
         model = wfm.Organization
