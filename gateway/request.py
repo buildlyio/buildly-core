@@ -147,9 +147,9 @@ class BaseGatewayRequest(object):
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
         endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        logic_module_model = LogicModuleModel.objects.prefetch_related('joins_origins')\
-            .get(logic_module=logic_module, endpoint=endpoint)
-        relationships = logic_module_model.joins_origins.all()
+        logic_module_model = LogicModuleModel.objects.get(
+            logic_module=logic_module, endpoint=endpoint)
+        relationships = logic_module_model.get_relationships()
         origin_lookup_field = logic_module_model.lookup_field_name
         return relationships, origin_lookup_field
 
@@ -252,7 +252,6 @@ class GatewayRequest(BaseGatewayRequest):
         """
         Aggregates data from the requested service and from related services.
         Uses DataMesh relationship model for this.
-
         :param rest_framework.Request request: incoming request info
         :param resp_data: initial response data
         :param kwargs: extra arguments ['service', 'model', 'pk']
@@ -296,6 +295,7 @@ class GatewayRequest(BaseGatewayRequest):
             raise exceptions.DataMeshError(
                 f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
                 f'not found in response.')
+
         for relationship, is_forward_lookup in relationships:
             data_item[relationship.key] = []
             join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
@@ -304,10 +304,10 @@ class GatewayRequest(BaseGatewayRequest):
             if join_records:
                 related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
                     is_forward_lookup, relationship, join_records[0])
-
                 spec = self._get_swagger_spec(related_model.logic_module.name)
 
                 for join_record in join_records:
+
                     request_kwargs = {
                         'pk': (str(getattr(join_record, related_record_field))),
                         'model': related_model.endpoint.strip('/'),
@@ -420,7 +420,7 @@ class AsyncGatewayRequest(BaseGatewayRequest):
 
         # asynchronously getting all swagger specs from all related services
         tasks = []
-        for relationship in relationships:
+        for relationship, _ in relationships:
             related_model = relationship.related_model
             tasks.append(self._get_swagger_spec(related_model.logic_module.name))
         await asyncio.gather(*tasks)
@@ -428,7 +428,7 @@ class AsyncGatewayRequest(BaseGatewayRequest):
         tasks = []
         if isinstance(resp_data, dict):
             # detailed view
-            tasks.extend(self._prepare_datamesh_tasks(resp_data, relationships, origin_lookup_field))
+            tasks.extend(await self._prepare_datamesh_tasks(resp_data, relationships, origin_lookup_field))
         elif isinstance(resp_data, list):
             # list view
             for data_item in resp_data:
