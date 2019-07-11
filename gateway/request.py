@@ -263,15 +263,6 @@ class GatewayRequest(BaseGatewayRequest):
 
         relationships, origin_lookup_field = self.get_datamesh_relationships()
 
-        # find out forwards relations through logic module from request as origin
-        padding = self.request.path.index(f'/{logic_module.endpoint_name}')
-        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
-        endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        logic_module_model = LogicModuleModel.objects.get(
-            logic_module=logic_module, endpoint=endpoint)
-        relationships = logic_module_model.get_relationships()
-        origin_lookup_field = logic_module_model.lookup_field_name
-
         if isinstance(resp_data, dict):
             # detailed view
             self._add_nested_data(resp_data, relationships, origin_lookup_field)
