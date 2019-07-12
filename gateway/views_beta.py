@@ -5,7 +5,7 @@ from rest_framework import permissions, views
 from rest_framework.request import Request
 
 from . import exceptions
-from .request import GatewayRequest
+from . request import AsyncGatewayRequest
 
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ class APIGatewayView(views.APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
     schema = None
+    gateway_request_class = AsyncGatewayRequest
 
     def __init__(self, *args, **kwargs):
         self._logic_modules = dict()
@@ -52,7 +53,7 @@ class APIGatewayView(views.APIView):
         except exceptions.RequestValidationError as e:
             return HttpResponse(content=e.content, status=e.status, content_type=e.content_type)
 
-        gw_request = GatewayRequest(request, **kwargs)
+        gw_request = self.gateway_request_class(request, **kwargs)
         gw_response = gw_request.perform()
 
         return HttpResponse(content=gw_response.content,
