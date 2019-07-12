@@ -5,7 +5,7 @@ from rest_framework import permissions, views
 from rest_framework.request import Request
 
 from . import exceptions
-from . request import AsyncGatewayRequest
+from . request import GatewayRequest, AsyncGatewayRequest
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class APIGatewayView(views.APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
     schema = None
-    gateway_request_class = AsyncGatewayRequest
+    gateway_request_class = GatewayRequest
 
     def __init__(self, *args, **kwargs):
         self._logic_modules = dict()
@@ -66,3 +66,11 @@ class APIGatewayView(views.APIView):
         """
         if request.META['REQUEST_METHOD'] in ['PUT', 'PATCH', 'DELETE'] and kwargs['pk'] is None:
             raise exceptions.RequestValidationError('The object ID is missing.', 400)
+
+
+class APIAsyncGatewayView(APIGatewayView):
+    """
+    Async version of APIGatewayView
+    """
+
+    gateway_request_class = AsyncGatewayRequest
