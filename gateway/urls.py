@@ -44,7 +44,7 @@ urlpatterns = [
         r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
         r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
         r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
-        views_beta.APIGatewayView.as_view(), name='api-gateway-async'),
+        views_beta.APIAsyncGatewayView.as_view(), name='api-gateway-async'),
     re_path(
         rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
