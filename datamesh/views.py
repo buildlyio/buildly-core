@@ -1,15 +1,13 @@
-from rest_framework import mixins
-from rest_framework.viewsets import GenericViewSet
+from rest_framework import viewsets
 
 from datamesh.models import JoinRecord
 from datamesh.serializers import JoinRecordSerializer
 
 
-class JoinRecordViewSet(mixins.CreateModelMixin,
-                        mixins.RetrieveModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin,
-                        GenericViewSet):
+class JoinRecordViewSet(viewsets.ModelViewSet):
 
+    # ToDo:
+    #  - add filters for `relationship`, the `record_id/uuid` and `related_record_id/uuid`-fields
+    #  - organization permissions
     queryset = JoinRecord.objects.all()
     serializer_class = JoinRecordSerializer

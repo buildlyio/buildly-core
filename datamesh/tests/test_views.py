@@ -34,6 +34,27 @@ class TestJoinRecordBase:
 
 
 @pytest.mark.django_db()
+class TestJoinRecordListView(TestJoinRecordBase):
+
+    def test_join_record_list_view(self, request_factory, org_admin):
+
+        self.set_up()
+
+        join_records = factories.JoinRecord.create_batch(
+            size=5,
+            **{'organization__organization_uuid': TEST_USER_DATA['organization_uuid']})
+        request = request_factory.get('')
+        request.user = org_admin
+        request.session = self.session
+        response = views.JoinRecordViewSet.as_view({'get': 'list'})(request)
+        assert response.status_code == 200
+        assert len(response.data) == 5
+        assert set([str(jr.join_records_uuid) for jr in join_records]) == \
+            set([jr['join_records_uuid'] for jr in response.data])
+
+
+
+@pytest.mark.django_db()
 class TestJoinRecordCreateView(TestJoinRecordBase):
 
     def test_join_record_create_view(self, request_factory, org_admin):
