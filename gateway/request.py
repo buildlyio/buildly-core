@@ -148,7 +148,7 @@ class BaseGatewayRequest(object):
         endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         logic_module_model = LogicModuleModel.objects.get(
-            logic_module=logic_module, endpoint=endpoint)
+            logic_module_endpoint_name=logic_module.endpoint_name, endpoint=endpoint)
         relationships = logic_module_model.get_relationships()
         origin_lookup_field = logic_module_model.lookup_field_name
         return relationships, origin_lookup_field
@@ -295,7 +295,7 @@ class GatewayRequest(BaseGatewayRequest):
             if join_records:
                 related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
                     is_forward_lookup, relationship, join_records[0])
-                spec = self._get_swagger_spec(related_model.logic_module.name)
+                spec = self._get_swagger_spec(related_model.logic_module_endpoint_name)
 
                 for join_record in join_records:
 
@@ -303,7 +303,7 @@ class GatewayRequest(BaseGatewayRequest):
                         'pk': (str(getattr(join_record, related_record_field))),
                         'model': related_model.endpoint.strip('/'),
                         'method': self.request.META['REQUEST_METHOD'].lower(),
-                        'service': related_model.logic_module.name,
+                        'service': related_model.logic_module_endpoint_name,
                     }
 
                     # create and perform a service request
@@ -413,7 +413,7 @@ class AsyncGatewayRequest(BaseGatewayRequest):
         tasks = []
         for relationship, _ in relationships:
             related_model = relationship.related_model
-            tasks.append(self._get_swagger_spec(related_model.logic_module.name))
+            tasks.append(self._get_swagger_spec(related_model.logic_module_endpoint_name))
         await asyncio.gather(*tasks)
 
         tasks = []
@@ -449,14 +449,14 @@ class AsyncGatewayRequest(BaseGatewayRequest):
             if join_records:
                 related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
                     is_forward_lookup, relationship, join_records[0])
-                spec = await self._get_swagger_spec(related_model.logic_module.name)
+                spec = await self._get_swagger_spec(related_model.logic_module_endpoint_name)
                 for join_record in join_records:
                     request_kwargs = {
                         'pk': (str(join_record.related_record_id) if join_record.related_record_id is not None
                                else str(join_record.related_record_uuid)),
                         'model': related_model.endpoint.strip('/'),
                         'method': self.request.META['REQUEST_METHOD'].lower(),
-                        'service': related_model.logic_module.name,
+                        'service': related_model.logic_module_endpoint_name,
                     }
                     tasks.append(self._extend_content(spec, data_item[relationship.key], **request_kwargs))
 

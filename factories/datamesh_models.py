@@ -4,18 +4,10 @@ from datamesh.models import (LogicModuleModel as LogicModulModelM,
                              Relationship as RelationshipM,
                              JoinRecord as JoinRecordM)
 from factories import Organization
-from gateway.models import LogicModule as LogicModuleM
-
-
-class RandomLogicModule(DjangoModelFactory):
-    name = Faker('word')
-
-    class Meta:
-        model = LogicModuleM
 
 
 class LogicModuleModel(DjangoModelFactory):
-    logic_module = SubFactory(RandomLogicModule)
+    logic_module_endpoint_name = Faker('word')
 
     class Meta:
         model = LogicModulModelM
