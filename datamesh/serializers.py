@@ -18,9 +18,8 @@ class JoinRecordSerializer(serializers.ModelSerializer):
     related_model_name = serializers.ChoiceField(choices=_model_choices, write_only=True)
 
     def __init__(self, *args, **kwargs):
-        for model in LogicModuleModel.objects.select_related(
-                'logic_module__name').all().values('logic_module__name', 'model', 'pk'):
-            choice = model['logic_module__name'] + model['model']
+        for model in LogicModuleModel.objects.all().values('logic_module_endpoint_name', 'model', 'pk'):
+            choice = model['logic_module_endpoint_name'] + model['model']
             self._model_choices.append(choice)
             self._model_choices_map.update({choice: model['pk']})
         super().__init__(*args, **kwargs)
@@ -41,7 +40,7 @@ class JoinRecordSerializer(serializers.ModelSerializer):
         )
         return join_record
 
-    def update(self, instance: JoinRecord, validated_data: dict) -> dict:
+    def update(self, instance: JoinRecord, validated_data: dict) -> JoinRecord:
         origin_model_pk = self._model_choices_map[validated_data.pop('origin_model_name')]
         related_model_pk = self._model_choices_map[validated_data.pop('related_model_name')]
         relationship, _ = Relationship.objects.get_or_create(
@@ -58,9 +57,9 @@ class JoinRecordSerializer(serializers.ModelSerializer):
         """Add origin_model_name and related_model_name."""
         ret_repr = super().to_representation(instance)
         ret_repr.update(
-            {'origin_model_name': f'{instance.relationship.origin_model.logic_module.name}'
+            {'origin_model_name': f'{instance.relationship.origin_model.logic_module_endpoint_name}'
                 f'{instance.relationship.origin_model.model}',
-             'related_model_name': f'{instance.relationship.related_model.logic_module.name}'
+             'related_model_name': f'{instance.relationship.related_model.logic_module_endpoint_name}'
                 f'{instance.relationship.related_model.model}'})
         return ret_repr
 

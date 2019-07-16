@@ -16,17 +16,19 @@ class TestJoinRecordBase:
 
     def set_up(self):
         self.logic_module1 = factories.LogicModule(
-            name='document'
+            name='document',
+            endpoint_name='document'
         )
         self.logic_module2 = factories.LogicModule(
-            name='crm'
+            name='crm',
+            endpoint_name='crm'
         )
         self.logic_module_model1 = factories.LogicModuleModel(
-            logic_module=self.logic_module1,
+            logic_module_endpoint_name=self.logic_module1.endpoint_name,
             model='Document'
         )
         self.logic_module_model2 = factories.LogicModuleModel(
-            logic_module=self.logic_module2,
+            logic_module_endpoint_name=self.logic_module2.endpoint_name,
             model='Appointment'
         )
 
