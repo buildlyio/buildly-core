@@ -14,7 +14,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 @pytest.mark.django_db()
 @httpretty.activate
 def test_make_service_request_data_and_raw(auth_api_client, logic_module):
-    url = f'/beta/{logic_module.endpoint_name}/thumbnail/1/'
+    url = f'/{logic_module.endpoint_name}/thumbnail/1/'
     content = '{"details": "IT IS A TEST"}'
 
     # mock requests
@@ -46,7 +46,7 @@ def test_make_service_request_data_and_raw(auth_api_client, logic_module):
 @httpretty.activate
 def test_make_service_request_only_raw(auth_api_client, logic_module):
 
-    url = f'/beta/{logic_module.endpoint_name}/thumbnail/1/'
+    url = f'/{logic_module.endpoint_name}/thumbnail/1/'
     content = 'IT IS A TEST'
 
     # mock requests
@@ -78,7 +78,7 @@ def test_make_service_request_only_raw(auth_api_client, logic_module):
 @httpretty.activate
 def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic_module):
 
-    url = f'/beta/{logic_module.endpoint_name}/nowhere/'
+    url = f'/{logic_module.endpoint_name}/nowhere/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger.json')) as r:
@@ -104,7 +104,7 @@ def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic
 @httpretty.activate
 def test_make_service_request_to_unexisting_detail_endpoint(auth_api_client, logic_module):
 
-    url = f'/beta/{logic_module.endpoint_name}/nowhere/123/'
+    url = f'/{logic_module.endpoint_name}/nowhere/123/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger.json')) as r:
