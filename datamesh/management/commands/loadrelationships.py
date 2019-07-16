@@ -46,13 +46,13 @@ class Command(BaseCommand):
 
         origin_model, _ = LogicModuleModel.objects.get_or_create(
             model='Contact',
-            logic_module=crm_logic_module,
+            logic_module_endpoint_name=crm_logic_module.endpoint_name,
             endpoint='/contact/',
             lookup_field_name='id',
         )
         related_model, _ = LogicModuleModel.objects.get_or_create(
             model='SiteProfile',
-            logic_module=location_logic_module,
+            logic_module_endpoint_name=location_logic_module.endpoint_name,
             endpoint='/siteprofiles/',
             lookup_field_name='uuid',
         )
@@ -64,8 +64,8 @@ class Command(BaseCommand):
         eligible_join_records = []
         # create JoinRecords with contact.id and siteprofile_uuid for all contacts
         for contact in contacts:
+            organization_uuid = contact['fields']['organization_uuid']
             try:
-                organization_uuid = contact['fields']['organization_uuid']
                 organization = Organization.objects.get(pk=organization_uuid)
             except Organization.DoesNotExist:
                 print(f'Organization({organization_uuid}) not found.')

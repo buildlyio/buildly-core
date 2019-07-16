@@ -187,7 +187,7 @@ class APIGatewayView(views.APIView):
         endpoint = request.path[len(f'/{logic_module.endpoint_name}'):]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         logic_module_model = LogicModuleModel.objects.prefetch_related('joins_origins')\
-            .get(logic_module=logic_module, endpoint=endpoint)
+            .get(logic_module_endpoint_name=logic_module.endpoint_name, endpoint=endpoint)
         relationships = logic_module_model.get_relationships()
         origin_lookup_field = logic_module_model.lookup_field_name
 
@@ -222,7 +222,7 @@ class APIGatewayView(views.APIView):
                 related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
                     is_forward_lookup, relationship, join_records[0])
 
-                app = self._load_swagger_resource(related_model.logic_module.name)
+                app = self._load_swagger_resource(related_model.logic_module_endpoint_name)
 
                 for join_record in join_records:
 

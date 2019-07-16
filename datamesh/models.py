@@ -11,19 +11,19 @@ from workflow.models import Organization
 
 class LogicModuleModel(models.Model):
     logic_module_model_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    logic_module = models.ForeignKey(LogicModule, related_name='models', on_delete=models.CASCADE)
+    logic_module_endpoint_name = models.CharField(max_length=255, help_text="Without leading and trailing slashes")
     model = models.CharField(max_length=128)
     endpoint = models.CharField(max_length=255, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
     lookup_field_name = models.SlugField(max_length=64, default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'")
 
     class Meta:
         unique_together = (
-            'logic_module',
-            'model',
+            ('logic_module_endpoint_name', 'model'),
+            ('logic_module_endpoint_name', 'endpoint')
         )
 
     def __str__(self):
-        return f'{self.logic_module} - {self.model} - /{self.logic_module.endpoint_name}{self.endpoint}'
+        return f'{self.logic_module_endpoint_name} - {self.model} - /{self.logic_module_endpoint_name}{self.endpoint}'
 
     def get_relationships(self) -> List[Tuple[models.Model, bool]]:
         """
@@ -41,6 +41,10 @@ class LogicModuleModel(models.Model):
                                                  relationship.origin_model == self))
 
         return relationships_with_direction
+
+    def save(self, **kwargs):
+        self.logic_module_endpoint_name = self.logic_module_endpoint_name.strip('/')
+        super().save(**kwargs)
 
 
 class Relationship(models.Model):
