@@ -135,7 +135,7 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/beta/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
+    url = f'/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json')) as r:
@@ -191,7 +191,7 @@ def test_make_service_request_with_datamesh_list(auth_api_client, datamesh):
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/beta/{lm1.endpoint_name}/siteprofiles/'
+    url = f'/{lm1.endpoint_name}/siteprofiles/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json')) as r:
