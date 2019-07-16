@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from pyswagger import App
+from bravado_core.spec import Spec
 
 import factories
 from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records, service_response_mock
@@ -10,24 +11,19 @@ from workflow.tests.fixtures import auth_api_client
 
 
 @pytest.mark.django_db()
-@patch('gateway.views.APIGatewayView._load_swagger_resource')
-@patch('gateway.views.APIGatewayView._perform_service_request')
-def test_join_data_one_obj_w_relationships(mock_perform_request, mock_app, auth_api_client, relationship):
+@patch('gateway.request.GatewayRequest._get_swagger_spec')
+@patch('gateway.request.GatewayRequest._data_request')
+def test_join_data_one_obj_w_relationships(mock_perform_request, mock_spec, auth_api_client, relationship):
     factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2)
     # mock app
-    mock_app.return_value = Mock(App)
+    mock_spec.return_value = Mock(Spec)
 
     # mock first response
-    service_response = service_response_mock({
-        'id': 1,
-        'name': 'test',
-        'contact_uuid': 1
-    })
+    service_response = ({'id': 1, 'name': 'test', 'contact_uuid': 1},
+                        200, {'Content-Type': ['application/json']})
     # mock second response
-    expand_response = service_response_mock({
-        'id': 1,
-        'file': '/somewhere/128/',
-    })
+    expand_response = ({'id': 1, 'file': '/somewhere/128/',},
+                       200, {'Content-Type': ['application/json']})
     mock_perform_request.side_effect = [service_response, expand_response]
 
     # make api request
@@ -50,30 +46,23 @@ def test_join_data_one_obj_w_relationships(mock_perform_request, mock_app, auth_
 
 
 @pytest.mark.django_db()
-@patch('gateway.views.APIGatewayView._load_swagger_resource')
-@patch('gateway.views.APIGatewayView._perform_service_request')
-def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_app, auth_api_client,
+@patch('gateway.request.GatewayRequest._get_swagger_spec')
+@patch('gateway.request.GatewayRequest._data_request')
+def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_spec, auth_api_client,
                                                relationship, relationship2):
     factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2)
     factories.JoinRecord(relationship=relationship2, record_id=1, related_record_id=10)
 
-    mock_app.return_value = Mock(App)
+    mock_spec.return_value = Mock(Spec)
     # mock first response
-    service_response = service_response_mock({
-        'id': 1,
-        'name': 'test',
-        'contact_uuid': 1
-    })
+    service_response = ({'id': 1, 'name': 'test', 'contact_uuid': 1},
+                        200, {'Content-Type': ['application/json']})
     # mock second response
-    expand_response1 = service_response_mock({
-        'id': 2,
-        'file': '/documents/128/',
-    })
+    expand_response1 = ({'id': 2, 'file': '/documents/128/'},
+                        200, {'Content-Type': ['application/json']})
     # mock third response
-    expand_response2 = service_response_mock({
-        'id': 10,
-        'city': 'New York',
-    })
+    expand_response2 = ({'id': 10, 'city': 'New York'},
+                        200, {'Content-Type': ['application/json']})
     mock_perform_request.side_effect = [service_response, expand_response1, expand_response2]
 
     # make api request
@@ -100,20 +89,22 @@ def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_app, a
 
 
 @pytest.mark.django_db()
-@patch('gateway.views.APIGatewayView._load_swagger_resource')
-@patch('gateway.views.APIGatewayView._perform_service_request')
-def test_join_data_list(mock_perform_request, mock_app, auth_api_client, relationship_with_10_records):
-    mock_app.return_value = Mock(App)
+@patch('gateway.request.GatewayRequest._get_swagger_spec')
+@patch('gateway.request.GatewayRequest._data_request')
+def test_join_data_list(mock_perform_request, mock_spec, auth_api_client, relationship_with_10_records):
+    mock_spec.return_value = Mock(Spec)
 
     join_records = relationship_with_10_records.joinrecords.all()
     main_service_data = [{'uuid': item.record_uuid, 'name': f'Boiler #{i}'}
                          for i, item in enumerate(join_records)]
-    main_service_response = service_response_mock(main_service_data)
+    main_service_response = (main_service_data,
+                             200, {'Content-Type': ['application/json']})
 
     expand_responses = []
     for item in join_records:
         expand_responses.append(
-            service_response_mock({'uuid': item.related_record_uuid, 'file': '/documents/128/'})
+            ({'uuid': item.related_record_uuid, 'file': '/documents/128/'},
+             200, {'Content-Type': ['application/json']})
         )
     mock_perform_request.side_effect = [main_service_response] + expand_responses
 

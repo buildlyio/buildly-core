@@ -46,7 +46,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path)
 
         # validate result
@@ -63,7 +63,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = exception_obj
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path)
 
         # validate result
@@ -99,7 +99,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -130,7 +130,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'example')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'example')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -164,7 +164,7 @@ class DataMeshTest(TestCase):
         mock_expand_data.return_value = external_data
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -206,7 +206,7 @@ class DataMeshTest(TestCase):
         mock_expand_data.return_value = external_data
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -248,7 +248,7 @@ class DataMeshTest(TestCase):
         mock_expand_data.return_value = external_data
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -288,7 +288,7 @@ class DataMeshTest(TestCase):
         mock_logic_module_get.side_effect = exception_obj
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -317,7 +317,7 @@ class DataMeshTest(TestCase):
         self.core_user.is_superuser = True
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -354,7 +354,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
 
         # first without permissions
         expected_message = 'You do not have permission to perform this action.'
@@ -396,7 +396,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = [service_response, expand_response]
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'TRUE'})
 
         # validate result
@@ -441,7 +441,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = [service_response, expand_response]
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true',
                                           'should_not_remain_there': 'true'})
 
@@ -481,7 +481,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -509,7 +509,7 @@ class DataMeshTest(TestCase):
         self.lm.save()
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -555,7 +555,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.side_effect = [service_response, expand_response]
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -591,7 +591,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = service_response
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         response = self.client.get(path, {'aggregate': 'true'})
 
         # validate result
@@ -632,7 +632,7 @@ class DataMeshTest(TestCase):
         mock_perform_request.return_value = service_response
 
         # make api request and validate error
-        path = '/{}/{}/'.format(self.lm.endpoint_name, 'products')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'products')
         with self.assertRaises(error.URLError) as context:
             self.client.get(path, {'aggregate': 'true'})
             self.assertTrue(msg in context.exception)
