@@ -1,0 +1,82 @@
+{
+    "count": 2002,
+    "next": "http://locationservice:8080/siteprofiles/?limit=3&offset=3",
+    "previous": null,
+    "results": [
+        {
+            "uuid": "19a7f600-74a0-4123-9be5-dfa69aa172cc",
+            "country": "ES",
+            "organization_uuid": "08edc823-cf3b-4bfb-aa92-ce33a8e2817d",
+            "name": "",
+            "address_line1": "",
+            "address_line2": "",
+            "address_line3": "",
+            "address_line4": "",
+            "postcode": "",
+            "city": "",
+            "administrative_level1": "",
+            "administrative_level2": "",
+            "administrative_level3": "",
+            "administrative_level4": "",
+            "latitude": "0.0000000000000000",
+            "longitude": "0.0000000000000000",
+            "notes": "",
+            "create_date": "2019-06-28T12:51:16.789394+00:00",
+            "edit_date": "2019-06-28T12:51:16.789433+00:00",
+            "workflowlevel2_uuid": [
+                "14068389-b348-4ea7-9db6-b765e764ee61"
+            ],
+            "profiletype": 50
+        },
+        {
+            "uuid": "64193f72-d7ba-42f7-87d2-feca15ac157d",
+            "country": "ES",
+            "organization_uuid": "08edc823-cf3b-4bfb-aa92-ce33a8e2817d",
+            "name": "",
+            "address_line1": "",
+            "address_line2": "",
+            "address_line3": "",
+            "address_line4": "",
+            "postcode": "",
+            "city": "",
+            "administrative_level1": "",
+            "administrative_level2": "",
+            "administrative_level3": "",
+            "administrative_level4": "",
+            "latitude": "0.0000000000000000",
+            "longitude": "0.0000000000000000",
+            "notes": "",
+            "create_date": "2019-06-28T12:51:16.576675+00:00",
+            "edit_date": "2019-06-28T12:51:16.576711+00:00",
+            "workflowlevel2_uuid": [
+                "14068389-b348-4ea7-9db6-b765e764ee61"
+            ],
+            "profiletype": 2
+        },
+        {
+            "uuid": "b6b5ce2d-2dd9-4953-893f-023536f1b634",
+            "country": "GB",
+            "organization_uuid": "08edc823-cf3b-4bfb-aa92-ce33a8e2817d",
+            "name": "",
+            "address_line1": "",
+            "address_line2": "",
+            "address_line3": "",
+            "address_line4": "",
+            "postcode": "",
+            "city": "",
+            "administrative_level1": "",
+            "administrative_level2": "",
+            "administrative_level3": "",
+            "administrative_level4": "",
+            "latitude": "0.0000000000000000",
+            "longitude": "0.0000000000000000",
+            "notes": "",
+            "create_date": "2019-06-28T12:51:16.603789+00:00",
+            "edit_date": "2019-06-28T12:51:16.603823+00:00",
+            "workflowlevel2_uuid": [
+                "14068389-b348-4ea7-9db6-b765e764ee61"
+            ],
+            "profiletype": 3
+        }
+    ]
+}
