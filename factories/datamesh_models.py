@@ -1,4 +1,8 @@
-from factory import DjangoModelFactory, SubFactory, Faker
+import random
+import string
+import uuid
+
+from factory import DjangoModelFactory, SubFactory, LazyAttribute
 
 from datamesh.models import (LogicModuleModel as LogicModulModelM,
                              Relationship as RelationshipM,
@@ -7,7 +11,8 @@ from factories import Organization
 
 
 class LogicModuleModel(DjangoModelFactory):
-    logic_module_endpoint_name = Faker('word')
+    logic_module_endpoint_name = LazyAttribute(
+        lambda o: ''.join(random.choices(string.ascii_uppercase + string.digits, k=16)))
 
     class Meta:
         model = LogicModulModelM
@@ -24,8 +29,8 @@ class Relationship(DjangoModelFactory):
 class JoinRecord(DjangoModelFactory):
     relationship = SubFactory(Relationship)
     organization = SubFactory(Organization)
-    record_id = 1
-    related_record_id = 2
+    record_id = LazyAttribute(lambda x: random.randrange(0, 10000))
+    related_record_uuid = LazyAttribute(lambda o: uuid.uuid4())
 
     class Meta:
         model = JoinRecordM

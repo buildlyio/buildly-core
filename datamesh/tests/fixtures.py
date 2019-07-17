@@ -6,6 +6,8 @@ from pyswagger.io import Response as PySwaggerResponse
 
 import factories
 
+from workflow.tests.fixtures import org
+
 
 @pytest.fixture
 def join_record():
@@ -33,7 +35,7 @@ def relationship2(relationship):
 
 
 @pytest.fixture
-def relationship_with_10_records():
+def relationship_with_10_records(org):
     lm = factories.LogicModule(name='Products Service', endpoint_name='products')
     lmm = factories.LogicModuleModel(logic_module_endpoint_name=lm.endpoint_name,
                                      model='Product', endpoint='/products/', lookup_field_name='uuid')
@@ -45,13 +47,46 @@ def relationship_with_10_records():
     for _ in range(10):
         factories.JoinRecord.create(relationship=relationship,
                                     record_uuid=uuid.uuid4(), record_id=None,
-                                    related_record_uuid=uuid.uuid4(), related_record_id=None)
+                                    related_record_uuid=uuid.uuid4(), related_record_id=None,
+                                    organization=org)
     return relationship
+
+
+@pytest.fixture
+def document_logic_module():
+    return factories.LogicModule(
+        name='document',
+        endpoint_name='document'
+    )
+
+
+@pytest.fixture
+def crm_logic_module():
+    return factories.LogicModule(
+        name='crm',
+        endpoint_name='crm'
+    )
 
 
 @pytest.fixture
 def logic_module_model():
     return factories.LogicModuleModel()
+
+
+@pytest.fixture
+def document_logic_module_model():
+    return factories.LogicModuleModel(
+        logic_module_endpoint_name='document',
+        model='Document'
+    )
+
+
+@pytest.fixture
+def appointment_logic_module_model():
+    return factories.LogicModuleModel(
+        logic_module_endpoint_name='crm',
+        model='Appointment'
+    )
 
 
 def service_response_mock(data):
@@ -61,4 +96,3 @@ def service_response_mock(data):
     service_response.header = headers
     service_response.data = data
     return service_response
-

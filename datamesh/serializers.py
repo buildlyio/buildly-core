@@ -18,6 +18,7 @@ class JoinRecordSerializer(serializers.ModelSerializer):
     related_model_name = serializers.ChoiceField(choices=_model_choices, write_only=True)
 
     def __init__(self, *args, **kwargs):
+        """Define the choices for valid LogicModuleModels."""
         for model in LogicModuleModel.objects.all().values('logic_module_endpoint_name', 'model', 'pk'):
             choice = model['logic_module_endpoint_name'] + model['model']
             self._model_choices.append(choice)
@@ -41,6 +42,7 @@ class JoinRecordSerializer(serializers.ModelSerializer):
         return join_record
 
     def update(self, instance: JoinRecord, validated_data: dict) -> JoinRecord:
+        """Automatically set the relationship from the passed models."""
         origin_model_pk = self._model_choices_map[validated_data.pop('origin_model_name')]
         related_model_pk = self._model_choices_map[validated_data.pop('related_model_name')]
         relationship, _ = Relationship.objects.get_or_create(

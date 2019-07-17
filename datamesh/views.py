@@ -1,13 +1,23 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 
-from datamesh.models import JoinRecord
-from datamesh.serializers import JoinRecordSerializer
+from .filters import JoinRecordFilter
+from .mixins import OrganizationQuerySetMixin
+from .models import JoinRecord
+from .permissions import OrganizationPermission
+from .serializers import JoinRecordSerializer
 
 
-class JoinRecordViewSet(viewsets.ModelViewSet):
+class JoinRecordViewSet(OrganizationQuerySetMixin,
+                        viewsets.ModelViewSet):
 
-    # ToDo:
-    #  - add filters for `relationship`, the `record_id/uuid` and `related_record_id/uuid`-fields
-    #  - organization permissions
     queryset = JoinRecord.objects.all()
     serializer_class = JoinRecordSerializer
+    permission_classes = (OrganizationPermission, )
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = JoinRecordFilter
+    filter_fields = ('relationship__key',
+                     'record_id',
+                     'record_uuid',
+                     'related_record_id',
+                     'related_record_uuid',)

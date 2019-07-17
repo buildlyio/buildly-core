@@ -7,14 +7,15 @@ from bravado_core.spec import Spec
 
 import factories
 from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records, service_response_mock
-from workflow.tests.fixtures import auth_api_client
+from workflow.tests.fixtures import auth_api_client, org
 
 
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
 @patch('gateway.request.GatewayRequest._data_request')
 def test_join_data_one_obj_w_relationships(mock_perform_request, mock_spec, auth_api_client, relationship):
-    factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2)
+    factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2,
+                         record_uuid=None, related_record_uuid=None)
     # mock app
     mock_spec.return_value = Mock(Spec)
 
@@ -50,8 +51,10 @@ def test_join_data_one_obj_w_relationships(mock_perform_request, mock_spec, auth
 @patch('gateway.request.GatewayRequest._data_request')
 def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_spec, auth_api_client,
                                                relationship, relationship2):
-    factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2)
-    factories.JoinRecord(relationship=relationship2, record_id=1, related_record_id=10)
+    factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2,
+                         record_uuid=None, related_record_uuid=None)
+    factories.JoinRecord(relationship=relationship2, record_id=1, related_record_id=10,
+                         record_uuid=None, related_record_uuid=None)
 
     mock_spec.return_value = Mock(Spec)
     # mock first response
@@ -91,7 +94,7 @@ def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_spec, 
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
 @patch('gateway.request.GatewayRequest._data_request')
-def test_join_data_list(mock_perform_request, mock_spec, auth_api_client, relationship_with_10_records):
+def test_join_data_list(mock_perform_request, mock_spec, auth_api_client, relationship_with_10_records, org):
     mock_spec.return_value = Mock(Spec)
 
     join_records = relationship_with_10_records.joinrecords.all()
