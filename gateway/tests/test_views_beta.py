@@ -12,11 +12,12 @@ from .fixtures import logic_module, datamesh
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
+@pytest.mark.parametrize("content,content_type", [('{"details": "IT IS A TEST"}', 'application/json'),
+                                                  ('IT IS A TEST', 'text/html; charset=utf-8')])
 @pytest.mark.django_db()
 @httpretty.activate
-def test_make_service_request_data_and_raw(auth_api_client, logic_module):
+def test_make_service_request_data_and_raw(auth_api_client, logic_module, content, content_type):
     url = f'/{logic_module.endpoint_name}/thumbnail/1/'
-    content = '{"details": "IT IS A TEST"}'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
@@ -31,7 +32,7 @@ def test_make_service_request_data_and_raw(auth_api_client, logic_module):
         httpretty.GET,
         f'{logic_module.endpoint}/thumbnail/1/',
         body=content,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': content_type}
     )
 
     # make api request
@@ -40,39 +41,7 @@ def test_make_service_request_data_and_raw(auth_api_client, logic_module):
     assert response.status_code == 200
     assert response.content == content.encode()
     assert response.has_header('Content-Type')
-    assert response.get('Content-Type') == 'application/json'
-
-
-@pytest.mark.django_db()
-@httpretty.activate
-def test_make_service_request_only_raw(auth_api_client, logic_module):
-
-    url = f'/{logic_module.endpoint_name}/thumbnail/1/'
-    content = 'IT IS A TEST'
-
-    # mock requests
-    with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
-        swagger_body = r.read()
-    httpretty.register_uri(
-        httpretty.GET,
-        f'{logic_module.endpoint}/docs/swagger.json',
-        body=swagger_body,
-        adding_headers={'Content-Type': 'application/json'}
-    )
-    httpretty.register_uri(
-        httpretty.GET,
-        f'{logic_module.endpoint}/thumbnail/1/',
-        body=content,
-        adding_headers={'Content-Type': 'text/html; charset=utf-8'}
-    )
-
-    # make api request
-    response = auth_api_client.get(url)
-
-    assert response.status_code == 200
-    assert response.content == content.encode()
-    assert response.has_header('Content-Type')
-    assert response.get('Content-Type') == 'text/html; charset=utf-8'
+    assert response.get('Content-Type') == content_type
 
 
 @pytest.mark.django_db()
