@@ -13,7 +13,7 @@ def test_join_record_serializer_from_instance(request_factory, join_record):
     serializer = JoinRecordSerializer(instance=join_record,
                                       context={'request': request})
     keys = [
-        "join_records_uuid",
+        "join_record_uuid",
         "record_id",
         "record_uuid",
         "related_record_id",

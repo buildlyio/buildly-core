@@ -49,8 +49,8 @@ class TestJoinRecordListView(TestJoinRecordBase):
         response = views.JoinRecordViewSet.as_view({'get': 'list'})(request)
         assert response.status_code == 200
         assert len(response.data) == 5
-        assert set([str(jr.join_records_uuid) for jr in join_records]) == \
-            set([jr['join_records_uuid'] for jr in response.data])
+        assert set([str(jr.join_record_uuid) for jr in join_records]) == \
+            set([jr['join_record_uuid'] for jr in response.data])
 
 
 
