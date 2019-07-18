@@ -493,8 +493,8 @@ class AsyncGatewayRequest(BaseGatewayRequest):
             async with method(url, data=self.get_request_data(), headers=self.get_headers()) as response:
                 try:
                     content = await response.json()
-                except aiohttp.ContentTypeError:
-                    content = response.content
+                except json.JSONDecodeError:
+                    content = await response.content.read()
             return_data = (content, response.status, response.headers)
 
             # Cache data if request is cache-valid
