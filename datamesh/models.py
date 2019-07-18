@@ -65,7 +65,7 @@ class Relationship(models.Model):
 
 
 class JoinRecord(models.Model):
-    join_records_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    join_record_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     relationship = models.ForeignKey(Relationship, related_name='joinrecords', on_delete=models.CASCADE)
     record_id = models.PositiveIntegerField(blank=True, null=True)
     record_uuid = models.UUIDField(blank=True, null=True)

@@ -1,15 +1,23 @@
-from rest_framework import mixins
-from rest_framework.viewsets import GenericViewSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
 
-from datamesh.models import JoinRecord
-from datamesh.serializers import JoinRecordSerializer
+from .filters import JoinRecordFilter
+from .mixins import OrganizationQuerySetMixin
+from .models import JoinRecord
+from .permissions import OrganizationPermission
+from .serializers import JoinRecordSerializer
 
 
-class JoinRecordViewSet(mixins.CreateModelMixin,
-                        mixins.RetrieveModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin,
-                        GenericViewSet):
+class JoinRecordViewSet(OrganizationQuerySetMixin,
+                        viewsets.ModelViewSet):
 
     queryset = JoinRecord.objects.all()
     serializer_class = JoinRecordSerializer
+    permission_classes = (OrganizationPermission, )
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = JoinRecordFilter
+    filter_fields = ('relationship__key',
+                     'record_id',
+                     'record_uuid',
+                     'related_record_id',
+                     'related_record_uuid',)
