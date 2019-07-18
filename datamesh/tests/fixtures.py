@@ -87,12 +87,3 @@ def appointment_logic_module_model():
         logic_module_endpoint_name='crm',
         model='Appointment'
     )
-
-
-def service_response_mock(data):
-    headers = {'Content-Type': ['application/json']}
-    service_response = Mock(PySwaggerResponse)
-    service_response.status = 200
-    service_response.header = headers
-    service_response.data = data
-    return service_response

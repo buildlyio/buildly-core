@@ -2,11 +2,10 @@ import json
 from unittest.mock import Mock, patch
 
 import pytest
-from pyswagger import App
 from bravado_core.spec import Spec
 
 import factories
-from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records, service_response_mock
+from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records
 from workflow.tests.fixtures import auth_api_client, org
 
 
