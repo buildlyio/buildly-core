@@ -21,11 +21,11 @@ class TestSyncDataMesh:
         class ClientMock:
             def request(self, **kwargs):
                 return {'id': 1, 'file': '/somewhere/128/',}
-        client = ClientMock()
+        client_map = {relationship.related_model.logic_module_endpoint_name: ClientMock()}
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        datamesh.extend_data(data, client)
+        datamesh.extend_data(data, client_map)
 
         # validate result
         expected_data = {
@@ -58,11 +58,14 @@ class TestSyncDataMesh:
                 if kwargs['model'] == 'siteprofile':
                     return {'id': 10, 'city': 'New York'}
                 return {}
-        client = ClientMock()
+        client_map = {
+            relationship.related_model.logic_module_endpoint_name: ClientMock(),
+            relationship2.related_model.logic_module_endpoint_name: ClientMock(),
+        }
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        datamesh.extend_data(data, client)
+        datamesh.extend_data(data, client_map)
 
         # validate result
         expected_data = {
@@ -95,11 +98,11 @@ class TestSyncDataMesh:
         class ClientMock:
             def request(self, **kwargs):
                 return {'uuid': kwargs['pk'], 'file': mocked_response_data[kwargs['pk']]}
-        client = ClientMock()
+        client_map = {relationship_with_10_records.related_model.logic_module_endpoint_name: ClientMock()}
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        datamesh.extend_data(data, client)
+        datamesh.extend_data(data, client_map)
 
         for i, item in enumerate(data):
             assert item['uuid'] == str(join_records[i].record_uuid)
@@ -123,12 +126,12 @@ class TestAsyncDataMesh:
         class ClientMock:
             async def request(self, **kwargs):
                 return {'id': 1, 'file': '/somewhere/128/',}
-        client = ClientMock()
+        client_map = {relationship.related_model.logic_module_endpoint_name: ClientMock()}
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
 
-        asyncio.run(datamesh.async_extend_data(data, client))
+        asyncio.run(datamesh.async_extend_data(data, client_map))
 
         # validate result
         expected_data = {
@@ -161,11 +164,14 @@ class TestAsyncDataMesh:
                 if kwargs['model'] == 'siteprofile':
                     return {'id': 10, 'city': 'New York'}
                 return {}
-        client = ClientMock()
+        client_map = {
+            relationship.related_model.logic_module_endpoint_name: ClientMock(),
+            relationship2.related_model.logic_module_endpoint_name: ClientMock(),
+        }
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        asyncio.run(datamesh.async_extend_data(data, client))
+        asyncio.run(datamesh.async_extend_data(data, client_map))
 
         # validate result
         expected_data = {
@@ -198,11 +204,11 @@ class TestAsyncDataMesh:
         class ClientMock:
             async def request(self, **kwargs):
                 return {'uuid': kwargs['pk'], 'file': mocked_response_data[kwargs['pk']]}
-        client = ClientMock()
+        client_map = {relationship_with_10_records.related_model.logic_module_endpoint_name: ClientMock()}
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        asyncio.run(datamesh.async_extend_data(data, client))
+        asyncio.run(datamesh.async_extend_data(data, client_map))
 
         for i, item in enumerate(data):
             assert item['uuid'] == str(join_records[i].record_uuid)
