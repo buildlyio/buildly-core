@@ -59,7 +59,7 @@ class Command(BaseCommand):
         relationship, _ = Relationship.objects.get_or_create(
             origin_model=origin_model,
             related_model=related_model,
-            key='siteprofile_relationship'
+            key='contact_siteprofile_relationship'
         )
         eligible_join_records = []
         # create JoinRecords with contact.id and siteprofile_uuid for all contacts
