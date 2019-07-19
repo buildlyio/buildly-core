@@ -4,7 +4,6 @@ from rest_framework import viewsets
 from .filters import JoinRecordFilter
 from .mixins import OrganizationQuerySetMixin
 from .models import JoinRecord
-from .permissions import OrganizationPermission
 from .serializers import JoinRecordSerializer
 
 
@@ -13,7 +12,6 @@ class JoinRecordViewSet(OrganizationQuerySetMixin,
 
     queryset = JoinRecord.objects.all()
     serializer_class = JoinRecordSerializer
-    permission_classes = (OrganizationPermission, )
     filter_backends = (DjangoFilterBackend,)
     filter_class = JoinRecordFilter
     filter_fields = ('relationship__key',
