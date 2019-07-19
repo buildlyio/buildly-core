@@ -50,21 +50,18 @@ class DataMesh:
                         }
                     }
 
-    def extend_data(self, data: typing.Union[dict, list], client: typing.Any, asynchronous: bool = False):
+    def extend_data(self, data: typing.Union[dict, list], client: typing.Any) -> None:
         """
         Extends given data according to this DataMesh's relationships.
         For getting extended data it uses a client object.
         """
-        if asynchronous:
-            asyncio.run(self._async_extend_data(data, client))
-        else:
-            if isinstance(data, dict):
-                # one-object JSON
-                self._add_nested_data(data, client)
-            elif isinstance(data, list):
-                # many-objects JSON
-                for data_item in data:
-                    self._add_nested_data(data_item, client)
+        if isinstance(data, dict):
+            # one-object JSON
+            self._add_nested_data(data, client)
+        elif isinstance(data, list):
+            # many-objects JSON
+            for data_item in data:
+                self._add_nested_data(data_item, client)
 
     def _add_nested_data(self, data_item: dict, client: typing.Any) -> None:
         """
@@ -92,9 +89,9 @@ class DataMesh:
             else:
                 raise AttributeError(f'DataMesh Error: Client should have request method')
 
-    async def _async_extend_data(self, data, client):
+    async def async_extend_data(self, data: typing.Union[dict, list], client: typing.Any):
         """
-        Wraps async aggregation logic
+        Async aggregation logic
         """
         tasks = []
         if isinstance(data, dict):
