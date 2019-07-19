@@ -16,8 +16,7 @@ from rest_framework.authentication import get_authorization_header
 from . import exceptions
 from . import utils
 from .models import LogicModule
-from datamesh.models import LogicModuleModel, JoinRecord, Relationship
-from datamesh import utils as datamesh_utils
+from datamesh.services import DataMesh
 from workflow import models as wfm
 
 logger = logging.getLogger(__name__)
@@ -141,8 +140,8 @@ class BaseGatewayRequest(object):
 
         return method, url
 
-    def get_datamesh_relationships(self) -> Tuple[List[Tuple[Relationship, bool]], str]:
-        """ Get DataMesh relationships and lookup field name for the top level model """
+    def get_datamesh(self) -> DataMesh:
+        """ Get DataMesh object for the top level model """
         service_name = self.url_kwargs['service']
         logic_module = self._get_logic_module(service_name)
 
@@ -150,11 +149,7 @@ class BaseGatewayRequest(object):
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
         endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        logic_module_model = LogicModuleModel.objects.get(
-            logic_module_endpoint_name=logic_module.endpoint_name, endpoint=endpoint)
-        relationships = logic_module_model.get_relationships()
-        origin_lookup_field = logic_module_model.lookup_field_name
-        return relationships, origin_lookup_field
+        return DataMesh(logic_module_endpoint=logic_module.endpoint_name, model_endpoint=endpoint)
 
 
 class GatewayRequest(BaseGatewayRequest):
@@ -269,57 +264,13 @@ class GatewayRequest(BaseGatewayRequest):
                 # In case of pagination take 'results' as a items data
                 resp_data = resp_data.get('results', None)
 
-        relationships, origin_lookup_field = self.get_datamesh_relationships()
-
-        if isinstance(resp_data, dict):
-            # detailed view
-            self._add_nested_data(resp_data, relationships, origin_lookup_field)
-        elif isinstance(resp_data, list):
-            # list view
-            for data_item in resp_data:
-                self._add_nested_data(data_item, relationships, origin_lookup_field)
-
-    def _add_nested_data(self,
-                         data_item: dict,
-                         relationships: List[Tuple[Relationship, bool]],
-                         origin_lookup_field: str) -> None:
-        """
-        Nest data retrieved from related services.
-        """
-        # remove query_params from original request
-        self.request._request.GET = QueryDict(mutable=True)
-
-        origin_pk = data_item.get(origin_lookup_field)
-        if not origin_pk:
-            raise exceptions.DataMeshError(
-                f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
-                f'not found in response.')
-
-        for relationship, is_forward_lookup in relationships:
-            data_item[relationship.key] = []
-            join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
-
-            # now backwards get related objects through join_records
-            if join_records:
-                related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
-                    is_forward_lookup, relationship, join_records[0])
-                spec = self._get_swagger_spec(related_model.logic_module_endpoint_name)
-
-                for join_record in join_records:
-
-                    request_kwargs = {
-                        'pk': (str(getattr(join_record, related_record_field))),
-                        'model': related_model.endpoint.strip('/'),
-                        'method': self.request.META['REQUEST_METHOD'].lower(),
-                        'service': related_model.logic_module_endpoint_name,
-                    }
-
-                    # create and perform a service request
-                    content, _, _ = self._data_request(spec=spec, **request_kwargs)
-                    if isinstance(content, dict):
-                        data_item[relationship.key].append(dict(content))
-                    else:
-                        logger.error(f'No response data for join record (request params: {request_kwargs})')
+        datamesh = self.get_datamesh()
+        specs = []
+        for service in datamesh.related_logic_modules:
+            specs.append(self._get_swagger_spec(service))
+        #TODO: create client (clients)
+        client = None
+        datamesh.extend_data(resp_data, client)
 
     # ===================================================================
     # OLD DATAMESH METHODS (TODO: remove after migrating to new DataMesh)
@@ -513,65 +464,11 @@ class AsyncGatewayRequest(BaseGatewayRequest):
                 # In case of pagination take 'results' as a items data
                 resp_data = resp_data.get('results', None)
 
-        relationships, origin_lookup_field = self.get_datamesh_relationships()
-
-        # asynchronously getting all swagger specs from all related services
+        datamesh = self.get_datamesh()
         tasks = []
-        for relationship, _ in relationships:
-            related_model = relationship.related_model
-            tasks.append(self._get_swagger_spec(related_model.logic_module_endpoint_name))
-        await asyncio.gather(*tasks)
-
-        tasks = []
-        if isinstance(resp_data, dict):
-            # detailed view
-            tasks.extend(await self._prepare_datamesh_tasks(resp_data, relationships, origin_lookup_field))
-        elif isinstance(resp_data, list):
-            # list view
-            for data_item in resp_data:
-                tasks.extend(await self._prepare_datamesh_tasks(data_item, relationships, origin_lookup_field))
-        await asyncio.gather(*tasks)
-
-    async def _prepare_datamesh_tasks(self,
-                                      data_item: dict,
-                                      relationships: List[Tuple['Relationship', bool]],
-                                      origin_lookup_field: str) -> list:
-        """ Creates a list of coroutines for extending data from other services asynchronously """
-        tasks = []
-
-        # remove query_params from original request
-        self.request._request.GET = QueryDict(mutable=True)
-
-        origin_pk = data_item.get(origin_lookup_field)
-        if not origin_pk:
-            raise exceptions.DataMeshError(
-                f'DataMeshConfigurationError: lookup_field_name "{origin_lookup_field}" '
-                f'not found in response.')
-        for relationship, is_forward_lookup in relationships:
-            data_item[relationship.key] = []
-            join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
-
-            # now backwards get related objects through join_records
-            if join_records:
-                related_model, related_record_field = datamesh_utils.prepare_lookup_kwargs(
-                    is_forward_lookup, relationship, join_records[0])
-                spec = await self._get_swagger_spec(related_model.logic_module_endpoint_name)
-                for join_record in join_records:
-                    request_kwargs = {
-                        'pk': (str(join_record.related_record_id) if join_record.related_record_id is not None
-                               else str(join_record.related_record_uuid)),
-                        'model': related_model.endpoint.strip('/'),
-                        'method': self.request.META['REQUEST_METHOD'].lower(),
-                        'service': related_model.logic_module_endpoint_name,
-                    }
-                    tasks.append(self._extend_content(spec, data_item[relationship.key], **request_kwargs))
-
-        return tasks
-
-    async def _extend_content(self, spec: Spec, placeholder: list, **request_kwargs) -> None:
-        """ Performs data request and extends data with received data """
-        content, _, _ = await self._data_request(spec=spec, **request_kwargs)
-        if isinstance(content, dict):
-            placeholder.append(dict(content))
-        else:
-            logger.error(f'No response data for join record (request params: {request_kwargs})')
+        for service in datamesh.related_logic_modules:
+            tasks.append(self._get_swagger_spec(service))
+        specs = await asyncio.gather(*tasks)
+        #TODO: create async client (clients)
+        client = None
+        await datamesh.async_extend_data(resp_data, client)
