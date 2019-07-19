@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 import factories
@@ -125,7 +127,8 @@ class TestAsyncDataMesh:
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        datamesh.extend_data(data, client, asynchronous=True)
+
+        asyncio.run(datamesh.async_extend_data(data, client))
 
         # validate result
         expected_data = {
@@ -162,7 +165,7 @@ class TestAsyncDataMesh:
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        datamesh.extend_data(data, client, asynchronous=True)
+        asyncio.run(datamesh.async_extend_data(data, client))
 
         # validate result
         expected_data = {
@@ -199,7 +202,7 @@ class TestAsyncDataMesh:
 
         datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
                             model_endpoint=logic_module_model.endpoint)
-        datamesh.extend_data(data, client, asynchronous=True)
+        asyncio.run(datamesh.async_extend_data(data, client))
 
         for i, item in enumerate(data):
             assert item['uuid'] == str(join_records[i].record_uuid)
