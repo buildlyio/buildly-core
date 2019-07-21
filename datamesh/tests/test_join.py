@@ -11,7 +11,7 @@ from workflow.tests.fixtures import auth_api_client, org
 
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
-@patch('gateway.request.GatewayRequest._data_request')
+@patch('gateway.request.SwaggerClient.request')
 def test_join_data_one_obj_w_relationships(mock_perform_request, mock_spec, auth_api_client, relationship):
     factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2,
                          record_uuid=None, related_record_uuid=None)
@@ -47,7 +47,7 @@ def test_join_data_one_obj_w_relationships(mock_perform_request, mock_spec, auth
 
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
-@patch('gateway.request.GatewayRequest._data_request')
+@patch('gateway.request.SwaggerClient.request')
 def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_spec, auth_api_client,
                                                relationship, relationship2):
     factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2,
@@ -92,7 +92,7 @@ def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_spec, 
 
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
-@patch('gateway.request.GatewayRequest._data_request')
+@patch('gateway.request.SwaggerClient.request')
 def test_join_data_list(mock_perform_request, mock_spec, auth_api_client, relationship_with_10_records, org):
     mock_spec.return_value = Mock(Spec)
 
