@@ -90,8 +90,8 @@ pipeline:
       - cd docs-site/hugo/content/bifrost/
       - cp ../../../../docs/_index.md .
       - cd ../../../api/bifrost
-      - cp ../../../docs/swagger.json .
-      - cd ../../
+      - cp ../../../swagger.json .
+      - cd ../
       - git add .
       - git diff-index --quiet HEAD || git commit -m "Updated documentation for BiFrost"
       - git push origin master

@@ -12,7 +12,7 @@ aliases = [
 
 BiFrost is a core authentication layer for microservice architectures in [Walhall](/walhall). It includes the following features: 
 
--  **API gateway:** Combines all endpoints from the app's [logic modules](/library#about-logic-modules) into a single API.
+-  **API gateway:** Combines all endpoints from the app's [logic modules](/library/logic-modules) into a single API.
 -  **User & permissions management:** Provides a simple [role-based access control (RBAC) model](https://en.wikipedia.org/wiki/Role-based_access_control) for managing permissions to entities in your app.
 -  **Data mesh:** A join table for aggregating and sharing data between logic modules.
 

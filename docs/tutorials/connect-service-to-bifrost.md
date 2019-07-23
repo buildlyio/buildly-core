@@ -71,7 +71,7 @@ The BiFrost JWT payload looks like this:
 
 ## Add service to your Walhall app and deploy
 
-Now you have completed the minimum necessary configurations to make your service work with BiFrost. The last step is to add it to a Walhall app as a [logic module](/library#about-logic-modules) and deploy it.
+Now you have completed the minimum necessary configurations to make your service work with BiFrost. The last step is to add it to a Walhall app as a [logic module](/library/logic-modules) and deploy it.
 
 See the [Add custom logic module tutorial](/walhall/tutorials/add-logic-module-to-application) for instructions on how to do so.
 
