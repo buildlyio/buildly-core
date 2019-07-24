@@ -2,8 +2,12 @@ import logging
 import asyncio
 from typing import Any, Dict, Generator, Union
 
-from .models import LogicModuleModel, JoinRecord
+from django.apps import apps
+from django.forms.models import model_to_dict
+
+from .models import LogicModuleModel, Relationship, JoinRecord
 from .utils import prepare_lookup_kwargs
+from .exceptions import DatameshConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -14,20 +18,22 @@ class DataMesh:
     For each model DataMesh object should be created.
     """
 
-    def __init__(self, logic_module_endpoint: str, model_endpoint: str):
+    def __init__(self, logic_module_endpoint: str, model_endpoint: str, access_validator: Any = None):
         self._logic_module_model = LogicModuleModel.objects.get(logic_module_endpoint_name=logic_module_endpoint,
                                                                 endpoint=model_endpoint)
         self._relationships = self._logic_module_model.get_relationships()
         self._origin_lookup_field = self._logic_module_model.lookup_field_name
+        self._access_validator = access_validator
+        self._cache = {}
 
     @property
     def related_logic_modules(self) -> list:
         """
-        Gets a list of logic modules names that are related to current model
+        Gets a list of logic modules names that are related to current model (exclude local logic modules)
         """
         if not hasattr(self, '_related_logic_modules'):
             modules_list = [relationship.related_model.logic_module_endpoint_name
-                            for relationship, _ in self._relationships]
+                            for relationship, _ in self._relationships if not relationship.related_model.is_local]
             self._related_logic_modules = list(dict.fromkeys(modules_list))
         return self._related_logic_modules
 
@@ -47,6 +53,7 @@ class DataMesh:
                             'pk': (str(getattr(join_record, related_record_field))),
                             'model': related_model.endpoint.strip('/'),
                             'service': related_model.logic_module_endpoint_name,
+                            'pk_name': related_model.lookup_field_name,
                         }
 
                     yield relationship, params
@@ -64,22 +71,53 @@ class DataMesh:
             for data_item in data:
                 self._add_nested_data(data_item, client_map)
 
+    def _extend_with_local(self, data_item: dict, relationship: Relationship, params: dict) -> None:
+        """ Extend data from local object (via Django ORM query)"""
+        cache_key = f"{params['service']}.{params['model']}.{params['pk']}"
+        if cache_key in self._cache:
+            data_item[relationship.key].append(self._cache[cache_key])
+            return
+        try:
+            model = apps.get_model(app_label=params['service'], model_name=params['model'])
+        except LookupError as e:
+            raise DatameshConfigurationError(f'Data Mesh configuration error: {e}')
+        lookup = {
+            params['pk_name']: params['pk']
+        }
+        try:
+            obj = model.objects.get(**lookup)
+        except model.DoesNotExist as e:
+            logger.warning(f'{e}, params: {lookup}')
+        else:
+            # TODO: need to validate object access, like utils.validate_object_access(request, obj)
+            if self._access_validator:
+                if hasattr(self._access_validator, 'validate') and callable(self._access_validator.validate):
+                    self._access_validator.validate(obj)
+                else:
+                    raise DatameshConfigurationError(f'DataMesh Error: Access Validator should have validate method')
+            obj_dict = model_to_dict(obj)
+            data_item[relationship.key].append(obj_dict)
+            self._cache[cache_key] = obj_dict
+
     def _add_nested_data(self, data_item: dict, client_map: Dict[str, Any]) -> None:
         """
         Nest data retrieved from related services.
         """
         origin_pk = data_item.get(self._origin_lookup_field)
         if not origin_pk:
-            raise KeyError(
-                f'DataMesh Error: lookup_field_name "{self._origin_lookup_field}" not found in response.'
+            raise DatameshConfigurationError(
+                f'DataMesh configuration error: lookup_field_name "{self._origin_lookup_field}" not found in response.'
             )
 
         for relationship, _ in self._relationships:
             data_item[relationship.key] = []
 
         for relationship, params in self.get_related_records_meta(origin_pk):
-            params['method'] = 'get'
+            if relationship.related_model.is_local:
+                self._extend_with_local(data_item, relationship, params)
+                continue
 
+            params['method'] = 'get'
             client = client_map.get(params['service'])
 
             if hasattr(client, 'request') and callable(client.request):
@@ -91,7 +129,7 @@ class DataMesh:
                 else:
                     logger.error(f'No response data for join record (request params: {params})')
             else:
-                raise AttributeError(f'DataMesh Error: Client should have request method')
+                raise DatameshConfigurationError(f'DataMesh Error: Client should have request method')
 
     async def async_extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]):
         """
@@ -121,6 +159,10 @@ class DataMesh:
             data_item[relationship.key] = []
 
         for relationship, params in self.get_related_records_meta(origin_pk):
+            if relationship.related_model.is_local:
+                self._extend_with_local(data_item, relationship, params)
+                continue
+
             params['method'] = 'get'
             client = client_map.get(params['service'])
             tasks.append(self._extend_content(client, data_item[relationship.key], **params))

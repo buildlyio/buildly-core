@@ -96,6 +96,17 @@ def validate_object_access(request: Request, obj):
         viewset.check_object_permissions(request, obj)
 
 
+class ObjectAccessValidator:
+    """
+    Create an instance of this class to validate access to an object
+    """
+    def __init__(self, request: Request):
+        self._request = request
+
+    def validate(self, obj):
+        return validate_object_access(self._request, obj)
+
+
 class GatewayJSONEncoder(json.JSONEncoder):
     """
     JSON encoder for API Gateway
