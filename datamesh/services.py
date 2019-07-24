@@ -31,7 +31,7 @@ class DataMesh:
             self._related_logic_modules = list(dict.fromkeys(modules_list))
         return self._related_logic_modules
 
-    def get_related_records_meta(self, origin_pk: Any) -> Generator[int, None, None]:
+    def get_related_records_meta(self, origin_pk: Any) -> Generator[tuple, None, None]:
         """
         Gets list of related records' META-data that is used for retrieving data for each of these records
         """
@@ -43,14 +43,13 @@ class DataMesh:
 
                 for join_record in join_records:
 
-                    yield {
-                        'relationship_key': relationship.key,
-                        'params': {
+                    params = {
                             'pk': (str(getattr(join_record, related_record_field))),
                             'model': related_model.endpoint.strip('/'),
                             'service': related_model.logic_module_endpoint_name,
                         }
-                    }
+
+                    yield relationship, params
 
     def extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]) -> None:
         """
@@ -78,21 +77,19 @@ class DataMesh:
         for relationship, _ in self._relationships:
             data_item[relationship.key] = []
 
-        for meta in self.get_related_records_meta(origin_pk):
-            request_kwargs = meta['params']
-            request_kwargs['method'] = 'get'
-            relationship_key = meta['relationship_key']
+        for relationship, params in self.get_related_records_meta(origin_pk):
+            params['method'] = 'get'
 
-            client = client_map.get(meta['params']['service'])
+            client = client_map.get(params['service'])
 
             if hasattr(client, 'request') and callable(client.request):
-                content = client.request(**request_kwargs)
+                content = client.request(**params)
                 if isinstance(content, tuple):  # assume that response body is the first returned value
                     content = content[0]
                 if isinstance(content, dict):
-                    data_item[relationship_key].append(dict(content))
+                    data_item[relationship.key].append(dict(content))
                 else:
-                    logger.error(f'No response data for join record (request params: {request_kwargs})')
+                    logger.error(f'No response data for join record (request params: {params})')
             else:
                 raise AttributeError(f'DataMesh Error: Client should have request method')
 
@@ -123,14 +120,10 @@ class DataMesh:
         for relationship, _ in self._relationships:
             data_item[relationship.key] = []
 
-        for meta in self.get_related_records_meta(origin_pk):
-            request_kwargs = meta['params']
-            request_kwargs['method'] = 'get'
-            relationship_key = meta['relationship_key']
-
-            client = client_map.get(meta['params']['service'])
-
-            tasks.append(self._extend_content(client, data_item[relationship_key], **request_kwargs))
+        for relationship, params in self.get_related_records_meta(origin_pk):
+            params['method'] = 'get'
+            client = client_map.get(params['service'])
+            tasks.append(self._extend_content(client, data_item[relationship.key], **params))
 
         return tasks
 
