@@ -5,6 +5,25 @@ from rest_framework import serializers
 from datamesh.models import JoinRecord, Relationship, LogicModuleModel
 
 
+class LogicModuleModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LogicModuleModel
+        fields = '__all__'
+
+
+class RelationshipSerializer(serializers.ModelSerializer):
+
+    origin_model = LogicModuleModelSerializer(read_only=True)
+    related_model = LogicModuleModelSerializer(read_only=True)
+    origin_model_id = serializers.UUIDField(write_only=True)
+    related_model_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = Relationship
+        fields = '__all__'
+
+
 class JoinRecordSerializer(serializers.ModelSerializer):
     """
     The model_choices are created based on the logic_module__name as a prefix and the model name.
