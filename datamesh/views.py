@@ -3,8 +3,21 @@ from rest_framework import viewsets
 
 from .filters import JoinRecordFilter
 from .mixins import OrganizationQuerySetMixin
-from .models import JoinRecord
-from .serializers import JoinRecordSerializer
+from .models import JoinRecord, LogicModuleModel, Relationship
+from .serializers import JoinRecordSerializer, LogicModuleModelSerializer, RelationshipSerializer
+from workflow.permissions import IsSuperUserOrReadOnly
+
+
+class LogicModuleModelViewSet(viewsets.ModelViewSet):
+    queryset = LogicModuleModel.objects.all()
+    serializer_class = LogicModuleModelSerializer
+    permission_classes = (IsSuperUserOrReadOnly,)
+
+
+class RelationshiplViewSet(viewsets.ModelViewSet):
+    queryset = Relationship.objects.all()
+    serializer_class = RelationshipSerializer
+    permission_classes = (IsSuperUserOrReadOnly,)
 
 
 class JoinRecordViewSet(OrganizationQuerySetMixin,

@@ -13,6 +13,7 @@ from factories import Organization
 class LogicModuleModel(DjangoModelFactory):
     logic_module_endpoint_name = LazyAttribute(
         lambda o: ''.join(random.choices(string.ascii_uppercase + string.digits, k=16)))
+    lookup_field_name = 'id'
 
     class Meta:
         model = LogicModulModelM

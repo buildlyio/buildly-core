@@ -1,19 +1,20 @@
 import uuid
+from urllib.parse import urlencode
 
 import pytest
+from rest_framework.reverse import reverse
 
 import factories
 from datamesh import views
-
-from urllib.parse import urlencode
-
 from workflow.tests.fixtures import org, org_admin, org_member, TEST_USER_DATA
 from .fixtures import (
     document_logic_module,
     crm_logic_module,
     document_logic_module_model,
     appointment_logic_module_model,
-    join_record
+    join_record,
+    relationship,
+    relationship2
 )
 
 
@@ -182,3 +183,242 @@ def test_join_record_detail_view_no_access(request_factory, join_record, org_adm
     request.session = {"jwt_organization_uuid": str(uuid.uuid4())}
     response = views.JoinRecordViewSet.as_view({"get": "retrieve"})(request, pk=str(join_record.pk))
     assert response.status_code == 404
+
+
+@pytest.mark.django_db()
+class TestLogicModuleModelView:
+
+    expected_keys = {
+            'logic_module_model_uuid',
+            'logic_module_endpoint_name',
+            'model',
+            'endpoint',
+            'lookup_field_name',
+        }
+
+    def test_list_logic_module_models(self,
+                                      request_factory,
+                                      document_logic_module_model,
+                                      appointment_logic_module_model):
+        request = request_factory.get(reverse('logicmodulemodel-list'))
+        user = factories.CoreUser()
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"get": "list"})(request)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert self.expected_keys == set(response.data[0].keys())
+
+    def test_create_logic_module_model(self, request_factory):
+        data = {
+            "logic_module_endpoint_name": "location",
+            "model": "siteprofile",
+            "endpoint": "/siteprofiles/",
+            "lookup_field_name": "uuid"
+        }
+        request = request_factory.post(reverse('logicmodulemodel-list'), data)
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"post": "create"})(request)
+        assert response.status_code == 201
+        assert self.expected_keys == set(response.data.keys())
+
+    def test_create_logic_module_model_no_access(self, request_factory):
+        data = {
+            "logic_module_endpoint_name": "location",
+            "model": "siteprofile",
+            "endpoint": "/siteprofiles/",
+            "lookup_field_name": "uuid"
+        }
+        request = request_factory.post(reverse('logicmodulemodel-list'), data)
+
+        user = factories.CoreUser()
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"post": "create"})(request)
+        assert response.status_code == 403
+
+    def test_detail_logic_module_models(self, request_factory, document_logic_module_model):
+        pk = str(document_logic_module_model.pk)
+        request = request_factory.get(reverse('logicmodulemodel-detail', args=(pk,)))
+        user = factories.CoreUser()
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"get": "retrieve"})(request, pk=pk)
+        assert response.status_code == 200
+        assert self.expected_keys == set(response.data.keys())
+
+    def test_update_logic_module_model(self, request_factory, document_logic_module_model):
+        pk = str(document_logic_module_model.pk)
+        data = {
+            "logic_module_endpoint_name": "document",
+            "model": "document",
+            "endpoint": "/documents/",
+            "lookup_field_name": "another_lookup_field"
+        }
+        request = request_factory.put(reverse('logicmodulemodel-detail', args=(pk,)), data)
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"put": "update"})(request, pk=pk)
+        assert response.status_code == 200
+        assert self.expected_keys == set(response.data.keys())
+        assert response.data['lookup_field_name'] == 'another_lookup_field'
+
+    def test_update_logic_module_model_no_access(self, request_factory, document_logic_module_model):
+        pk = str(document_logic_module_model.pk)
+        data = {
+            "logic_module_endpoint_name": "document",
+            "model": "document",
+            "endpoint": "/documents/",
+            "lookup_field_name": "another_lookup_field"
+        }
+        request = request_factory.put(reverse('logicmodulemodel-detail', args=(pk,)), data)
+        user = factories.CoreUser()
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"put": "update"})(request, pk=pk)
+        assert response.status_code == 403
+
+    def test_patch_logic_module_model(self, request_factory, document_logic_module_model):
+        pk = str(document_logic_module_model.pk)
+        data = {
+            "lookup_field_name": "another_lookup_field"
+        }
+        request = request_factory.patch(reverse('logicmodulemodel-detail', args=(pk,)), data)
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"patch": "partial_update"})(request, pk=pk)
+        assert response.status_code == 200
+        assert self.expected_keys == set(response.data.keys())
+        assert response.data['lookup_field_name'] == 'another_lookup_field'
+
+    def test_delete_logic_module_models(self, request_factory, document_logic_module_model):
+        pk = str(document_logic_module_model.pk)
+        request = request_factory.delete(reverse('logicmodulemodel-detail', args=(pk,)))
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"delete": "destroy"})(request, pk=pk)
+        assert response.status_code == 204
+
+    def test_delete_logic_module_models_no_access(self, request_factory, document_logic_module_model):
+        pk = str(document_logic_module_model.pk)
+        request = request_factory.delete(reverse('logicmodulemodel-detail', args=(pk,)))
+        user = factories.CoreUser()
+        request.user = user
+        response = views.LogicModuleModelViewSet.as_view({"delete": "destroy"})(request, pk=pk)
+        assert response.status_code == 403
+
+
+@pytest.mark.django_db()
+class TestRelationshipView:
+
+    expected_keys = {
+            'relationship_uuid',
+            'origin_model',
+            'related_model',
+            'key',
+        }
+
+    def test_list_relationships(self, request_factory, relationship, relationship2):
+        request = request_factory.get(reverse('relationship-list'))
+        user = factories.CoreUser()
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"get": "list"})(request)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert set(response.data[0].keys()) == self.expected_keys
+        assert set(response.data[0]['origin_model'].keys()) == TestLogicModuleModelView.expected_keys
+        assert set(response.data[0]['related_model'].keys()) == TestLogicModuleModelView.expected_keys
+
+    def test_create_relationship(self,
+                                       request_factory,
+                                       document_logic_module_model,
+                                       appointment_logic_module_model):
+        data= {
+            "origin_model_id": document_logic_module_model.pk,
+            "related_model_id": appointment_logic_module_model.pk,
+            "key": "document_appointment_rel"
+        }
+        request = request_factory.post(reverse('relationship-list'), data)
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"post": "create"})(request)
+        assert response.status_code == 201
+        assert self.expected_keys == set(response.data.keys())
+
+    def test_create_relationship_no_access(self,
+                                       request_factory,
+                                       document_logic_module_model,
+                                       appointment_logic_module_model):
+        data= {
+            "origin_model_id": document_logic_module_model.pk,
+            "related_model_id": appointment_logic_module_model.pk,
+            "key": "document_appointment_rel"
+        }
+        request = request_factory.post(reverse('relationship-list'), data)
+        user = factories.CoreUser()
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"post": "create"})(request)
+        assert response.status_code == 403
+
+    def test_detail_relationship(self, request_factory, relationship):
+        pk = str(relationship.pk)
+        request = request_factory.get(reverse('relationship-detail', args=(pk,)))
+        user = factories.CoreUser()
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"get": "retrieve"})(request, pk=pk)
+        assert response.status_code == 200
+        assert self.expected_keys == set(response.data.keys())
+
+    def test_update_relationship(self, request_factory, relationship):
+        pk = str(relationship.pk)
+        data = {
+            "origin_model_id": relationship.origin_model.pk,
+            "related_model_id": relationship.related_model.pk,
+            "key": "another_key_for_this_rel"
+        }
+        request = request_factory.put(reverse('relationship-detail', args=(pk,)), data)
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"put": "update"})(request, pk=pk)
+        assert response.status_code == 200
+        assert self.expected_keys == set(response.data.keys())
+        assert response.data['key'] == 'another_key_for_this_rel'
+
+    def test_update_relationship_no_access(self, request_factory, relationship):
+        pk = str(relationship.pk)
+        data = {
+            "origin_model_id": relationship.origin_model.pk,
+            "related_model_id": relationship.related_model.pk,
+            "key": "another_key_for_this_rel"
+        }
+        request = request_factory.put(reverse('relationship-detail', args=(pk,)), data)
+        user = factories.CoreUser()
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"put": "update"})(request, pk=pk)
+        assert response.status_code == 403
+
+    def test_patch_relationship(self, request_factory, relationship):
+        pk = str(relationship.pk)
+        data = {
+            "key": "another_key_for_this_rel"
+        }
+        request = request_factory.patch(reverse('relationship-detail', args=(pk,)), data)
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"patch": "partial_update"})(request, pk=pk)
+        assert response.status_code == 200
+        assert self.expected_keys == set(response.data.keys())
+        assert response.data['key'] == 'another_key_for_this_rel'
+
+    def test_delete_relationship(self, request_factory, relationship):
+        pk = str(relationship.pk)
+        request = request_factory.delete(reverse('relationship-detail', args=(pk,)))
+        user = factories.CoreUser(is_superuser=True)
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"delete": "destroy"})(request, pk=pk)
+        assert response.status_code == 204
+
+    def test_delete_relationship_no_access(self, request_factory, relationship):
+        pk = str(relationship.pk)
+        request = request_factory.delete(reverse('relationship-detail', args=(pk,)))
+        user = factories.CoreUser()
+        request.user = user
+        response = views.RelationshiplViewSet.as_view({"delete": "destroy"})(request, pk=pk)
+        assert response.status_code == 403
