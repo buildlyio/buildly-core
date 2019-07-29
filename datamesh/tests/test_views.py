@@ -194,6 +194,7 @@ class TestLogicModuleModelView:
             'model',
             'endpoint',
             'lookup_field_name',
+            'is_local',
         }
 
     def test_list_logic_module_models(self,

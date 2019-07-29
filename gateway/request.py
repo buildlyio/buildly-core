@@ -75,7 +75,9 @@ class BaseGatewayRequest(object):
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
         endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        return DataMesh(logic_module_endpoint=logic_module.endpoint_name, model_endpoint=endpoint)
+        return DataMesh(logic_module_endpoint=logic_module.endpoint_name,
+                        model_endpoint=endpoint,
+                        access_validator=utils.ObjectAccessValidator(self.request))
 
 
 class GatewayRequest(BaseGatewayRequest):

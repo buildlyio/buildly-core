@@ -1,9 +1,11 @@
 import asyncio
 
 import pytest
+from django.forms.models import model_to_dict
 
 import factories
-from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records, org
+from datamesh.tests.fixtures import (relationship, relationship2, relationship_with_10_records,
+                                     relationship_with_local, org)
 from datamesh.services import DataMesh
 
 
@@ -40,7 +42,6 @@ class TestSyncDataMesh:
 
         assert data == expected_data
 
-    @pytest.mark.django_db()
     def test_join_data_one_obj_w_two_relationships(self, relationship, relationship2, org):
         factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2,
                              record_uuid=None, related_record_uuid=None)
@@ -84,7 +85,6 @@ class TestSyncDataMesh:
 
         assert data == expected_data
 
-    @pytest.mark.django_db()
     def test_join_data_list(self, relationship_with_10_records):
         join_records = relationship_with_10_records.joinrecords.all()
 
@@ -110,6 +110,28 @@ class TestSyncDataMesh:
             nested = item[relationship_with_10_records.key]
             assert len(nested) == 1
             assert nested[0]['uuid'] == str(join_records[i].related_record_uuid)
+
+    def test_relationship_with_local_lm(self, relationship_with_local, org):
+        factories.JoinRecord(relationship=relationship_with_local, record_id=1,
+                             related_record_uuid=org.organization_uuid,
+                             record_uuid=None, related_record_id=None)
+
+        logic_module_model = relationship_with_local.origin_model
+        data = {'id': 1, 'name': 'test', 'contact_uuid': 1}
+
+        datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
+                            model_endpoint=logic_module_model.endpoint)
+        datamesh.extend_data(data, {})
+
+        # validate result
+        expected_data = {
+            'id': 1,
+            'name': 'test',
+            'contact_uuid': 1,
+            relationship_with_local.key: [model_to_dict(org)]
+        }
+
+        assert data == expected_data
 
 
 @pytest.mark.django_db()
@@ -146,7 +168,6 @@ class TestAsyncDataMesh:
 
         assert data == expected_data
 
-    @pytest.mark.django_db()
     def test_join_data_one_obj_w_two_relationships(self, relationship, relationship2, org):
         factories.JoinRecord(relationship=relationship, record_id=1, related_record_id=2,
                              record_uuid=None, related_record_uuid=None)
@@ -190,7 +211,6 @@ class TestAsyncDataMesh:
 
         assert data == expected_data
 
-    @pytest.mark.django_db()
     def test_join_data_list(self, relationship_with_10_records):
         join_records = relationship_with_10_records.joinrecords.all()
 
@@ -216,3 +236,25 @@ class TestAsyncDataMesh:
             nested = item[relationship_with_10_records.key]
             assert len(nested) == 1
             assert nested[0]['uuid'] == str(join_records[i].related_record_uuid)
+
+    def test_relationship_with_local_lm(self, relationship_with_local, org):
+        factories.JoinRecord(relationship=relationship_with_local, record_id=1,
+                             related_record_uuid=org.organization_uuid,
+                             record_uuid=None, related_record_id=None)
+
+        logic_module_model = relationship_with_local.origin_model
+        data = {'id': 1, 'name': 'test', 'contact_uuid': 1}
+
+        datamesh = DataMesh(logic_module_endpoint=logic_module_model.logic_module_endpoint_name,
+                            model_endpoint=logic_module_model.endpoint)
+        asyncio.run(datamesh.async_extend_data(data, {}))
+
+        # validate result
+        expected_data = {
+            'id': 1,
+            'name': 'test',
+            'contact_uuid': 1,
+            relationship_with_local.key: [model_to_dict(org)]
+        }
+
+        assert data == expected_data

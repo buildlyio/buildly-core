@@ -53,6 +53,19 @@ def relationship_with_10_records(org):
 
 
 @pytest.fixture
+def relationship_with_local():
+    lm = factories.LogicModule(name='Products Service', endpoint_name='products')
+    lmm = factories.LogicModuleModel(logic_module_endpoint_name=lm.endpoint_name,
+                                     model='Product', endpoint='/products/')
+    lmm_org = factories.LogicModuleModel(logic_module_endpoint_name='workflow',
+                                         model='Organization',
+                                         endpoint='/organization/',
+                                         lookup_field_name='organization_uuid',
+                                         is_local=True)
+    return factories.Relationship(origin_model=lmm, related_model=lmm_org, key='document_relationship')
+
+
+@pytest.fixture
 def document_logic_module():
     return factories.LogicModule(
         name='document',
