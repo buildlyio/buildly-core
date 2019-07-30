@@ -154,6 +154,62 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
 
 @pytest.mark.django_db()
 @httpretty.activate
+def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, datamesh):
+    lm1, lm2, relationship = datamesh
+    factories.JoinRecord(relationship=relationship,
+                         record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
+                         related_record_id=1, related_record_uuid=None)
+
+    url = f'/{lm2.endpoint_name}/documents/1/'
+
+    # mock requests
+    with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json')) as r:
+        swagger_location_body = r.read()
+    with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
+        swagger_documents_body = r.read()
+    with open(os.path.join(CURRENT_PATH, 'fixtures/data_detail_siteprofile.json')) as r:
+        data_location_body = r.read()
+    with open(os.path.join(CURRENT_PATH, 'fixtures/data_detail_document.json')) as r:
+        data_documents_body = r.read()
+    httpretty.register_uri(
+        httpretty.GET,
+        f'{lm1.endpoint}/docs/swagger.json',
+        body=swagger_location_body,
+        adding_headers={'Content-Type': 'application/json'}
+    )
+    httpretty.register_uri(
+        httpretty.GET,
+        f'{lm2.endpoint}/docs/swagger.json',
+        body=swagger_documents_body,
+        adding_headers={'Content-Type': 'application/json'}
+    )
+    httpretty.register_uri(
+        httpretty.GET,
+        f'{lm1.endpoint}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/',
+        body=data_location_body,
+        adding_headers={'Content-Type': 'application/json'}
+    )
+    httpretty.register_uri(
+        httpretty.GET,
+        f'{lm2.endpoint}/documents/1/',
+        body=data_documents_body,
+        adding_headers={'Content-Type': 'application/json'}
+    )
+
+    # make api request
+    response = auth_api_client.get(url, {'join': 'true'})
+
+    assert response.status_code == 200
+    assert response.has_header('Content-Type')
+    assert response.get('Content-Type') == 'application/json'
+    data = response.json()
+    assert relationship.key in data
+    assert len(data[relationship.key]) == 1
+    assert data[relationship.key][0]['uuid'] == '19a7f600-74a0-4123-9be5-dfa69aa172cc'
+
+
+@pytest.mark.django_db()
+@httpretty.activate
 def test_make_service_request_with_datamesh_list(auth_api_client, datamesh):
     lm1, lm2, relationship = datamesh
     factories.JoinRecord(relationship=relationship,
