@@ -57,6 +57,14 @@ class WorkflowLevelTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class WorkflowLevelStatusSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='uuid', read_only=True)
+
+    class Meta:
+        model = wfm.WorkflowLevelStatus
+        fields = '__all__'
+
+
 class WorkflowLevel2Serializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='level2_uuid', read_only=True)
 
