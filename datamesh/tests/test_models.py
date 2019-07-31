@@ -1,12 +1,22 @@
 import uuid
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
-from datamesh.models import JoinRecord
+from datamesh.models import JoinRecord, Relationship
 
 from workflow.tests.fixtures import org
 from .fixtures import relationship
+
+
+@pytest.mark.django_db()
+def test_fail_create_reverse_relationship(relationship):
+    with pytest.raises(ValidationError):
+        Relationship.objects.create(
+            related_model=relationship.origin_model,
+            origin_model=relationship.related_model
+        )
 
 
 @pytest.mark.django_db()
