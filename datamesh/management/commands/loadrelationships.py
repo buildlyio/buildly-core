@@ -48,7 +48,7 @@ class Command(BaseCommand):
             model='Contact',
             logic_module_endpoint_name=crm_logic_module.endpoint_name,
             endpoint='/contact/',
-            lookup_field_name='id',
+            lookup_field_name='uuid',
         )
         related_model, _ = LogicModuleModel.objects.get_or_create(
             model='SiteProfile',
@@ -77,7 +77,7 @@ class Command(BaseCommand):
             for siteprofile_uuid in json.loads(siteprofile_uuids):
                 join_record, _ = JoinRecord.objects.get_or_create(
                     relationship=relationship,
-                    record_id=contact['pk'],
+                    record_uuid=contact['pk'],
                     related_record_uuid=siteprofile_uuid,
                     defaults={'organization': organization}
                 )
