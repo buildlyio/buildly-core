@@ -38,7 +38,7 @@ class DataMesh:
             modules_list_reverse = [
                 relationship.origin_model.logic_module_endpoint_name
                 for relationship, _ in self._relationships if not relationship.origin_model.is_local]
-            self._related_logic_modules = list(dict.fromkeys(modules_list + modules_list_reverse))
+            self._related_logic_modules = set(modules_list + modules_list_reverse)
         return self._related_logic_modules
 
     def get_related_records_meta(self, origin_pk: Any) -> Generator[tuple, None, None]:

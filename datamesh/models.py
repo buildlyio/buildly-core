@@ -1,6 +1,7 @@
 import uuid
 from typing import Tuple, List
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import CheckConstraint, Q, UniqueConstraint
 
@@ -56,6 +57,15 @@ class Relationship(models.Model):
 
     def __str__(self):
         return f'{self.origin_model} -> {self.related_model}'
+
+    def validate_reverse_relationship_absence(self):
+        """Validate reverse relationship does not exist already."""
+        if self.__class__.objects.filter(origin_model=self.related_model, related_model=self.origin_model).count():
+            raise ValidationError("Reverse relationship already exists.")
+
+    def save(self, *args, **kwargs):
+        self.validate_reverse_relationship_absence()
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = (
