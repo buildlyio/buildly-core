@@ -6,6 +6,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from .models import (CoreUser, CoreGroup, Organization, WorkflowLevel1, WorkflowLevel2,
                      WorkflowLevel2Sort, WorkflowTeam, EmailTemplate, Industry,
                      WorkflowLevelStatus)
+from .seeds.admin import OrganizationAdmin
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
@@ -21,11 +22,6 @@ class CoreSitesAdmin(admin.ModelAdmin):
     display = 'Core Site'
     list_filter = ('name',)
     search_fields = ('name',)
-
-
-class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'create_date', 'edit_date')
-    display = 'Organization'
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
