@@ -41,7 +41,7 @@ def test_update_workflowleveltype(request_factory, org_member):
 
 
 @pytest.mark.django_db()
-def test_update_workflowleveltype(request_factory, org_member):
+def test_delete_workflowleveltype(request_factory, org_member):
     wfltype = factories.WorkflowLevelType()
     request = request_factory.delete('')
     request.user = org_member

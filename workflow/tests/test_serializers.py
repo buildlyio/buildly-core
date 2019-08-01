@@ -92,6 +92,7 @@ def test_workflow_level2_serializer(request_factory, wfl2):
             "created_by",
             "type",
             "core_groups",
+            "status",
             ]
     assert set(data.keys()) == set(keys)
     assert data["id"] == data["level2_uuid"]

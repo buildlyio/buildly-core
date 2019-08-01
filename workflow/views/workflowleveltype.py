@@ -11,7 +11,7 @@ class WorkflowLevelTypeViewSet(viewsets.ModelViewSet):
     Workflow Level Type keeps dynamic Types for Workflowlevel2s.
 
     description:
-    A Workflow Level Type has a name and can be related workflowlevels.
+    A Workflow Level Type has a name and can be related to workflowlevels.
 
     retrieve:
     Return the given workflowleveltype.

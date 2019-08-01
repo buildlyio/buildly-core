@@ -4,7 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (CoreUser, CoreGroup, Organization, WorkflowLevel1, WorkflowLevel2,
-                     WorkflowLevel2Sort, WorkflowTeam, EmailTemplate, Industry)
+                     WorkflowLevel2Sort, WorkflowTeam, EmailTemplate, Industry,
+                     WorkflowLevelStatus)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
@@ -68,10 +69,14 @@ class WorkflowLevel1Admin(SimpleHistoryAdmin):
     search_fields = ('name',)
 
 
+class WorkflowLevelStatusAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name', 'short_name')
+
+
 class WorkflowLevel2Admin(SimpleHistoryAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'status')
     display = 'Workflow Level1'
-    list_filter = ('name',)
+    list_filter = ('name', 'status')
     search_fields = ('name',)
 
 
@@ -84,6 +89,7 @@ admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(WorkflowLevel2, WorkflowLevel2Admin)
 admin.site.register(WorkflowLevel1, WorkflowLevel1Admin)
 admin.site.register(WorkflowLevel2Sort)
+admin.site.register(WorkflowLevelStatus, WorkflowLevelStatusAdmin)
 admin.site.register(Industry)
 admin.site.register(WorkflowTeam, WorkflowTeamAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
