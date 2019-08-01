@@ -759,3 +759,41 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['level2_uuid'], str(level22_uuid))
+
+    def test_filter_workflowlevel2_status_org_admin(self):
+        group_org_admin = factories.CoreGroup(name='Org Admin', is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN,
+                                              organization=self.core_user.organization)
+        self.core_user.core_groups.add(group_org_admin)
+
+        wkflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
+        wfl_status1 = factories.WorkflowLevelStatus(name="Started Test Status", short_name="started")
+        wfl_status2 = factories.WorkflowLevelStatus(name="Finished Test Status", short_name="finished")
+        wkflvl2_1 = factories.WorkflowLevel2(name='Started brief survey',
+                                             workflowlevel1=wkflvl1,
+                                             status=wfl_status1)
+        wkflvl2_2 = factories.WorkflowLevel2(name='Finished brief survey',
+                                             workflowlevel1=wkflvl1,
+                                             status=wfl_status2)
+
+        # filter by status.uuid
+        request = self.factory.get(
+            f"{reverse('workflowlevel2-list')}?status__uuid={str(wfl_status1.pk)}"
+        )
+        request.user = self.core_user
+        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], wkflvl2_1.name)
+
+        # filter by status.short_name
+        request = self.factory.get(
+            f"{reverse('workflowlevel2-list')}?status__short_name=finished"
+        )
+        request.user = self.core_user
+        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], wkflvl2_2.name)

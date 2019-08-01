@@ -24,4 +24,6 @@ class WorkflowLevel2Filter(django_filters.FilterSet):
             'workflowlevel1__name',
             'workflowlevel1__id',
             'create_date',
+            'status__short_name',
+            'status__uuid',
         ]
