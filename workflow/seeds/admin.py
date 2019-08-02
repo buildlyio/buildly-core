@@ -83,6 +83,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
         # Now seed (POST) data
 
+
         organization = Organization.objects.get(organization_uuid=organization_uuid)
         messages.success(request, f"{organization} Something should be seeded.")
         return redirect(request.META['HTTP_REFERER'])
