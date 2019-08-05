@@ -8,16 +8,13 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import reverse, re_path
-from django.http import HttpResponseRedirect, HttpRequest
-from django.template.response import TemplateResponse
+from django.http import HttpRequest
 from django.utils.html import format_html
 from oauth2_provider_jwt.utils import generate_payload, encode_jwt
-from rest_framework.request import Request
 
 from gateway.models import LogicModule
-from gateway.request import GatewayRequest
-from workflow.models import Organization
-from .data import appointments, contacts, SEED_DATA
+from workflow.models import Organization, WorkflowLevel1
+from .data import SEED_DATA
 
 
 class OrganizationAdmin(admin.ModelAdmin):
@@ -75,15 +72,36 @@ class OrganizationAdmin(admin.ModelAdmin):
                     is_empty = False
         return is_empty
 
+    @staticmethod
+    def _create_workflowlevel1(organization) -> string:
+        wfl1 = WorkflowLevel1.objects.get_or_create(
+            organization = organization,
+            defaults={"name": "Seed Data prep"}
+        )
+        return str(wfl1.level1_uuid)
+
     def provide_seed(self, request, organization_uuid: string):
         headers = self._create_headers(request.user, organization_uuid)
 
         if not self._validate_empty_data(request, headers):
             return redirect(request.META['HTTP_REFERER'])
 
-        # Now seed (POST) data
-
-
+        # Create WFL1
         organization = Organization.objects.get(organization_uuid=organization_uuid)
+        level1_uuid = self._create_workflowlevel1(organization)
+
+        # Seed (POST) data
+        # TODO:
+        # Create WFL2 for every project to siteprofile/contact/product/document/extension
+        # def _seed_project()
+
+        # Seed Document, Products, Extensions, SiteProfiles, Contacts
+        for logic_module_name in SEED_DATA.keys():
+            logic_module = LogicModule.objects.get(name=logic_module_name)
+            for model_endpoint in SEED_DATA[logic_module_name].keys():
+                url = f'{logic_module.endpoint}/{model_endpoint}/'
+                for data_instance in SEED_DATA[logic_module_name][model_endpoint]:
+                    response = requests.post(url, data=data_instance, headers=headers)
+
         messages.success(request, f"{organization} Something should be seeded.")
         return redirect(request.META['HTTP_REFERER'])

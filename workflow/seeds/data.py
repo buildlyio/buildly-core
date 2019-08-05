@@ -1,5 +1,38 @@
 WORKFLOWLEVEL2_UUID_1 = "8132d789-9580-45ad-b22a-9384bce0eed6"
 
+projectextensions = [
+        {
+            "uuid": "0f8af1ac-efe1-4285-a2bd-2433dc953752",
+            "id": "0f8af1ac-efe1-4285-a2bd-2433dc953752",
+            "project_id": 10001,
+            "workflowlevel2_uuid": "8132d789-9580-45ad-b22a-9384bce0eed6"
+        },
+        {
+            "uuid": "f5b6ec5c-a3ce-4b73-ba02-247d73518685",
+            "id": "f5b6ec5c-a3ce-4b73-ba02-247d73518685",
+            "project_id": 10002,
+            "workflowlevel2_uuid": "6f015067-db3e-40be-8f87-8b20fa347752"
+        },
+        {
+            "uuid": "383ffe8a-e507-410a-8b03-679c929e0a08",
+            "id": "383ffe8a-e507-410a-8b03-679c929e0a08",
+            "project_id": 10003,
+            "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb"
+        },
+        {
+            "uuid": "d439f1e8-e004-4738-875e-a50cfd1162ab",
+            "id": "d439f1e8-e004-4738-875e-a50cfd1162ab",
+            "project_id": 10004,
+            "workflowlevel2_uuid": "7b504be7-36e3-4196-8c60-227b78f8ae96"
+        },
+        {
+            "uuid": "5275a2f6-9775-469c-98d6-5744a4d11e7e",
+            "id": "5275a2f6-9775-469c-98d6-5744a4d11e7e",
+            "project_id": 10005,
+            "workflowlevel2_uuid": "999d0b08-759f-49d6-b121-e312c3ea17c5"
+        }
+    ]
+
 appointments = [
     {
         "uuid": "432aa435-f9ec-4984-87d3-31f1b2a9388e",
@@ -1290,8 +1323,6 @@ documents = [
         }
     ]
 
-# ToDo: products, ...
-
 products = [
         {
             "uuid": "58e599ca-e6e7-48bd-9ca1-29e988ce7a74",
@@ -1329,13 +1360,85 @@ products = [
         }
     ]
 
+product_categories = [
+
+]
+
+time_events = [
+        {
+            "uuid": "3040c502-32a9-49ea-93f1-570f5b0e1e4b",
+            "id": "3040c502-32a9-49ea-93f1-570f5b0e1e4b",
+            "core_user_uuid": "e3df329c-aef5-45c9-82ec-2e0e285d333d",
+            "workflowlevel2_uuid": "a4ed498e-aa5b-4ec1-9aa7-0fb1e50fbf53",
+            "appointment_uuid": "570e1865-3bd0-4548-9a3b-c925896355c2",
+            "time_logged_seconds": 7200,
+        },
+        {
+            "uuid": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93",
+            "id": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93",
+            "core_user_uuid": "e3df329c-aef5-45c9-82ec-2e0e285d333d",
+            "workflowlevel2_uuid": "ca35fb85-4403-4b68-ac34-0a0aabcffa0a",
+            "appointment_uuid": "97715fc6-6c8f-4174-9515-24969e395c4e",
+            "time_logged_seconds": 0,
+        },
+    ]
+
+time_log_entries = [
+        {
+            "uuid": "821bba40-6d5b-4d00-aeee-0a3d1f32cd7d",
+            "id": "821bba40-6d5b-4d00-aeee-0a3d1f32cd7d",
+            "start_time": "2019-05-16T07:00:00Z",
+            "end_time": "2019-05-16T08:25:00Z",
+            "time_logged_seconds": 5100,
+            "time_event": "3040c502-32a9-49ea-93f1-570f5b0e1e4b"
+        },
+        {
+            "uuid": "dcf4f651-d200-4369-a64f-f66c08d7dae2",
+            "id": "dcf4f651-d200-4369-a64f-f66c08d7dae2",
+            "start_time": "2019-05-17T07:00:00Z",
+            "end_time": "2019-05-17T08:25:00Z",
+            "time_logged_seconds": 5100,
+            "time_event": "3040c502-32a9-49ea-93f1-570f5b0e1e4b"
+        },
+        {
+            "uuid": "559a835c-b43f-4bb3-8d0f-8c516804ba20",
+            "id": "559a835c-b43f-4bb3-8d0f-8c516804ba20",
+            "start_time": "2019-05-16T07:00:00Z",
+            "end_time": "2019-05-16T11:25:00Z",
+            "time_logged_seconds": 15900,
+            "time_event": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93"
+        },
+        {
+            "uuid": "ccb53c94-1262-458a-a22a-645ae15699af",
+            "id": "ccb53c94-1262-458a-a22a-645ae15699af",
+            "start_time": "2019-05-16T07:00:00Z",
+            "end_time": "2019-05-25T08:25:00Z",
+            "time_logged_seconds": 5100,
+            "time_event": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93"
+        }
+]
+
 SEED_DATA = {
+    'extensions': {
+        'projectextensions': projectextensions
+    },
     'crm': {
         'appointment': appointments,
         'contact': contacts
     },
     'location': {
         'siteprofiles': siteprofiles,
+    },
+    'products': {
+        'categories': product_categories,
+        'products': products,
+    },
+    'documents': {
+        'documents': documents,
+    },
+    'timetracking': {
+        'time_events': time_events,
+        'time-log-entry': time_log_entries,
     }
 }
 
@@ -1415,3 +1518,4 @@ workflowlevel2s = [
         "core_groups": []
     }
 ]
+
