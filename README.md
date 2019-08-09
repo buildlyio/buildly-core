@@ -1,12 +1,45 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [BiFrost - Humanitec Platform Core Service](#bifrost---humanitec-platform-core-service)
+  - [Deploy locally via Docker](#deploy-locally-via-docker)
+    - [Tests](#tests)
+  - [Set up](#set-up)
+    - [First steps](#first-steps)
+    - [Configure the API authentication](#configure-the-api-authentication)
+    - [Configure Elasticsearch (search function)](#configure-elasticsearch-search-function)
+    - [Configure other services](#configure-other-services)
+    - [Generating RSA keys](#generating-rsa-keys)
+  - [Troubleshooting](#troubleshooting)
+    - [Local environment problems](#local-environment-problems)
+  - [Creating PRs and Issues](#creating-prs-and-issues)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # BiFrost - Humanitec Platform Core Service
+
+## Overview
 
 [![Build Status](http://drone.humanitec.io/api/badges/Humanitec/bifrost/status.svg)](http://drone.humanitec.io/Humanitec/bifrost)
 
-**Documentation page: [\_index.md](_index.md)**
+BiFrost is a core authentication layer for microservice architectures. It includes the following features: 
 
-The partner front end service for BiFrost is [Midgard (Angular) and Midgard Core]:https://github.com/Humanitec/midgard and is configured to connect to the BiFrost core automatically and facilitate connections to addtional platform frontend and backend services.
+-  **API gateway:** Combines the endpoints from all of the connected microservices and exposes them as a single URL.
+-  **User & permissions management:** Provides a simple [role-based access control (RBAC) model](https://en.wikipedia.org/wiki/Role-based_access_control) for managing permissions to your microservices' data models.
+-  **Data mesh:** A join table for aggregating and sharing data between microservices.
+-  **Automated API documentation:** BiFrost combines the Swagger files from all connected microservices and serves the combined API documentation via [SwaggerUI](https://swagger.io/tools/swagger-ui/).
 
-## Deploy locally via Docker
+You can use [Midgard](https://github.com/Humanitec/midgard) in tandem with BiFrost to provide a frontend for your microservice architecture.
+
+See the following documentation pages for more information about how BiFrost works:
+
+-  []()
+-  []()
+
+## Dev setup
+
+### Deploy locally via Docker
 
 Build first the images:
 
@@ -66,8 +99,7 @@ If you would like to clean the database and start the application, do:
 docker-compose up --renew-anon-volumes --force-recreate --build
 ```
 
-
-### Tests
+#### Tests
 
 To run the tests (without flake8) and have `ipdb` open on error:
 
@@ -83,13 +115,10 @@ docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tes
 
 See `pytest --help` for more options.
 
-## Set up
-
 ### First steps
 
 1. Create a superuser: `python manage.py createsuperuser`
 2. Add basic data: `python manage.py loadinitialdata`
-
 
 ### Configure the API authentication
 
