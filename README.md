@@ -34,8 +34,9 @@ You can use [Midgard](https://github.com/Humanitec/midgard) in tandem with BiFro
 
 See the following documentation pages for more information about how BiFrost works:
 
--  []()
--  []()
+-  [Permissions model](/docs/permissions-model.md): How to implement BiFrost's RBAC model in your architecture.
+-  [Connect service to BiFrost](/docs/connect-service-to-bifrost.md): How to connect an existing microservice to BiFrost.
+-  [Microservice architecture patterns with BiFrost](/docs/microservice-architecture-patterns.md): Examples of the kinds of microservice architecture patterns you can create with BiFrost.
 
 ## Dev setup
 
