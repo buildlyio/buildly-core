@@ -1,15 +1,12 @@
 import json
-import string
 from copy import deepcopy
 from datetime import date, timedelta
 from typing import Tuple
 
 import requests
-from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import HttpRequest
-from oauth2_provider_jwt.utils import generate_payload, encode_jwt
 
 from gateway.models import LogicModule
 from workflow.models import (
@@ -20,17 +17,6 @@ from workflow.models import (
     CoreUser,
 )
 from . import data
-
-
-def _create_headers(user, organization_uuid: string) -> dict:
-    extra_data = {
-        "organization_uuid": organization_uuid,
-        "core_user_uuid": user.core_user_uuid,
-        "username": user.username,
-    }
-    payload = generate_payload(settings.JWT_ISSUER, expires_in=600, **extra_data)
-    token = encode_jwt(payload)
-    return {"Authorization": "JWT " + token, "Content-Type": "application/json"}
 
 
 def _validate_empty_data(request: HttpRequest, headers: dict) -> bool:
@@ -150,7 +136,7 @@ def _get_profile_types_map(headers, profiletypes):
     return profile_type_map
 
 
-def _build_product_category_map(headers, categories):
+def _get_product_category_map(headers, categories):
     product_category_map = {}
     logic_module = LogicModule.objects.get(name="products")
     url = f"{logic_module.endpoint}/categories/?is_global=true"
@@ -170,3 +156,12 @@ def _build_product_category_map(headers, categories):
             category_id = response.json()["id"]
             product_category_map[cat["id"]] = category_id
     return product_category_map
+
+
+def seed_data_mesh(pk_maps, join_records_data):
+    pass
+    # TODO: get datamesh.LogicModuleModel
+    # lmm = LogicModuleModel.objects.get()
+    # get relationship
+    # update fields in join_records_data with map
+    # create JoinRecords

@@ -1,3 +1,5 @@
+# Extension Service
+
 projectextensions = [
     {"workflowlevel2_uuid": "8132d789-9580-45ad-b22a-9384bce0eed6", "id": "not needed"},
     {"workflowlevel2_uuid": "6f015067-db3e-40be-8f87-8b20fa347752", "id": "not needed"},
@@ -5,6 +7,8 @@ projectextensions = [
     {"workflowlevel2_uuid": "7b504be7-36e3-4196-8c60-227b78f8ae96", "id": "not needed"},
     {"workflowlevel2_uuid": "999d0b08-759f-49d6-b121-e312c3ea17c5", "id": "not needed"},
 ]
+
+# Location Service
 
 profiletypes = [
     {"id": 79, "name": "billing", "is_global": True},
@@ -119,6 +123,8 @@ siteprofiles = [
         "profiletype": 80,
     },
 ]
+
+# CRM Service
 
 contacts = [
     {
@@ -345,6 +351,8 @@ appointments = [
     },
 ]
 
+# Product Service
+
 product_categories = [
     {
         "uuid": "75207588-9956-4331-af63-4b0307ac09aa",
@@ -398,61 +406,14 @@ products = [
     },
 ]
 
-time_events = [
-    {
-        "uuid": "3040c502-32a9-49ea-93f1-570f5b0e1e4b",
-        "id": "3040c502-32a9-49ea-93f1-570f5b0e1e4b",
-        "core_user_uuid": "e3df329c-aef5-45c9-82ec-2e0e285d333d",
-        "workflowlevel2_uuid": "a4ed498e-aa5b-4ec1-9aa7-0fb1e50fbf53",
-        "appointment_uuid": "570e1865-3bd0-4548-9a3b-c925896355c2",
-        "time_logged_seconds": 7200,
-    },
-    {
-        "uuid": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93",
-        "id": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93",
-        "core_user_uuid": "e3df329c-aef5-45c9-82ec-2e0e285d333d",
-        "workflowlevel2_uuid": "ca35fb85-4403-4b68-ac34-0a0aabcffa0a",
-        "appointment_uuid": "97715fc6-6c8f-4174-9515-24969e395c4e",
-        "time_logged_seconds": 0,
-    },
-]
+# TimeTracking Service
 
-time_log_entries = [
-    {
-        "uuid": "821bba40-6d5b-4d00-aeee-0a3d1f32cd7d",
-        "id": "821bba40-6d5b-4d00-aeee-0a3d1f32cd7d",
-        "start_time": "2019-05-16T07:00:00Z",
-        "end_time": "2019-05-16T08:25:00Z",
-        "time_logged_seconds": 5100,
-        "time_event": "3040c502-32a9-49ea-93f1-570f5b0e1e4b",
-    },
-    {
-        "uuid": "dcf4f651-d200-4369-a64f-f66c08d7dae2",
-        "id": "dcf4f651-d200-4369-a64f-f66c08d7dae2",
-        "start_time": "2019-05-17T07:00:00Z",
-        "end_time": "2019-05-17T08:25:00Z",
-        "time_logged_seconds": 5100,
-        "time_event": "3040c502-32a9-49ea-93f1-570f5b0e1e4b",
-    },
-    {
-        "uuid": "559a835c-b43f-4bb3-8d0f-8c516804ba20",
-        "id": "559a835c-b43f-4bb3-8d0f-8c516804ba20",
-        "start_time": "2019-05-16T07:00:00Z",
-        "end_time": "2019-05-16T11:25:00Z",
-        "time_logged_seconds": 15900,
-        "time_event": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93",
-    },
-    {
-        "uuid": "ccb53c94-1262-458a-a22a-645ae15699af",
-        "id": "ccb53c94-1262-458a-a22a-645ae15699af",
-        "start_time": "2019-05-16T07:00:00Z",
-        "end_time": "2019-05-25T08:25:00Z",
-        "time_logged_seconds": 5100,
-        "time_event": "0cbc3586-d8ba-4860-ac1e-38d5e6bfbf93",
-    },
-]
+time_events = []
 
-# ToDo: File-Uploads
+time_log_entries = []
+
+# Document Service # ToDo: File-Uploads
+
 documents = [
     {
         "id": 10264,
@@ -780,6 +741,7 @@ documents = [
     },
 ]
 
+
 SEED_DATA = {
     "extensions": {
         "projectextensions": {
@@ -833,6 +795,7 @@ SEED_DATA = {
     },
     "timetracking": {
         "time-event": {
+            "validate": False,
             "data": time_events,
             "update_fields": {
                 "core_user_uuid": "coreusers",
@@ -939,4 +902,24 @@ core_users = [
         "username": "SeedData2",
         "is_active": True,
     },
+]
+
+
+# Datamesh Data
+
+join_records = [
+    {
+        "record_uuid": "61a012e5-d70b-4801-acb3-507b913fcd54",
+        "related_record_uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
+        "organization": "a7d7f137-94e4-4fa9-8ac1-3456a1611a71",
+        "origin_model_name": "crmContact",
+        "related_model_name": "locationSiteProfile"
+    },
+    {
+        "record_uuid": "a73ae6b9-66b2-4ae4-9f2c-d1765eb42869",
+        "related_record_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
+        "organization": "a7d7f137-94e4-4fa9-8ac1-3456a1611a71",
+        "origin_model_name": "crmContact",
+        "related_model_name": "locationSiteProfile"
+    }
 ]

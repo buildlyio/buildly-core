@@ -8,15 +8,13 @@ from django.shortcuts import redirect
 from django.urls import reverse, re_path
 from django.utils.html import format_html
 
-from gateway.models import LogicModule
 from workflow.models import Organization
 
 from workflow.seeds.seed import SeedEnv, Seed
-from workflow.seeds.utils import (_create_headers,
-                                  _validate_empty_data,
+from workflow.seeds.utils import (_validate_empty_data,
                                   _seed_bifrost_data,
                                   _get_profile_types_map,
-                                  _build_product_category_map)
+                                  _get_product_category_map, seed_data_mesh)
 from . import data
 
 
@@ -44,44 +42,42 @@ class OrganizationAdmin(admin.ModelAdmin):
     organization_actions.short_description = "Organization Actions"
     organization_actions.allow_tags = True
 
-    def provide_seed(self, request, organization_uuid: string):
-        headers = _create_headers(request.user, organization_uuid)
-
-        if not _validate_empty_data(request, headers):
+    @staticmethod
+    def provide_seed(request, organization_uuid: string):
+        # Get and validate organization
+        try:
+            organization = Organization.objects.get(organization_uuid=organization_uuid)
+        except Organization.DoesNotExist:
+            messages.error(request, "Organization not found. Was it saved? It must be before seeding is possible.")
             return redirect(request.META["HTTP_REFERER"])
 
-        organization = Organization.objects.get(organization_uuid=organization_uuid)
+        # Create SeedEnv and validate empty data
+        seed_env = SeedEnv(request.user, organization_uuid)
+        if not _validate_empty_data(request, seed_env.headers):
+            return redirect(request.META["HTTP_REFERER"])
 
         # Seed bifrost data
         wfl2_uuid_map, level1_uuid, core_user_uuid_map = _seed_bifrost_data(organization)
 
-        # Seed profiletypes
-        profiletype_map = _get_profile_types_map(headers, data.profiletypes)
+        # Seed profiletypes and build profiletype_map
+        profiletype_map = _get_profile_types_map(seed_env.headers, data.profiletypes)
 
-        # Build product_category_map
-        product_category_map = _build_product_category_map(headers, data.product_categories)
+        # Seed product categories and build product_category_map
+        product_category_map = _get_product_category_map(seed_env.headers, data.product_categories)
 
         # Seed SEED_DATA
-        pk_maps = {
+        seed_env.pk_maps = {
             "workflowlevel1": {"49a4c9d7-8b72-434b-8a48-24540f65a2f3": level1_uuid},
             "workflowlevel2": wfl2_uuid_map,
             "profiletypes": profiletype_map,
             "coreusers": core_user_uuid_map,
             "categories": product_category_map,
         }
-        seed_env = SeedEnv(headers)
-        for logic_module_name in data.SEED_DATA.keys():
-            logic_module = LogicModule.objects.get(name=logic_module_name)
-            for model_endpoint in data.SEED_DATA[logic_module_name].keys():
-                url = f"{logic_module.endpoint}/{model_endpoint}/"
-                seed = Seed(
-                    seed_env,
-                    url,
-                    pk_maps,
-                    **data.SEED_DATA[logic_module_name][model_endpoint],
-                )
-                pk_map = seed.perform()
-                pk_maps[model_endpoint] = pk_map
+        seed = Seed(seed_env, data.SEED_DATA)
+        seed.seed_logic_modules()
+
+        # Seed Data Mesh JoinRecords
+        seed_data_mesh(seed_env.pk_maps, data.join_records)
 
         messages.success(request, f"{organization} - Seed successful.")
         return redirect(request.META["HTTP_REFERER"])
