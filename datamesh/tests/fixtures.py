@@ -22,7 +22,7 @@ def relationship():
     lm_document = factories.LogicModule(name='Document Service', endpoint_name='documents')
     lmm_document = factories.LogicModuleModel(logic_module_endpoint_name=lm_document.endpoint_name,
                                               model='Document', endpoint='/documents/')
-    return factories.Relationship(origin_model=lmm, related_model=lmm_document, key='document_relationship')
+    return factories.Relationship(origin_model=lmm, related_model=lmm_document, key='product_document_relationship')
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def relationship_with_10_records(org):
     lmm_document = factories.LogicModuleModel(logic_module_endpoint_name=lm_document.endpoint_name,
                                               model='Document', endpoint='/documents/',
                                               lookup_field_name='uuid')
-    relationship = factories.Relationship(origin_model=lmm, related_model=lmm_document, key='document_relationship')
+    relationship = factories.Relationship(origin_model=lmm, related_model=lmm_document, key='product_document_relationship')
     for _ in range(10):
         factories.JoinRecord.create(relationship=relationship,
                                     record_uuid=uuid.uuid4(), record_id=None,
@@ -62,7 +62,7 @@ def relationship_with_local():
                                          endpoint='/organization/',
                                          lookup_field_name='organization_uuid',
                                          is_local=True)
-    return factories.Relationship(origin_model=lmm, related_model=lmm_org, key='document_relationship')
+    return factories.Relationship(origin_model=lmm, related_model=lmm_org, key='product_document_relationship')
 
 
 @pytest.fixture
