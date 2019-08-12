@@ -4,10 +4,10 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
-from datamesh.models import JoinRecord, Relationship
+from datamesh.models import JoinRecord, Relationship, LogicModuleModel
 
 from workflow.tests.fixtures import org
-from .fixtures import relationship
+from .fixtures import relationship, appointment_logic_module_model, document_logic_module_model
 
 
 @pytest.mark.django_db()
@@ -17,6 +17,13 @@ def test_fail_create_reverse_relationship(relationship):
             related_model=relationship.origin_model,
             origin_model=relationship.related_model
         )
+
+
+@pytest.mark.django_db()
+def test_get_by_concatenated_model_name(appointment_logic_module_model, document_logic_module_model):
+    lmm = LogicModuleModel.objects.get_by_concatenated_model_name("crmAppointment")
+    assert lmm == appointment_logic_module_model
+    assert None == LogicModuleModel.objects.get_by_concatenated_model_name("nothing")
 
 
 @pytest.mark.django_db()

@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import CheckConstraint, Q, UniqueConstraint
 
-from datamesh.managers import JoinRecordManager
+from datamesh.managers import JoinRecordManager, LogicModuleModelManager
 from gateway.models import LogicModule
 from workflow.models import Organization
 
@@ -17,6 +17,8 @@ class LogicModuleModel(models.Model):
     endpoint = models.CharField(max_length=255, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
     lookup_field_name = models.SlugField(max_length=64, default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'")
     is_local = models.BooleanField(default=False, help_text="Local model is taken from BiFrost")
+
+    objects = LogicModuleModelManager()
 
     class Meta:
         unique_together = (
@@ -44,13 +46,17 @@ class LogicModuleModel(models.Model):
 
         return relationships_with_direction
 
+    @property
+    def concatenated_model_name(self) -> str:
+        return self.logic_module_endpoint_name + self.model
+
     def save(self, **kwargs):
         self.logic_module_endpoint_name = self.logic_module_endpoint_name.strip('/')
         super().save(**kwargs)
 
 
 class Relationship(models.Model):
-    key = models.SlugField(max_length=64, help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_relationship'.")
+    key = models.SlugField(max_length=64, help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_siteprofile_relationship'.")
     relationship_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     origin_model = models.ForeignKey(LogicModuleModel, related_name='joins_origins', on_delete=models.CASCADE)
     related_model = models.ForeignKey(LogicModuleModel, related_name='joins_relateds', on_delete=models.CASCADE)
