@@ -10,11 +10,8 @@ from django.utils.html import format_html
 
 from workflow.models import Organization
 
-from workflow.seeds.seed import SeedEnv, Seed, SeedDataMesh
-from workflow.seeds.utils import (_validate_empty_data,
-                                  _seed_bifrost_data,
-                                  _get_profile_types_map,
-                                  _get_product_category_map)
+from workflow.seeds.seed import SeedEnv, SeedDataMesh, SeedBifrost, SeedLogicModule
+
 from . import data
 
 
@@ -52,10 +49,10 @@ class OrganizationAdmin(admin.ModelAdmin):
             return redirect(request.META["HTTP_REFERER"])
 
         # Create SeedEnv
-        seed_env = SeedEnv(request.user, organization_uuid)
+        seed_env = SeedEnv(request, organization_uuid)
 
         # Validate empty organization
-        if not _validate_empty_data(request, seed_env.headers):
+        if not seed_env.is_empty(data.SEED_DATA):
             return redirect(request.META["HTTP_REFERER"])
 
         # Create SeedDataMesh and validate data mesh relationship exists
@@ -64,13 +61,17 @@ class OrganizationAdmin(admin.ModelAdmin):
             return redirect(request.META["HTTP_REFERER"])
 
         # Seed bifrost data
-        wfl2_uuid_map, level1_uuid, core_user_uuid_map = _seed_bifrost_data(organization)
+        seed_bifrost = SeedBifrost(organization,
+                                   data.workflowleveltypes,
+                                   data.workflowlevel2s,
+                                   data.core_users)
+        level1_uuid, wfl2_uuid_map, core_user_uuid_map = seed_bifrost.seed()
 
         # Seed profiletypes and build profiletype_map
-        profiletype_map = _get_profile_types_map(seed_env.headers, data.profiletypes)
+        profiletype_map = seed_env.get_profile_types_map(data.profiletypes)
 
         # Seed product categories and build product_category_map
-        product_category_map = _get_product_category_map(seed_env.headers, data.product_categories)
+        product_category_map = seed_env.get_product_category_map(data.product_categories)
 
         # Seed SEED_DATA
         seed_env.pk_maps = {
@@ -80,8 +81,8 @@ class OrganizationAdmin(admin.ModelAdmin):
             "coreusers": core_user_uuid_map,
             "categories": product_category_map,
         }
-        seed = Seed(seed_env, data.SEED_DATA)
-        seed.seed_logic_modules()
+        seed = SeedLogicModule(seed_env, data.SEED_DATA)
+        seed.seed()
 
         # Seed Data Mesh JoinRecords
         seed_data_mesh.seed(seed_env.pk_maps, organization)
