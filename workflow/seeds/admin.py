@@ -10,11 +10,11 @@ from django.utils.html import format_html
 
 from workflow.models import Organization
 
-from workflow.seeds.seed import SeedEnv, Seed
+from workflow.seeds.seed import SeedEnv, Seed, SeedDataMesh
 from workflow.seeds.utils import (_validate_empty_data,
                                   _seed_bifrost_data,
                                   _get_profile_types_map,
-                                  _get_product_category_map, seed_data_mesh)
+                                  _get_product_category_map)
 from . import data
 
 
@@ -51,9 +51,16 @@ class OrganizationAdmin(admin.ModelAdmin):
             messages.error(request, "Organization not found. Was it saved? It must be before seeding is possible.")
             return redirect(request.META["HTTP_REFERER"])
 
-        # Create SeedEnv and validate empty data
+        # Create SeedEnv
         seed_env = SeedEnv(request.user, organization_uuid)
+
+        # Validate empty organization
         if not _validate_empty_data(request, seed_env.headers):
+            return redirect(request.META["HTTP_REFERER"])
+
+        # Create SeedDataMesh and validate data mesh relationship exists
+        seed_data_mesh = SeedDataMesh(data.join_records)
+        if not seed_data_mesh.validate_relationship_exists(request):
             return redirect(request.META["HTTP_REFERER"])
 
         # Seed bifrost data
@@ -77,7 +84,7 @@ class OrganizationAdmin(admin.ModelAdmin):
         seed.seed_logic_modules()
 
         # Seed Data Mesh JoinRecords
-        seed_data_mesh(seed_env.pk_maps, data.join_records)
+        seed_data_mesh.seed(seed_env.pk_maps, organization)
 
         messages.success(request, f"{organization} - Seed successful.")
         return redirect(request.META["HTTP_REFERER"])

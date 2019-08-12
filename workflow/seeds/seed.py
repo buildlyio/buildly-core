@@ -6,13 +6,15 @@ from datetime import timedelta
 
 import requests
 from django.conf import settings
+from django.contrib import messages
 from django.utils.timezone import now
 
 from oauth2_provider_jwt.utils import generate_payload, encode_jwt
 
+from datamesh.models import LogicModuleModel, Relationship, JoinRecord
 from gateway.models import LogicModule
 from workflow.models import CoreUser
-
+from workflow.seeds.utils import _update_value_data
 
 logger = logging.getLogger(__name__)
 
@@ -112,3 +114,48 @@ class Seed:
                     post_data
                 )
                 self.seed_env.pk_maps[model_endpoint] = self._build_map(responses, post_data)
+
+
+class SeedDataMesh:
+
+    def __init__(self, join_records_data):
+        self.join_records_data = deepcopy(join_records_data)
+
+    @staticmethod
+    def _get_relationship(origin_lmm: LogicModuleModel, related_lmm: LogicModuleModel) -> Relationship:
+        return Relationship.objects.get(
+            key=f"{origin_lmm.model.lower()}_{related_lmm.model.lower()}_relationship",
+            origin_model=origin_lmm,
+            related_model=related_lmm
+        )
+
+    def validate_relationship_exists(self, request) -> bool:
+        for entry in deepcopy(self.join_records_data):
+            origin_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry["origin_model_name"])
+            related_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry["related_model_name"])
+            try:
+                self._get_relationship(origin_lmm, related_lmm)
+            except Relationship.DoesNotExist:
+                messages.error(request,
+                               f"Relationship {origin_lmm.model.lower()}_{related_lmm.model.lower()}_relationship "
+                               f"not exists.")
+                return False
+        return True
+
+    def seed(self, pk_maps, organization):
+        for entry in self.join_records_data:
+            # update fields in join_records_data with map
+            origin_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry.pop("origin_model_name"))
+            related_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry.pop("related_model_name"))
+            entry_data = _update_value_data(pk_maps[origin_lmm.endpoint.strip('/')],
+                                            [entry],
+                                            'record_uuid')
+            entry_data = _update_value_data(pk_maps[related_lmm.endpoint.strip('/')],
+                                            entry_data,
+                                            'related_record_uuid')
+            # create JoinRecords
+            JoinRecord.objects.create(
+                relationship=self._get_relationship(origin_lmm, related_lmm),
+                organization=organization,
+                **entry_data[0]
+            )

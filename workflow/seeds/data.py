@@ -911,14 +911,12 @@ join_records = [
     {
         "record_uuid": "61a012e5-d70b-4801-acb3-507b913fcd54",
         "related_record_uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
-        "organization": "a7d7f137-94e4-4fa9-8ac1-3456a1611a71",
         "origin_model_name": "crmContact",
         "related_model_name": "locationSiteProfile"
     },
     {
         "record_uuid": "a73ae6b9-66b2-4ae4-9f2c-d1765eb42869",
         "related_record_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
-        "organization": "a7d7f137-94e4-4fa9-8ac1-3456a1611a71",
         "origin_model_name": "crmContact",
         "related_model_name": "locationSiteProfile"
     }

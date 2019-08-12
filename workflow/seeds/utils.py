@@ -158,10 +158,3 @@ def _get_product_category_map(headers, categories):
     return product_category_map
 
 
-def seed_data_mesh(pk_maps, join_records_data):
-    pass
-    # TODO: get datamesh.LogicModuleModel
-    # lmm = LogicModuleModel.objects.get()
-    # get relationship
-    # update fields in join_records_data with map
-    # create JoinRecords
