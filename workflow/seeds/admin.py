@@ -63,9 +63,8 @@ class OrganizationAdmin(admin.ModelAdmin):
         # Seed bifrost data
         seed_bifrost = SeedBifrost(organization,
                                    data.workflowleveltypes,
-                                   data.workflowlevel2s,
-                                   data.core_users)
-        level1_uuid, wfl2_uuid_map, core_user_uuid_map = seed_bifrost.seed()
+                                   data.workflowlevel2s)
+        level1_uuid, wfl2_uuid_map, org_core_user_uuids = seed_bifrost.seed()
 
         # Seed profiletypes and build profiletype_map
         profiletype_map = seed_env.get_profile_types_map(data.profiletypes)
@@ -78,8 +77,8 @@ class OrganizationAdmin(admin.ModelAdmin):
             "workflowlevel1": {"49a4c9d7-8b72-434b-8a48-24540f65a2f3": level1_uuid},
             "workflowlevel2": wfl2_uuid_map,
             "profiletypes": profiletype_map,
-            "coreusers": core_user_uuid_map,
             "categories": product_category_map,
+            "org_core_user_uuids": org_core_user_uuids,
         }
         seed = SeedLogicModule(seed_env, data.SEED_DATA)
         seed.seed()

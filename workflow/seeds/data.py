@@ -776,9 +776,11 @@ SEED_DATA = {
                 "contact_uuid": "contact",
                 "siteprofile_uuid": "siteprofiles",
                 "workflowlevel2_uuids": "workflowlevel2",
-                "invitee_uuids": "coreusers",
             },
             "update_dates": {"start_date": 20, "end_date": 20},
+            "set_fields": {
+                "invitee_uuids": "org_core_user_uuids",
+            }
         },
     },
     "products": {
@@ -798,10 +800,12 @@ SEED_DATA = {
             "validate": False,
             "data": time_events,
             "update_fields": {
-                "core_user_uuid": "coreusers",
                 "workflowlevel2_uuid": "workflowlevel2",
                 "appointment_uuid": "appointment",
-            }
+            },
+            # "set_fields": {
+            #     "core_user_uuid": "org_core_user_uuids[0]",
+            # },
         },
         "time-log-entry": {
             "validate": False,
@@ -874,33 +878,6 @@ workflowlevel2s = [
         "parent_workflowlevel2": 0,
         "workflowlevel1": 18,
         "type": "c17709b0-3acf-4a93-9d14-a5a5f59fcb77",
-    },
-]
-
-core_users = [
-    {
-        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
-        "first_name": "Seed",
-        "last_name": "Data",
-        "email": "",
-        "username": "SeedData",
-        "is_active": True,
-    },
-    {
-        "core_user_uuid": "3418abb1-faff-4f38-86d9-606f3f542ef5",
-        "first_name": "Seed",
-        "last_name": "Data3",
-        "email": "",
-        "username": "SeedData3",
-        "is_active": True,
-    },
-    {
-        "core_user_uuid": "40517e88-26cb-4b34-853f-ed383c1af0d6",
-        "first_name": "Seed",
-        "last_name": "Data2",
-        "email": "",
-        "username": "SeedData2",
-        "is_active": True,
     },
 ]
 

@@ -3,7 +3,7 @@ import logging
 import string
 from copy import deepcopy
 from datetime import timedelta
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 
 import requests
 from django.conf import settings
@@ -140,7 +140,7 @@ class SeedBase:
         return data
 
     @staticmethod
-    def update_dates(value_data: list, date_field_name: str, days_delta: int) -> list:
+    def update_dates(value_data: list, date_field_name: str, days_delta: Any) -> list:
         """Update the specified dates in the list."""
         for item in value_data:
             if date_field_name in item.keys():
@@ -163,13 +163,19 @@ class SeedLogicModule(SeedBase):
         self.seed_env = seed_env
         self.seed_data = deepcopy(seed_data)
 
-    def _update_pk_fields(self, update_fields_dict: dict, post_data: list):
+    def _update_pk_fields(self, update_fields_dict: Dict[str, str], post_data: list):
         """Update every item in post_data['field_name'] with the help of the map."""
         for field_name, endpoint in update_fields_dict.items():
             update_map = self.seed_env.pk_maps[endpoint]
             self.update_field(update_map, post_data, field_name)
 
-    def _update_date_fields(self, update_dates_dict: dict, post_data: list):
+    def _set_fields(self, set_fields_dict: Dict[str, str], post_data: list):
+        for field_name, value_definition_name in set_fields_dict.items():
+            field_value = self.seed_env.pk_maps[value_definition_name]
+            for item in post_data:
+                item[field_name] = field_value
+
+    def _update_date_fields(self, update_dates_dict: Dict[str, Any], post_data: list):
         """Update the specified dates in the list."""
         for date_field_name, days_delta in update_dates_dict.items():
             self.update_dates(post_data, date_field_name, days_delta)
@@ -207,6 +213,10 @@ class SeedLogicModule(SeedBase):
                 )
                 self._update_date_fields(
                     self.seed_data[logic_module_name][model_endpoint].get("update_dates", {}),
+                    post_data
+                )
+                self._set_fields(
+                    self.seed_data[logic_module_name][model_endpoint].get("set_fields", {}),
                     post_data
                 )
                 responses = self.post_create_requests(
@@ -266,12 +276,10 @@ class SeedBifrost(SeedBase):
     def __init__(self,
                  organization: Organization,
                  workflowleveltypes: List[dict],
-                 workflowlevel2s: List[dict],
-                 core_users: List[dict]):
+                 workflowlevel2s: List[dict]):
         self.organization = organization
         self.workflowleveltypes = deepcopy(workflowleveltypes)
         self.workflowlevel2s = deepcopy(workflowlevel2s)
-        self.core_users = deepcopy(core_users)
 
     def seed(self) -> Tuple[str, dict, dict]:
         """Seed WorkflowLevelTypes, WorkflowLevel1, WorkflowLevel2s."""
@@ -299,18 +307,10 @@ class SeedBifrost(SeedBase):
             wfl2 = WorkflowLevel2.objects.create(**wfl2_dict)
             wfl2_uuid_map[old_level2_uuid] = str(wfl2.level2_uuid)
 
-        # Seed CoreUsers
-        def _get_unique_seeddata_username():
-            core_users = CoreUser.objects.filter(username__startswith="SeedData")
-            return f"SeedData{core_users.count() + 1}"
+        # Get existing CoreUsers
+        org_core_user_uuids = list(CoreUser.objects.filter(
+            organization=self.organization).values_list(
+            'core_user_uuid', flat=True
+        ))
 
-        core_user_map = {}
-        for core_user_dict in deepcopy(self.core_users):
-            old_core_user_uuid = core_user_dict.pop("core_user_uuid")
-            core_user_dict["username"] = _get_unique_seeddata_username()
-            core_user = CoreUser.objects.create(
-                **{**core_user_dict, **{"organization": self.organization}}
-            )
-            core_user_map[old_core_user_uuid] = str(core_user.core_user_uuid)
-
-        return str(wfl1.level1_uuid), wfl2_uuid_map, core_user_map
+        return str(wfl1.level1_uuid), wfl2_uuid_map, org_core_user_uuids
