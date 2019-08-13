@@ -45,7 +45,13 @@ class SeedEnv:
         """Check if logic modules databases are empty."""
         is_empty = True
         for logic_module_name in seed_data.keys():
-            logic_module = LogicModule.objects.get(name=logic_module_name)
+            try:
+                logic_module = LogicModule.objects.get(name=logic_module_name)
+            except LogicModule.DoesNotExist:
+                messages.error(
+                    self.request,
+                    f"Seed Data Configuration Error: LogicModule does not exist: {logic_module_name}",
+                )
             for model_endpoint in seed_data[logic_module_name].keys():
                 model_endpoint_dict = seed_data[logic_module_name][model_endpoint]
                 if "validate" in model_endpoint_dict.keys() and not model_endpoint_dict["validate"]:
