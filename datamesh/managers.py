@@ -1,8 +1,17 @@
 from typing import Any
 
 from django.db.models import Manager, QuerySet, Model
+from django.db.models.functions import Concat
 
 from gateway import utils
+
+
+class LogicModuleModelManager(Manager):
+
+    def get_by_concatenated_model_name(self, concatenated_model_name: str) -> Model:
+        return self.annotate(swagger_model_name=Concat(
+            'logic_module_endpoint_name', 'model')).filter(
+            swagger_model_name=concatenated_model_name).first()
 
 
 class JoinRecordManager(Manager):
