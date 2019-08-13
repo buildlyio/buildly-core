@@ -1,12 +1,8 @@
-+++
-title = "Connect your service to BiFrost"
-+++
-
 # Connect your service to BiFrost
 
 ## Overview
 
-This tutorial will explain how to connect an existing backend service to [BiFrost](/bifrost). 
+This tutorial explains how to connect an existing microservice to [BiFrost](/bifrost). 
 
 Once you connect your service to BiFrost, it will be able to communicate with all of your other services over a core authentication layer. All of its endpoints will be exposed as part of a single API that BiFrost puts together from all of the services. You also have the option to use BiFrost for managing permissions and users.
 
@@ -26,7 +22,7 @@ Next, you need to implement BiFrost's authorization method.
 
 ### About BiFrost authorization
 
-For external requests to logic modules (e.g., [Midgard](/midgard) users), BiFrost uses an [OAuth2](https://oauth.net/2/) flow to issue [JSON Web Tokens (JWTs)](https://jwt.io) signed with RS256. 
+For external requests to logic modules (e.g., [Midgard](https://github.com/Humanitec/midgard) users), BiFrost uses an [OAuth2](https://oauth.net/2/) flow to issue [JSON Web Tokens (JWTs)](https://jwt.io) signed with RS256. 
 
 Inside the container where the service is deployed, Walhall exposes BiFrost's **public key** as the environment variable `JWT_PUBLIC_KEY_RSA_BIFROST`. The service must use this environment variable to decode requests from BiFrost. 
 
@@ -68,32 +64,17 @@ The BiFrost JWT payload looks like this:
 -  `scope`: Permission scopes granted in the request by BiFrost.
 -  `username`: The [Midgard username](/midgard) of the CoreUser who initiated the request.
 
-
-## Add service to your Walhall app and deploy
-
-Now you have completed the minimum necessary configurations to make your service work with BiFrost. The last step is to add it to a Walhall app as a [logic module](/library/logic-modules) and deploy it.
-
-See the [Add custom logic module tutorial](/walhall/tutorials/add-logic-module-to-application) for instructions on how to do so.
-
 ## (Optional) Implement BiFrost permissions model
 
-If you want to implement the [BiFrost permissions model](/bifrost#permissions-model) in your services, then you need to create **WorkflowLevels** for each of your data models and implement them in the models. We recommend creating WorkflowLevel1s for all top-level data models in your service and WorkflowLevel2s for defining any nested data relationships.
+If you want to implement the [BiFrost permissions model](/permissions-model.md) in your services, then you need to create **WorkflowLevels** for each of your data models and implement them in the models. We recommend creating WorkflowLevel1s for all top-level data models in your service and WorkflowLevel2s for defining any nested data relationships.
 
-See the [BiFrost documentation](/bifrost#example-implementation) for an example of how to implement WorkflowLevels in your data model.
+Use the following endpoints of your **app's API URL** to define WorkflowLevels:
 
-You must [create and deploy a Walhall app](/walhall/tutorials/get-started) before you can implement the BiFrost permissions model.
-
-Once you've done so, use the following endpoints of your **app's API URL** to define WorkflowLevels:
-
--  [POST /workflowlevel1](/api/bifrost#!/workflowlevel1/workflowlevel1_create): Create WorkflowLevel1
+-  POST /workflowlevel1: Create WorkflowLevel1
 	-  Add the property `workflowleve1_uuid` to the data model and set the value to the UUID from the response.
--  [POST /workflowlevel2](/api/bifrost#!/workflowlevel2/workflowlevel2_create): Create WorkflowLevel2
+-  POST /workflowlevel2: Create WorkflowLevel2
 	-  Add the property `workflowleve2_uuid` to the data model and set the value to the UUID from the response.
 	-  If it's got a parent WorkflowLevel2, then add the property `parent_workflowlevel2` to the data model and set the value to the UUID of its parent WorkflowLevel2.
-
-You can find your **API URL** next to BiFrost in your app's overview page.
-
-![Screenshot: BiFrost API URL](/walhall/_assets/bifrost-api-url.png)
 
 ## Appendix: Reserved endpoint names
 
