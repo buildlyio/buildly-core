@@ -64,7 +64,7 @@ def test_set_week_of_the_org_created_week(org):
         },
         {
             "uuid": "edeb1722-5b43-4eb0-ae52-b5598e40e704",
-            "start_date": "2019-08-01T07:00:00+02:00",  # thursday in week 31
+            "start_date": "2019-08-08T07:00:00+02:00",  # thursday in week 32
         }]
     seed_env = Mock(SeedEnv)
     seed_env.organization = org
@@ -79,7 +79,8 @@ def test_set_week_of_the_org_created_week(org):
     assert new_start_date.tzname() == '+0200'
     assert test_data[0]['start_date'] == '2019-08-13T07:30:00+02:00'
     assert test_data[0]['end_date'] == '2019-08-14T16:00:00+02:00'
-    assert test_data[1]['start_date'] == '2019-08-15T07:00:00+02:00'
+    assert test_data[1]['start_date'] == '2019-08-22T07:00:00+02:00'
+    assert parse_datetime(test_data[1]['start_date']).isocalendar()[1] == 34
 
 
 # ToDo:
