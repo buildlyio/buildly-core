@@ -198,14 +198,17 @@ class SeedLogicModule(SeedBase):
             return d + delta
 
         monday_of_org = week_start_date(*self.seed_env.organization.create_date.isocalendar()[0:2])
+        min_week = min([parse_datetime(item[date_field_name]).isocalendar()[1] for
+                        item in post_data if date_field_name in item.keys()])  # smallest week number
         for item in post_data:
             if date_field_name not in item.keys():
                 continue
             original_date = parse_datetime(item[date_field_name])
             delta_days = original_date.isoweekday() - 1
+            delta_weeks = original_date.isocalendar()[1] - min_week
             new_datetime = datetime(monday_of_org.year, monday_of_org.month, monday_of_org.day,
                                     original_date.hour, original_date.minute,
-                                    tzinfo=original_date.tzinfo) + timedelta(days=delta_days)
+                                    tzinfo=original_date.tzinfo) + timedelta(days=delta_days + delta_weeks * 7)
             item[date_field_name] = new_datetime.isoformat()
 
     def post_create_requests(self, url, data):
