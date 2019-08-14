@@ -777,7 +777,10 @@ SEED_DATA = {
                 "siteprofile_uuid": "siteprofiles",
                 "workflowlevel2_uuids": "workflowlevel2",
             },
-            "update_dates": {"start_date": 20, "end_date": 20},
+            "update_dates": {
+                "start_date": "week_of_the_org_created_week",
+                "end_date": "week_of_the_org_created_week"
+            },
             "set_fields": {
                 "invitee_uuids": "org_core_user_uuids",
             }

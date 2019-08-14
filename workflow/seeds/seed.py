@@ -2,13 +2,14 @@ import json
 import logging
 import string
 from copy import deepcopy
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 from typing import List, Tuple, Dict, Any
 
 import requests
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest
+from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now
 
 from oauth2_provider_jwt.utils import generate_payload, encode_jwt
@@ -29,6 +30,7 @@ class SeedEnv:
         self.headers = self._create_headers(request.user, organization_uuid)
         self.request = request
         self.pk_maps = pk_maps
+        self.organization = Organization.objects.get(organization_uuid=organization_uuid)
 
     @staticmethod
     def _create_headers(user: CoreUser, organization_uuid: string) -> dict:
@@ -178,7 +180,33 @@ class SeedLogicModule(SeedBase):
     def _update_date_fields(self, update_dates_dict: Dict[str, Any], post_data: list):
         """Update the specified dates in the list."""
         for date_field_name, days_delta in update_dates_dict.items():
-            self.update_dates(post_data, date_field_name, days_delta)
+            if days_delta == "week_of_the_org_created_week":
+                self.set_week_of_the_org_created_week(post_data, date_field_name)
+            else:
+                self.update_dates(post_data, date_field_name, days_delta)
+
+    def set_week_of_the_org_created_week(self, post_data, date_field_name):
+        """Get the week of the week in which the organization is created and set it in the post_data."""
+
+        def week_start_date(year, week):
+            d = date(year, 1, 1)
+            delta_days = d.isoweekday() - 1
+            delta_weeks = week
+            if year == d.isocalendar()[0]:
+                delta_weeks -= 1
+            delta = timedelta(days=-delta_days, weeks=delta_weeks)
+            return d + delta
+
+        monday_of_org = week_start_date(*self.seed_env.organization.create_date.isocalendar()[0:2])
+        for item in post_data:
+            if date_field_name not in item.keys():
+                continue
+            original_date = parse_datetime(item[date_field_name])
+            delta_days = original_date.isoweekday() - 1
+            new_datetime = datetime(monday_of_org.year, monday_of_org.month, monday_of_org.day,
+                                    original_date.hour, original_date.minute,
+                                    tzinfo=original_date.tzinfo) + timedelta(days=delta_days)
+            item[date_field_name] = new_datetime.isoformat()
 
     def post_create_requests(self, url, data):
         responses = []
