@@ -422,7 +422,21 @@ products = [
 
 # TimeTracking Service
 
-time_events = []
+time_events = [
+    {
+        "uuid": "09539017-2be1-48fe-b5a5-1c85c4f63d08",
+        "id": "09539017-2be1-48fe-b5a5-1c85c4f63d08",
+        "time_log_entries": [],
+        "create_date": "2019-07-30T13:29:21.315409Z",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": null,
+        "workflowlevel2_uuid": "999d0b08-759f-49d6-b121-e312c3ea17c5",
+        "appointment_uuid": "9ba34824-a224-4da9-8ace-e24a1006c231",
+        "time_logged_seconds": 0,
+        "deleted": false
+    },
+
+]
 
 time_log_entries = []
 
@@ -560,9 +574,6 @@ SEED_DATA = {
                 "workflowlevel2_uuid": "workflowlevel2",
                 "appointment_uuid": "appointment",
             },
-            # "set_fields": {
-            #     "core_user_uuid": "org_core_user_uuids[0]",
-            # },
         },
         "time-log-entry": {
             "validate": False,
