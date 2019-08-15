@@ -45,7 +45,10 @@ class OrganizationAdmin(admin.ModelAdmin):
         try:
             organization = Organization.objects.get(organization_uuid=organization_uuid)
         except Organization.DoesNotExist:
-            messages.error(request, "Organization not found. Was it saved? It must be before seeding is possible.")
+            messages.error(
+                request,
+                "Organization not found. Was it saved? It must be before seeding is possible.",
+            )
             return redirect(request.META["HTTP_REFERER"])
 
         # Create SeedEnv
@@ -61,16 +64,18 @@ class OrganizationAdmin(admin.ModelAdmin):
             return redirect(request.META["HTTP_REFERER"])
 
         # Seed bifrost data
-        seed_bifrost = SeedBifrost(organization,
-                                   data.workflowleveltypes,
-                                   data.workflowlevel2s)
+        seed_bifrost = SeedBifrost(
+            organization, data.workflowleveltypes, data.workflowlevel2s
+        )
         level1_uuid, wfl2_uuid_map, org_core_user_uuids = seed_bifrost.seed()
 
         # Seed profiletypes and build profiletype_map
         profiletype_map = seed_env.get_profile_types_map(data.profiletypes)
 
         # Seed product categories and build product_category_map
-        product_category_map = seed_env.get_product_category_map(data.product_categories)
+        product_category_map = seed_env.get_product_category_map(
+            data.product_categories
+        )
 
         # Seed SEED_DATA
         seed_env.pk_maps = {
@@ -79,6 +84,7 @@ class OrganizationAdmin(admin.ModelAdmin):
             "profiletypes": profiletype_map,
             "categories": product_category_map,
             "org_core_user_uuids": org_core_user_uuids,
+            "organization_uuid": organization_uuid,
         }
         seed = SeedLogicModule(seed_env, data.SEED_DATA)
         seed.seed()

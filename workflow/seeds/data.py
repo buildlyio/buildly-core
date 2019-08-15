@@ -8,6 +8,7 @@ projectextensions = [
     {"workflowlevel2_uuid": "999d0b08-759f-49d6-b121-e312c3ea17c5", "id": "not needed"},
 ]
 
+
 # Location Service
 
 profiletypes = [
@@ -123,6 +124,7 @@ siteprofiles = [
         "profiletype": 80,
     },
 ]
+
 
 # CRM Service
 
@@ -351,6 +353,7 @@ appointments = [
     },
 ]
 
+
 # Product Service
 
 product_categories = [
@@ -368,7 +371,7 @@ product_categories = [
         "is_global": True,
         "level": 1,
         "parent": "75207588-9956-4331-af63-4b0307ac09aa",
-    }
+    },
 ]
 
 products = [
@@ -406,341 +409,82 @@ products = [
     },
 ]
 
+
 # TimeTracking Service
 
 time_events = []
 
 time_log_entries = []
 
-# Document Service # ToDo: File-Uploads
+
+# Documents Service
 
 documents = [
     {
-        "id": 10264,
-        "thumbnail": "/documents/thumbnail/10264",
-        "uuid": "84703d7c-fc08-4765-93bb-3abcb63758ce",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10264/",
-        "upload_date": "2019-06-21T08:46:58.263316Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
+        "id": 22849,
+        "file_description": "undefined",
+        "file_name": "Pic_1.jpg",
+        "file_type": "jpg",
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
-        "id": 10265,
-        "thumbnail": "/documents/thumbnail/10265",
-        "uuid": "6ba41b14-6523-4ead-9b2c-be3ae59fc1c5",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10265/",
-        "upload_date": "2019-06-21T08:46:59.044426Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
+        "id": 22850,
+        "file_description": "undefined",
+        "file_name": "Pic_2.png",
+        "file_type": "png",
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
-        "id": 10266,
-        "thumbnail": "/documents/thumbnail/10266",
-        "uuid": "033b0936-10f7-4b15-802d-741b8cb902b8",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10266/",
-        "upload_date": "2019-06-21T08:46:59.748581Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
+        "id": 22851,
+        "file_description": "undefined",
+        "file_name": "Pic_3.jpg",
+        "file_type": "jpg",
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
-        "id": 10267,
-        "thumbnail": "/documents/thumbnail/10267",
-        "uuid": "bb0a53ae-d072-48ac-bdd4-d35a00bdef80",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10267/",
-        "upload_date": "2019-06-21T08:47:00.490360Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10268,
-        "thumbnail": "/documents/thumbnail/10268",
-        "uuid": "4bd74b78-b730-44e7-a1fb-024f1232a824",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10268/",
-        "upload_date": "2019-06-21T08:47:01.240413Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10269,
-        "thumbnail": "/documents/thumbnail/10269",
-        "uuid": "12514121-d29a-46af-91ad-c684d631a12a",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10269/",
-        "upload_date": "2019-06-21T08:47:01.940283Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10270,
-        "thumbnail": "/documents/thumbnail/10270",
-        "uuid": "2717f592-7d41-43b8-9c18-2d5dd41a4376",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10270/",
-        "upload_date": "2019-06-21T08:47:02.292140Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10271,
-        "thumbnail": "/documents/thumbnail/10271",
-        "uuid": "f2183eff-6b08-4722-856e-09967e21747a",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10271/",
-        "upload_date": "2019-06-21T08:47:02.694346Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10272,
-        "thumbnail": "/documents/thumbnail/10272",
-        "uuid": "854d13c4-91c8-4abe-a1ec-2fd045b4a245",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10272/",
-        "upload_date": "2019-06-21T08:47:03.083799Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10273,
-        "thumbnail": "/documents/thumbnail/10273",
-        "uuid": "3701356b-0708-464a-8729-f86a4ea9d54e",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10273/",
-        "upload_date": "2019-06-21T08:47:03.490305Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10274,
-        "thumbnail": "/documents/thumbnail/10274",
-        "uuid": "0a819ddd-dbc5-482d-b2b0-e3b9d2d996a1",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10274/",
-        "upload_date": "2019-06-21T08:47:03.848877Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10275,
-        "thumbnail": "/documents/thumbnail/10275",
-        "uuid": "56b096b0-a7bc-4b0b-8af5-3d48925e574e",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10275/",
-        "upload_date": "2019-06-21T08:47:04.497342Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10276,
-        "uuid": "c6d2c72e-3b36-4d00-892d-03d046d584c2",
-        "file_name": "DEU_316006_lang_expose.pdf",
+        "id": 22852,
+        "file_description": "undefined",
+        "file_name": "Datenblatt_Vitodens.pdf",
         "file_type": "pdf",
-        "file": "/documents/file/10276/",
-        "upload_date": "2019-06-21T08:47:04.917595Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
-        "id": 10277,
-        "thumbnail": "/documents/thumbnail/10277",
-        "uuid": "ccb60980-2e5d-4a53-8bd4-1b385c4fed6d",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10277/",
-        "upload_date": "2019-06-21T08:47:05.336682Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
+        "id": 22853,
+        "file_description": "undefined",
+        "file_name": "Pic_1.jpg",
+        "file_type": "jpg",
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
     {
-        "id": 10278,
-        "thumbnail": "/documents/thumbnail/10278",
-        "uuid": "3c1e5abc-107f-43cc-9095-5bceb223d102",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10278/",
-        "upload_date": "2019-06-21T08:47:05.971431Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
+        "id": 22854,
+        "file_description": "undefined",
+        "file_name": "Pic_3.jpg",
+        "file_type": "jpg",
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
     {
-        "id": 10279,
-        "uuid": "92cd8c84-1393-4dbb-aacf-d9376c05e425",
-        "file_name": "DEU_316006_lang_expose.pdf",
+        "id": 22855,
+        "file_description": "undefined",
+        "file_name": "Pic_2.png",
+        "file_type": "png",
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
+    },
+    {
+        "id": 22856,
+        "file_description": "undefined",
+        "file_name": "Datenblatt_Vitodens.pdf",
         "file_type": "pdf",
-        "file": "/documents/file/10279/",
-        "upload_date": "2019-06-21T08:47:06.371379Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10280,
-        "thumbnail": "/documents/thumbnail/10280",
-        "uuid": "837d3650-3e9b-47fd-96ee-e0d9819a4619",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10280/",
-        "upload_date": "2019-06-21T08:47:06.730193Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10281,
-        "thumbnail": "/documents/thumbnail/10281",
-        "uuid": "4e2b835c-a867-4256-b1aa-0c70657696fa",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10281/",
-        "upload_date": "2019-06-21T08:47:07.507823Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10282,
-        "uuid": "b972f308-2b39-4ea3-9510-6ec71850b6ac",
-        "file_name": "DEU_316006_lang_expose.pdf",
-        "file_type": "pdf",
-        "file": "/documents/file/10282/",
-        "upload_date": "2019-06-21T08:47:07.888942Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10283,
-        "thumbnail": "/documents/thumbnail/10283",
-        "uuid": "8bba7f71-08bc-4945-ae23-5b7f28fc4ad1",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10283/",
-        "upload_date": "2019-06-21T08:47:08.249998Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10284,
-        "thumbnail": "/documents/thumbnail/10284",
-        "uuid": "c9f866cb-109b-4787-a1fa-8d84b170a2bc",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10284/",
-        "upload_date": "2019-06-21T08:47:09.380652Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10285,
-        "thumbnail": "/documents/thumbnail/10285",
-        "uuid": "c835b731-2a46-4b2b-b6d8-8b5446075ab5",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10285/",
-        "upload_date": "2019-06-21T08:47:10.465961Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10286,
-        "thumbnail": "/documents/thumbnail/10286",
-        "uuid": "32097c70-74d4-4a96-bc68-8d6e673b9143",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10286/",
-        "upload_date": "2019-06-21T08:47:11.510016Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10287,
-        "thumbnail": "/documents/thumbnail/10287",
-        "uuid": "1a094c0a-b964-4218-b6b6-58d512b900a0",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10287/",
-        "upload_date": "2019-06-21T08:47:12.392651Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10288,
-        "uuid": "695663f2-7dcb-4222-89c2-ccf132e95832",
-        "file_name": "371-Article Text-1991-1-10-20130211.pdf",
-        "file_type": "pdf",
-        "file": "/documents/file/10288/",
-        "upload_date": "2019-06-21T08:47:13.571126Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10289,
-        "thumbnail": "/documents/thumbnail/10289",
-        "uuid": "ff9f0834-f96e-46f9-a385-f8f8385b5f0e",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10289/",
-        "upload_date": "2019-06-21T08:47:13.931630Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10290,
-        "thumbnail": "/documents/thumbnail/10290",
-        "uuid": "33d88e29-43d9-42b4-a1a1-ede84e039e90",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10290/",
-        "upload_date": "2019-06-21T08:47:14.948469Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10291,
-        "thumbnail": "/documents/thumbnail/10291",
-        "uuid": "45f2b4fb-58d8-4c27-a709-8593eae059a3",
-        "file_name": "testreducer.jpeg",
-        "file_type": "jpeg",
-        "file": "/documents/file/10291/",
-        "upload_date": "2019-06-21T08:47:15.970896Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
-    },
-    {
-        "id": 10292,
-        "uuid": "63e0cd21-7433-4e2e-981d-119e7a6b105e",
-        "file_name": "371-Article Text-1991-1-10-20130211.pdf",
-        "file_type": "pdf",
-        "file": "/documents/file/10292/",
-        "upload_date": "2019-06-21T08:47:19.155934Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["85e6f0a2-2559-4e03-9a7d-9dd9036fe7ba"],
-    },
-    {
-        "id": 10293,
-        "uuid": "6ff04d9d-6ef1-4922-8a6c-77bb4faa042e",
-        "file_name": "DEU_316006_lang_expose.pdf",
-        "file_type": "pdf",
-        "file": "/documents/file/10293/",
-        "upload_date": "2019-06-21T08:47:19.558746Z",
-        "workflowlevel1_uuids": [],
-        "workflowlevel2_uuids": ["8a51b530-06f6-49dc-8815-10ccbeadb74f"],
+        "organization_uuid": None,
+        "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
 ]
-
 
 SEED_DATA = {
     "extensions": {
@@ -779,12 +523,12 @@ SEED_DATA = {
             },
             "update_dates": {
                 "start_date": "week_of_the_org_created_week",
-                "end_date": "week_of_the_org_created_week"
+                "end_date": "week_of_the_org_created_week",
             },
             "set_fields": {
                 "invitee_uuids": "org_core_user_uuids",
-            }
-        },
+            },
+        }
     },
     "products": {
         # 'categories?is_global=true': {
@@ -796,7 +540,7 @@ SEED_DATA = {
                 "category": "categories",
                 "workflowlevel2_uuid": "workflowlevel2",
             },
-        }
+        },
     },
     "timetracking": {
         "time-event": {
@@ -818,14 +562,24 @@ SEED_DATA = {
             },
             "update_dates": {
                 "start_time": 0,
-                "end_time": {"hours": 1, "minutes": 25},
-            }
+                "end_time": {
+                    "hours": 1,
+                    "minutes": 25,
+                },
+            },
         },
-
-    }
-    # 'documents': {
-    #     'documents': documents,
-    # },
+    },
+    "documents": {
+        "documents": {
+            "data": documents,
+            "upload_files": {
+                "file_name_field": "documents_file",
+            },
+            "set_fields": {
+                "organization_uuid": "organization_uuid",
+            },
+        },
+    },
 }
 
 
@@ -892,12 +646,12 @@ join_records = [
         "record_uuid": "61a012e5-d70b-4801-acb3-507b913fcd54",
         "related_record_uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
         "origin_model_name": "crmContact",
-        "related_model_name": "locationSiteProfile"
+        "related_model_name": "locationSiteProfile",
     },
     {
         "record_uuid": "a73ae6b9-66b2-4ae4-9f2c-d1765eb42869",
         "related_record_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "origin_model_name": "crmContact",
-        "related_model_name": "locationSiteProfile"
-    }
+        "related_model_name": "locationSiteProfile",
+    },
 ]
