@@ -16,21 +16,27 @@ from oauth2_provider_jwt.utils import generate_payload, encode_jwt
 
 from datamesh.models import LogicModuleModel, Relationship, JoinRecord
 from gateway.models import LogicModule
-from workflow.models import CoreUser, Organization, WorkflowLevelType, WorkflowLevel1, WorkflowLevel2
+from workflow.models import (
+    CoreUser,
+    Organization,
+    WorkflowLevelType,
+    WorkflowLevel1,
+    WorkflowLevel2,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class SeedEnv:
-
-    def __init__(self,
-                 request: HttpRequest,
-                 organization_uuid: string,
-                 pk_maps: dict = {}):
+    def __init__(
+        self, request: HttpRequest, organization_uuid: string, pk_maps: dict = {}
+    ):
         self.headers = self._create_headers(request.user, organization_uuid)
         self.request = request
         self.pk_maps = pk_maps
-        self.organization = Organization.objects.get(organization_uuid=organization_uuid)
+        self.organization = Organization.objects.get(
+            organization_uuid=organization_uuid
+        )
 
     @staticmethod
     def _create_headers(user: CoreUser, organization_uuid: string) -> dict:
@@ -54,9 +60,14 @@ class SeedEnv:
                     self.request,
                     f"Seed Data Configuration Error: LogicModule does not exist: {logic_module_name}",
                 )
+                return False
+
             for model_endpoint in seed_data[logic_module_name].keys():
                 model_endpoint_dict = seed_data[logic_module_name][model_endpoint]
-                if "validate" in model_endpoint_dict.keys() and not model_endpoint_dict["validate"]:
+                if (
+                    "validate" in model_endpoint_dict.keys()
+                    and not model_endpoint_dict["validate"]
+                ):
                     continue
                 url = f"{logic_module.endpoint}/{model_endpoint}/"
                 response = requests.get(url, headers=self.headers)
@@ -94,7 +105,9 @@ class SeedEnv:
         # create non-existing profiletypes
         for seed_pt in profiletypes:
             if seed_pt["id"] not in profile_type_map.keys():
-                response = requests.post(url, data=json.dumps(seed_pt), headers=self.headers)
+                response = requests.post(
+                    url, data=json.dumps(seed_pt), headers=self.headers
+                )
                 profile_type_id = json.loads(response.content)["id"]
                 profile_type_map[seed_pt["id"]] = profile_type_id
         return profile_type_map
@@ -119,14 +132,15 @@ class SeedEnv:
             if cat["id"] not in product_category_map.keys():
                 if cat["parent"]:
                     cat["parent"] = product_category_map[cat["parent"]]
-                response = requests.post(url, data=json.dumps(cat), headers=self.headers)
+                response = requests.post(
+                    url, data=json.dumps(cat), headers=self.headers
+                )
                 category_id = response.json()["id"]
                 product_category_map[cat["id"]] = category_id
         return product_category_map
 
 
 class SeedBase:
-
     @staticmethod
     def update_field(update_map: dict, data: list, field_name: str) -> list:
         """Update every item in data['field_name'] with the help of the update_map."""
@@ -155,13 +169,7 @@ class SeedBase:
 
 
 class SeedLogicModule(SeedBase):
-
-    def __init__(
-        self,
-        seed_env,
-        seed_data: dict,
-        **kwargs
-    ):
+    def __init__(self, seed_env, seed_data: dict, **kwargs):
         self.seed_env = seed_env
         self.seed_data = deepcopy(seed_data)
 
@@ -211,14 +219,29 @@ class SeedLogicModule(SeedBase):
                                     tzinfo=original_date.tzinfo) + timedelta(days=delta_days + delta_weeks * 7)
             item[date_field_name] = new_datetime.isoformat()
 
+    def upload_files(self, url, document):
+        file_name = document["file_name"]
+        file = open(f"workflow/seeds/files/{file_name}", "rb")
+        file_data = file.read()
+        files = {"file": file_data}
+        response = requests.post(
+            url, data=document, files=files, headers=self.seed_env.headers
+        )
+        file.close()
+        return response
+
     def post_create_requests(self, url, data):
         responses = []
         for entry in data:
-            responses.append(
-                requests.post(
-                    url, data=json.dumps(entry), headers=self.seed_env.headers
+            if "file" in entry.keys():
+                response = self.upload_files(url, entry)
+                responses.append(response)
+            else:
+                responses.append(
+                    requests.post(
+                        url, data=json.dumps(entry), headers=self.seed_env.headers
+                    )
                 )
-            )
             if responses[-1].status_code != 201:
                 logger.error(responses[-1].content)
                 logger.error(json.dumps(entry))
@@ -239,75 +262,101 @@ class SeedLogicModule(SeedBase):
             for model_endpoint in self.seed_data[logic_module_name].keys():
                 post_data = self.seed_data[logic_module_name][model_endpoint]["data"]
                 self._update_pk_fields(
-                    self.seed_data[logic_module_name][model_endpoint].get("update_fields", {}),
-                    post_data
+                    self.seed_data[logic_module_name][model_endpoint].get(
+                        "update_fields", {}
+                    ),
+                    post_data,
                 )
                 self._update_date_fields(
-                    self.seed_data[logic_module_name][model_endpoint].get("update_dates", {}),
-                    post_data
+                    self.seed_data[logic_module_name][model_endpoint].get(
+                        "update_dates", {}
+                    ),
+                    post_data,
                 )
                 self._set_fields(
-                    self.seed_data[logic_module_name][model_endpoint].get("set_fields", {}),
-                    post_data
+                    self.seed_data[logic_module_name][model_endpoint].get(
+                        "set_fields", {}
+                    ),
+                    post_data,
                 )
                 responses = self.post_create_requests(
-                    f"{logic_module.endpoint}/{model_endpoint}/",
-                    post_data
+                    f"{logic_module.endpoint}/{model_endpoint}/", post_data
                 )
-                self.seed_env.pk_maps[model_endpoint] = self._build_map(responses, post_data)
+                self.seed_env.pk_maps[model_endpoint] = self._build_map(
+                    responses, post_data
+                )
 
 
 class SeedDataMesh(SeedBase):
-
     def __init__(self, join_records_data):
         self.join_records_data = deepcopy(join_records_data)
 
     @staticmethod
-    def _get_relationship(origin_lmm: LogicModuleModel, related_lmm: LogicModuleModel) -> Relationship:
+    def _get_relationship(
+        origin_lmm: LogicModuleModel, related_lmm: LogicModuleModel
+    ) -> Relationship:
         return Relationship.objects.get(
             key=f"{origin_lmm.model.lower()}_{related_lmm.model.lower()}_relationship",
             origin_model=origin_lmm,
-            related_model=related_lmm
+            related_model=related_lmm,
         )
 
     def validate_relationship_exists(self, request) -> bool:
         for entry in deepcopy(self.join_records_data):
-            origin_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry["origin_model_name"])
-            related_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry["related_model_name"])
+            origin_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(
+                entry["origin_model_name"]
+            )
+            related_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(
+                entry["related_model_name"]
+            )
             try:
                 self._get_relationship(origin_lmm, related_lmm)
             except Relationship.DoesNotExist:
-                messages.error(request,
-                               f"Relationship {origin_lmm.model.lower()}_{related_lmm.model.lower()}_relationship "
-                               f"not exists.")
+                messages.error(
+                    request,
+                    f"Relationship {origin_lmm.model.lower()}_{related_lmm.model.lower()}_relationship does not exist.",
+                )
+                return False
+            except AttributeError:
+                messages.error(
+                    request,
+                    f"LogicModuleModels {origin_lmm.model.lower()} and {related_lmm.model.lower()} do not exist.",
+                )
                 return False
         return True
 
     def seed(self, pk_maps, organization):
         for entry in self.join_records_data:
             # update fields in join_records_data with map
-            origin_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry.pop("origin_model_name"))
-            related_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(entry.pop("related_model_name"))
-            entry_data = self.update_field(pk_maps[origin_lmm.endpoint.strip('/')],
-                                           [entry],
-                                           'record_uuid')
-            entry_data = self.update_field(pk_maps[related_lmm.endpoint.strip('/')],
-                                           entry_data,
-                                           'related_record_uuid')
+            origin_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(
+                entry.pop("origin_model_name")
+            )
+            related_lmm = LogicModuleModel.objects.get_by_concatenated_model_name(
+                entry.pop("related_model_name")
+            )
+            entry_data = self.update_field(
+                pk_maps[origin_lmm.endpoint.strip("/")], [entry], "record_uuid"
+            )
+            entry_data = self.update_field(
+                pk_maps[related_lmm.endpoint.strip("/")],
+                entry_data,
+                "related_record_uuid",
+            )
             # create JoinRecords
             JoinRecord.objects.create(
                 relationship=self._get_relationship(origin_lmm, related_lmm),
                 organization=organization,
-                **entry_data[0]
+                **entry_data[0],
             )
 
 
 class SeedBifrost(SeedBase):
-
-    def __init__(self,
-                 organization: Organization,
-                 workflowleveltypes: List[dict],
-                 workflowlevel2s: List[dict]):
+    def __init__(
+        self,
+        organization: Organization,
+        workflowleveltypes: List[dict],
+        workflowlevel2s: List[dict],
+    ):
         self.organization = organization
         self.workflowleveltypes = deepcopy(workflowleveltypes)
         self.workflowlevel2s = deepcopy(workflowlevel2s)
@@ -323,8 +372,7 @@ class SeedBifrost(SeedBase):
 
         # Seed WorkflowLevel1
         wfl1, _ = WorkflowLevel1.objects.get_or_create(
-            organization=self.organization,
-            defaults={"name": "Seed Data prep"}
+            organization=self.organization, defaults={"name": "Seed Data prep"}
         )
 
         # Seed WorkflowLevel2s
@@ -339,9 +387,10 @@ class SeedBifrost(SeedBase):
             wfl2_uuid_map[old_level2_uuid] = str(wfl2.level2_uuid)
 
         # Get existing CoreUsers
-        org_core_user_uuids = list(CoreUser.objects.filter(
-            organization=self.organization).values_list(
-            'core_user_uuid', flat=True
-        ))
+        org_core_user_uuids = list(
+            CoreUser.objects.filter(organization=self.organization).values_list(
+                "core_user_uuid", flat=True
+            )
+        )
 
         return str(wfl1.level1_uuid), wfl2_uuid_map, org_core_user_uuids
