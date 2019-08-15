@@ -21,14 +21,14 @@ siteprofiles = [
     {
         "uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
         "id": "900498a7-8630-4c7c-9762-2447cc2178ce",
-        "country": "de",
-        "name": "friedrichstraße 233, 10969 berlin",
-        "address_line1": "friedrichstraße 233",
+        "country": "DE",
+        "name": "Friedrichstraße 233, 10969 Berlin",
+        "address_line1": "Friedrichstraße 233",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10969",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -36,20 +36,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
-        "profiletype": 81,
+        "workflowlevel2_uuid": [
+            "8132d789-9580-45ad-b22a-9384bce0eed6"
+        ],
+        "profiletype": 81
     },
     {
         "uuid": "485234bd-1bd6-49b9-81b9-7d84161b6b39",
         "id": "485234bd-1bd6-49b9-81b9-7d84161b6b39",
-        "country": "de",
-        "name": "lehmbruckstraße 12, 10245 berlin",
-        "address_line1": "lehmbruckstraße 12",
+        "country": "DE",
+        "name": "Lehmbruckstraße 12, 10245 Berlin",
+        "address_line1": "Lehmbruckstraße 12",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10245",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -57,20 +59,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
-        "profiletype": 80,
+        "workflowlevel2_uuid": [
+            "999d0b08-759f-49d6-b121-e312c3ea17c5"
+        ],
+        "profiletype": 80
     },
     {
         "uuid": "5b04b3aa-f18e-416b-bf5b-bc9c86786159",
         "id": "5b04b3aa-f18e-416b-bf5b-bc9c86786159",
-        "country": "de",
-        "name": "ossastraße 44, 12045 berlin",
-        "address_line1": "ossastraße 44",
+        "country": "DE",
+        "name": "Ossastraße 44, 12045 Berlin",
+        "address_line1": "Ossastraße 44",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "12045",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -78,20 +82,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["6f015067-db3e-40be-8f87-8b20fa347752"],
-        "profiletype": 80,
+        "workflowlevel2_uuid": [
+            "6f015067-db3e-40be-8f87-8b20fa347752"
+        ],
+        "profiletype": 80
     },
     {
         "uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "id": "551629e8-bb28-4734-a3e4-7edb239854b2",
-        "country": "de",
-        "name": "tempelhofer ufer 13, 10963 berlin",
-        "address_line1": "tempelhofer ufer 13",
+        "country": "DE",
+        "name": "Tempelhofer Ufer 13, 10963 Berlin",
+        "address_line1": "Tempelhofer Ufer 13",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10963",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -99,20 +105,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["9e3bda19-49e5-428a-a2cc-ef03153f14bb"],
-        "profiletype": 81,
+        "workflowlevel2_uuid": [
+            "9e3bda19-49e5-428a-a2cc-ef03153f14bb"
+        ],
+        "profiletype": 81
     },
     {
         "uuid": "5fa79e8b-599c-4a70-97ef-989f0c823e5d",
         "id": "5fa79e8b-599c-4a70-97ef-989f0c823e5d",
-        "country": "de",
-        "name": "urbanstraße 76, 10967 berlin",
-        "address_line1": "urbanstraße 76",
+        "country": "DE",
+        "name": "Urbanstraße 76, 10967 Berlin",
+        "address_line1": "Urbanstraße 76",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10967",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -120,9 +128,11 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["7b504be7-36e3-4196-8c60-227b78f8ae96"],
-        "profiletype": 80,
-    },
+        "workflowlevel2_uuid": [
+            "7b504be7-36e3-4196-8c60-227b78f8ae96"
+        ],
+        "profiletype": 80
+    }
 ]
 
 
