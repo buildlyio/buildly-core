@@ -571,6 +571,7 @@ SEED_DATA = {
     },
     "documents": {
         "documents": {
+            "validate": False,
             "data": documents,
             "upload_files": {
                 "file_name_field": "documents_file",
