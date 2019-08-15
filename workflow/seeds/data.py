@@ -424,18 +424,68 @@ products = [
 
 time_events = [
     {
-        "uuid": "09539017-2be1-48fe-b5a5-1c85c4f63d08",
-        "id": "09539017-2be1-48fe-b5a5-1c85c4f63d08",
-        "time_log_entries": [],
-        "create_date": "2019-07-30T13:29:21.315409Z",
+        "id": "ff294372-0e58-4e6c-8ea9-20b9b7d9b8c5",
         "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
-        "workflowlevel1_uuid": null,
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "8132d789-9580-45ad-b22a-9384bce0eed6",
+        "appointment_uuid": "432aa435-f9ec-4984-87d3-31f1b2a9388e",
+    },
+    {
+        "id": "a1976b92-2337-415b-ae7e-9e907d1e46ef",
+        "core_user_uuid": None,
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "8132d789-9580-45ad-b22a-9384bce0eed6",
+        "appointment_uuid": "951609b6-32e9-43e6-8f24-692462a81496",
+    },
+    {
+        "id": "1ec0afa2-4b3d-4fb6-9bcb-8a74cd959d86",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "6f015067-db3e-40be-8f87-8b20fa347752",
+        "appointment_uuid": "878db099-b8c1-4482-b4a8-11e26168c933",
+    },
+    {
+        "id": "e53f6ba2-9c46-4570-b57c-9bbb89d9c745",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "edeb1722-5b43-4eb0-ae52-b5598e40e704",
+    },
+    {
+        "id": "5a4dd781-3a71-4940-84ce-265167793780",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "ae4bde84-7f02-436f-b666-70d032ee8d61",
+    },
+    {
+        "id": "2e3dfb85-e732-4415-b8d9-d07e779709de",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "138b1db2-322d-4f4f-bd04-a81737adc15e",
+    },
+    {
+        "id": "cc7bab28-d0cc-40fa-a3f9-23c572ec723e",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "bcc6c746-faab-489d-9d37-eb7d431e4e9d",
+    },
+    {
+        "id": "aa236c72-dfbd-436b-98e4-704bd3da6142",
+        "core_user_uuid": None,
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "7b504be7-36e3-4196-8c60-227b78f8ae96",
+        "appointment_uuid": "ed4c7e5a-5211-486e-a0ca-fcde746a8e2e",
+    },
+    {
+        "id": "09539017-2be1-48fe-b5a5-1c85c4f63d08",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
         "workflowlevel2_uuid": "999d0b08-759f-49d6-b121-e312c3ea17c5",
         "appointment_uuid": "9ba34824-a224-4da9-8ace-e24a1006c231",
-        "time_logged_seconds": 0,
-        "deleted": false
-    },
-
+    }
 ]
 
 time_log_entries = []
