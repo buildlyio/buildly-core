@@ -500,6 +500,7 @@ documents = [
         "file_name": "Pic_1.jpg",
         "file_type": "jpg",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
@@ -508,6 +509,7 @@ documents = [
         "file_name": "Pic_2.png",
         "file_type": "png",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
@@ -516,6 +518,7 @@ documents = [
         "file_name": "Pic_3.jpg",
         "file_type": "jpg",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
@@ -524,6 +527,7 @@ documents = [
         "file_name": "Datenblatt_Vitodens.pdf",
         "file_type": "pdf",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
     },
     {
@@ -532,6 +536,7 @@ documents = [
         "file_name": "Pic_1.jpg",
         "file_type": "jpg",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
     {
@@ -540,6 +545,7 @@ documents = [
         "file_name": "Pic_3.jpg",
         "file_type": "jpg",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
     {
@@ -548,6 +554,7 @@ documents = [
         "file_name": "Pic_2.png",
         "file_type": "png",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
     {
@@ -556,6 +563,7 @@ documents = [
         "file_name": "Datenblatt_Vitodens.pdf",
         "file_type": "pdf",
         "organization_uuid": None,
+        "create_date": "2019-07-30T13:36:05.311000Z",
         "workflowlevel2_uuids": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
     },
 ]
@@ -652,6 +660,9 @@ SEED_DATA = {
             },
             "set_fields": {
                 "organization_uuid": "organization_uuid",
+            },
+            "update_dates": {
+                "create_date": 0,
             },
         },
     },
