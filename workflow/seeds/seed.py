@@ -221,7 +221,7 @@ class SeedLogicModule(SeedBase):
                                     tzinfo=original_date.tzinfo) + timedelta(days=delta_days + delta_weeks * 7)
             item[date_field_name] = new_datetime.isoformat()
 
-    def upload_files(self, url, document):
+    def upload_file(self, url, document, upload_files: dict):
         """
         Create and send a request like this:
             {'file_type': 'png', 'file_name': 'nice-test.png', 'file': {
@@ -231,8 +231,9 @@ class SeedLogicModule(SeedBase):
               }
             }
         """
-        file_name = document["file_name"]
-        file = open(f"workflow/seeds/files/{file_name}", "rb")
+        file_name_field, local_file_path = list(upload_files.items())[0]
+        file_name = document[file_name_field]
+        file = open(f"{local_file_path}{file_name}", "rb")
         file_data = file.read()
         files = {"file": file_data}
         mime_type = MimeTypes().guess_type(url=request.pathname2url(file_name))
@@ -245,11 +246,11 @@ class SeedLogicModule(SeedBase):
         file.close()
         return response
 
-    def post_create_requests(self, url, data):
+    def post_create_requests(self, url, data, upload_files):
         responses = []
         for entry in data:
-            if "file_name" in entry.keys():
-                response = self.upload_files(url, entry)
+            if upload_files:
+                response = self.upload_file(url, entry, upload_files)
                 responses.append(response)
             else:
                 responses.append(
@@ -295,7 +296,11 @@ class SeedLogicModule(SeedBase):
                     post_data,
                 )
                 responses = self.post_create_requests(
-                    f"{logic_module.endpoint}/{model_endpoint}/", post_data
+                    f"{logic_module.endpoint}/{model_endpoint}/",
+                    post_data,
+                    self.seed_data[logic_module_name][model_endpoint].get(
+                        "upload_files", {}
+                    ),
                 )
                 self.seed_env.pk_maps[model_endpoint] = self._build_map(
                     responses, post_data

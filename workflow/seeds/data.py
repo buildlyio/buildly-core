@@ -648,7 +648,7 @@ SEED_DATA = {
                 "workflowlevel2_uuids": "workflowlevel2",
             },
             "upload_files": {
-                "file_name_field": "documents_file",
+                "file_name": "workflow/seeds/files/",
             },
             "set_fields": {
                 "organization_uuid": "organization_uuid",
