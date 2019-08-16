@@ -644,6 +644,9 @@ SEED_DATA = {
         "documents": {
             "validate": False,
             "data": documents,
+            "update_fields": {
+                "workflowlevel2_uuids": "workflowlevel2",
+            },
             "upload_files": {
                 "file_name_field": "documents_file",
             },
