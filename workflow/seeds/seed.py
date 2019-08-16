@@ -3,7 +3,9 @@ import logging
 import string
 from copy import deepcopy
 from datetime import timedelta, date, datetime
+from mimetypes import MimeTypes
 from typing import List, Tuple, Dict, Any
+from urllib import request
 
 import requests
 from django.conf import settings
@@ -220,20 +222,33 @@ class SeedLogicModule(SeedBase):
             item[date_field_name] = new_datetime.isoformat()
 
     def upload_files(self, url, document):
+        """
+        Create and send a request like this:
+            {'file_type': 'png', 'file_name': 'nice-test.png', 'file': {
+              'header': {'Content-Type': 'image/png'},
+              'data': <File object> (bytearray),
+              'filename': 'bbb.png'
+              }
+            }
+        """
         file_name = document["file_name"]
         file = open(f"workflow/seeds/files/{file_name}", "rb")
         file_data = file.read()
         files = {"file": file_data}
-        response = requests.post(
-            url, data=document, files=files, headers=self.seed_env.headers
-        )
+        mime_type = MimeTypes().guess_type(url=request.pathname2url(file_name))
+        headers = dict(self.seed_env.headers)
+        headers.pop('Content-Type')
+        document['file'] = {'header': {'Content-Type': mime_type},
+                            'data': file_data,
+                            'filename': file_name}
+        response = requests.post(url, data=document, files=files, headers=headers)
         file.close()
         return response
 
     def post_create_requests(self, url, data):
         responses = []
         for entry in data:
-            if "file" in entry.keys():
+            if "file_name" in entry.keys():
                 response = self.upload_files(url, entry)
                 responses.append(response)
             else:
