@@ -253,7 +253,7 @@ class SeedLogicModule(SeedBase):
             try:
                 pk_map[entry["id"]] = responses[i].json()["id"]
             except KeyError:
-                raise KeyError(f"Key 'id' not found in {entry}")
+                raise KeyError(f"Key 'id' not found in {entry} or in {responses[i].json()}")
         return pk_map
 
     def seed(self):

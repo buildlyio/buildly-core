@@ -21,14 +21,14 @@ siteprofiles = [
     {
         "uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
         "id": "900498a7-8630-4c7c-9762-2447cc2178ce",
-        "country": "de",
-        "name": "friedrichstraße 233, 10969 berlin",
-        "address_line1": "friedrichstraße 233",
+        "country": "DE",
+        "name": "Friedrichstraße 233, 10969 Berlin",
+        "address_line1": "Friedrichstraße 233",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10969",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -36,20 +36,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["8132d789-9580-45ad-b22a-9384bce0eed6"],
-        "profiletype": 81,
+        "workflowlevel2_uuid": [
+            "8132d789-9580-45ad-b22a-9384bce0eed6"
+        ],
+        "profiletype": 81
     },
     {
         "uuid": "485234bd-1bd6-49b9-81b9-7d84161b6b39",
         "id": "485234bd-1bd6-49b9-81b9-7d84161b6b39",
-        "country": "de",
-        "name": "lehmbruckstraße 12, 10245 berlin",
-        "address_line1": "lehmbruckstraße 12",
+        "country": "DE",
+        "name": "Lehmbruckstraße 12, 10245 Berlin",
+        "address_line1": "Lehmbruckstraße 12",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10245",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -57,20 +59,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["999d0b08-759f-49d6-b121-e312c3ea17c5"],
-        "profiletype": 80,
+        "workflowlevel2_uuid": [
+            "999d0b08-759f-49d6-b121-e312c3ea17c5"
+        ],
+        "profiletype": 80
     },
     {
         "uuid": "5b04b3aa-f18e-416b-bf5b-bc9c86786159",
         "id": "5b04b3aa-f18e-416b-bf5b-bc9c86786159",
-        "country": "de",
-        "name": "ossastraße 44, 12045 berlin",
-        "address_line1": "ossastraße 44",
+        "country": "DE",
+        "name": "Ossastraße 44, 12045 Berlin",
+        "address_line1": "Ossastraße 44",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "12045",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -78,20 +82,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["6f015067-db3e-40be-8f87-8b20fa347752"],
-        "profiletype": 80,
+        "workflowlevel2_uuid": [
+            "6f015067-db3e-40be-8f87-8b20fa347752"
+        ],
+        "profiletype": 80
     },
     {
         "uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "id": "551629e8-bb28-4734-a3e4-7edb239854b2",
-        "country": "de",
-        "name": "tempelhofer ufer 13, 10963 berlin",
-        "address_line1": "tempelhofer ufer 13",
+        "country": "DE",
+        "name": "Tempelhofer Ufer 13, 10963 Berlin",
+        "address_line1": "Tempelhofer Ufer 13",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10963",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -99,20 +105,22 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["9e3bda19-49e5-428a-a2cc-ef03153f14bb"],
-        "profiletype": 81,
+        "workflowlevel2_uuid": [
+            "9e3bda19-49e5-428a-a2cc-ef03153f14bb"
+        ],
+        "profiletype": 81
     },
     {
         "uuid": "5fa79e8b-599c-4a70-97ef-989f0c823e5d",
         "id": "5fa79e8b-599c-4a70-97ef-989f0c823e5d",
-        "country": "de",
-        "name": "urbanstraße 76, 10967 berlin",
-        "address_line1": "urbanstraße 76",
+        "country": "DE",
+        "name": "Urbanstraße 76, 10967 Berlin",
+        "address_line1": "Urbanstraße 76",
         "address_line2": "",
         "address_line3": "",
         "address_line4": "",
         "postcode": "10967",
-        "city": "berlin",
+        "city": "Berlin",
         "administrative_level1": "",
         "administrative_level2": "",
         "administrative_level3": "",
@@ -120,9 +128,11 @@ siteprofiles = [
         "latitude": "0.0000000000000000",
         "longitude": "0.0000000000000000",
         "notes": "",
-        "workflowlevel2_uuid": ["7b504be7-36e3-4196-8c60-227b78f8ae96"],
-        "profiletype": 80,
-    },
+        "workflowlevel2_uuid": [
+            "7b504be7-36e3-4196-8c60-227b78f8ae96"
+        ],
+        "profiletype": 80
+    }
 ]
 
 
@@ -179,7 +189,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-07-30T07:00:00+02:00",
         "end_date": "2019-07-30T09:00:00+02:00",
-        "type": ["beratung"],
+        "type": "consultation",
         "address": "Friedrichstraße 233, 10969 Berlin",
         "siteprofile_uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
         "invitee_uuids": ["3418abb1-faff-4f38-86d9-606f3f542ef5"],
@@ -197,7 +207,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-07-31T07:00:00+02:00",
         "end_date": "2019-07-31T16:00:00+02:00",
-        "type": ["installation"],
+        "type": "installation",
         "address": "Ossastraße 44, 12045 Berlin",
         "siteprofile_uuid": "5b04b3aa-f18e-416b-bf5b-bc9c86786159",
         "invitee_uuids": [
@@ -219,7 +229,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-01T07:00:00+02:00",
         "end_date": "2019-08-01T09:00:00+02:00",
-        "type": ["wartung"],
+        "type": "maintenance",
         "address": "Tempelhofer Ufer 13, 10963 Berlin",
         "siteprofile_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "invitee_uuids": ["44852b4a-4e80-448e-8936-71c4c294a1b7"],
@@ -237,7 +247,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-01T10:00:00+02:00",
         "end_date": "2019-08-01T12:00:00+02:00",
-        "type": ["wartung"],
+        "type": "maintenance",
         "address": "Urbanstraße 76, 10967 Berlin",
         "siteprofile_uuid": "5fa79e8b-599c-4a70-97ef-989f0c823e5d",
         "invitee_uuids": ["44852b4a-4e80-448e-8936-71c4c294a1b7"],
@@ -255,7 +265,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-01T13:00:00+02:00",
         "end_date": "2019-08-01T15:00:00+02:00",
-        "type": ["wartung"],
+        "type": "maintenance",
         "address": "Lehmbruckstraße 12, 10245 Berlin",
         "siteprofile_uuid": "485234bd-1bd6-49b9-81b9-7d84161b6b39",
         "invitee_uuids": ["44852b4a-4e80-448e-8936-71c4c294a1b7"],
@@ -273,7 +283,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-02T07:00:00+02:00",
         "end_date": "2019-08-02T16:00:00+02:00",
-        "type": ["installation"],
+        "type": "installation",
         "address": "Friedrichstraße 233, 10969 Berlin",
         "siteprofile_uuid": "900498a7-8630-4c7c-9762-2447cc2178ce",
         "invitee_uuids": [
@@ -295,7 +305,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-09T07:00:00+02:00",
         "end_date": "2019-08-09T09:00:00+02:00",
-        "type": ["reparatur"],
+        "type": "repair",
         "address": "Tempelhofer Ufer 13, 10963 Berlin",
         "siteprofile_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "invitee_uuids": [
@@ -317,7 +327,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-16T07:00:00+02:00",
         "end_date": "2019-08-16T09:00:00+02:00",
-        "type": ["reparatur"],
+        "type": "repair",
         "address": "Tempelhofer Ufer 13, 10963 Berlin",
         "siteprofile_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "invitee_uuids": [
@@ -339,7 +349,7 @@ appointments = [
         "name": "Kupfer Appointment",
         "start_date": "2019-08-23T07:00:00+02:00",
         "end_date": "2019-08-23T09:00:00+02:00",
-        "type": ["installation"],
+        "type": "installation",
         "address": "Tempelhofer Ufer 13, 10963 Berlin",
         "siteprofile_uuid": "551629e8-bb28-4734-a3e4-7edb239854b2",
         "invitee_uuids": [
@@ -412,7 +422,71 @@ products = [
 
 # TimeTracking Service
 
-time_events = []
+time_events = [
+    {
+        "id": "ff294372-0e58-4e6c-8ea9-20b9b7d9b8c5",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "8132d789-9580-45ad-b22a-9384bce0eed6",
+        "appointment_uuid": "432aa435-f9ec-4984-87d3-31f1b2a9388e",
+    },
+    {
+        "id": "a1976b92-2337-415b-ae7e-9e907d1e46ef",
+        "core_user_uuid": None,
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "8132d789-9580-45ad-b22a-9384bce0eed6",
+        "appointment_uuid": "951609b6-32e9-43e6-8f24-692462a81496",
+    },
+    {
+        "id": "1ec0afa2-4b3d-4fb6-9bcb-8a74cd959d86",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "6f015067-db3e-40be-8f87-8b20fa347752",
+        "appointment_uuid": "878db099-b8c1-4482-b4a8-11e26168c933",
+    },
+    {
+        "id": "e53f6ba2-9c46-4570-b57c-9bbb89d9c745",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "edeb1722-5b43-4eb0-ae52-b5598e40e704",
+    },
+    {
+        "id": "5a4dd781-3a71-4940-84ce-265167793780",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "ae4bde84-7f02-436f-b666-70d032ee8d61",
+    },
+    {
+        "id": "2e3dfb85-e732-4415-b8d9-d07e779709de",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "138b1db2-322d-4f4f-bd04-a81737adc15e",
+    },
+    {
+        "id": "cc7bab28-d0cc-40fa-a3f9-23c572ec723e",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "9e3bda19-49e5-428a-a2cc-ef03153f14bb",
+        "appointment_uuid": "bcc6c746-faab-489d-9d37-eb7d431e4e9d",
+    },
+    {
+        "id": "aa236c72-dfbd-436b-98e4-704bd3da6142",
+        "core_user_uuid": None,
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "7b504be7-36e3-4196-8c60-227b78f8ae96",
+        "appointment_uuid": "ed4c7e5a-5211-486e-a0ca-fcde746a8e2e",
+    },
+    {
+        "id": "09539017-2be1-48fe-b5a5-1c85c4f63d08",
+        "core_user_uuid": "44852b4a-4e80-448e-8936-71c4c294a1b7",
+        "workflowlevel1_uuid": None,
+        "workflowlevel2_uuid": "999d0b08-759f-49d6-b121-e312c3ea17c5",
+        "appointment_uuid": "9ba34824-a224-4da9-8ace-e24a1006c231",
+    }
+]
 
 time_log_entries = []
 
@@ -550,9 +624,6 @@ SEED_DATA = {
                 "workflowlevel2_uuid": "workflowlevel2",
                 "appointment_uuid": "appointment",
             },
-            # "set_fields": {
-            #     "core_user_uuid": "org_core_user_uuids[0]",
-            # },
         },
         "time-log-entry": {
             "validate": False,
