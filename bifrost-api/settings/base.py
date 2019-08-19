@@ -49,9 +49,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'oauth2_provider',
     'oauth2_provider_jwt',
 
-    # GraphQL
-    'graphene_django',
-
     # swagger
     'drf_yasg',
 

@@ -1,7 +1,4 @@
-from django.urls import path
 from rest_framework import routers
-from graphene_django.views import GraphQLView
-from django.views.decorators.csrf import csrf_exempt
 from . import views
 
 
@@ -17,8 +14,4 @@ router.register(r'workflowlevelstatus', views.WorkflowLevelStatusViewSet)
 router.register(r'workflowteam', views.WorkflowTeamViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 
-urlpatterns = [
-    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
-]
-
-urlpatterns += router.urls
+urlpatterns = router.urls
