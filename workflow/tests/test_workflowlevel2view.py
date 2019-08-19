@@ -797,3 +797,31 @@ class WorkflowLevel2FilterViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['name'], wkflvl2_2.name)
+
+        # filter by multiple status.short_names
+        factories.WorkflowLevel2(workflowlevel1=wkflvl1)
+        request = self.factory.get(
+            f"{reverse('workflowlevel2-list')}?status__short_name=started,finished"
+        )
+        request.user = self.core_user
+        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        wfl_names = set([_['name'] for _ in response.data['results']])
+        self.assertIn(wkflvl2_1.name, wfl_names)
+        self.assertIn(wkflvl2_2.name, wfl_names)
+
+        # filter by multiple status.uuids
+        factories.WorkflowLevel2(workflowlevel1=wkflvl1)
+        request = self.factory.get(
+            f"{reverse('workflowlevel2-list')}?status__uuid={str(wfl_status1.pk)},{str(wfl_status2.pk)}"
+        )
+        request.user = self.core_user
+        view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        wfl_uuids = set([_['level2_uuid'] for _ in response.data['results']])
+        self.assertIn(str(wkflvl2_1.level2_uuid), wfl_uuids)
+        self.assertIn(str(wkflvl2_2.level2_uuid), wfl_uuids)
