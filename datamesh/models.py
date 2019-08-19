@@ -26,6 +26,8 @@ class LogicModuleModel(models.Model):
         )
 
     def __str__(self):
+        if self.is_local:
+            return f'{self.logic_module_endpoint_name} - {self.model} - {self.endpoint}'
         return f'{self.logic_module_endpoint_name} - {self.model} - /{self.logic_module_endpoint_name}{self.endpoint}'
 
     def get_relationships(self) -> List[Tuple[models.Model, bool]]:
