@@ -6,13 +6,12 @@ from django.db import models
 from django.db.models import CheckConstraint, Q, UniqueConstraint
 
 from datamesh.managers import JoinRecordManager, LogicModuleModelManager
-from gateway.models import LogicModule
 from workflow.models import Organization
 
 
 class LogicModuleModel(models.Model):
     logic_module_model_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    logic_module_endpoint_name = models.CharField(max_length=255, help_text="Without leading and trailing slashes")
+    logic_module_endpoint_name = models.CharField(max_length=255, help_text="Without leading and trailing slashes, on local models enter the name of the app, p.e. 'workflow'.")
     model = models.CharField(max_length=128)
     endpoint = models.CharField(max_length=255, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
     lookup_field_name = models.SlugField(max_length=64, default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'")
