@@ -16,6 +16,8 @@ class DateRangeWidget(django_filters.widgets.SuffixedMultiWidget):
 class WorkflowLevel2Filter(django_filters.FilterSet):
 
     create_date = django_filters.DateFromToRangeFilter(widget=DateRangeWidget())
+    status__short_name = django_filters.BaseInFilter()
+    status__uuid = django_filters.BaseInFilter()
 
     class Meta:
         model = WorkflowLevel2
