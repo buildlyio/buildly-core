@@ -117,7 +117,7 @@ class DataMesh:
             data_item[relationship.key] = []
 
         for relationship, params in self.get_related_records_meta(origin_pk):
-            if relationship.related_model.is_local:
+            if relationship.related_model.is_local or relationship.origin_model.is_local:
                 self._extend_with_local(data_item, relationship, params)
                 continue
 
