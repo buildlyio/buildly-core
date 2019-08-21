@@ -3,7 +3,7 @@ from rest_framework.reverse import reverse
 
 import factories
 
-from workflow.models import WorkflowLevelStatus
+from workflow.models import WorkflowLevelStatus, WorkflowLevel2
 from ..views import WorkflowLevelStatusViewSet
 from .fixtures import org_member, org
 
@@ -50,4 +50,10 @@ def test_delete_workflowlevelstatus(request_factory, org_member):
     view = WorkflowLevelStatusViewSet.as_view({'delete': 'destroy'})
     response = view(request, pk=wflstatus.uuid)
     assert response.status_code == 204
-    assert WorkflowLevelStatus.objects.count() == 0
+
+
+@pytest.mark.django_db()
+def test_create_workflowlevel2_with_default_status(request_factory, org_member):
+    wfl1 = factories.WorkflowLevel1()
+    wfl2 = WorkflowLevel2.objects.create(workflowlevel1=wfl1)
+    assert wfl2.status.short_name == 'project_request'
