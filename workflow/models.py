@@ -307,6 +307,14 @@ class WorkflowLevel1(models.Model):
             return self.name
 
 
+def _get_default_statuslevel():
+    wfl_status, _ = WorkflowLevelStatus.objects.get_or_create(
+        name="Project Request",
+        short_name="project_request"
+    )
+    return wfl_status.pk
+
+
 class WorkflowLevel2(models.Model):
     level2_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='WorkflowLevel2 UUID', help_text="Unique ID")
     description = models.TextField("Description", blank=True, null=True, help_text="Description of the workflow level use")
@@ -322,7 +330,7 @@ class WorkflowLevel2(models.Model):
     start_date = models.DateTimeField("Start Date", null=True, blank=True)
     end_date = models.DateTimeField("End Date", null=True, blank=True)
     type = models.ForeignKey(WorkflowLevelType, null=True, blank=True, on_delete=models.SET_NULL, related_name='workflowlevel2s')
-    status = models.ForeignKey(WorkflowLevelStatus, null=True, blank=True, on_delete=models.SET_NULL, related_name='workflowlevel2s')
+    status = models.ForeignKey(WorkflowLevelStatus, default=_get_default_statuslevel, on_delete=models.SET_DEFAULT, related_name='workflowlevel2s')
 
     class Meta:
         ordering = ('name',)
