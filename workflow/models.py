@@ -311,8 +311,8 @@ class WorkflowLevel1(models.Model):
 
 def _get_default_statuslevel():
     wfl_status, _ = WorkflowLevelStatus.objects.get_or_create(
-        name="Project Request",
-        short_name="project_request"
+        short_name="project_request",
+        defaults={"name": "Project Request", "order": 0},
     )
     return wfl_status.pk
 

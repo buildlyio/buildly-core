@@ -7,8 +7,8 @@ def fill_empty_wfl_status_with_in_progress(apps, schema_editor):
     """All WFL2 without a status should set to 'in_progress' instead of the default 'project_request'."""
     wfl_status_model = apps.get_model('workflow', 'WorkflowLevelStatus')
     wfl_status, _ = wfl_status_model.objects.get_or_create(
-        name="In progress",
-        short_name="in_progress"
+        short_name="in_progress",
+        defaults={"name": "In progress", "order": 1}
     )
     wfl2_model = apps.get_model('workflow', 'WorkflowLevel2')
     db_alias = schema_editor.connection.alias
