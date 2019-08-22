@@ -7,6 +7,8 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.contrib.sites.models import Site
+from django.db.models import Q, UniqueConstraint
+
 try:
     from django.utils import timezone
 except ImportError:
@@ -331,13 +333,35 @@ class WorkflowLevel2(models.Model):
     end_date = models.DateTimeField("End Date", null=True, blank=True)
     type = models.ForeignKey(WorkflowLevelType, null=True, blank=True, on_delete=models.SET_NULL, related_name='workflowlevel2s')
     status = models.ForeignKey(WorkflowLevelStatus, default=_get_default_statuslevel, on_delete=models.SET_DEFAULT, related_name='workflowlevel2s')
+    project_id = models.IntegerField(blank=True, null=True, help_text='ID set by the customer. Must be unique in organization.')
 
     class Meta:
         ordering = ('name',)
         verbose_name = "Workflow Level 2"
         verbose_name_plural = "Workflow Level 2"
+        constraints = [
+            UniqueConstraint(
+                name='unique_workflowlevel1_project_id',
+                fields=['workflowlevel1', 'project_id'],
+                condition=~Q(project_id=None)
+            )
+        ]
+
+    def _get_default_project_id(self) -> int:
+        """Figure out next free unique project_id and return it."""
+        start_index = 10001
+        try:
+            latest_project_id = self.__class__.objects.filter(
+                workflowlevel1=self.workflowlevel1).exclude(
+                project_id=None).order_by('-project_id').first().project_id
+            next_project_id = latest_project_id + 1 if latest_project_id else start_index
+        except AttributeError:
+            next_project_id = start_index
+        return next_project_id
 
     def save(self, *args, **kwargs):
+        if not self.project_id:
+            self.project_id = self._get_default_project_id()
         self.edit_date = timezone.now()
 
         super(WorkflowLevel2, self).save(*args, **kwargs)
