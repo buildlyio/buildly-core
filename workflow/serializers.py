@@ -114,8 +114,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
         model = wfm.CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
                   'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token')
-        read_only_fields = ('core_user_uuid', 'organization',)
+                  'invitation_token', 'create_date')
+        read_only_fields = ('core_user_uuid', 'organization', 'create_date', )
         depth = 1
 
 
