@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple
 
 import requests
 import aiohttp
+from aiohttp import ContentTypeError
 from django.http.request import QueryDict
 from bravado_core.spec import Spec
 from rest_framework.request import Request
@@ -160,7 +161,7 @@ class AsyncSwaggerClient(BaseSwaggerClient):
             async with method(url, data=self.get_request_data(), headers=self.get_headers()) as response:
                 try:
                     content = await response.json()
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, ContentTypeError):
                     content = await response.content.read()
             return_data = (content, response.status, response.headers)
 

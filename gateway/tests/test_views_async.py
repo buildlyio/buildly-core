@@ -13,9 +13,11 @@ from .utils import AiohttpResponseMock, create_aiohttp_session_mock
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-
-@pytest.mark.parametrize("content,content_type", [(b'{"details": "IT IS A TEST"}', 'application/json'),
-                                                  (b'IT IS A TEST', 'text/html; charset=utf-8')])
+@pytest.mark.parametrize("content,content_type", [
+    (b'{"details": "IT IS A TEST"}', 'application/json'),
+    (b'IT IS A TEST', 'text/html; charset=utf-8'),
+    (None, 'application/octet-stream'), ]
+)
 @pytest.mark.django_db()
 @patch('gateway.request.aiohttp.ClientSession')
 def test_make_service_request_data_and_raw(client_session_mock, auth_api_client, logic_module, content, content_type,
@@ -38,7 +40,10 @@ def test_make_service_request_data_and_raw(client_session_mock, auth_api_client,
     response = auth_api_client.get(url)
 
     assert response.status_code == 200
-    assert response.content == content
+    if content:
+        assert response.content == content
+    else:
+        assert response.content == b''
     assert response.has_header('Content-Type')
     assert response.get('Content-Type') == content_type
 

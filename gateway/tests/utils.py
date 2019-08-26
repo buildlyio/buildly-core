@@ -3,7 +3,7 @@ import asyncio
 import json
 from unittest.mock import Mock
 
-from aiohttp import ClientSession, StreamReader
+from aiohttp import ClientSession, StreamReader, ContentTypeError, RequestInfo
 
 
 class AiohttpResponseMock:
@@ -39,6 +39,8 @@ class AiohttpResponseMock:
 
     @asyncio.coroutine
     def json(self, encoding='utf-8'):
+        if not getattr(self.body, "decode", False):
+            raise ContentTypeError(request_info=RequestInfo(self.url, self.method, self.headers), history=[self])
         return json.loads(self.body.decode(encoding))
 
     @asyncio.coroutine
