@@ -158,7 +158,18 @@ class AsyncSwaggerClient(BaseSwaggerClient):
         # Make request to the service
         async with aiohttp.ClientSession() as session:
             method = getattr(session, method)
-            async with method(url, data=self.get_request_data(), headers=self.get_headers()) as response:
+            if self._in_request.FILES:
+                request_data = self.get_request_data()
+                data = aiohttp.FormData()
+                for field in request_data:
+                    if field == 'file':
+                        data.add_field('file', request_data['file']['data'].file)
+                    else:
+                        data.add_field(field, request_data[field])
+            else:
+                data = self.get_request_data()
+
+            async with method(url, data=data, headers=self.get_headers()) as response:
                 try:
                     content = await response.json()
                 except (json.JSONDecodeError, ContentTypeError):
