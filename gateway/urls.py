@@ -3,7 +3,7 @@ from rest_framework import permissions, routers
 
 from . import API_GATEWAY_RESERVED_NAMES
 from . import generator
-from . import views, views_beta  # TODO: rename views_beta once old views can be removed
+from . import views
 
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -29,22 +29,13 @@ router.register(r'logicmodule', views.LogicModuleViewSet)
 urlpatterns = [
     re_path(
         rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
-        r"old/"
-        r"(?P<service>[^/?#]+)/"  # service (timetracking)
-        r"(?P<model>[^/?#]+)/?"  # model (timeevent)
-        r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
-        r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
-        r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
-        views.APIGatewayView.as_view(), name='api-gateway-old'),
-    re_path(
-        rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
         r"async/"
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
         r"(?P<model>[^/?#]+)/?"  # model (timeevent)
         r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
         r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
         r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
-        views_beta.APIAsyncGatewayView.as_view(), name='api-gateway-async'),
+        views.APIAsyncGatewayView.as_view(), name='api-gateway-async'),
     re_path(
         rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
@@ -52,7 +43,7 @@ urlpatterns = [
         r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
         r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
         r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
-        views_beta.APIGatewayView.as_view(), name='api-gateway'),
+        views.APIGatewayView.as_view(), name='api-gateway'),
     re_path(r'^docs/swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0),
             name='schema-swagger-json'),
