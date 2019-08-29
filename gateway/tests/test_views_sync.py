@@ -17,7 +17,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 @pytest.mark.django_db()
 @httpretty.activate
 def test_make_service_request_data_and_raw(auth_api_client, logic_module, content, content_type):
-    url = f'/{logic_module.endpoint_name}/thumbnail/1/'
+    url = f'/sync/{logic_module.endpoint_name}/thumbnail/1/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
@@ -48,7 +48,7 @@ def test_make_service_request_data_and_raw(auth_api_client, logic_module, conten
 @httpretty.activate
 def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic_module):
 
-    url = f'/{logic_module.endpoint_name}/nowhere/'
+    url = f'/sync/{logic_module.endpoint_name}/nowhere/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
@@ -74,7 +74,7 @@ def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic
 @httpretty.activate
 def test_make_service_request_to_unexisting_detail_endpoint(auth_api_client, logic_module):
 
-    url = f'/{logic_module.endpoint_name}/nowhere/123/'
+    url = f'/sync/{logic_module.endpoint_name}/nowhere/123/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
@@ -104,7 +104,7 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
+    url = f'/sync/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json')) as r:
@@ -160,7 +160,7 @@ def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, da
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/{lm2.endpoint_name}/documents/1/'
+    url = f'/sync/{lm2.endpoint_name}/documents/1/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json')) as r:
@@ -216,7 +216,7 @@ def test_make_service_request_with_datamesh_list(auth_api_client, datamesh):
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/{lm1.endpoint_name}/siteprofiles/'
+    url = f'/sync/{lm1.endpoint_name}/siteprofiles/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json')) as r:

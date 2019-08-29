@@ -27,7 +27,7 @@ def test_join_data_one_obj_w_relationships(mock_perform_request, mock_spec, auth
     mock_perform_request.side_effect = [service_response, expand_response]
 
     # make api request
-    path = '/{}/{}/'.format(relationship.origin_model.logic_module_endpoint_name, 'products')
+    path = '/sync/{}/{}/'.format(relationship.origin_model.logic_module_endpoint_name, 'products')
     response = auth_api_client.get(path, {'join': ''})
 
     # validate result
@@ -68,7 +68,7 @@ def test_join_data_one_obj_w_two_relationships(mock_perform_request, mock_spec, 
     mock_perform_request.side_effect = [service_response, expand_response1, expand_response2]
 
     # make api request
-    path = '/{}/{}/'.format(relationship.origin_model.logic_module_endpoint_name, 'products')
+    path = '/sync/{}/{}/'.format(relationship.origin_model.logic_module_endpoint_name, 'products')
     response = auth_api_client.get(path, {'join': ''})
 
     # validate result
@@ -111,7 +111,7 @@ def test_join_data_list(mock_perform_request, mock_spec, auth_api_client, relati
     mock_perform_request.side_effect = [main_service_response] + expand_responses
 
     # make api request
-    path = '/{}/{}/'.format(relationship_with_10_records.origin_model.logic_module_endpoint_name, 'products')
+    path = '/sync/{}/{}/'.format(relationship_with_10_records.origin_model.logic_module_endpoint_name, 'products')
     response = auth_api_client.get(path, {'join': ''})
 
     assert response.status_code == 200

@@ -22,7 +22,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 @patch('gateway.request.aiohttp.ClientSession')
 def test_make_service_request_data_and_raw(client_session_mock, auth_api_client, logic_module, content, content_type,
                                            event_loop):
-    url = f'/async/{logic_module.endpoint_name}/thumbnail/1/'
+    url = f'/{logic_module.endpoint_name}/thumbnail/1/'
 
     # mock aiohttp responses
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
@@ -53,7 +53,7 @@ def test_make_service_request_data_and_raw(client_session_mock, auth_api_client,
 def test_make_service_request_to_unexisting_list_endpoint(client_session_mock, auth_api_client, logic_module,
                                                           event_loop):
 
-    url = f'/async/{logic_module.endpoint_name}/nowhere/'
+    url = f'/{logic_module.endpoint_name}/nowhere/'
 
     # mock aiohttp responses
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
@@ -79,7 +79,7 @@ def test_make_service_request_to_unexisting_list_endpoint(client_session_mock, a
 def test_make_service_request_to_unexisting_detail_endpoint(client_session_mock, auth_api_client, logic_module,
                                                             event_loop):
 
-    url = f'/async/{logic_module.endpoint_name}/nowhere/123/'
+    url = f'/{logic_module.endpoint_name}/nowhere/123/'
 
     # mock aiohttp responses
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
@@ -108,7 +108,7 @@ def test_make_service_request_with_datamesh_detailed(client_session_mock, auth_a
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/async/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
+    url = f'/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
 
     # mock aiohttp responses
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json'), 'rb') as r:
@@ -152,7 +152,7 @@ def test_make_service_request_with_datamesh_list(client_session_mock, auth_api_c
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
 
-    url = f'/async/{lm1.endpoint_name}/siteprofiles/'
+    url = f'/{lm1.endpoint_name}/siteprofiles/'
 
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json'), 'rb') as r:
