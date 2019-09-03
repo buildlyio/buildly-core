@@ -94,7 +94,7 @@ def test_workflow_level2_serializer(request_factory, wfl2):
             "type",
             "core_groups",
             "status",
-            "project_id",
+            # "project_id",  # TODO: set back after FE has migrated
             ]
     assert set(data.keys()) == set(keys)
     assert data["id"] == data["level2_uuid"]

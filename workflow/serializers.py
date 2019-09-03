@@ -70,7 +70,8 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = wfm.WorkflowLevel2
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ('project_id', )  # TODO: remove after FE has migrated
 
 
 class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
