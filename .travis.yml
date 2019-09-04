@@ -9,8 +9,8 @@ addons:
 before_script:
   - sleep 10
   - psql -c 'create database buildly_api;' -U postgres
-  - sudo touch /var/log/buildly_api.log
-  - sudo chown travis /var/log/buildly_api.log
+  - sudo touch /var/log/buildly.log
+  - sudo chown travis /var/log/buildly.log
 install:
   - cat requirements/base.txt | grep "^Django==\|^psycopg2" | xargs pip install
   - pip install -r requirements/ci.txt
@@ -35,5 +35,5 @@ env:
     SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "/complete/microsoft-graph"
     JWT_ISSUER: "buildly"
     SECRET_KEY: "nothing"
-    SOCIAL_AUTH_CLIENT_ID: "vBn4KsOCthm7TWzMH0kVV0dXkUPJEtOQwaLu0eoC"
-    SOCIAL_AUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8EzjKqN6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJ"
+    OAUTH_CLIENT_ID: "vBn4KsOCthm7TWzMH0kVV0dXkUPJEtOQwaLu0eoC"
+    OAUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8EzjKqN6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJ"
