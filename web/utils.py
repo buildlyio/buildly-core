@@ -15,13 +15,16 @@ def generate_access_tokens(request: WSGIRequest, user: User):
     bearer_token = BearerToken(OAuth2Validator())
     request.scopes = ["read", "write"]
     request.state = None
+    request.refresh_token = None
     request.extra_credentials = None
-    request.grant_type = 'client_credentials'
+    request.user = user
+    request.grant_type = ''
     request.client = Application.objects.get(
-        client_id=settings.SOCIAL_AUTH_CLIENT_ID,
-        client_secret=settings.SOCIAL_AUTH_CLIENT_SECRET
+        client_id=settings.OAUTH_CLIENT_ID,
+        client_secret=settings.OAUTH_CLIENT_SECRET
     )
-    token = bearer_token.create_token(request)
+    token = bearer_token.create_token(request, refresh_token=True)
+    bearer_token.request_validator.save_bearer_token(token, request)
 
     # generate JWT
     issuer = settings.JWT_ISSUER
