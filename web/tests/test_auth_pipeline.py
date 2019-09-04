@@ -63,7 +63,7 @@ class OAuthTest(TestCase):
         self.assertIn('expires_in', response.json())
 
     def test_create_organization_new_default_org(self):
-        Organization.objects.get(name=settings.DEFAULT_ORG).delete()
+        Organization.objects.filter(name=settings.DEFAULT_ORG).delete()
         coreuser = factories.CoreUser(first_name='John', last_name='Lennon', organization=None)
 
         response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
