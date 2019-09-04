@@ -61,7 +61,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
 ]
 
 INSTALLED_APPS_LOCAL = [
-    'bifrost-api',
+    'buildly',
     'gateway',
     'web',
     'workflow',
@@ -123,7 +123,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'bifrost-api.wsgi.application'
+WSGI_APPLICATION = 'buildly.wsgi.application'
 
 
 # Database
@@ -216,16 +216,13 @@ INVITATION_EXPIRE_HOURS = 24
 OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
 OAUTH_CLIENT_SECRET = os.getenv('OAUTH_CLIENT_SECRET', None)
 
-SOCIAL_AUTH_CLIENT_ID = os.getenv('SOCIAL_AUTH_CLIENT_ID', None)
-SOCIAL_AUTH_CLIENT_SECRET = os.getenv('SOCIAL_AUTH_CLIENT_SECRET', None)
-
 # JWT Authentication settings
 JWT_PAYLOAD_ENRICHER = 'workflow.jwt_utils.payload_enricher'
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_ALLOWED_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_AUTH_DISABLED = False
-JWT_PRIVATE_KEY_RSA_BIFROST = os.getenv('JWT_PRIVATE_KEY_RSA_BIFROST')
-JWT_PUBLIC_KEY_RSA_BIFROST = os.getenv('JWT_PUBLIC_KEY_RSA_BIFROST')
+JWT_PRIVATE_KEY_RSA_BUILDLY = os.getenv('JWT_PRIVATE_KEY_RSA_BUILDLY')
+JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY')
 
 
 # Password Validators

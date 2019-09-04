@@ -19,8 +19,8 @@ class Command(BaseCommand):
 
     Example:
     kubectl exec -n kupfer-dev -it crm-service-cf5576999-vj5s4 -- bash -c "python manage.py dumpdata --format=json --indent=4 contact.Contact" > data/contacts.json
-    kubectl cp data/contacts.json kupfer-dev/bifrost-7b96bb7487-f7c6m:/code/contacts.json
-    kubectl exec -n kupfer-dev -it bifrost-7b96bb7487-f7c6m bash -- -c "python manage.py loadrelationships --file=contacts.json"
+    kubectl cp data/contacts.json kupfer-dev/buildly-7b96bb7487-f7c6m:/code/contacts.json
+    kubectl exec -n kupfer-dev -it buildly-7b96bb7487-f7c6m bash -- -c "python manage.py loadrelationships --file=contacts.json"
     """  # noqa
 
     counter = 0

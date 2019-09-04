@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='logicmodulemodel',
             name='is_local',
-            field=models.BooleanField(default=False, help_text='Local model is taken from BiFrost'),
+            field=models.BooleanField(default=False, help_text='Local model is taken from Buildly'),
         ),
     ]

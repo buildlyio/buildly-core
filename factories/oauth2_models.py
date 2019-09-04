@@ -8,7 +8,7 @@ class Application(DjangoModelFactory):
         model = ApplicationM
         django_get_or_create = ('name',)
 
-    name = 'bifrost',
+    name = 'buildly',
     client_type = ApplicationM.CLIENT_PUBLIC
     authorization_grant_type = ApplicationM.GRANT_PASSWORD
     skip_authorization = True

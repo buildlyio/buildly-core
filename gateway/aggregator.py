@@ -87,7 +87,7 @@ class SwaggerAggregator(object):
 
             # update the paths to match with the gateway
             if 'paths' in api_spec['spec']:
-                if api == 'bifrost':
+                if api == 'buildly':
                     basic_swagger['paths'].update(api_spec['spec']['paths'])
                 else:
                     api_name = '/{}'.format(api)

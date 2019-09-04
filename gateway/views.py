@@ -269,7 +269,7 @@ class APIGatewayView(views.APIView):
         logic_module = self._get_logic_module(service_name)
 
         # TODO: Implement depth validation
-        # TODO: Implement authorization when retrieve Bifrost data
+        # TODO: Implement authorization when retrieve Buildly data
         if isinstance(resp_data, list):
             for data in resp_data:
                 extension_map = self._generate_extension_map(
@@ -288,8 +288,8 @@ class APIGatewayView(views.APIView):
             r = self._expand_data(request, extension_map)
             resp_data.update(**r)
 
-    def _get_bifrost_uuid_name(self, model):
-        # TODO: Remove this once all bifrost.models have only one `uuid`-field
+    def _get_buildly_uuid_name(self, model):
+        # TODO: Remove this once all buildly.models have only one `uuid`-field
         for field in model._meta.fields:
             if field.name.endswith('uuid') and field.unique and \
                     field.default == uuid.uuid4:
@@ -307,10 +307,10 @@ class APIGatewayView(views.APIView):
         result = dict()
         for extend_model in extend_models:
             data = None
-            if extend_model['service'] == 'bifrost':
+            if extend_model['service'] == 'buildly':
                 if hasattr(wfm, extend_model['model']):
                     cls = getattr(wfm, extend_model['model'])
-                    uuid_name = self._get_bifrost_uuid_name(cls)
+                    uuid_name = self._get_buildly_uuid_name(cls)
                     lookup = {
                         uuid_name: extend_model['pk']
                     }

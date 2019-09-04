@@ -1,5 +1,5 @@
 """pytest unit tests, to run:
-DJANGO_SETTINGS_MODULE=bifrost-api.settings.production pytest gateway/tests/test_utils.py -v --cov
+DJANGO_SETTINGS_MODULE=buildly.settings.production pytest gateway/tests/test_utils.py -v --cov
 or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
@@ -18,7 +18,7 @@ from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagge
 from gateway.views import APIGatewayView
 
 
-class UtilsValidateBifrostObjectAccessTest(TestCase):
+class UtilsValidateBuildlyObjectAccessTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.core_user = factories.CoreUser()
@@ -31,7 +31,7 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
         request = view().initialize_request(request)
         return request
 
-    def test_validate_bifrost_wfl1_access_superuser(self):
+    def test_validate_buildly_wfl1_access_superuser(self):
         self.core_user.is_staff = True
         self.core_user.is_superuser = True
         self.core_user.save()
@@ -41,7 +41,7 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
             organization=self.core_user.organization)
         validate_object_access(request, wflvl1)
 
-    def test_validate_bifrost_wfl1_no_permission(self):
+    def test_validate_buildly_wfl1_no_permission(self):
         request = self.get_mock_request('/', APIGatewayView, self.core_user)
         wflvl1 = factories.WorkflowLevel1()
 
@@ -49,7 +49,7 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
         with self.assertRaisesMessage(PermissionDenied, error_message):
             validate_object_access(request, wflvl1)
 
-    def test_validate_bifrost_wfl1_not_authenticated_user(self):
+    def test_validate_buildly_wfl1_not_authenticated_user(self):
         request = self.get_mock_request('/', APIGatewayView)
         wflvl1 = factories.WorkflowLevel1()
 
@@ -57,7 +57,7 @@ class UtilsValidateBifrostObjectAccessTest(TestCase):
         with self.assertRaisesMessage(NotAuthenticated, error_message):
             validate_object_access(request, wflvl1)
 
-    def test_validate_bifrost_logic_module_no_viewset(self):
+    def test_validate_buildly_logic_module_no_viewset(self):
         request = self.get_mock_request('/', APIGatewayView, self.core_user)
         lm = factories.LogicModule()
 

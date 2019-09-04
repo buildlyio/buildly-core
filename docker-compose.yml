@@ -2,20 +2,20 @@ version: "2.0"
 
 services:
 
-  postgres_bifrost:
-    container_name: postgres_bifrost
+  postgres_buildly:
+    container_name: postgres_buildly
     image: postgres:9.6
     environment:
-      POSTGRES_DB: bifrost
+      POSTGRES_DB: buildly
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     volumes:
       - /var/lib/postgresql/data/
     restart: always
 
-  rabbitmq_bifrost:
+  rabbitmq_buildly:
     image: rabbitmq:3-management
-    container_name: rabbitmq_bifrost
+    container_name: rabbitmq_buildly
     environment:
       RABBITMQ_DEFAULT_USER: "admin"
       RABBITMQ_DEFAULT_PASS: "admin"
@@ -23,36 +23,36 @@ services:
     ports:
       - "15672:15672"
 
-  bifrost:
+  buildly:
     build:
       context: .
       dockerfile: Dockerfile
     entrypoint: bash /code/run-standalone-dev.sh
-    container_name: bifrost
-    image: bifrost
+    container_name: buildly
+    image: buildly
     volumes:
       - .:/code
       - static-content:/static
     ports:
       - "8080:8080"
     depends_on:
-      - postgres_bifrost
-      - rabbitmq_bifrost
+      - postgres_buildly
+      - rabbitmq_buildly
     environment:
-      DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
+      DJANGO_SETTINGS_MODULE: "buildly.settings.production"
       ALLOWED_HOSTS: "*"
       CORS_ORIGIN_WHITELIST: "*"
       DATABASE_ENGINE: "postgresql"
-      DATABASE_NAME: "bifrost"
+      DATABASE_NAME: "buildly"
       DATABASE_USER: "root"
       DATABASE_PASSWORD: "root"
-      DATABASE_HOST: "postgres_bifrost"
+      DATABASE_HOST: "postgres_buildly"
       DATABASE_PORT: "5432"
       DEFAULT_ORG: "Default Organization"
       DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
       API_URL: "/api/docs"
-      JWT_ISSUER: "bifrost"
-      JWT_PRIVATE_KEY_RSA_BIFROST: |-
+      JWT_ISSUER: "buildly"
+      JWT_PRIVATE_KEY_RSA_BUILDLY: |-
         -----BEGIN RSA PRIVATE KEY-----
         MIIBOwIBAAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRBqhqvJu1hKPYn9HYd75c0
         gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQJAe5z5096oyeqGX6J+RGGx
@@ -62,17 +62,17 @@ services:
         Ulqap+MNh7hJZQIgZNaM+wqhlFtbx8aO2SrioJI4XqVHrjojpaSgOM3cdY0CIQDB
         Q6ckOaDV937acmWuiZhxuG2euNLwNbMldtCV5ADo/g==
         -----END RSA PRIVATE KEY-----
-      JWT_PUBLIC_KEY_RSA_BIFROST: |-
+      JWT_PUBLIC_KEY_RSA_BUILDLY: |-
         -----BEGIN PUBLIC KEY-----
         MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
         qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
         -----END PUBLIC KEY-----
-      RABBIT_HOST: "rabbitmq_bifrost"
+      RABBIT_HOST: "rabbitmq_buildly"
       RABBIT_PORT: "5672"
       RABBIT_USER: "admin"
       RABBIT_PASS: "admin"
       RABBIT_VHOST: "celery_vhost"
-      RABBIT_WALHALL_QUEUE: "bifrost_queue"
+      RABBIT_WALHALL_QUEUE: "buildly_queue"
       SOCIAL_AUTH_GITHUB_REDIRECT_URL: "https://localhost:8000/complete/github"
       SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL: "https://localhost:8000/complete/google-oauth2"
       SOCIAL_AUTH_LOGIN_REDIRECT_URL: "http://localhost:8080/"

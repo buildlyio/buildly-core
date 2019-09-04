@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = """
-    Loads initial data for Bifrost.
+    Loads initial data for Buildly.
     """
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 client_id=settings.OAUTH_CLIENT_ID,
                 client_secret=settings.OAUTH_CLIENT_SECRET,
                 defaults={
-                    'name': 'bifrost oauth2',
+                    'name': 'buildly oauth2',
                     'client_type': Application.CLIENT_PUBLIC,
                     'authorization_grant_type': Application.GRANT_PASSWORD,
                 }
