@@ -36,7 +36,7 @@ LOGGING = {
         'file': {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'class': 'logging.FileHandler',
-            'filename': '/var/log/bifrost_api.log',
+            'filename': '/var/log/buildly.log',
         },
     },
     'loggers': {

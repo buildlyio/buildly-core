@@ -8,9 +8,9 @@ addons:
   postgresql: "9.6"
 before_script:
   - sleep 10
-  - psql -c 'create database bifrost_api;' -U postgres
-  - sudo touch /var/log/bifrost_api.log
-  - sudo chown travis /var/log/bifrost_api.log
+  - psql -c 'create database buildly_api;' -U postgres
+  - sudo touch /var/log/buildly_api.log
+  - sudo chown travis /var/log/buildly_api.log
 install:
   - cat requirements/base.txt | grep "^Django==\|^psycopg2" | xargs pip install
   - pip install -r requirements/ci.txt
@@ -23,17 +23,17 @@ env:
     API_URL: "/api/docs"
     CORS_ORIGIN_WHITELIST: "*"
     DATABASE_ENGINE: "postgresql"
-    DATABASE_NAME: "bifrost_api"
+    DATABASE_NAME: "buildly_api"
     DATABASE_USER: "postgres"
     DATABASE_PASSWORD: ""
     DATABASE_HOST: "localhost"
     DATABASE_PORT: "5432"
     DEFAULT_ORG: "Default Organization"
-    DJANGO_SETTINGS_MODULE: "bifrost-api.settings.production"
+    DJANGO_SETTINGS_MODULE: "buildly.settings.production"
     SOCIAL_AUTH_GITHUB_REDIRECT_URL: "/complete/github"
     SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL: "/complete/google-oauth2"
     SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "/complete/microsoft-graph"
-    JWT_ISSUER: "bifrost"
+    JWT_ISSUER: "buildly"
     SECRET_KEY: "nothing"
     SOCIAL_AUTH_CLIENT_ID: "vBn4KsOCthm7TWzMH0kVV0dXkUPJEtOQwaLu0eoC"
     SOCIAL_AUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8EzjKqN6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJ"

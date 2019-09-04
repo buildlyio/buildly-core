@@ -49,7 +49,7 @@ class TestGenerateTokens(object):
 
         def mock_generate_payload(*args, **kwargs):
             return {
-                'iss': 'BifrostTest',
+                'iss': 'BuildlyTest',
                 'exp': settings.OAUTH2_PROVIDER['ACCESS_TOKEN_EXPIRE_SECONDS'],
                 'iat': 'testing',
             }
@@ -86,7 +86,7 @@ class TestGenerateTokens(object):
 
         def mock_generate_payload(*args, **kwargs):
             return {
-                'iss': 'BifrostTest',
+                'iss': 'BuildlyTest',
                 'exp': settings.OAUTH2_PROVIDER['ACCESS_TOKEN_EXPIRE_SECONDS'],
                 'iat': 'testing',
             }
@@ -127,7 +127,7 @@ class TestGenerateTokens(object):
 
         def mock_generate_payload(*args, **kwargs):
             return {
-                'iss': 'bifrost',
+                'iss': 'buildly',
                 'exp': settings.OAUTH2_PROVIDER['ACCESS_TOKEN_EXPIRE_SECONDS'],
                 'iat': 'testing',
             }

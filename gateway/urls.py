@@ -9,9 +9,9 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 swagger_info = openapi.Info(
-    title="BiFrost API",
+    title="Buildly API",
     default_version='latest',
-    description="BiFrost is the core service of every Walhall application.",
+    description="Buildly is the core service of every Walhall application.",
 )
 
 schema_view = get_schema_view(

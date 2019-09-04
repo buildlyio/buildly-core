@@ -18,4 +18,4 @@ celery_cmd="celery -A gateway worker -l info -f /var/log/celery.log"
 $celery_cmd &
 
 echo $(date -u) "- Running the server"
-gunicorn -b 0.0.0.0:8080 --reload bifrost-api.wsgi -w 2 --timeout 120
+gunicorn -b 0.0.0.0:8080 --reload buildly.wsgi -w 2 --timeout 120

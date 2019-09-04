@@ -1,6 +1,6 @@
 # Permissions model
 
-The BiFrost permissions model follows the RBAC pattern.
+The Buildly permissions model follows the RBAC pattern.
 
 Permissions are granted to CoreUsers by their **CoreGroups.** Each CoreGroup can be associated with one or more WorkflowLevels. "Permissions" are defined as the ability to execute [CRUD operations](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) on WorkflowLevels.
 
@@ -10,7 +10,7 @@ By default, all CoreGroups can only have permissions defined to entities within 
 
 ## Organization
 
-The Organization is the top-level class of the BiFrost permissions model. Everything contained within an organization---users, groups, and WorkflowLevels---can only be accessed by entities within the organization, with the exception of global CoreGroups (see below).
+The Organization is the top-level class of the Buildly permissions model. Everything contained within an organization---users, groups, and WorkflowLevels---can only be accessed by entities within the organization, with the exception of global CoreGroups (see below).
 
 ## CoreUser
 
@@ -22,11 +22,11 @@ A CoreGroup defines a group of CoreUsers with specific permissions in the contex
 
 ## WorkflowLevels
 
-BiFrost allows you to define nested data hierarchies in your microservice architecture by using **WorkflowLevels.** There are two types of WorkflowLevels: **WorkflowLevel1** and **WorkflowLevel2.** WorkflowLevel2s can be nested within other WorkflowLevel2s as child objects, but they must always be associated with a parent WorkflowLevel1.
+Buildly allows you to define nested data hierarchies in your microservice architecture by using **WorkflowLevels.** There are two types of WorkflowLevels: **WorkflowLevel1** and **WorkflowLevel2.** WorkflowLevel2s can be nested within other WorkflowLevel2s as child objects, but they must always be associated with a parent WorkflowLevel1.
 
 By creating WorkflowLevels for each model in your microservice architecture, you can enable them to share data by implementing their WorkflowLevel UUIDs as foreign keys. 
 
-You can define WorkflowLevels using the BiFrost API once you have deployed your Walhall app.
+You can define WorkflowLevels using the Buildly API once you have deployed your Walhall app.
 
 ### Example implementation
 
@@ -36,7 +36,7 @@ Suppose you want to create a microservice application for managing factories tha
 -  Each factory employs a set of **robots,** so the Robot model would be considered a WorkflowLevel2 associated with the "Factory" WorkflowLevel1. 
 -  Each robot manufactures a set of **products,** so the Product model would be considered a WorkflowLevel2 with the Robot model as its parent.
 
-Follow these steps to implement this data hierarchy in BiFrost:
+Follow these steps to implement this data hierarchy in Buildly:
 
 1.  Create a **WorkflowLevel1** with the name "Factory" using your app's `POST /workflowlevel1` endpoint.
 2.  Add the `workflowlevel1_uuid` property to your Factory data model and set the value to the UUID of the Factory WorkflowLevel1 you just created.

@@ -13,7 +13,7 @@ broker_url = 'amqp://{}:{}@{}:{}/{}'.format(
 )
 
 app = Celery(
-    'celery_bifrost',
+    'celery_buildly',
     broker=broker_url,
     task_serializer='json',
     result_serializer='json',

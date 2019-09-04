@@ -1,14 +1,14 @@
-# Connect your service to BiFrost
+# Connect your service to Buildly
 
 ## Overview
 
-This tutorial explains how to connect an existing microservice to [BiFrost](/bifrost). 
+This tutorial explains how to connect an existing microservice to [Buildly](/buildly). 
 
-Once you connect your service to BiFrost, it will be able to communicate with all of your other services over a core authentication layer. All of its endpoints will be exposed as part of a single API that BiFrost puts together from all of the services. You also have the option to use BiFrost for managing permissions and users.
+Once you connect your service to Buildly, it will be able to communicate with all of your other services over a core authentication layer. All of its endpoints will be exposed as part of a single API that Buildly puts together from all of the services. You also have the option to use Buildly for managing permissions and users.
 
 ## Requirements
 
-There are no requirements for the language or framework used to code your service. It must only satisfy these conditions in order to connect to BiFrost:
+There are no requirements for the language or framework used to code your service. It must only satisfy these conditions in order to connect to Buildly:
 
 1.  Your service must include a **Dockerfile.**
 2.  Your service must follow the [OpenAPI (Swagger) spec](https://swagger.io/docs/specification/about/) and expose a `swagger.json` file at the `/docs` endpoint.
@@ -18,15 +18,15 @@ There are no requirements for the language or framework used to code your servic
 
 ## Implement JWT authorization
 
-Next, you need to implement BiFrost's authorization method. 
+Next, you need to implement Buildly's authorization method. 
 
-### About BiFrost authorization
+### About Buildly authorization
 
-For external requests to logic modules (e.g., [Midgard](https://github.com/Humanitec/midgard) users), BiFrost uses an [OAuth2](https://oauth.net/2/) flow to issue [JSON Web Tokens (JWTs)](https://jwt.io) signed with RS256. 
+For external requests to logic modules (e.g., [Midgard](https://github.com/Humanitec/midgard) users), Buildly uses an [OAuth2](https://oauth.net/2/) flow to issue [JSON Web Tokens (JWTs)](https://jwt.io) signed with RS256. 
 
-Inside the container where the service is deployed, Walhall exposes BiFrost's **public key** as the environment variable `JWT_PUBLIC_KEY_RSA_BIFROST`. The service must use this environment variable to decode requests from BiFrost. 
+Inside the container where the service is deployed, Walhall exposes Buildly's **public key** as the environment variable `JWT_PUBLIC_KEY_RSA_BUILDLY`. The service must use this environment variable to decode requests from Buildly. 
 
-BiFrost passes the JWT to the service in the `Authorization` HTTP header using the format `JWT {token}`. Example:
+Buildly passes the JWT to the service in the `Authorization` HTTP header using the format `JWT {token}`. Example:
 
 ```
 Authorization: JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJiaWZyb3N0IiwiZXhwIjoxNTYwNjA0OTc2LCJpYXQiOjE1NjA1MTg1NzYsImNvcmVfdXNlcl91dWlkIjoiODJiZGI2YTMtMjExOS00MThmLThjMmQtY2FhYjdlYmI4OTc1Iiwib3JnYW5pemF0aW9uX3V1aWQiOiJiMjY1YmFkNS1iODEyLTRmNDItYjNlZS0zNDFlYmJiNzJjNmIiLCJzY29wZSI6InJlYWQgd3JpdGUiLCJ1c2VybmFtZSI6ImFkbWluIn0.CV8PafWuGDZSpWRI5wC6btO6cyt9udI9P5uLBdnHzVhbbIY-LH1o3qBgnRf0OAreUhRfl7zBTBMNO56pbyWeyg
@@ -34,39 +34,39 @@ Authorization: JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJiaWZyb3N0Iiwi
 
 ### Example using PyJwt
 
-Here's an example using the [PyJwt library](https://pyjwt.readthedocs.io/en/latest/). It takes the `encoded_jwt` from the HTTP header and decodes it with the `JWT_PUBLIC_KEY_RSA_BIFROST` environment variable:
+Here's an example using the [PyJwt library](https://pyjwt.readthedocs.io/en/latest/). It takes the `encoded_jwt` from the HTTP header and decodes it with the `JWT_PUBLIC_KEY_RSA_BUILDLY` environment variable:
 
 ```python
 import jwt
 
-jwt.decode(encoded_jwt, os.environ['JWT_PUBLIC_KEY_RSA_BIFROST'], algorithms=['RS256'])
+jwt.decode(encoded_jwt, os.environ['JWT_PUBLIC_KEY_RSA_BUILDLY'], algorithms=['RS256'])
 ```
 
-The BiFrost JWT payload looks like this:
+The Buildly JWT payload looks like this:
 
 ```json
 {
 	"core_user_uuid": "fd76ce0c-d8be-4aa6-91ed-59e698f6af60",
 	"exp": 1560472728,
 	"iat": 1560436728,
-	"iss": "bifrost",
+	"iss": "buildly",
 	"organization_uuid": "70f0d039-e3d9-427e-b161-4e95dbd9e918",
 	"scope": "read write",
 	"username": "admin"
 }
 ```
 
--  `core_user_uuid`: UUID of the [CoreUser](/bifrost#coreuser) who initiated the request.
+-  `core_user_uuid`: UUID of the [CoreUser](/buildly#coreuser) who initiated the request.
 -  `exp`: Datetime when the token expires.
 -  `iat`: Datetime when the token was issued.
--  `iss`: Issuer of the JWT. This will always be `bifrost`.
--  `organization_uuid`: UUID of the [Organization](/bifrost#organization) that contains the CoreUser who initiated the request.
--  `scope`: Permission scopes granted in the request by BiFrost.
+-  `iss`: Issuer of the JWT. This will always be `buildly`.
+-  `organization_uuid`: UUID of the [Organization](/buildly#organization) that contains the CoreUser who initiated the request.
+-  `scope`: Permission scopes granted in the request by Buildly.
 -  `username`: The [Midgard username](/midgard) of the CoreUser who initiated the request.
 
-## (Optional) Implement BiFrost permissions model
+## (Optional) Implement Buildly permissions model
 
-If you want to implement the [BiFrost permissions model](/permissions-model.md) in your services, then you need to create **WorkflowLevels** for each of your data models and implement them in the models. We recommend creating WorkflowLevel1s for all top-level data models in your service and WorkflowLevel2s for defining any nested data relationships.
+If you want to implement the [Buildly permissions model](/permissions-model.md) in your services, then you need to create **WorkflowLevels** for each of your data models and implement them in the models. We recommend creating WorkflowLevel1s for all top-level data models in your service and WorkflowLevel2s for defining any nested data relationships.
 
 Use the following endpoints of your **app's API URL** to define WorkflowLevels:
 
@@ -78,7 +78,7 @@ Use the following endpoints of your **app's API URL** to define WorkflowLevels:
 
 ## Appendix: Reserved endpoint names
 
-The following endpoint names are reserved by BiFrost and may not be implemented in your services' APIs:
+The following endpoint names are reserved by Buildly and may not be implemented in your services' APIs:
 
 - `/admin`
 - `/oauth`

@@ -297,7 +297,7 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_expand_data_from_bifrost_superuser(self, mock_perform_request,
+    def test_expand_data_from_buildly_superuser(self, mock_perform_request,
                                            mock_app):
         # mock app
         mock_app.return_value = Mock(App)
@@ -334,7 +334,7 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_expand_data_from_bifrost_permission_denied(self,
+    def test_expand_data_from_buildly_permission_denied(self,
                                                         mock_perform_request,
                                                         mock_app):
         # mock app
@@ -461,7 +461,7 @@ class DataMeshTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_expand_data_from_bifrost_raises_exception(
+    def test_expand_data_from_buildly_raises_exception(
             self, mock_perform_request, mock_app):
         # mock app
         mock_app.return_value = Mock(App)

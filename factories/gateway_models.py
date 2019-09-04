@@ -12,6 +12,6 @@ class LogicModule(DjangoModelFactory):
     endpoint = 'http://products.example.com/'
     relationships = {
         'products': {
-            'workflowlevel2_uuid': 'bifrost.WorkflowLevel2'
+            'workflowlevel2_uuid': 'buildly.WorkflowLevel2'
         }
     }

@@ -16,7 +16,7 @@ class LogicModuleModel(models.Model):
     model = models.CharField(max_length=128)
     endpoint = models.CharField(max_length=255, help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'")
     lookup_field_name = models.SlugField(max_length=64, default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'")
-    is_local = models.BooleanField(default=False, help_text="Local model is taken from BiFrost")
+    is_local = models.BooleanField(default=False, help_text="Local model is taken from Buildly")
 
     objects = LogicModuleModelManager()
 

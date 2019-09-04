@@ -30,7 +30,7 @@ Password: `admin`.
 To run the webserver with pdb support:
 
 ```bash
-docker-compose run --rm --service-ports bifrost
+docker-compose run --rm --service-ports buildly
 ```
 
 ## Running the tests
@@ -38,13 +38,13 @@ docker-compose run --rm --service-ports bifrost
 To run the tests (without flake8) and have `ipdb` open on error:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tests.sh --keepdb --bash_on_finish
+docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb --bash_on_finish
 ```
 
 To run the tests like if it was CI with flake8:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm bifrost bash scripts/run-tests.sh --ci
+docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
 ```
 
 See `pytest --help` for more options.
@@ -65,7 +65,7 @@ For using JWT as authentication method, we need to configure public and
 private RSA keys.
 
 The following commands will generate a public and private key. The private
-key will stay in BiFrost and the public one will be supplied to
+key will stay in Buildly and the public one will be supplied to
 microservices in order to verify the authenticity of the message:
 
 ```bash
@@ -89,8 +89,8 @@ The following table lists the configurable parameters of buildly and their defau
 | `DATABASE_PORT`                     | The port to use when connecting to the database | ``                           |
 | `DEFAULT_ORG`                       | The first organization created in the database  | `My Organization`            |
 | `JWT_ISSUER`                        | The name of the JWT issuer               | ``                                  |
-| `JWT_PRIVATE_KEY_RSA_BIFROST`       | The private RSA KEY                      | ``                                  |
-| `JWT_PUBLIC_KEY_RSA_BIFROST`        | The public RSA KEY                       | ``                                  |
+| `JWT_PRIVATE_KEY_RSA_BUILDLY`       | The private RSA KEY                      | ``                                  |
+| `JWT_PUBLIC_KEY_RSA_BUILDLY`        | The public RSA KEY                       | ``                                  |
 | `SOCIAL_AUTH_GITHUB_REDIRECT_URL`   | The redirect URL for GitHub Social auth  | None                                |
 | `SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL`  | The redirect URL for Google Social auth  | None                          |
 | `SOCIAL_AUTH_LOGIN_REDIRECT_URL`    | Redirect the user once the auth process ended successfully | None                              |
@@ -129,7 +129,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 * **Buildly** - *Initial work*
 
-See also the list of [contributors](https://github.com/buidlyio/bifrost/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/buidlyio/buildly/contributors) who participated in this project.
 
 ## License
 

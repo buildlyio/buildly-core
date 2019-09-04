@@ -197,10 +197,10 @@ class GatewayRequest(BaseGatewayRequest):
         result = dict()
         for extend_model in extend_models:
             content = None
-            if extend_model['service'] == 'bifrost':
+            if extend_model['service'] == 'buildly':
                 if hasattr(wfm, extend_model['model']):
                     cls = getattr(wfm, extend_model['model'])
-                    uuid_name = self._get_bifrost_uuid_name(cls)
+                    uuid_name = self._get_buildly_uuid_name(cls)
                     lookup = {
                         uuid_name: extend_model['pk']
                     }
@@ -250,7 +250,7 @@ class GatewayRequest(BaseGatewayRequest):
 
         return extension_map
 
-    def _get_bifrost_uuid_name(self, model):
+    def _get_buildly_uuid_name(self, model):
         for field in model._meta.fields:
             if field.name.endswith('uuid') and field.unique and \
                     field.default == uuid.uuid4:
