@@ -99,8 +99,6 @@ The following table lists the configurable parameters of buildly and their defau
 | `SECRET_KEY`                        | Used to provide cryptographic signing, and should be set to a unique, unpredictable value | None |
 | `OAUTH_CLIENT_ID`                   | Used in combination with OAUTH_CLIENT_SECRET to create OAuth2 password grant | None |
 | `OAUTH_CLIENT_SECRET`               | Used in combination with OAUTH_CLIENT_ID to create OAuth2 password grant | None |
-| `SOCIAL_AUTH_CLIENT_ID`             | Used in combination with SOCIAL_AUTH_CLIENT_SECRET to create OAuth2 client credentials grant | None |
-| `SOCIAL_AUTH_CLIENT_SECRET`         | Used in combination with SOCIAL_AUTH_CLIENT_ID to create OAuth2 client credentials grant | None |
 | `USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR`   | If true, checks whether the password meets a minimum length | None       |
 | `PASSWORD_MINIMUM_LENGTH`           | The minimum length of passwords      | `6` |
 | `USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR`  | If true, checks the similarity between the password and a set of attributes of the user | None |

@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
         # Note: for the lists we fill the first element with an empty value for
         # development readability (id == position).
-        self._applications = []
+        self._application = None
         self._groups = ['']
         self._user = None
         self._su_group = None
@@ -41,26 +41,7 @@ class Command(BaseCommand):
                     'authorization_grant_type': Application.GRANT_PASSWORD,
                 }
             )
-            self._applications.append(app)
-
-        if settings.SOCIAL_AUTH_CLIENT_ID and settings.SOCIAL_AUTH_CLIENT_SECRET:
-            urls = list()
-            for url in settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS.values():
-                if url:
-                    urls.append(url)
-
-            social_auth_redirect_urls = '\n'.join(urls)
-            app, created = Application.objects.update_or_create(
-                client_id=settings.SOCIAL_AUTH_CLIENT_ID,
-                client_secret=settings.SOCIAL_AUTH_CLIENT_SECRET,
-                defaults={
-                    'name': 'bifrost social auth',
-                    'client_type': Application.CLIENT_CONFIDENTIAL,
-                    'redirect_uris': social_auth_redirect_urls,
-                    'authorization_grant_type': Application.GRANT_CLIENT_CREDENTIALS,
-                }
-            )
-            self._applications.append(app)
+            self._application = app
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
