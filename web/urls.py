@@ -2,9 +2,15 @@ from django.urls import include, path, re_path
 from .views import IndexView, OAuthUserEndpoint, oauth_complete
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf.urls import handler404, handler500
+
 
 admin.autodiscover()
 admin.site.site_header = 'Humanitec Administration'
+
+handler404 = 'web.views.handler404'
+handler500 = 'web.views.handler500'
+
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
@@ -19,6 +25,8 @@ urlpatterns = [
          include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
     re_path(r'^oauth/complete/(?P<backend>[^/]+)/$', oauth_complete,
             name='oauth_complete'),
+
 ]
 
 urlpatterns += staticfiles_urlpatterns()
+

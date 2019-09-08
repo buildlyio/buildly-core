@@ -49,7 +49,7 @@ services:
       DATABASE_HOST: "postgres_buildly"
       DATABASE_PORT: "5432"
       DEFAULT_ORG: "Default Organization"
-      DOCUMENTATION_URL: "https://humanitec.gitbook.io/frontend-guide/"
+      DOCUMENTATION_URL: "https://www.gitbook.io/"
       API_URL: "/api/docs"
       JWT_ISSUER: "buildly"
       JWT_PRIVATE_KEY_RSA_BUILDLY: |-
