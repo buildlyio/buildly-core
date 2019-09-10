@@ -2,7 +2,6 @@ from django.urls import include, path, re_path
 from .views import IndexView, OAuthUserEndpoint, oauth_complete
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.conf.urls import handler404
 
 
 admin.autodiscover()
