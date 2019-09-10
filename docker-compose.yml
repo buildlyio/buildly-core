@@ -49,8 +49,8 @@ services:
       DATABASE_HOST: "postgres_buildly"
       DATABASE_PORT: "5432"
       DEFAULT_ORG: "Default Organization"
-      DOCUMENTATION_URL: "https://www.gitbook.io/"
-      API_URL: "/api/docs"
+      DOCUMENTATION_URL: "https://github.com/buildlyio/buildly-core/blob/master/README.md"
+      API_URL: "/api"
       JWT_ISSUER: "buildly"
       JWT_PRIVATE_KEY_RSA_BUILDLY: |-
         -----BEGIN RSA PRIVATE KEY-----

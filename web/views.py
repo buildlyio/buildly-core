@@ -113,13 +113,13 @@ def oauth_complete(request, backend, *args, **kwargs):
 
 
 """
-404ERROR TEMPLATES and view
+ERROR TEMPLATES and views
 """
 
 
-def handler404(request):
+def handler404(request, exception):
     context = RequestContext(request)
-    err_code = 404
+    err_code = 404 + ": " + exception
     response = render_to_response('404.html', {"code": err_code}, context)
     response.status_code = 404
     return response
