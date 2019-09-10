@@ -120,7 +120,6 @@ def oauth_complete(request, backend, *args, **kwargs):
 def handler404(request):
     context = RequestContext(request)
     err_code = 404
-    response = render_to_response('404.html', {"code":err_code}, context)
+    response = render_to_response('404.html', {"code": err_code}, context)
     response.status_code = 404
     return response
-
