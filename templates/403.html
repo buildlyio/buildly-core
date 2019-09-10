@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+
 	<div class="size1 bg0 where1-parent">
 		<!-- Logo -->
 		<div class="flex-c-m bg-img1 size2 where1 overlay1 where2 respon2" style="background-image: url('static/images/bg02.jpg');">
@@ -17,23 +19,18 @@
 		<div class="size3 flex-col-sb flex-w p-l-75 p-r-75 p-t-45 p-b-45 respon1">
 
 			<div class="p-t-50 p-b-60">
-				<p class="m1-txt1 p-b-36">
-					These links might help you:
-				</p>
-                <ul>
-                  <li><a href="/docs">OpenAPI Specification</a></li>
-				  <li><a href="https://github.com/buildlyio/buildly-core/tree/master/docs">Buildly Documentation</a></li>
-                  <li><a href="https://buildly.io/buildly-ui">Get Buildly UI and administer your gateway the easy way</a></li>
-                </ul>
-                <hr/>
-				<ul>
-                  <li><a href="{{ api_url }}">Your API</a></li>
-				  <li><a href="{{ documentation_url }}">Your Documentation</a></li>
-				</ul>
+                <div class="main__panel__top">
+                    <a href="{% url 'index' %}" class="text--gray">Go Back</a>
+                </div>
+                <div class="app-page">
+                    <img src="{{ STATIC_URL }}img/t-shape-colors.svg" alt="" class="mx-auto login__logo">
 
-				<p class="s2-txt3 p-t-18">
-					If you need any help, just try to reach out the community and/or check out Buildly's documentation.
-				</p>
+                    <h3 class="text-center">Buildly API-CORE</h3>
+                    <div class="message mt-5">
+                        <h4 class="text-center">Not sure you haver permissions to see this page...</h4>
+                        <p class="text-center">Please confirm this is the URL you are looking for. </p>
+                    </div>
+                </div>
 			</div>
 
 			<div class="flex-w">
@@ -51,4 +48,5 @@
 			</div>
 		</div>
 	</div>
+
 {% endblock content %}

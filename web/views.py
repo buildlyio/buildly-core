@@ -6,6 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView
+from django.template import RequestContext
+from django.shortcuts import render_to_response
 
 from oauth2_provider.views.generic import ProtectedResourceView
 from social_core.exceptions import AuthFailed
@@ -108,3 +110,16 @@ def oauth_complete(request, backend, *args, **kwargs):
         url = setting_url(request.backend, 'LOGIN_ERROR_URL', 'LOGIN_URL')
 
     return request.backend.strategy.redirect(url)
+
+
+"""
+404ERROR TEMPLATES and view
+"""
+
+
+def handler404(request):
+    context = RequestContext(request)
+    err_code = 404
+    response = render_to_response('404.html', {"code": err_code}, context)
+    response.status_code = 404
+    return response
