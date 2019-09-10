@@ -111,30 +111,16 @@ def oauth_complete(request, backend, *args, **kwargs):
 
     return request.backend.strategy.redirect(url)
 
+
 """
-ERROR TEMPLATES and views
+404ERROR TEMPLATES and view
 """
 
 
-def handler403(request, exception):
-    context = RequestContext(request)
-    err_code = 403
-    response = render_to_response('403.html', {"code":err_code}, context)
-    response.status_code = 403
-    return response
-
-
-def handler404(request, exception):
+def handler404(request):
     context = RequestContext(request)
     err_code = 404
     response = render_to_response('404.html', {"code":err_code}, context)
     response.status_code = 404
     return response
 
-
-def handler500(request, exception):
-    context = RequestContext(request)
-    err_code = 500
-    response = render_to_response('500.html', {"code":err_code}, context)
-    response.status_code = 500
-    return response
