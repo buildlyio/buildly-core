@@ -14,7 +14,7 @@ The Organization is the top-level class of the Buildly permissions model. Everyt
 
 ## CoreUser
 
-A CoreUser is a registered user of a Walhall app. Every CoreUser must belong to a **CoreGroup.**
+A CoreUser is a registered user of an application. Every CoreUser must belong to a **CoreGroup.**
 
 ## CoreGroup
 
@@ -26,7 +26,7 @@ Buildly allows you to define nested data hierarchies in your microservice archit
 
 By creating WorkflowLevels for each model in your microservice architecture, you can enable them to share data by implementing their WorkflowLevel UUIDs as foreign keys. 
 
-You can define WorkflowLevels using the Buildly API once you have deployed your Walhall app.
+You can define WorkflowLevels using the Buildly API once you have deployed your application.
 
 ### Example implementation
 

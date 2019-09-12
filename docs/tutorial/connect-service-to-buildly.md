@@ -2,7 +2,7 @@
 
 ## Overview
 
-This tutorial explains how to connect an existing microservice to [Buildly](/buildly). 
+This tutorial explains how to connect an existing service to [Buildly](https://buildly.io/buildly-core/). 
 
 Once you connect your service to Buildly, it will be able to communicate with all of your other services over a core authentication layer. All of its endpoints will be exposed as part of a single API that Buildly puts together from all of the services. You also have the option to use Buildly for managing permissions and users.
 
@@ -10,11 +10,9 @@ Once you connect your service to Buildly, it will be able to communicate with al
 
 There are no requirements for the language or framework used to code your service. It must only satisfy these conditions in order to connect to Buildly:
 
-1.  Your service must include a **Dockerfile.**
-2.  Your service must follow the [OpenAPI (Swagger) spec](https://swagger.io/docs/specification/about/) and expose a `swagger.json` file at the `/docs` endpoint.
-3.  Your service must implement the [Walhall CI/CD pipeline](/walhall#walhall-s-ci-cd-pipeline).
-4.  Your service must use an [OAuth2](https://oauth.net/2/) library with support for [JSON Web Tokens (JWTs)](https://jwt.io). See the [JWT authorization](#implement-jwt-authorization) section for more information.
-5.  At this time, your service must run on port `8080`; in the future, you will be able to specify the container port in Walhall.
+1.  Your service must follow the [OpenAPI (Swagger) spec](https://swagger.io/docs/specification/about/).
+2.  You need to expose a `swagger.json` file at the `/docs` endpoint.
+3.  Your service must use an [OAuth2](https://oauth.net/2/) library with support for [JSON Web Tokens (JWTs)](https://jwt.io). See the [JWT authorization](#implement-jwt-authorization) section for more information.
 
 ## Implement JWT authorization
 
@@ -22,9 +20,9 @@ Next, you need to implement Buildly's authorization method.
 
 ### About Buildly authorization
 
-For external requests to logic modules (e.g., [Midgard](https://github.com/Humanitec/midgard) users), Buildly uses an [OAuth2](https://oauth.net/2/) flow to issue [JSON Web Tokens (JWTs)](https://jwt.io) signed with RS256. 
+For external requests to modules (e.g., [Buildly UI](https://github.com/buildlyio/buildly-ui-angular) users), Buildly uses an [OAuth2](https://oauth.net/2/) flow to issue [JSON Web Tokens (JWTs)](https://jwt.io) signed with RS256. 
 
-Inside the container where the service is deployed, Walhall exposes Buildly's **public key** as the environment variable `JWT_PUBLIC_KEY_RSA_BUILDLY`. The service must use this environment variable to decode requests from Buildly. 
+Buildly's **public key** should be exposed as the environment variable `JWT_PUBLIC_KEY_RSA_BUILDLY` inside the container where the service is deployed. The service must use this environment variable to decode requests from Buildly. 
 
 Buildly passes the JWT to the service in the `Authorization` HTTP header using the format `JWT {token}`. Example:
 
@@ -56,17 +54,17 @@ The Buildly JWT payload looks like this:
 }
 ```
 
--  `core_user_uuid`: UUID of the [CoreUser](/buildly#coreuser) who initiated the request.
+-  `core_user_uuid`: UUID of the [CoreUser](/model/permissions#coreuser) who initiated the request.
 -  `exp`: Datetime when the token expires.
 -  `iat`: Datetime when the token was issued.
 -  `iss`: Issuer of the JWT. This will always be `buildly`.
--  `organization_uuid`: UUID of the [Organization](/buildly#organization) that contains the CoreUser who initiated the request.
+-  `organization_uuid`: UUID of the [Organization](/model/permissions#organization) that contains the CoreUser who initiated the request.
 -  `scope`: Permission scopes granted in the request by Buildly.
--  `username`: The [Midgard username](/midgard) of the CoreUser who initiated the request.
+-  `username`: The username of the CoreUser who initiated the request.
 
 ## (Optional) Implement Buildly permissions model
 
-If you want to implement the [Buildly permissions model](/permissions-model.md) in your services, then you need to create **WorkflowLevels** for each of your data models and implement them in the models. We recommend creating WorkflowLevel1s for all top-level data models in your service and WorkflowLevel2s for defining any nested data relationships.
+If you want to implement the [Buildly permissions model](/model/permissions) in your services, then you need to create **WorkflowLevels** for each of your data models and implement them in the models. We recommend creating WorkflowLevel1s for all top-level data models in your service and WorkflowLevel2s for defining any nested data relationships.
 
 Use the following endpoints of your **app's API URL** to define WorkflowLevels:
 
