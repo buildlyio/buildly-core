@@ -1,7 +1,7 @@
 .. _patterns:
 
-Microservice architecture patterns with Buildly
-===============================================
+Patterns with Buildly
+=====================
 
 Certain things are common enough that the chances are high you will find them in most web applications and 
 Buildly Core makes it possible to implement a variety of common microservice architecture patterns.

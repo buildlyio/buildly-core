@@ -1,5 +1,3 @@
-.. _license:
-
 # License
 
 This license applies to all files in the Buildly Core repository and source distribution. This 
