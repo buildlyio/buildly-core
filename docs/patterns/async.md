@@ -1,5 +1,3 @@
-.. _async:
-
 # Async pattern
 
 ![Diagram: Async pattern using Buildly](../_static/images/async-pattern.png)
