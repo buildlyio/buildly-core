@@ -17,7 +17,7 @@ The rest of the docs describe each component of Buildly Core in detail.
 
 Buildly Core depends on the `Docker` engine. The documentation for this service can be found at:
 
-- _Docker documentation https://docs.docker.com/
+- Docker documentation https://docs.docker.com/
 
 
 User's Guide

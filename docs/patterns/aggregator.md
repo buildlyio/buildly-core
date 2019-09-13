@@ -1,5 +1,3 @@
-.. _aggregator:
-
 # Aggregator pattern
 
 ![Diagram: Aggregator pattern using Buildly](../_static/images/aggregator-pattern.png)
