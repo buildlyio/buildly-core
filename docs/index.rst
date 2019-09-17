@@ -28,6 +28,7 @@ This technical communication document, is intended to give assistance to develop
 .. toctree::
    :maxdepth: 2
 
+   gateways/index
    quickstart
    tutorial/index
    model/index
