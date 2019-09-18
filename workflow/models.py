@@ -2,6 +2,7 @@ import uuid
 from typing import Union
 
 from django.db import models
+from django.conf import settings
 from django.contrib.postgres import fields
 from django.contrib.auth.models import AbstractUser, Group
 from django.contrib.postgres.fields import JSONField
@@ -59,7 +60,7 @@ class CoreSites(models.Model):
 
 
 class Industry(models.Model):
-    name = models.CharField("Industry Name", max_length=255, blank=True, default="Humanitec")
+    name = models.CharField("Industry Name", max_length=255, blank=True, default="Tech")
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -85,7 +86,7 @@ class Organization(models.Model):
     When organization is created two CoreGroups are created automatically: Admins group and default Users group.
     """
     organization_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
-    name = models.CharField("Organization Name", max_length=255, blank=True, default="Humanitec", help_text="Each end user must be grouped into an organization")
+    name = models.CharField("Organization Name", max_length=255, blank=True, default=settings.DEFAULT_ORG, help_text="Each end user must be grouped into an organization")
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Descirption of organization")
     organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")
     industries = models.ManyToManyField(Industry, blank=True, related_name='organizations', help_text="Type of Industry the organization belongs to if any")
