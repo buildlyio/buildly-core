@@ -14,7 +14,7 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 import factories
 from gateway.exceptions import GatewayError
-from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls
+from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls, get_swagger_from_url
 from gateway.views import APIGatewayView
 
 
@@ -129,3 +129,8 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
+    
+    def test_get_empty_swagger_from_unavailable_logic_module(self):
+        inactive_logic_module_endpoint = 'http://microservice:8000/docs/swagger.json'
+        assert get_swagger_from_url(inactive_logic_module_endpoint) == {}
+

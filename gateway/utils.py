@@ -28,6 +28,7 @@ MODEL_VIEWSETS_DICT = {
     wfm.Organization: wfv.OrganizationViewSet,
     wfm.WorkflowLevel2Sort: wfv.WorkflowLevel2SortViewSet,
 }
+SWAGGER_RETRIEVAL_TIMEOUT = 5
 
 
 def get_swagger_url_by_logic_module(module: LogicModule) -> str:
@@ -69,10 +70,9 @@ def get_swagger_from_url(api_url: str):
     :return: dictionary representing the swagger definition
     """
     try:
-        return requests.get(api_url).json()
-    except requests.exceptions.ConnectionError as error:
-        raise requests.exceptions.ConnectionError(
-            f'Please, check that {api_url} is accessible.') from error
+        return requests.get(api_url, timeout=SWAGGER_RETRIEVAL_TIMEOUT).json()
+    except requests.exceptions.ConnectTimeout:
+        return {}
 
 
 def validate_object_access(request: Request, obj):
