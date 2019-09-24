@@ -4,8 +4,9 @@ or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
 import json
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import uuid
+import requests
 
 from django.test import TestCase
 import pytest
@@ -115,6 +116,7 @@ def test_json_dump_exception():
     assert error_message in str(exc.value)
 
 
+ 
 @pytest.mark.django_db()
 class TestGettingSwaggerURLs:
 
@@ -130,7 +132,7 @@ class TestGettingSwaggerURLs:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
     
-    def test_get_empty_swagger_from_unavailable_logic_module(self):
-        inactive_logic_module_endpoint = 'http://microservice:8000/docs/swagger.json'
-        assert get_swagger_from_url(inactive_logic_module_endpoint) == {}
 
+def test_get_empty_swagger_from_unavailable_logic_module():
+    inactive_logic_module_endpoint = 'http://microservice:8000/docs/swagger.json'
+    assert get_swagger_from_url(inactive_logic_module_endpoint) == {}
