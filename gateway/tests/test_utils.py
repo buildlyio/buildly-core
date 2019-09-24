@@ -134,5 +134,5 @@ class TestGettingSwaggerURLs:
     
 
 def test_get_empty_swagger_from_unavailable_logic_module():
-    inactive_logic_module_endpoint = 'http://microservice:8000/docs/swagger.json'
+    inactive_logic_module_endpoint = 'http://10.255.255.1/docs/swagger.json'
     assert get_swagger_from_url(inactive_logic_module_endpoint) == {}
