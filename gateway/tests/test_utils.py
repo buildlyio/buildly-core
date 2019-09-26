@@ -133,6 +133,8 @@ class TestGettingSwaggerURLs:
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
     
 
-def test_get_empty_swagger_from_unavailable_logic_module():
-    inactive_logic_module_endpoint = 'http://10.255.255.1/docs/swagger.json'
-    assert get_swagger_from_url(inactive_logic_module_endpoint) == {}
+class TestUnavailableLogicModule(TestCase):
+    @patch('requests.get')
+    def test_unavailable_logic_module(self, mock_request_get):
+        mock_request_get.side_effect = [ConnectionError, TimeoutError]
+        self.assertRaises((ConnectionError, TimeoutError), get_swagger_from_url, 'http://example.com')
