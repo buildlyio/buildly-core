@@ -4,8 +4,10 @@ or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
 import json
-from unittest.mock import Mock
+
+from unittest.mock import Mock, patch
 import uuid
+import requests
 
 from django.test import TestCase
 import pytest
@@ -14,7 +16,7 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 import factories
 from gateway.exceptions import GatewayError
-from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls
+from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls, get_swagger_from_url
 from gateway.views import APIGatewayView
 
 
@@ -115,6 +117,7 @@ def test_json_dump_exception():
     assert error_message in str(exc.value)
 
 
+ 
 @pytest.mark.django_db()
 class TestGettingSwaggerURLs:
 
@@ -129,3 +132,10 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
+
+
+class TestUnavailableLogicModule(TestCase):
+    @patch('requests.get')
+    def test_unavailable_logic_module(self, mock_request_get):
+        mock_request_get.side_effect = [ConnectionError, TimeoutError]
+        self.assertRaises((ConnectionError, TimeoutError), get_swagger_from_url, 'http://example.com')
