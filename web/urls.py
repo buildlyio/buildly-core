@@ -5,7 +5,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 
 admin.autodiscover()
-admin.site.site_header = 'Buildly Administration'
+admin.site.site_header = 'Humanitec Administration'
 
 handler404 = 'web.views.handler404'
 

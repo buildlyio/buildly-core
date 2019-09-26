@@ -389,7 +389,7 @@ class DataMeshTest(TestCase):
             'first_name': 'Jeferson',
             'last_name': 'Moura',
             'contact_type': 'company',
-            'company': 'Buidly'
+            'company': 'Humanitec'
         }
         expand_response = Mock(PySwaggerResponse)
         expand_response.data = expand_data
@@ -434,7 +434,7 @@ class DataMeshTest(TestCase):
             'first_name': 'Jeferson',
             'last_name': 'Moura',
             'contact_type': 'company',
-            'company': 'Buidly'
+            'company': 'Humanitec'
         }
         expand_response = Mock(PySwaggerResponse)
         expand_response.data = expand_data
@@ -548,7 +548,7 @@ class DataMeshTest(TestCase):
             'first_name': 'Jeferson',
             'last_name': 'Moura',
             'contact_type': 'company',
-            'company': 'Buidly'
+            'company': 'Humanitec'
         }
         expand_response = Mock(PySwaggerResponse)
         expand_response.data = expand_data

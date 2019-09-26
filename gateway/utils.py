@@ -30,7 +30,6 @@ MODEL_VIEWSETS_DICT = {
 }
 SWAGGER_RETRIEVAL_TIMEOUT = 5
 
-
 def get_swagger_url_by_logic_module(module: LogicModule) -> str:
     """
     Construct the endpoint URL of the service
@@ -65,12 +64,13 @@ def get_swagger_urls() -> Dict[str, str]:
 def get_swagger_from_url(api_url: str):
     """
     Get the swagger file of the service at the given url
+
     :param api_url:
     :return: dictionary representing the swagger definition
     """
     try:
-        return requests.get(api_url, timeout=SWAGGER_RETRIEVAL_TIMEOUT).json()
-    except requests.exceptions.ConnectTimeout as error: 
+        return requests.get(api_url).json()
+    except requests.exceptions.ConnectTimeout as error:
         raise TimeoutError(
             f'Connection timed out. Please, check that {api_url} is accessible.') from error
     except requests.exceptions.ConnectionError as error:

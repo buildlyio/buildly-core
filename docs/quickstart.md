@@ -1,3 +1,5 @@
+.. _quickstart:
+
 # Quickstart
 
 Excited to get start? This page gives a decent prologue to Buildly Core. It assumes 

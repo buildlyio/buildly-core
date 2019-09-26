@@ -292,7 +292,7 @@ SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_SECR
 
 
 # Whitelist of domains allowed to login via social auths
-# i.e. ['example.com', 'buildly.io','treeaid.org']
+# i.e. ['toladata.com', 'humanitec.com','treeaid.org']
 if os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS'):
     SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS').split(',')
 if os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'):
@@ -316,7 +316,7 @@ GRAPHENE = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-CORE_WEBSITE = "https://buildly.io"
+CORE_WEBSITE = "https://humanitec.com"
 
 # RabbitMQ configuration
 RABBIT_USER = os.getenv('RABBIT_USER')
