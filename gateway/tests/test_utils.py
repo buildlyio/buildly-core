@@ -4,7 +4,7 @@ or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
 import json
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import uuid
 
 from django.test import TestCase
@@ -129,3 +129,9 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
+
+class TestUnavailableLogicModule(TestCase):
+    @patch('requests.get')
+    def test_unavailable_logic_module(self, mock_request_get):
+        mock_request_get.side_effect = [ConnectionError, TimeoutError]
+        self.assertRaises((ConnectionError, TimeoutError), get_swagger_from_url, 'http://example.com')
