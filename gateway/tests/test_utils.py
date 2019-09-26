@@ -4,7 +4,6 @@ or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
 import json
-
 from unittest.mock import Mock, patch
 import uuid
 import requests

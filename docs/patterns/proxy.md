@@ -1,5 +1,3 @@
-.. _proxy:
-
 # Proxy pattern
 
 ![Diagram: Proxy pattern using Buildly](../_static/images/proxy-pattern.png)

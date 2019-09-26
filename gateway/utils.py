@@ -29,6 +29,10 @@ MODEL_VIEWSETS_DICT = {
     wfm.WorkflowLevel2Sort: wfv.WorkflowLevel2SortViewSet,
 }
 SWAGGER_RETRIEVAL_TIMEOUT = 5
+<<<<<<< HEAD
+=======
+
+>>>>>>> 05e1930171fb1efff263f4cd2248719e8e4964b6
 
 def get_swagger_url_by_logic_module(module: LogicModule) -> str:
     """
@@ -64,7 +68,6 @@ def get_swagger_urls() -> Dict[str, str]:
 def get_swagger_from_url(api_url: str):
     """
     Get the swagger file of the service at the given url
-
     :param api_url:
     :return: dictionary representing the swagger definition
     """
@@ -76,6 +79,7 @@ def get_swagger_from_url(api_url: str):
     except requests.exceptions.ConnectionError as error:
         raise ConnectionError(
             f'Please, check that {api_url} is accessible.') from error
+
 
 
 def validate_object_access(request: Request, obj):
