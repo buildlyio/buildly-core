@@ -14,7 +14,7 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 import factories
 from gateway.exceptions import GatewayError
-from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls
+from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls, get_swagger_from_url
 from gateway.views import APIGatewayView
 
 
@@ -129,6 +129,7 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
+
 
 class TestUnavailableLogicModule(TestCase):
     @patch('requests.get')
