@@ -129,10 +129,15 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
-
-
-class TestUnavailableLogicModule(TestCase):
+    
     @patch('requests.get')
-    def test_unavailable_logic_module(self, mock_request_get):
-        mock_request_get.side_effect = [ConnectionError, TimeoutError]
-        self.assertRaises((ConnectionError, TimeoutError), get_swagger_from_url, 'http://example.com')
+    def test_unavailable_logic_module_timeout_exception(self, mock_request_get):
+        mock_request_get.side_effect = TimeoutError
+        with pytest.raises(TimeoutError):
+            assert get_swagger_from_url('http://example.com')
+
+    @patch('requests.get')
+    def test_unavailable_logic_module_connection_exception(self, mock_request_get):
+        mock_request_get.side_effect = ConnectionError
+        with pytest.raises(ConnectionError):
+            assert get_swagger_from_url('http://microservice:5000')
