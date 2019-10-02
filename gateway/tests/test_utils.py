@@ -4,7 +4,7 @@ or: pytest -c /dev/null gateway/tests/test_utils.py
 """
 import datetime
 import json
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import uuid
 
 from django.test import TestCase
@@ -14,7 +14,7 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 import factories
 from gateway.exceptions import GatewayError
-from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls
+from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls, get_swagger_from_url
 from gateway.views import APIGatewayView
 
 
@@ -129,3 +129,15 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
+    
+    @patch('requests.get')
+    def test_unavailable_logic_module_timeout_exception(self, mock_request_get):
+        mock_request_get.side_effect = TimeoutError
+        with pytest.raises(TimeoutError):
+            assert get_swagger_from_url('http://example.com')
+
+    @patch('requests.get')
+    def test_unavailable_logic_module_connection_exception(self, mock_request_get):
+        mock_request_get.side_effect = ConnectionError
+        with pytest.raises(ConnectionError):
+            assert get_swagger_from_url('http://microservice:5000')

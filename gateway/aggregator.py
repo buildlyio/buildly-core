@@ -30,9 +30,10 @@ class SwaggerAggregator(object):
                             'spec': utils.get_swagger_from_url(api_url),
                             'url': api_url
                         }
-                    except ConnectionError:
-                        logger.warning(
-                            'Cannot get swagger from {}'.format(api_url))
+                    except ConnectionError as error:
+                        logger.warning(error)
+                    except TimeoutError as error:
+                        logger.warning(error)
                     except ValueError:
                         logger.info(
                             'Cannot remove {} from errors'.format(api_url))

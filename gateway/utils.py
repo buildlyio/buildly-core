@@ -64,14 +64,16 @@ def get_swagger_urls() -> Dict[str, str]:
 def get_swagger_from_url(api_url: str):
     """
     Get the swagger file of the service at the given url
-
     :param api_url:
     :return: dictionary representing the swagger definition
     """
     try:
         return requests.get(api_url).json()
+    except requests.exceptions.ConnectTimeout as error:
+        raise TimeoutError(
+            f'Connection timed out. Please, check that {api_url} is accessible.') from error
     except requests.exceptions.ConnectionError as error:
-        raise requests.exceptions.ConnectionError(
+        raise ConnectionError(
             f'Please, check that {api_url} is accessible.') from error
 
 
