@@ -326,8 +326,9 @@ RABBIT_PORT = os.getenv('RABBIT_PORT')
 RABBIT_VHOST = os.getenv('RABBIT_VHOST')
 RABBIT_WALHALL_QUEUE = os.getenv('RABBIT_WALHALL_QUEUE')
 
-
-DEFAULT_ORG = os.getenv('DEFAULT_ORG', 'My organization')
+# User and Organization configuration
+SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
+DEFAULT_ORG = os.getenv('DEFAULT_ORG')
 
 if os.getenv('EMAIL_BACKEND') == 'SMTP':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
