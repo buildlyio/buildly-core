@@ -72,16 +72,27 @@ class Command(BaseCommand):
 
     def _create_user(self):
         if not CoreUser.objects.filter(is_superuser=True).exists():
-            logger.info("Creating global CoreGroup")
-            su = CoreUser.objects.create_superuser(
-                first_name='System',
-                last_name='Admin',
-                username='admin',
-                email='admin@example.com',
-                password='ttmtola1977',
-                organization=self._default_org,
-            )
-            su.core_groups.add(self._su_group)
+            logger.info("Creating Super User")
+            user_password = None
+            if settings.DEBUG:
+                user_password = settings.SUPER_USER_PASSWORD if settings.SUPER_USER_PASSWORD else 'admin'
+            elif settings.SUPER_USER_PASSWORD:
+                user_password = settings.SUPER_USER_PASSWORD
+            else:
+                warning_msg = 'A password for the super user needs to be provided, otherwise, it is not created.'
+                logger.warning(warning_msg)
+                self.stdout.write(f'{warning_msg}')
+
+            if user_password is not None:
+                su = CoreUser.objects.create_superuser(
+                    first_name='System',
+                    last_name='Admin',
+                    username='admin',
+                    email='admin@example.com',
+                    password=user_password,
+                    organization=self._default_org,
+                )
+                su.core_groups.add(self._su_group)
 
     @transaction.atomic
     def handle(self, *args, **options):
