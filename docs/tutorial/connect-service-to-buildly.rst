@@ -1,3 +1,5 @@
+.. _connect service to buildly:
+
 Connect your service to Buildly
 ===============================
 
@@ -69,6 +71,21 @@ The Buildly JWT payload looks like this:
 -  `organization_uuid`: UUID of the [Organization](/model/permissions#organization) that contains the CoreUser who initiated the request.
 -  `scope`: Permission scopes granted in the request by Buildly.
 -  `username`: The username of the CoreUser who initiated the request.
+
+Add Your Service to Buildly 
+---------------------------
+
+After finishing the JWT authorization implementation, deploying your service somewhere and exposing it externally, you need to add it to Buildly.
+
+To add your service to Buildly, make sure it meets the prerequisites, then navigate to the Buildly admin page at `https://<YOUR-BUILDLY-URL>/admin` and log into it. Then, under the section **Gateway** you will see **Logic Module**, click on it and add a new one with the following properties:
+
+- Name: The name of your service for identification
+- Endpoint: The host of your microservice e.g. https://my-amazing-service.com
+- Endpoint Name: The API endpoint for your service (just type the name of the endpoint, for example, `amazing`
+
+Now, your service will be accessed by Buildly and exposed following the structure `https://<BUILDLY-URL>/api/<ENDPOINT-NAME>`, so our service example above will be accessable via the URL `https://<YOUR-BUILDLY-URL>/api/amazing`.
+
+To verify that this has worked, navigate to the Buildly docs at `https://<YOUR-BUILDLY-URL>/docs` and you should see the Swagger documentation for your service under Buildly’s documentation.
 
 (Optional) Implement Buildly permissions model
 ----------------------------------------------
