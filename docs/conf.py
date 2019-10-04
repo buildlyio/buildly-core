@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'Buildly Core'
-copyright = u'2019, Buildly.io'
+copyright = u'2019, Buildly Inc.'
 author = u'Buildly.io'
 
 # The short X.Y version
