@@ -8,6 +8,7 @@ Tutorial
     :maxdepth: 1
 
     connect-service-to-buildly
+    deploy-buildly-to-minikube
 
 This tutorial will walk you through connecting and configuring a web service to Buildly Core. Users will be able to 
 see all endpoints in one OpenAPI specification, use only one URL to request data from different services,

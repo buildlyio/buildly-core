@@ -1,3 +1,5 @@
+.. _connect service to buildly:
+
 Connect your service to Buildly
 ===============================
 
