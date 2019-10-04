@@ -2,8 +2,7 @@
 
 .. rst-class:: hide-header
 
-Welcome to Buildly Core
-=======================
+.. _buildly-core:
 
 .. image:: _static/images/buildly-logo.png
     :alt: Buildly Core: Software Architecture as a Service
