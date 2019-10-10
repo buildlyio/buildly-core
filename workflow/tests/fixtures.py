@@ -21,6 +21,11 @@ TEST_USER_DATA = {
 
 
 @pytest.fixture
+def superuser():
+    return factories.CoreUser.create(is_superuser=True)
+
+
+@pytest.fixture
 def org():
     return factories.Organization(
         name=TEST_USER_DATA['organization_name'],
@@ -60,6 +65,23 @@ def auth_api_client():
     api_client = APIClient()
     api_client.force_authenticate(user=factories.CoreUser.create())
     return api_client
+
+
+@pytest.fixture
+def auth_superuser_api_client(superuser):
+    api_client = APIClient()
+    api_client.force_authenticate(user=superuser)
+    return api_client
+
+
+@pytest.fixture
+def oauth_application():
+    return factories.Application()
+
+
+@pytest.fixture
+def oauth_access_token():
+    return factories.AccessToken()
 
 
 @pytest.fixture
