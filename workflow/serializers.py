@@ -8,7 +8,7 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
-from oauth2_provider.models import AccessToken
+from oauth2_provider.models import AccessToken, RefreshToken
 
 from rest_framework import serializers
 from workflow import models as wfm
@@ -310,3 +310,12 @@ class AccessTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccessToken
         fields = ('id', 'user', 'token', 'expires')
+
+
+class RefreshTokenSerializer(serializers.ModelSerializer):
+    access_token = AccessTokenSerializer()
+    user = CoreUserSerializer()
+
+    class Meta:
+        model = RefreshToken
+        fields = ('id', 'user', 'token', 'access_token', 'revoked')
