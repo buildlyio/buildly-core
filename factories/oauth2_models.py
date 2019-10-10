@@ -1,9 +1,10 @@
 import datetime
-from factory import DjangoModelFactory, Faker, SubFactory
+from factory import DjangoModelFactory, Faker, SubFactory, post_generation
 
 from oauth2_provider.models import (
     Application as ApplicationM,
-    AccessToken as AccessTokenM)
+    AccessToken as AccessTokenM,
+    RefreshToken as RefreshTokenM)
 from .workflow_models import CoreUser
 
 
@@ -28,3 +29,25 @@ class AccessToken(DjangoModelFactory):
     application = SubFactory(Application)
     expires = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     scope = 'read write'
+
+
+class RefreshToken(DjangoModelFactory):
+    class Meta:
+        model = RefreshTokenM
+        django_get_or_create = ('token',)
+
+    token = Faker('ean')
+    user = SubFactory(CoreUser)
+    application = SubFactory(Application)
+
+    @post_generation
+    def access_token(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            self.access_token = extracted
+        else:
+            self.access_token = AccessToken(application=self.application)
+        self.application = self.access_token.application

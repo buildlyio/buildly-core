@@ -85,6 +85,11 @@ def oauth_access_token():
 
 
 @pytest.fixture
+def oauth_refresh_token():
+    return factories.RefreshToken()
+
+
+@pytest.fixture
 def wfl2():
     return factories.WorkflowLevel2()
 
