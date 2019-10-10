@@ -8,6 +8,8 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
+from oauth2_provider.models import AccessToken
+
 from rest_framework import serializers
 from workflow import models as wfm
 from workflow.email_utils import send_email, send_email_body
@@ -135,12 +137,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     def create(self, validated_data):
         # get or create organization
         organization = validated_data.pop('organization')
-        try:
-            organization = wfm.Organization.objects.get(**organization)
-            is_new_org = False
-        except wfm.Organization.DoesNotExist:
-            organization = wfm.Organization.objects.create(**organization)
-            is_new_org = True
+        organization, is_new_org = wfm.Organization.objects.get_or_create(**organization)
 
         core_groups = validated_data.pop('core_groups', [])
 
@@ -305,3 +302,11 @@ class WorkflowTeamListFullSerializer(serializers.ModelSerializer):
     class Meta:
         model = wfm.WorkflowTeam
         fields = '__all__'
+
+
+class AccessTokenSerializer(serializers.ModelSerializer):
+    user = CoreUserSerializer()
+
+    class Meta:
+        model = AccessToken
+        fields = ('id', 'user', 'token', 'expires')
