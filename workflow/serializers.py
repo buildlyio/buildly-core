@@ -1,6 +1,8 @@
+import jwt
+import secrets
+
 from urllib.parse import urljoin
 
-import jwt
 from django.contrib.auth import password_validation, get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
@@ -8,7 +10,7 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
-from oauth2_provider.models import AccessToken, RefreshToken
+from oauth2_provider.models import AccessToken, Application, RefreshToken
 
 from rest_framework import serializers
 from workflow import models as wfm
@@ -319,3 +321,18 @@ class RefreshTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = RefreshToken
         fields = ('id', 'user', 'token', 'access_token', 'revoked')
+
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    client_id = serializers.CharField(read_only=True, max_length=100)
+    client_secret = serializers.CharField(read_only=True, max_length=255)
+
+    class Meta:
+        model = Application
+        fields = ('id', 'authorization_grant_type', 'client_id', 'client_secret', 'client_type', 'name',
+                  'redirect_uris')
+
+    def create(self, validated_data):
+        validated_data['client_id'] = secrets.token_urlsafe(75)
+        validated_data['client_secret'] = secrets.token_urlsafe(190)
+        return super(ApplicationSerializer, self).create(validated_data)
