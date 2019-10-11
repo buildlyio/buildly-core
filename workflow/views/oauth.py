@@ -1,8 +1,8 @@
 from rest_framework import mixins, viewsets
 import django_filters
 
-from oauth2_provider.models import AccessToken, RefreshToken
-from workflow.serializers import AccessTokenSerializer, RefreshTokenSerializer
+from oauth2_provider.models import AccessToken, Application, RefreshToken
+from workflow.serializers import AccessTokenSerializer, ApplicationSerializer, RefreshTokenSerializer
 
 from workflow.permissions import IsSuperUser
 
@@ -38,6 +38,45 @@ class AccessTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     permission_classes = (IsSuperUser,)
     queryset = AccessToken.objects.all()
     serializer_class = AccessTokenSerializer
+
+
+class ApplicationViewSet(viewsets.ModelViewSet):
+    """
+    title:
+    Clients on the authorization server
+
+    description:
+    An Application instance represents the actual access token to access user's resources.
+
+    retrieve:
+    Return the given Application.
+
+    Return the given Application.
+
+    list:
+    Return a list of all existing Applications.
+
+    Return a list of all existing Applications.
+
+    create:
+    Create a new Application instance.
+
+    Create a new Application instance.
+
+    update:
+    Update an existing Application instance.
+
+    Update an existing Application instance.
+
+    destroy:
+    Delete an existing Application instance.
+
+    Delete an existing Application instance.
+    """
+
+    permission_classes = (IsSuperUser,)
+    queryset = Application.objects.all()
+    serializer_class = ApplicationSerializer
 
 
 class RefreshTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
