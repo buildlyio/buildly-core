@@ -116,7 +116,7 @@ $ docker run -e MYVAR1 --env MYVAR2=foo \
 
 ## Built With
 
-* [Drone](http://www.drone.io) - Recommended CI/CD
+* [Travis CI](https://travis-ci.org/) - Recommended CI/CD
 
 ## Contributing
 
