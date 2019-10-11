@@ -18,13 +18,19 @@ class AccessTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     An AccessToken instance represents the actual access token to access user's resources.
 
     retrieve:
-    Return the AccessToken.
+    Return the given AccessToken.
+
+    Return the given AccessToken.
 
     list:
     Return a list of all the existing AccessTokens.
 
-    create:
-    Create a new AccessToken instance.
+    Return a list of all the existing AccessTokens.
+
+    destroy:
+    Delete an AccessToken instance.
+
+    Delete an AccessToken instance.
     """
 
     filterset_fields = ('user__username',)
@@ -45,13 +51,19 @@ class RefreshTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     A RefreshToken instance represents a token that can be swapped for a new access token when it expires.
 
     retrieve:
-    Return the RefreshToken.
+    Return the given RefreshToken.
+
+    Return the given RefreshToken.
 
     list:
     Return a list of all the existing RefreshTokens.
 
-    create:
-    Create a new RefreshToken instance.
+    Return a list of all the existing RefreshTokens.
+
+    destroy:
+    Delete a RefreshToken instance.
+
+    Delete a RefreshToken instance.
     """
 
     filterset_fields = ('user__username',)
