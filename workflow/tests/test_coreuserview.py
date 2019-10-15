@@ -239,6 +239,13 @@ class TestCoreUserInvite:
         assert response.data['email'] == TEST_USER_DATA['email']
         assert response.data['organization']['organization_uuid'] == org.organization_uuid
 
+    def test_prevent_token_reuse(self, request_factory, org):
+        token = create_invitation_token(TEST_USER_DATA['email'], org)
+        registered_user = factories.CoreUser.create(is_active=False, email=TEST_USER_DATA['email'], username='user_org')
+        request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
+        response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
+        assert response.status_code == 401
+
 
 @pytest.mark.django_db()
 class TestResetPassword(object):
