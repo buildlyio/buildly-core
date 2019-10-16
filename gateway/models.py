@@ -11,6 +11,7 @@ class LogicModule(models.Model):
     description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
     endpoint = models.CharField(blank=True, null=True, max_length=255)
     endpoint_name = models.CharField(blank=True, null=True, max_length=255)
+    docs_endpoint = models.CharField(blank=True, null=True, max_length=255)
     relationships = JSONField(blank=True, null=True)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
