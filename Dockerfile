@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.10
+FROM python:3.8.0-alpine3.10
 
 # Do not buffer log messages in memory; some messages can be lost otherwise
 ENV PYTHONUNBUFFERED 1
