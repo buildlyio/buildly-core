@@ -41,7 +41,7 @@ Design notes, legal information and changelog are here.
 .. toctree::
    :maxdepth: 2
 
-   styleguide
+   guidelines
    license
    contributing
    release_process
