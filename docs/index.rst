@@ -44,3 +44,4 @@ Design notes, legal information and changelog are here.
    styleguide
    license
    contributing
+   release_process
