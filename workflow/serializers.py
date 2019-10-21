@@ -108,7 +108,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
     def validate_invitation_token(self, value):
         try:
             decoded = jwt.decode(value, settings.SECRET_KEY, algorithms='HS256')
-            if User.objects.filter(email=decoded['email']).exists():
+            if User.objects.filter(email=decoded['email']).exists() or decoded['email'] != self.initial_data['email']:
                 raise serializers.ValidationError('Token is not valid.')
         except jwt.DecodeError:
             raise serializers.ValidationError('Token is not valid.')

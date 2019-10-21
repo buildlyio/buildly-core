@@ -167,6 +167,15 @@ class TestCoreUserCreate:
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
         assert response.status_code == 400
+    
+    def test_email_mismatch_token_invalidation(self, request_factory, org_admin):
+        data = TEST_USER_DATA.copy()
+        token = create_invitation_token("foobar@example.com", org_admin.organization)
+        data['invitation_token'] = token
+
+        request = request_factory.post(reverse('coreuser-list'), data)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 400
 
     def test_registration_with_core_groups(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
