@@ -37,15 +37,8 @@ def get_swagger_url_by_logic_module(module: LogicModule) -> str:
     :param LogicModule module: the logic module (service)
     :return: OpenAPI schema URL for the logic module
     """
-    if module.docs_endpoint:
-        return '{}/{}/{}.{}'.format(
-            module.endpoint, module.docs_endpoint,
-            SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT)
-    else:
-        return '{}/{}/{}.{}'.format(
-            module.endpoint, SWAGGER_LOOKUP_PATH,
-            SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT
-        )
+    swagger_lookup = module.docs_endpoint if module.docs_endpoint else SWAGGER_LOOKUP_PATH
+    return '{}/{}/{}.{}'.format(module.endpoint, swagger_lookup, SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT)
 
 
 def get_swagger_urls() -> Dict[str, str]:

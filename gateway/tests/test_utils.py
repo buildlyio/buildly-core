@@ -124,7 +124,7 @@ class TestGettingSwaggerURLs:
         assert url.startswith(module.endpoint)
     
     def test_get_swagger_url_by_logic_module_specified_docs(self):
-        module = factories.LogicModule.create(docs_endpoint="http://example.com/swagger.json")
+        module = factories.LogicModule.create(docs_endpoint="api-docs")
         url = get_swagger_url_by_logic_module(module)
         assert url.startswith(module.endpoint)
 
