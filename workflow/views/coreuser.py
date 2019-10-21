@@ -125,6 +125,10 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             return Response({'detail': 'Token is expired.'},
                             status.HTTP_401_UNAUTHORIZED)
 
+        if User.objects.filter(email=decoded['email']).exists():
+            return Response({'detail': 'Token has been used.'},
+                            status.HTTP_401_UNAUTHORIZED)
+
         organization = Organization.objects\
             .values('organization_uuid', 'name')\
             .get(organization_uuid=decoded['org_uuid']) \

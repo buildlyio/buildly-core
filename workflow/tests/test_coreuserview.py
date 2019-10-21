@@ -158,6 +158,25 @@ class TestCoreUserCreate:
         # check this user is NOT org admin
         assert not user.is_org_admin
 
+    def test_reused_token_invalidation(self, request_factory, org_admin):
+        data = TEST_USER_DATA.copy()
+        registered_user = factories.CoreUser.create(is_active=False, email=data['email'], username='user_org')
+        token = create_invitation_token(data['email'], org_admin.organization)
+        data['invitation_token'] = token
+
+        request = request_factory.post(reverse('coreuser-list'), data)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 400
+    
+    def test_email_mismatch_token_invalidation(self, request_factory, org_admin):
+        data = TEST_USER_DATA.copy()
+        token = create_invitation_token("foobar@example.com", org_admin.organization)
+        data['invitation_token'] = token
+
+        request = request_factory.post(reverse('coreuser-list'), data)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 400
+
     def test_registration_with_core_groups(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
         groups = factories.CoreGroup.create_batch(2, organization=org_admin.organization)
@@ -238,6 +257,13 @@ class TestCoreUserInvite:
         assert response.status_code == 200
         assert response.data['email'] == TEST_USER_DATA['email']
         assert response.data['organization']['organization_uuid'] == org.organization_uuid
+
+    def test_prevent_token_reuse(self, request_factory, org):
+        token = create_invitation_token(TEST_USER_DATA['email'], org)
+        registered_user = factories.CoreUser.create(is_active=False, email=TEST_USER_DATA['email'], username='user_org')
+        request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
+        response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
+        assert response.status_code == 401
 
 
 @pytest.mark.django_db()
