@@ -43,7 +43,7 @@ class IndexViewTest(TestCase):
         response = views.IndexView.as_view()(request)
         self.assertEqual(response.status_code, 200)
         template_content = str(response.render().content)
-        self.assertIn('href="/api/docs"', template_content)
+        self.assertIn('href="/docs"', template_content)
 
 
 class HealthCheckViewTest(TestCase):
