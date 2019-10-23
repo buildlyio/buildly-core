@@ -122,6 +122,12 @@ class TestGettingSwaggerURLs:
         module = factories.LogicModule.create()
         url = get_swagger_url_by_logic_module(module)
         assert url.startswith(module.endpoint)
+    
+    def test_get_swagger_url_by_logic_module_specified_docs(self):
+        module = factories.LogicModule.create(docs_endpoint="api-docs")
+        url = get_swagger_url_by_logic_module(module)
+        assert url.startswith(module.endpoint)
+        assert module.docs_endpoint in url
 
     def test_get_swagger_urls(self):
         modules = factories.LogicModule.create_batch(3)
