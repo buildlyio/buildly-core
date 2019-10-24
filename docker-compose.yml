@@ -13,16 +13,6 @@ services:
       - /var/lib/postgresql/data/
     restart: always
 
-  rabbitmq_buildly:
-    image: rabbitmq:3-management
-    container_name: rabbitmq_buildly
-    environment:
-      RABBITMQ_DEFAULT_USER: "admin"
-      RABBITMQ_DEFAULT_PASS: "admin"
-      RABBITMQ_DEFAULT_VHOST: "celery_vhost"
-    ports:
-      - "15672:15672"
-
   buildly:
     build:
       context: .
@@ -37,7 +27,6 @@ services:
       - "8080:8080"
     depends_on:
       - postgres_buildly
-      - rabbitmq_buildly
     environment:
       DJANGO_SETTINGS_MODULE: "buildly.settings.production"
       ALLOWED_HOSTS: "*"
@@ -67,12 +56,6 @@ services:
         MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
         qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
         -----END PUBLIC KEY-----
-      RABBIT_HOST: "rabbitmq_buildly"
-      RABBIT_PORT: "5672"
-      RABBIT_USER: "admin"
-      RABBIT_PASS: "admin"
-      RABBIT_VHOST: "celery_vhost"
-      RABBIT_WALHALL_QUEUE: "buildly_queue"
       SOCIAL_AUTH_GITHUB_REDIRECT_URL: "https://localhost:8000/complete/github"
       SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL: "https://localhost:8000/complete/google-oauth2"
       SOCIAL_AUTH_LOGIN_REDIRECT_URL: "http://localhost:8080/"

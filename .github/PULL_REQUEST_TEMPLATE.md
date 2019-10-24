@@ -5,4 +5,6 @@ _Short description of the problem or feature_
 _How does this change address the problem?_
 
 ### Further Info
-_@mentions of the person or team responsible for reviewing proposed changes._
+Ticket number: #000
+ 
+@mentions of the person or team responsible for reviewing proposed changes.
