@@ -37,8 +37,8 @@ class CoreUser(DjangoModelFactory):
         django_get_or_create = ('username',)
 
     organization = SubFactory(Organization)
-    first_name = 'Homer'
-    last_name = 'Simpson'
+    first_name = Faker('name')
+    last_name = Faker('name')
     username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
     email = lazy_attribute(lambda o: o.username + "@example.com")
 
