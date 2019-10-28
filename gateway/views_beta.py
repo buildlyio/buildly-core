@@ -1,10 +1,12 @@
 import logging
 
 from django.http import HttpResponse
-from rest_framework import permissions, views
+from rest_framework import views
 from rest_framework.request import Request
+from rest_framework.permissions import IsAuthenticated
 
 from . import exceptions
+from . permissions import AllowLogicModuleGroup
 from . request import GatewayRequest, AsyncGatewayRequest
 
 
@@ -18,7 +20,7 @@ class APIGatewayView(views.APIView):
     response back to the requester
     """
 
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated, AllowLogicModuleGroup)
     schema = None
     gateway_request_class = GatewayRequest
 

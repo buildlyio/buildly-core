@@ -35,6 +35,8 @@ PERMISSIONS_WORKFLOW_TEAM = 14  # 1110
 
 PERMISSIONS_VIEW_ONLY = 4  # 0100
 
+PERMISSIONS_NO_ACCESS = 0  # 0000
+
 
 class CoreSites(models.Model):
     name = models.CharField(blank=True, null=True, max_length=255)

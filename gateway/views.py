@@ -26,6 +26,7 @@ from . import exceptions
 from . import models as gtm
 from . import serializers
 from . import utils
+from . permissions import AllowLogicModuleGroup
 
 from workflow import models as wfm
 
@@ -69,16 +70,16 @@ class APIGatewayView(views.APIView):
     response back to the requester
     """
 
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, AllowLogicModuleGroup)
     schema = None
     _logic_modules = None
     _data = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self._logic_modules = dict()
         self._data = dict()
         self.client = Client()
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
     def get(self, request, *args, **kwargs):
         return self.make_service_request(request, *args, **kwargs)
