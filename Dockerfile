@@ -17,9 +17,9 @@ RUN pip install --upgrade pip && pip install -r requirements/production.txt --no
 ADD . /code
 
 # Collecting static files
-RUN ./collectstatic.sh
+RUN ./scripts/collectstatic.sh
 
 RUN apk del .build-deps
 
 EXPOSE 8080
-ENTRYPOINT ["bash", "/code/docker-entrypoint.sh"]
+ENTRYPOINT ["bash", "/code/scripts/docker-entrypoint.sh"]
