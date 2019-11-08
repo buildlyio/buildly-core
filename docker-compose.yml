@@ -17,7 +17,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    entrypoint: bash /code/run-standalone-dev.sh
+    entrypoint: bash /code/scripts/run-standalone-dev.sh
     container_name: buildly
     image: buildly
     volumes:
