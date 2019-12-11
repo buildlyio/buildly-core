@@ -38,7 +38,6 @@ INSTALLED_APPS_DJANGO = [
 
 INSTALLED_APPS_THIRD_PARTIES = [
     'django_filters',
-    'guardian',
     'rest_framework',
     'rest_framework.authtoken',
 
@@ -151,7 +150,6 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.microsoft.MicrosoftOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'guardian.backends.ObjectPermissionBackend',
     'oauth2_provider.backends.OAuth2Backend',
 )
 

@@ -1,7 +1,9 @@
+import base64
 import logging
 
 from django.conf import settings
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, override_settings
+from rest_framework.test import APIClient
 
 import factories
 from web import auth_pipeline
@@ -45,18 +47,21 @@ class OAuthTest(TestCase):
         self.core_user.organization = users_org
         self.core_user.save()
 
-        c = Client(HTTP_USER_AGENT='Test/1.0')
-
         # Get Authorization token
-        authorize_url = '/oauth/token/?client_id={}'.format(self.app.client_id)
-
-        data = {
-            'grant_type': 'password',
-            'username': self.core_user.username,
-            'password': '1234',
+        basic_token = base64.b64encode(f'{self.app.client_id}:{self.app.client_secret}'.encode('utf-8')).decode('utf-8')
+        headers = {
+            'HTTP_USER_AGENT': 'Test/1.0',
+            'HTTP_AUTHORIZATION': f'Basic {basic_token}'
         }
 
-        response = c.post(authorize_url, data=data)
+        c = APIClient()
+        c.credentials(**headers)
+
+        authorize_url = '/oauth/token/'
+
+        data = f'username={self.core_user.username}&password=1234&grant_type=password'
+
+        response = c.post(authorize_url, data=data, content_type='application/x-www-form-urlencoded', headers=headers)
         self.assertEqual(response.status_code, 200)
         self.assertIn('access_token', response.json())
         self.assertIn('access_token_jwt', response.json())
