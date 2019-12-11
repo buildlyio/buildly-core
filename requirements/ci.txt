@@ -1,10 +1,11 @@
 -r base.txt
 
+bandit==1.6.2
 coverage==4.5.3
+factory_boy==2.12.0
 flake8==3.5.0
 pytest==5.0.0
 pytest-django==3.6.0
 pytest-cov==2.7.1
 httpretty==0.9.7
 pytest-asyncio==0.10.0
-bandit==1.6.2
