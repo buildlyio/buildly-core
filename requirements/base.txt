@@ -5,12 +5,8 @@ git+https://github.com/Humanitec/django-oauth-toolkit-jwt@v0.5.2#egg=django-oaut
 djangorestframework==3.9.4
 psycopg2-binary==2.8.3
 chargebee>=2,<3
-django-guardian==2.0.0
-social-auth-core==3.0.0
 social-auth-app-django==3.1.0
-oauthlib==3.0.2
 django-oauth-toolkit==1.1.2
-django-simple-history==2.7.2
 futures==3.1.1
 graphene-django==2.4.0
 django-cors-headers==2.5.3
@@ -19,4 +15,3 @@ bravado-core==5.13.1
 drf-yasg==1.10.2
 requests==2.21.0
 aiohttp==3.5.4
-factory_boy==2.12.0

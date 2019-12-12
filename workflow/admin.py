@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
-from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (CoreUser, CoreGroup, Organization, WorkflowLevel1, WorkflowLevel2,
                      WorkflowLevel2Sort, WorkflowTeam, EmailTemplate, Industry,
@@ -62,7 +61,7 @@ class CoreUserAdmin(UserAdmin):
         return fieldsets
 
 
-class WorkflowLevel1Admin(SimpleHistoryAdmin):
+class WorkflowLevel1Admin(admin.ModelAdmin):
     list_display = ('name',)
     display = 'Workflow Level1'
     list_filter = ('name',)
@@ -73,7 +72,7 @@ class WorkflowLevelStatusAdmin(admin.ModelAdmin):
     list_display = ('order', 'name', 'short_name')
 
 
-class WorkflowLevel2Admin(SimpleHistoryAdmin):
+class WorkflowLevel2Admin(admin.ModelAdmin):
     list_display = ('name', 'status')
     display = 'Workflow Level1'
     list_filter = ('name', 'status')

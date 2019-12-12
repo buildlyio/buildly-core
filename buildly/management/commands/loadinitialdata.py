@@ -1,12 +1,12 @@
 import logging
 
+from django.contrib.auth.models import Group
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from oauth2_provider.models import Application
 
-import factories
 from workflow.models import (
     ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
     ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization, CoreUser, CoreGroup)
@@ -51,24 +51,16 @@ class Command(BaseCommand):
         self._su_group = CoreGroup.objects.filter(is_global=True, permissions=15).first()
         if not self._su_group:
             logger.info("Creating global CoreGroup")
-            self._su_group = factories.CoreGroup(name='Global Admin', is_global=True, permissions=15)
+            self._su_group = CoreGroup.objects.create(name='Global Admin', is_global=True, permissions=15)
 
         # TODO: remove this after full Group -> CoreGroup refactoring
-        self._groups.append(factories.Group(
-            name=ROLE_VIEW_ONLY,
-        ))
+        self._groups.append(Group.objects.get_or_create(name=ROLE_VIEW_ONLY))
 
-        self._groups.append(factories.Group(
-            name=ROLE_ORGANIZATION_ADMIN,
-        ))
+        self._groups.append(Group.objects.get_or_create(name=ROLE_ORGANIZATION_ADMIN))
 
-        self._groups.append(factories.Group(
-            name=ROLE_WORKFLOW_ADMIN,
-        ))
+        self._groups.append(Group.objects.get_or_create(name=ROLE_WORKFLOW_ADMIN))
 
-        self._groups.append(factories.Group(
-            name=ROLE_WORKFLOW_TEAM,
-        ))
+        self._groups.append(Group.objects.get_or_create(name=ROLE_WORKFLOW_TEAM))
 
     def _create_user(self):
         if not CoreUser.objects.filter(is_superuser=True).exists():
