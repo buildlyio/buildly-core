@@ -51,13 +51,11 @@ See `pytest --help` for more options.
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system and preference for [Humanitec](https://humanitec.com) and Walhall.
+The instructions in the next three subsections [Configure the API authentication](#configure-the-api-authentication), [Generating RSA keys](#generating-rsa-keys), and [Configuration](#configuration) will explain how to configure a Buildly Core instance to have it on a live system.
 
 ### Configure the API authentication
 
-All clients interact with our API using the OAuth2 protocol. In order to
-configure it, go to `admin/oauth2_provider/application/` and add a new
-application there.
+All clients interact with our API using the OAuth2 protocol. In order to configure it, go to `admin/oauth2_provider/application/` and add a new application there.
 
 ### Generating RSA keys
 
@@ -120,18 +118,18 @@ $ docker run -e MYVAR1 --env MYVAR2=foo \
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/buildlyio/docs/CONTRIBUTING) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/buildlyio/docs/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/buildlyio/buildly-core/tags).
 
 ## Authors
 
 * **Buildly** - *Initial work*
 
-See also the list of [contributors](https://github.com/buidlyio/buildly/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/buildlyio/buildly-core/graphs/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the GPL v3 License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GPL v3 License - see the [LICENSE](LICENSE) file for details.
