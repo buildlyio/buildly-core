@@ -62,13 +62,12 @@ INSTALLED_APPS_THIRD_PARTIES = [
 INSTALLED_APPS_LOCAL = [
     'buildly',
     'gateway',
-    'web',
+    'core',
     'workflow',
     'datamesh',
 ]
 
-INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + \
-                 INSTALLED_APPS_LOCAL
+INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
 
 MIDDLEWARE_DJANGO = [
     'django.middleware.security.SecurityMiddleware',
@@ -86,17 +85,17 @@ MIDDLEWARE_THIRD_PARTIES = [
 ]
 
 MIDDLEWARE_CSRF = [
-    'web.middleware.DisableCsrfCheck',
+    'core.middleware.DisableCsrfCheck',
 ]
 
 EXCEPTION_MIDDLEWARE = [
-    'web.middleware.ExceptionMiddleware'
+    'core.middleware.ExceptionMiddleware'
 ]
 
 MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_THIRD_PARTIES + MIDDLEWARE_CSRF +\
              EXCEPTION_MIDDLEWARE
 
-ROOT_URLCONF = 'web.urls'
+ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
     {
@@ -140,7 +139,7 @@ DATABASES = {
 }
 
 
-AUTH_USER_MODEL = 'workflow.CoreUser'
+AUTH_USER_MODEL = 'core.CoreUser'
 
 # Authentication backends
 # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
@@ -195,7 +194,7 @@ REST_FRAMEWORK = {
         'oauth2_provider_jwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'workflow.permissions.IsSuperUserBrowseableAPI',
+        'core.permissions.IsSuperUserBrowseableAPI',
     )
     # ToDo: Think about `DEFAULT_PAGINATION_CLASS as env variable and
     #       customizable values with reasonable defaults
@@ -215,7 +214,7 @@ OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
 OAUTH_CLIENT_SECRET = os.getenv('OAUTH_CLIENT_SECRET', None)
 
 # JWT Authentication settings
-JWT_PAYLOAD_ENRICHER = 'workflow.jwt_utils.payload_enricher'
+JWT_PAYLOAD_ENRICHER = 'core.jwt_utils.payload_enricher'
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_ALLOWED_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_AUTH_DISABLED = False
@@ -270,7 +269,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.create_user',
-    'web.auth_pipeline.create_organization',
+    'core.auth_pipeline.create_organization',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',

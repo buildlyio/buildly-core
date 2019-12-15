@@ -14,7 +14,7 @@ from rest_framework.request import Request
 
 from . import exceptions
 from . import utils
-from .models import LogicModule
+from core.models import LogicModule
 from .clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
 from workflow import models as wfm

@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 
 from . import exceptions
-from . permissions import AllowLogicModuleGroup
+from gateway.permissions import AllowLogicModuleGroup
 from . request import GatewayRequest, AsyncGatewayRequest
 
 

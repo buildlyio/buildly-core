@@ -1,12 +1,8 @@
 import uuid
-from unittest.mock import Mock
 
 import pytest
-from pyswagger.io import Response as PySwaggerResponse
 
 import factories
-
-from workflow.tests.fixtures import org
 
 
 @pytest.fixture
@@ -57,7 +53,7 @@ def relationship_with_local():
     lm = factories.LogicModule(name='Products Service', endpoint_name='products')
     lmm = factories.LogicModuleModel(logic_module_endpoint_name=lm.endpoint_name,
                                      model='Product', endpoint='/products/')
-    lmm_org = factories.LogicModuleModel(logic_module_endpoint_name='workflow',
+    lmm_org = factories.LogicModuleModel(logic_module_endpoint_name='core',
                                          model='Organization',
                                          endpoint='/organization/',
                                          lookup_field_name='organization_uuid',

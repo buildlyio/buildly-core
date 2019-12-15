@@ -3,8 +3,7 @@ import json
 from django.core.management import BaseCommand
 
 from datamesh.models import JoinRecord, Relationship, LogicModuleModel
-from gateway.models import LogicModule
-from workflow.models import Organization
+from core.models import LogicModule, Organization
 
 DEFAULT_FILE_NAME = 'data/contacts.json'
 

@@ -6,8 +6,9 @@ from django.test import TestCase
 import factories
 from rest_framework.reverse import reverse
 from rest_framework.test import APIRequestFactory
-from workflow.models import (WorkflowLevel1, PERMISSIONS_ORG_ADMIN, PERMISSIONS_WORKFLOW_ADMIN,
-                             PERMISSIONS_WORKFLOW_TEAM, PERMISSIONS_VIEW_ONLY)
+from core.models import PERMISSIONS_ORG_ADMIN, PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_WORKFLOW_TEAM, \
+    PERMISSIONS_VIEW_ONLY
+from workflow.models import WorkflowLevel1
 
 from ..views import WorkflowLevel1ViewSet
 

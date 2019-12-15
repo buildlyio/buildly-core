@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 import factories
-from ..serializers import WorkflowLevel2NameSerializer, WorkflowLevel2Serializer
+from ..serializers import WorkflowLevel2NameSerializer
 
 
 class WorkflowLevel2NameSerializerTest(TestCase):

@@ -7,12 +7,6 @@ from . import views
 
 router = routers.SimpleRouter()
 
-router.register(r'coregroups', views.CoreGroupViewSet)
-router.register(r'coreuser', views.CoreUserViewSet)
-router.register(r'oauth/accesstoken', views.AccessTokenViewSet)
-router.register(r'oauth/application', views.ApplicationViewSet)
-router.register(r'oauth/refreshtoken', views.RefreshTokenViewSet)
-router.register(r'organization', views.OrganizationViewSet)
 router.register(r'workflowlevel1', views.WorkflowLevel1ViewSet)
 router.register(r'workflowlevel2', views.WorkflowLevel2ViewSet)
 router.register(r'workflowlevel2sort', views.WorkflowLevel2SortViewSet)

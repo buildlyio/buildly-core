@@ -6,7 +6,7 @@ from bravado_core.spec import Spec
 
 import factories
 from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records
-from workflow.tests.fixtures import auth_api_client, org
+from core.tests.fixtures import auth_api_client, org
 
 
 @pytest.mark.django_db()

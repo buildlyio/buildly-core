@@ -3,36 +3,12 @@ import logging
 from django.db.models import Q
 from rest_framework import permissions
 
-from . exceptions import ServiceDoesNotExist
-from . models import LogicModule
+from core.models import LogicModule, PERMISSIONS_NO_ACCESS
+from core.permissions import merge_permissions, has_permission
 
-from workflow.models import PERMISSIONS_NO_ACCESS
-
+from gateway.exceptions import ServiceDoesNotExist
 
 logger = logging.getLogger(__name__)
-
-
-def merge_permissions(permissions1: str, permissions2: str) -> str:
-    """ Merge two CRUD permissions string representations"""
-    return ''.join(map(str, [max(int(i), int(j)) for i, j in zip(permissions1, permissions2)]))
-
-
-def has_permission(permissions_: str, method: str) -> bool:
-    """ Check if HTTP method corresponds to permissions"""
-    methods = {
-        'POST': 0,
-        'GET': 1,
-        'HEAD': 1,
-        'PUT': 2,
-        'PATCH': 2,
-        'DELETE': 3
-    }
-    try:
-        i = methods[method]
-    except KeyError:
-        logger.warning(f'No view method with such name: {method}')
-        return False
-    return bool(int(permissions_[i]))
 
 
 class AllowLogicModuleGroup(permissions.BasePermission):

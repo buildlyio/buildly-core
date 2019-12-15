@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('workflow', '0001_initial'),
+        ('core', '0001_initial'),
         ('datamesh', '0001_initial'),
     ]
 
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='joinrecord',
             name='organization',
-            field=models.ForeignKey(blank=True, help_text='Related Organization with access', null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.Organization'),
+            field=models.ForeignKey(blank=True, help_text='Related Organization with access', null=True, on_delete=django.db.models.deletion.CASCADE, to='core.Organization'),
         ),
         migrations.AddField(
             model_name='joinrecord',

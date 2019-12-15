@@ -3,8 +3,9 @@ import uuid
 from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
-from workflow.models import (WorkflowLevel2Sort, PERMISSIONS_ORG_ADMIN, PERMISSIONS_VIEW_ONLY,
-                             PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_WORKFLOW_TEAM)
+from core.models import PERMISSIONS_ORG_ADMIN, PERMISSIONS_VIEW_ONLY, PERMISSIONS_WORKFLOW_ADMIN, \
+    PERMISSIONS_WORKFLOW_TEAM
+from workflow.models import WorkflowLevel2Sort
 
 from ..views import WorkflowLevel2SortViewSet
 
@@ -22,7 +23,7 @@ class WorkflowLevel2SortListViewsTest(TestCase):
         list view should return all objs to super users
         """
         request = self.factory.get('/workflowlevel2sort/')
-        request.user = factories.User.build(is_superuser=True,
+        request.user = factories.CoreUser.build(is_superuser=True,
                                             is_staff=True)
         view = WorkflowLevel2SortViewSet.as_view({'get': 'list'})
         response = view(request)

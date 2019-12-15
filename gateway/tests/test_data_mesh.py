@@ -267,7 +267,7 @@ class DataMeshTest(TestCase):
     @patch('gateway.views.logger')
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    @patch('gateway.views.gtm.LogicModule.objects.get')
+    @patch('gateway.views.LogicModule.objects.get')
     def test_aggregate_data_raises_exception(
             self, mock_logic_module_get, mock_perform_request,
             mock_app, mock_logger):

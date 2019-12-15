@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.test import TransactionTestCase, override_settings
 
 from oauth2_provider.models import Application
-from workflow.models import CoreGroup, CoreUser, Organization
+from core.models import CoreGroup, CoreUser, Organization
 
 
 class DevNull(object):

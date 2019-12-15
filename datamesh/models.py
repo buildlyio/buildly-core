@@ -5,9 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import CheckConstraint, Q, UniqueConstraint
 
+from core.models import Organization
 from datamesh.managers import JoinRecordManager, LogicModuleModelManager
-from gateway.models import LogicModule
-from workflow.models import Organization
 
 
 class LogicModuleModel(models.Model):
