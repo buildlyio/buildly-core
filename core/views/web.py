@@ -9,6 +9,8 @@ from django.views.generic.base import TemplateView
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 
+from rest_framework.reverse import reverse
+
 from oauth2_provider.views.generic import ProtectedResourceView
 from social_core.exceptions import AuthFailed
 from social_core.utils import (partial_pipeline_data, setting_url,
@@ -29,8 +31,8 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         extra_context = {
-            'documentation_url': settings.DOCUMENTATION_URL,
-            'api_url': settings.API_URL,
+            'documentation_url': reverse('schema-swagger-ui'),
+            'api_url': reverse('schema-swagger-json', kwargs={'format': '.json'}),
         }
         context.update(extra_context)
         return context
