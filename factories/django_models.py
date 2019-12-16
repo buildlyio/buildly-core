@@ -1,6 +1,6 @@
 from factory import DjangoModelFactory
 
-from workflow.models import ROLE_WORKFLOW_ADMIN
+from core.models import ROLE_WORKFLOW_ADMIN
 
 
 class Group(DjangoModelFactory):

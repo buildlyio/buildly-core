@@ -5,8 +5,8 @@ import pytest
 import httpretty
 
 import factories
-from workflow.tests.fixtures import auth_api_client
-from .fixtures import logic_module, datamesh
+from core.tests.fixtures import auth_api_client, logic_module
+from .fixtures import datamesh
 
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))

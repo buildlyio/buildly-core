@@ -4,10 +4,11 @@ from rest_framework import viewsets, filters
 from rest_framework.response import Response
 import django_filters
 
+from core.permissions import IsOrgMember
 from workflow.filters import WorkflowLevel2Filter
 from workflow.models import WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, ROLE_ORGANIZATION_ADMIN
 from workflow.serializers import WorkflowLevel2Serializer, WorkflowLevel2SortSerializer
-from workflow.permissions import IsOrgMember, CoreGroupsPermissions
+from workflow.permissions import CoreGroupsPermissions
 from workflow.pagination import DefaultLimitOffsetPagination
 
 

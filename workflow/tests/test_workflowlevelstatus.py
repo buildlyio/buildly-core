@@ -5,7 +5,7 @@ import factories
 
 from workflow.models import WorkflowLevelStatus
 from ..views import WorkflowLevelStatusViewSet
-from .fixtures import org_member, org
+from core.tests.fixtures import org_member, org
 
 
 @pytest.mark.django_db()

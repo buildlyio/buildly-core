@@ -6,7 +6,7 @@ from django.db import IntegrityError, transaction
 
 from datamesh.models import JoinRecord, Relationship, LogicModuleModel
 
-from workflow.tests.fixtures import org
+from core.tests.fixtures import org
 from .fixtures import relationship, appointment_logic_module_model, document_logic_module_model
 
 

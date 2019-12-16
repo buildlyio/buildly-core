@@ -1,1 +1,0 @@
-DEMO_BRANCH = 'demo'

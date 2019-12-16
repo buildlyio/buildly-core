@@ -1,5 +1,5 @@
 from django.urls import path, re_path
-from rest_framework import permissions, routers
+from rest_framework import permissions
 
 from . import API_GATEWAY_RESERVED_NAMES
 from . import generator
@@ -20,11 +20,6 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
     generator_class=generator.OpenAPISchemaGenerator
 )
-
-
-router = routers.SimpleRouter()
-
-router.register(r'logicmodule', views.LogicModuleViewSet)
 
 urlpatterns = [
     re_path(
@@ -59,5 +54,3 @@ urlpatterns = [
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger-ui'),
 ]
-
-urlpatterns += router.urls

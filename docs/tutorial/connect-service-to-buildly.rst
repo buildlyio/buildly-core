@@ -77,7 +77,7 @@ Add Your Service to Buildly
 
 After finishing the JWT authorization implementation, deploying your service somewhere and exposing it externally, you need to add it to Buildly.
 
-To add your service to Buildly, make sure it meets the prerequisites, then navigate to the Buildly admin page at `https://<YOUR-BUILDLY-URL>/admin` and log into it. Then, under the section **Gateway** you will see **Logic Module**, click on it and add a new one with the following properties:
+To add your service to Buildly, make sure it meets the prerequisites, then navigate to the Buildly admin page at `https://<YOUR-BUILDLY-URL>/admin` and log into it. Then, under the section **Core** you will see **Logic Module**, click on it and add a new one with the following properties:
 
 - Name: The name of your service for identification
 - Endpoint: The host of your microservice e.g. https://my-amazing-service.com

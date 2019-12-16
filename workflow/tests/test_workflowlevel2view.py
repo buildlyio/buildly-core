@@ -1,15 +1,14 @@
 import json
-import re
 import uuid
-from datetime import datetime
 from unittest.mock import patch, PropertyMock
 
 from django.test import TestCase
 import factories
 from rest_framework.test import APIRequestFactory
 from rest_framework.reverse import reverse
-from workflow.models import (WorkflowLevel2, PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_ORG_ADMIN,
-                             PERMISSIONS_VIEW_ONLY, PERMISSIONS_WORKFLOW_TEAM)
+from core.models import PERMISSIONS_WORKFLOW_ADMIN, PERMISSIONS_ORG_ADMIN, PERMISSIONS_VIEW_ONLY, \
+    PERMISSIONS_WORKFLOW_TEAM
+from workflow.models import WorkflowLevel2
 
 from ..views import WorkflowLevel2ViewSet
 
@@ -24,8 +23,7 @@ class WorkflowLevel2ListViewsTest(TestCase):
 
     def test_list_workflowlevel2_superuser(self):
         request = self.factory.get(reverse('workflowlevel2-list'))
-        request.user = factories.User.build(is_superuser=True,
-                                            is_staff=True)
+        request.user = factories.CoreUser.build(is_superuser=True, is_staff=True)
         view = WorkflowLevel2ViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
@@ -604,6 +602,8 @@ class WorkflowLevel2DeleteViewsTest(TestCase):
         request.user = self.core_user
         view = WorkflowLevel2ViewSet.as_view({'delete': 'destroy'})
         response = view(request, pk=str(workflowlevel2.pk))
+        print('------ response')
+        print(response.data)
         self.assertEqual(response.status_code, 204)
         self.assertRaises(
             WorkflowLevel2.DoesNotExist,

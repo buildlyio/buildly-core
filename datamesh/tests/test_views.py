@@ -6,7 +6,7 @@ from rest_framework.reverse import reverse
 
 import factories
 from datamesh import views
-from workflow.tests.fixtures import org, org_admin, org_member, TEST_USER_DATA
+from core.tests.fixtures import org, org_admin, org_member, TEST_USER_DATA
 from .fixtures import (
     document_logic_module,
     crm_logic_module,

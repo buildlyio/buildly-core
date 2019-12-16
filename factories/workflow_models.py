@@ -1,10 +1,6 @@
-from django.template.defaultfilters import slugify
-from factory import DjangoModelFactory, SubFactory, Faker, lazy_attribute
+from factory import DjangoModelFactory, SubFactory
 
 from workflow.models import (
-    CoreUser as CoreUserM,
-    CoreGroup as CoreGroupM,
-    Organization as OrganizationM,
     WorkflowLevel1 as WorkflowLevel1M,
     WorkflowLevel2 as WorkflowLevel2M,
     WorkflowTeam as WorkflowTeamM,
@@ -13,37 +9,7 @@ from workflow.models import (
     WorkflowLevelType as WorkflowLevelTypeM,
     WorkflowLevelStatus as WorkflowLevelStatusM)
 from .django_models import Group
-
-
-class Organization(DjangoModelFactory):
-    class Meta:
-        model = OrganizationM
-        django_get_or_create = ('name',)
-
-    name = 'Default Organization'
-
-
-class CoreGroup(DjangoModelFactory):
-
-    name = Faker('name')
-
-    class Meta:
-        model = CoreGroupM
-
-
-class CoreUser(DjangoModelFactory):
-    class Meta:
-        model = CoreUserM
-        django_get_or_create = ('username',)
-
-    organization = SubFactory(Organization)
-    first_name = Faker('name')
-    last_name = Faker('name')
-    username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
-    email = lazy_attribute(lambda o: o.username + "@example.com")
-
-
-User = CoreUser  # for tests incompatibility
+from .core_models import CoreUser, Organization
 
 
 class WorkflowLevelType(DjangoModelFactory):

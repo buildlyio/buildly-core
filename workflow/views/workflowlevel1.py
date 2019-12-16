@@ -4,9 +4,10 @@ from rest_framework import status, viewsets, filters
 from rest_framework.response import Response
 import django_filters
 
+from core.permissions import IsOrgMember
 from workflow.models import WorkflowLevel1
 from workflow.serializers import WorkflowLevel1Serializer
-from workflow.permissions import IsOrgMember, CoreGroupsPermissions
+from workflow.permissions import CoreGroupsPermissions
 from workflow.pagination import DefaultCursorPagination
 
 

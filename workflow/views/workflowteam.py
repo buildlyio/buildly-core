@@ -3,7 +3,8 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 import django_filters
 
-from workflow.models import WorkflowTeam, ROLE_ORGANIZATION_ADMIN
+from core.models import ROLE_ORGANIZATION_ADMIN
+from workflow.models import WorkflowTeam
 from workflow.serializers import WorkflowTeamSerializer, WorkflowTeamListFullSerializer
 from workflow.permissions import CoreGroupsPermissions
 

@@ -10,56 +10,19 @@ from pyswagger import App
 from pyswagger.io import Response as PySwaggerResponse
 
 
-class LogicModuleViewsPermissionTest(TestCase):
-
-    def setUp(self):
-        self.client = APIClient()
-        self.core_user = factories.CoreUser()
-
-        # bypass authentication
-        self.client.force_authenticate(user=self.core_user)
-        self.response_data = {
-            'id': 1,
-            'workflowlevel2_uuid': 1,
-            'name': 'test',
-            'contact_uuid': 1
-        }
-
-    def make_logicmodule_request(self):
-        path = '/logicmodule/'
-        response = self.client.get(path)
-
-        # validate result
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.get('content-type'), 'application/json')
-        self.assertIsInstance(response.content, bytes)
-
-    def make_logicmodule_request_superuser(self):
-        self.core_user.user.is_superuser = True
-
-        path = '/logicmodule/'
-        response = self.client.get(path)
-
-        # validate result
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get('content-type'), 'application/json')
-        self.assertIsInstance(response.content, bytes)
-
-
 class APIGatewayViewTest(TestCase):
 
     def setUp(self):
         self.client = APIClient()
         self.core_user = factories.CoreUser()
-        self.lm = factories.LogicModule(name='documents')
+        self.lm = factories.LogicModule(name='Documents', endpoint_name='documents')
 
         # bypass authentication
         self.client.force_authenticate(user=self.core_user)
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_make_service_request_data_and_raw(self, mock_perform_request,
-                                               mock_app):
+    def test_make_service_request_data_and_raw(self, mock_perform_request, mock_app):
         # expected data
         headers = {'Content-Type': ['application/json']}
         content = b'{"details": "IT IS A TEST"}'
@@ -76,7 +39,7 @@ class APIGatewayViewTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/1/'.format(self.lm.name, 'thumbnail')
+        path = '/old/{}/{}/1/'.format(self.lm.endpoint_name, 'thumbnail')
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, 200)
@@ -86,8 +49,7 @@ class APIGatewayViewTest(TestCase):
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_make_service_request_only_raw(self, mock_perform_request,
-                                           mock_app):
+    def test_make_service_request_only_raw(self, mock_perform_request, mock_app):
         # expected data
         headers = {'Content-Type': ['text/html; charset=utf-8']}
         content = b'IT IS A TEST'
@@ -104,19 +66,17 @@ class APIGatewayViewTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/1/'.format(self.lm.name, 'thumbnail')
+        path = '/old/{}/{}/1/'.format(self.lm.endpoint_name, 'thumbnail')
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, content)
         self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual(response.get('Content-Type'), ''.join(
-            headers.get('Content-Type')))
+        self.assertEqual(response.get('Content-Type'), ''.join(headers.get('Content-Type')))
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._perform_service_request')
-    def test_make_service_request_aggregate_only_raw(
-            self, mock_perform_request, mock_app):
+    def test_make_service_request_aggregate_only_raw(self, mock_perform_request, mock_app):
         # expected data
         headers = {'Content-Type': ['text/html; charset=utf-8']}
         content = b'IT IS A TEST'
@@ -133,19 +93,17 @@ class APIGatewayViewTest(TestCase):
         mock_perform_request.return_value = pyswagger_response
 
         # make api request
-        path = '/{}/{}/1/'.format(self.lm.name, 'thumbnail')
+        path = '/old/{}/{}/1/'.format(self.lm.endpoint_name, 'thumbnail')
         response = self.client.get(path, {'aggregate': 'true'})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, content)
         self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual(response.get('Content-Type'), ''.join(
-            headers.get('Content-Type')))
+        self.assertEqual(response.get('Content-Type'), ''.join(headers.get('Content-Type')))
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._get_swagger_data')
-    def test_get_req_and_rep_without_pk_raises_exception(
-            self, mock_swagger_data, mock_app):
+    def test_get_req_and_rep_without_pk_raises_exception(self, mock_swagger_data, mock_app):
 
         mock_swagger_data.return_value = {}
 
@@ -155,19 +113,17 @@ class APIGatewayViewTest(TestCase):
         mock_app.return_value = app
 
         # make api request
-        path = '/{}/{}/'.format(self.lm.name, 'nowhere')
+        path = '/old/{}/{}/'.format(self.lm.endpoint_name, 'nowhere')
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, 404)
         self.assertTrue(response.has_header('Content-Type'))
         self.assertEqual(response.get('Content-Type'), 'application/json')
-        self.assertEqual(json.loads(response.content)['detail'],
-                         "Endpoint not found: GET /nowhere/")
+        self.assertEqual(json.loads(response.content)['detail'], "Endpoint not found: GET /nowhere/")
 
     @patch('gateway.views.APIGatewayView._load_swagger_resource')
     @patch('gateway.views.APIGatewayView._get_swagger_data')
-    def test_get_req_and_rep_with_pk_raises_exception(
-            self, mock_swagger_data, mock_app):
+    def test_get_req_and_rep_with_pk_raises_exception(self, mock_swagger_data, mock_app):
         mock_swagger_data.return_value = {}
 
         # mock app
@@ -176,11 +132,10 @@ class APIGatewayViewTest(TestCase):
         mock_app.return_value = app
 
         # make api request
-        path = '/{}/{}/123/'.format(self.lm.name, 'nowhere')
+        path = '/old/{}/{}/123/'.format(self.lm.endpoint_name, 'nowhere')
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, 404)
         self.assertTrue(response.has_header('Content-Type'))
         self.assertEqual(response.get('Content-Type'), 'application/json')
-        self.assertEqual(json.loads(response.content)['detail'],
-                         "Endpoint not found: GET /nowhere/{id}/")
+        self.assertEqual(json.loads(response.content)['detail'], "Endpoint not found: GET /nowhere/{id}/")

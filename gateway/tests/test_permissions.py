@@ -5,42 +5,11 @@ from django.core.handlers.wsgi import WSGIRequest
 from factories.workflow_models import Organization
 
 from gateway.exceptions import ServiceDoesNotExist
-from gateway.permissions import AllowLogicModuleGroup, has_permission, merge_permissions
-from gateway.tests.fixtures import logic_module
+from gateway.permissions import AllowLogicModuleGroup
 from gateway.views import APIGatewayView
 
-from workflow.tests.fixtures import auth_api_client, auth_superuser_api_client, core_group, org, org_admin, superuser
-
-
-class TestMergePermissions:
-
-    def test_merge_permissions(self):
-        """
-        Merge no access to view only permission will result in view only
-        """
-        result = merge_permissions('0000', '0100')
-        assert result == '0100'
-
-
-class TestHasPermission:
-
-    def test_has_permission_success(self):
-        result = has_permission('0100', 'GET')
-        assert result
-
-        result = has_permission('0100', 'HEAD')
-        assert result
-
-    def test_has_permission_fail(self):
-        result = has_permission('0100', 'POST')
-        assert not result
-
-        result = has_permission('0100', 'PUT')
-        assert not result
-
-    def test_has_permission_no_method(self):
-        result = has_permission('0100', 'CONNECT')
-        assert not result
+from core.tests.fixtures import auth_api_client, auth_superuser_api_client, core_group, logic_module, org, org_admin,\
+    superuser
 
 
 @pytest.mark.django_db()
@@ -91,8 +60,7 @@ class TestAllowLogicModuleGroup:
         result = permission_obj.has_permission(kwargs['request'], view)
         assert result
 
-    def test_has_permission_normal_user_global_level_permission(self, auth_api_client, org_admin, org, logic_module,
-                                                                core_group):
+    def test_has_permission_global_level_permission(self, auth_api_client, org_admin, org, logic_module, core_group):
         """
         Global level permissions of a service are applied to all users who try to access it
         """

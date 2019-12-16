@@ -14,7 +14,8 @@ from workflow import views as wfv
 from workflow import models as wfm
 
 from . import exceptions
-from .models import LogicModule
+from core.models import CoreUser, LogicModule, Organization
+from core.views import CoreUserViewSet, OrganizationViewSet
 
 
 SWAGGER_LOOKUP_FIELD = 'swagger'
@@ -24,8 +25,8 @@ MODEL_VIEWSETS_DICT = {
     wfm.WorkflowTeam: wfv.WorkflowTeamViewSet,
     wfm.WorkflowLevel2: wfv.WorkflowLevel2ViewSet,
     wfm.WorkflowLevel1: wfv.WorkflowLevel1ViewSet,
-    wfm.CoreUser: wfv.CoreUserViewSet,
-    wfm.Organization: wfv.OrganizationViewSet,
+    CoreUser: CoreUserViewSet,
+    Organization: OrganizationViewSet,
     wfm.WorkflowLevel2Sort: wfv.WorkflowLevel2SortViewSet,
 }
 

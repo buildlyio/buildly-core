@@ -8,59 +8,26 @@ from typing import Tuple, List
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http.request import QueryDict
-from rest_framework import permissions, views, viewsets
+from rest_framework import permissions, views
 from rest_framework.authentication import get_authorization_header
 from rest_framework.request import Request
-
-from django_filters.rest_framework import DjangoFilterBackend
 
 from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from pyswagger.io import Response as PySwaggerResponse
 
+from core.models import LogicModule
+
 from datamesh.models import LogicModuleModel, JoinRecord, Relationship
 from datamesh import utils as datamesh_utils
-from workflow.permissions import IsSuperUser
 
-from . import exceptions
-from . import models as gtm
-from . import serializers
-from . import utils
-from . permissions import AllowLogicModuleGroup
+from gateway import exceptions
+from gateway import utils
+from gateway.permissions import AllowLogicModuleGroup
 
 from workflow import models as wfm
 
 logger = logging.getLogger(__name__)
-
-
-class LogicModuleViewSet(viewsets.ModelViewSet):
-    """
-    title:
-    LogicModule of the application
-
-    description:
-
-    retrieve:
-    Return the LogicModule.
-
-    list:
-    Return a list of all the existing LogicModules.
-
-    create:
-    Create a new LogicModule instance.
-
-    update:
-    Update a LogicModule instance.
-
-    delete:
-    Delete a LogicModule instance.
-    """
-
-    filter_fields = ('name',)
-    filter_backends = (DjangoFilterBackend,)
-    permission_classes = (IsSuperUser,)
-    queryset = gtm.LogicModule.objects.all()
-    serializer_class = serializers.LogicModuleSerializer
 
 
 class APIGatewayView(views.APIView):
@@ -154,11 +121,11 @@ class APIGatewayView(views.APIView):
         content_type = ''.join(response.header.get('Content-Type', []))
         return HttpResponse(content=content, status=response.status, content_type=content_type)
 
-    def _get_logic_module(self, service_name: str) -> gtm.LogicModule:
+    def _get_logic_module(self, service_name: str) -> LogicModule:
         if service_name not in self._logic_modules:
             try:
-                self._logic_modules[service_name] = gtm.LogicModule.objects.get(endpoint_name=service_name)
-            except gtm.LogicModule.DoesNotExist:
+                self._logic_modules[service_name] = LogicModule.objects.get(endpoint_name=service_name)
+            except LogicModule.DoesNotExist:
                 raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
         return self._logic_modules[service_name]
 
@@ -346,7 +313,7 @@ class APIGatewayView(views.APIView):
 
         return result
 
-    def _generate_extension_map(self, logic_module: gtm.LogicModule, model_name: str, data: dict):
+    def _generate_extension_map(self, logic_module: LogicModule, model_name: str, data: dict):
         """
         Generate a list of relationship map of a specific service model.
 

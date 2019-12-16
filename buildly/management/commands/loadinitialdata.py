@@ -7,9 +7,8 @@ from django.db import transaction
 
 from oauth2_provider.models import Application
 
-from workflow.models import (
-    ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN,
-    ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, Organization, CoreUser, CoreGroup)
+from core.models import ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, \
+    Organization, CoreUser, CoreGroup
 
 logger = logging.getLogger(__name__)
 
