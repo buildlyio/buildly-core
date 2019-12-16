@@ -43,7 +43,8 @@ class IndexViewTest(TestCase):
         response = web.IndexView.as_view()(request)
         self.assertEqual(response.status_code, 200)
         template_content = str(response.render().content)
-        self.assertIn('href="/docs"', template_content)
+        docs_url = reverse('schema-swagger-ui')
+        self.assertIn(f'href="{docs_url}"', template_content)
 
 
 class HealthCheckViewTest(TestCase):
