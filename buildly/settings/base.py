@@ -48,9 +48,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'oauth2_provider',
     'oauth2_provider_jwt',
 
-    # GraphQL
-    'graphene_django',
-
     # swagger
     'drf_yasg',
 
@@ -302,11 +299,6 @@ OAUTH2_PROVIDER = {
 
 DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')
 CREATE_DEFAULT_PROGRAM = True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
-
-# graphene schema
-GRAPHENE = {
-    'SCHEMA': 'workflow.graph-schema.schema' # Where your Graphene schema lives
-}
 
 CORS_ORIGIN_ALLOW_ALL = True
 

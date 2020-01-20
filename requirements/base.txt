@@ -4,11 +4,9 @@ django-health-check==3.6.1
 git+https://github.com/Humanitec/django-oauth-toolkit-jwt@v0.5.2#egg=django-oauth-toolkit-jwt
 djangorestframework==3.9.4
 psycopg2-binary==2.8.3
-chargebee>=2,<3
 social-auth-app-django==3.1.0
 django-oauth-toolkit==1.1.2
 futures==3.1.1
-graphene-django==2.4.0
 django-cors-headers==2.5.3
 pyswagger==0.8.39
 bravado-core==5.13.1
