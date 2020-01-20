@@ -1,3 +1,4 @@
+# TODO: remove, this is for old version of the gateway (_views.py)
 import json
 
 import factories
