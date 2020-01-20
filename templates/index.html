@@ -1,58 +1,25 @@
 {% extends "base.html" %}
 
+{% block title %}Home{% endblock %}
+
 {% block content %}
-	<div class="size1 bg0 where1-parent">
-		<!-- Logo -->
-		<div class="flex-c-m bg-img1 size2 where1 overlay1 where2 respon2" style="background-image: url('static/images/bg02.jpg');">
-			<div class="wsize2">
+<div class="p-t-50 p-b-60">
+	<p class="m1-txt1 p-b-36">
+		These links might help you:
+	</p>
+	<ul>
+	  <li><a href="https://buildly-core.readthedocs.io/en/latest/">Buildly Documentation</a></li>
+	  <li><a href="https://swagger.io/specification/">OpenAPI Specification</a></li>
+	  <li><a href="https://buildly.io/buildly-ui">Get Buildly UI and administer your gateway the easy way</a></li>
+	</ul>
+	<hr/>
+	<ul>
+	  <li><a href="{{ api_url }}">Your API</a></li>
+	  <li><a href="{{ documentation_url }}">Your Documentation</a></li>
+	</ul>
 
-				<a href="https://buildly.io" target="_blank">
-				<img src="static/images/buildly-logo.png">
-				<p align="center">Software Architecture as a Service</p>
-				</a>
-			</div>
-		</div>
-
-		<!-- Link list -->
-		<div class="size3 flex-col-sb flex-w p-l-75 p-r-75 p-t-45 p-b-45 respon1">
-
-			<div class="p-t-50 p-b-60">
-				<p class="m1-txt1 p-b-36">
-					These links might help you:
-				</p>
-                <ul>
-				  <li><a href="https://buildly-core.readthedocs.io/en/latest/">Buildly Documentation</a></li>
-                  <li><a href="https://swagger.io/specification/">OpenAPI Specification</a></li>
-                  <li><a href="https://buildly.io/buildly-ui">Get Buildly UI and administer your gateway the easy way</a></li>
-                </ul>
-                <hr/>
-				<ul>
-                  <li><a href="{{ api_url }}">Your API</a></li>
-				  <li><a href="{{ documentation_url }}">Your Documentation</a></li>
-				</ul>
-
-				<p class="s2-txt3 p-t-18">
-					If you need any help, just try to reach out the community and/or check out Buildly's documentation.
-				</p>
-			</div>
-
-			<div class="flex-w">
-				<a href="https://www.facebook.com/buildlyio/" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #3b5998">
-					<i class="fab fa-facebook"></i>
-				</a>
-
-				<a href="https://twitter.com/buildly_io" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #1da1f2">
-					<i class="fab fa-twitter"></i>
-				</a>
-
-				<a href="https://github.com/buildlyio/buildly-core" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #000000">
-					<i class="fab fa-github"></i>
-				</a>
-
-				<a href="https://gitter.im/Buildlyio/community" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #E31867">
-					<i class="fab fa-gitter"></i>
-				</a>
-			</div>
-		</div>
-	</div>
+	<p class="s2-txt3 p-t-18">
+		If you need any help, just try to reach out the community and/or check out Buildly's documentation.
+	</p>
+</div>
 {% endblock content %}

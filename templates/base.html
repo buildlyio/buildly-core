@@ -8,31 +8,27 @@
         <meta name="description" content="Buildly">
         <meta name="author" content="Buildly">
 
-        <title>{% block title %} Buildly Core - API Redirect {% endblock %}</title>
+        <title>Buildly Core - {% block title %}{% endblock %}</title>
 
         <!--  css -->
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-	    <link rel="stylesheet" type="text/css" href="static/vendor/animate/animate.css">
+	    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}vendor/animate/animate.css">
         <link href="{{ STATIC_URL }}vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <!--===============================================================================================-->
         <link href="{{ STATIC_URL }}css/util.css" rel="stylesheet" type="text/css" />
         <link href="{{ STATIC_URL }}css/main.css" rel="stylesheet" type="text/css" />
 
-
-
+        {% block extra_css_in_header %}
+        {% endblock %}
         {% block extra_js_in_header %}
-
         {% endblock %}
 
     </head>
     <body>
     <div class="main">
-        <div class="main__feature">
-        </div>
         <div class="main__panel">
             <div class="main__panel__content">
-                <div>{% block bread_crumb %}{% endblock %}</div>
-                <div id = "alerts">
+                <div id="alerts">
                     <!-- Any messages for users -->
                     {% block messages %}
                     {% if messages %}
@@ -47,30 +43,43 @@
                     {% endif %}
                     {% endblock messages %}
                 </div>
-                <!-- Page title  -->
-                <h2>{% block page_title %}{% endblock %}</h2>
 
                 <!-- Main body content -->
-                <p>{% block content %}{% endblock %}</p>
+                <div class="size1 bg0 where1-parent">
+                    <!-- Logo -->
+                    <div class="flex-c-m bg-img1 size2 where1 overlay1 where2 respon2" style="background-image: url('{{ STATIC_URL }}images/bg02.jpg');">
+                        <div class="wsize2">
+
+                            <a href="https://buildly.io" target="_blank">
+                            <img src="{{ STATIC_URL }}images/buildly-logo.png">
+                            <p align="center">Software Architecture as a Service</p>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- body content -->
+                    <div class="size3 flex-col-sb flex-w p-l-75 p-r-75 p-t-45 p-b-45 respon1">
+                        {% block content %}{% endblock %}
+
+                        <!-- social media -->
+                        <div class="flex-w">
+                            <a href="https://www.facebook.com/buildlyio/" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #3b5998">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="https://twitter.com/buildly_io" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #1da1f2">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="https://github.com/buildlyio/buildly-core" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #000000">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://gitter.im/Buildlyio/community" class="flex-c-m size5 how1 trans-04 m-r-5" style="background-color: #E31867">
+                                <i class="fab fa-gitter"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div><!-- .container collapse -->
     </div>
-
-        <div id = "ajaxloading" class="modal ajax_loading"></div>
-
-        {% block extra_js_in_body %}
-        <script type="text/javascript" src="{{ STATIC_URL }}js/script.js"></script>
-        <script>
-          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-          ga('create', 'UA-73736890-1', 'auto');
-          ga('send', 'pageview');
-
-        </script>
-
-        {% endblock %}
     </body>
 </html>

@@ -16,9 +16,9 @@ router = routers.SimpleRouter()
 
 router.register(r'coregroups', views.CoreGroupViewSet)
 router.register(r'coreuser', views.CoreUserViewSet)
-router.register(r'oauth/accesstoken', views.AccessTokenViewSet)
-router.register(r'oauth/application', views.ApplicationViewSet)
-router.register(r'oauth/refreshtoken', views.RefreshTokenViewSet)
+router.register(r'oauth/accesstokens', views.AccessTokenViewSet)
+router.register(r'oauth/applications', views.ApplicationViewSet)
+router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
 
@@ -31,12 +31,10 @@ urlpatterns = [
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
     path('', include('workflow.urls')),
-    # Auth backend URL's
-    path('oauth/',
-         include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
-    re_path(r'^oauth/complete/(?P<backend>[^/]+)/$', oauth_complete,
-            name='oauth_complete'),
 
+    # Auth backend URL's
+    path('oauth/', include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
+    re_path(r'^oauth/complete/(?P<backend>[^/]+)/$', oauth_complete, name='oauth_complete'),
 ]
 
 urlpatterns += staticfiles_urlpatterns() + router.urls
