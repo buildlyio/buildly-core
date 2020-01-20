@@ -1,10 +1,8 @@
 import logging
 
 import django_filters
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework import viewsets
 from rest_framework.response import Response
-from chargebee import Plan, Subscription
 
 from core.models import Organization
 from core.serializers import OrganizationSerializer
@@ -44,32 +42,6 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(pk=organization_id)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-    @action(detail=True)
-    def subscription(self, request, pk):
-        instance = self.get_object()
-        try:
-            result = Subscription.retrieve(instance.subscription_id)
-            subscription = result.subscription
-            result = Plan.retrieve(subscription.plan_id)
-            plan = result.plan
-        except Exception as e:
-            logger.warning(e)
-            return Response(
-                {'detail': 'No subscription was found.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        else:
-            data = {
-                'plan': {
-                    'name': plan.name,
-                },
-                'status': subscription.status,
-                'total_seats': subscription.plan_quantity,
-                'used_seats': instance.used_seats
-            }
-
-            return Response(data, status=status.HTTP_200_OK)
 
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     permission_classes = (IsOrgMember,)
