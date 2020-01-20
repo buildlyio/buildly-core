@@ -4,7 +4,6 @@ from typing import Any, Dict, Tuple
 
 import requests
 import aiohttp
-from aiohttp import ContentTypeError
 from django.http.request import QueryDict
 from bravado_core.spec import Spec
 from rest_framework.request import Request
@@ -158,11 +157,23 @@ class AsyncSwaggerClient(BaseSwaggerClient):
         # Make request to the service
         async with aiohttp.ClientSession() as session:
             method = getattr(session, method)
-            async with method(url, data=self.get_request_data(), headers=self.get_headers()) as response:
+            if self._in_request.FILES:
+                request_data = self.get_request_data()
+                data = aiohttp.FormData()
+                for field in request_data:
+                    if field == 'file':
+                        data.add_field('file', request_data['file']['data'].file)
+                    else:
+                        data.add_field(field, request_data[field])
+            else:
+                data = self.get_request_data()
+
+            async with method(url, data=data, headers=self.get_headers()) as response:
                 try:
                     content = await response.json()
-                except (json.JSONDecodeError, ContentTypeError):
-                    content = await response.content.read()
+                except (json.JSONDecodeError, aiohttp.ContentTypeError):
+                    content = await response.read()
+
             return_data = (content, response.status, response.headers)
 
         # Cache data if request is cache-valid

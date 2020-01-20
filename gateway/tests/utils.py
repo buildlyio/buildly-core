@@ -34,6 +34,10 @@ class AiohttpResponseMock:
         return stream
 
     @asyncio.coroutine
+    def read(self):
+        return self.content.read()
+
+    @asyncio.coroutine
     def text(self, encoding='utf-8'):
         return self.body.decode(encoding)
 
