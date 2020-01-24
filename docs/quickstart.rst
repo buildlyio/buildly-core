@@ -3,65 +3,82 @@
 Quickstart
 ==========
 
-Excited to get start? This page gives a decent prologue to Buildly Core. It assumes 
-you as of now have Docker installed.
+This is an introduction to Buildly's Core. 
 
-Installing
+Prerequisites
 ----------
 
-Build first the image:
+Docker version 19+
+
+Git repo
+----------
+
+In your browser, navigate to https://github.com/buildlyio/buildly-core
+
+and fork or clone the repository by clicking the Fork button on the upper right-hand side or the clone button below.
+
+Setting up Buildly Core
+----------
+Make sure you have docker up and running then build the image:
 
 .. code-block:: bash
    
    docker-compose build # --no-cache to force dependencies installation
 
-To run the webserver (go to 127.0.0.1:8080):
+Next run the web server: 
 
 .. code-block:: bash
    
    docker-compose up # -d for detached
 
+Access the web server at http://127.0.0.1:8080
+
 User: `admin`
 Password: `admin`.
 
-To run the webserver with pdb support:
+To run the web server with Python debugger support:
 
 .. code-block:: bash
    
    docker-compose run --rm --service-ports buildly
 
-Configure the API authentication
+Configuring the API authentication
 --------------------------------
 
-All clients interact with our API using the OAuth2 protocol. In order to configure it, go to 
-`admin/oauth2_provider/application/` and add a new application there.
+All clients will interact with our API using the OAuth2 protocol, in order to configure it, go to 
+`admin/oauth2_provider/application/` and add your new application there.
 
 Generating RSA keys
 -------------------
 
-For using JWT as authentication method, we need to configure public and private RSA keys.
+To use [JSON Web Token](https://jwt.io) as the authentication method, you will need to configure public and private RSA keys.
 
-The following commands will generate a public and private key. The private key will stay in Buildly and the public 
-one will be supplied to microservices in order to verify the authenticity of the message:
+To generate the public and private keys run the following commands: 
 
 .. code-block:: bash
    
    openssl genrsa -out private.pem 2048
    openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+   
+*The private key will stay in Buildly and the public one will be supplied to your microservices in order to verify the authenticity of the message.*
 
 Running the tests
 -----------------
 
-To run the tests (without flake8) and have `ipdb` open on error:
+To run the tests (without flake8) and have Python debugger open on error:
 
 .. code-block:: bash
    
    docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb --bash_on_finish
 
-To run the tests like if it was CI with flake8:
+To run the tests with flake8:
 
 .. code-block:: bash
    
    docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
 
-See `pytest --help` for more options.
+For more tesing options enter:
+
+.. code-block:: bash
+
+    pytest --help
