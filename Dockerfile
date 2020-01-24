@@ -7,7 +7,7 @@ RUN apk update
 
 WORKDIR /code
 
-RUN apk add --no-cache postgresql-libs bash &&\
+RUN apk add --no-cache postgresql-libs bash openldap-dev &&\
     apk add --no-cache --virtual .build-deps git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
 
 COPY ./requirements/base.txt requirements/base.txt
