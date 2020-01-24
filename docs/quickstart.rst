@@ -51,7 +51,7 @@ All clients will interact with our API using the OAuth2 protocol, in order to co
 Generating RSA keys
 -------------------
 
-To use [JSON Web Token](https://jwt.io) as the authentication method, you will need to configure public and private RSA keys.
+To use JSON Web Token as the authentication method, you will need to configure public and private RSA keys.
 
 To generate the public and private keys run the following commands: 
 
