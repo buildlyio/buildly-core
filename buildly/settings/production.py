@@ -1,4 +1,5 @@
 from .base import *
+from .authentication import *
 from .email import *
 
 # CORS to allow external apps auth through OAuth 2
