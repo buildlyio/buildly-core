@@ -1,4 +1,5 @@
 from .base import *
+from .email import *
 
 # CORS to allow external apps auth through OAuth 2
 # https://github.com/ottoyiu/django-cors-headers
