@@ -10,12 +10,13 @@ Prerequisites
 
 Docker version 19+
 
-Git repo
+Buildly Core repo
 ----------
 
-In your browser, navigate to https://github.com/buildlyio/buildly-core
+Fork or clone the repository 
 
-and fork or clone the repository by clicking the Fork button on the upper right-hand side or the clone button below.
+https://github.com/buildlyio/buildly-core
+
 
 Setting up Buildly Core
 ----------
