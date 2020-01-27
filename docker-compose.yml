@@ -68,6 +68,15 @@ services:
       USE_PASSWORD_COMMON_VALIDATOR: "True"
       USE_PASSWORD_NUMERIC_VALIDATOR: "True"
       FRONTEND_URL: "localhost:3000/login/"
+#      LDAP_ENABLE: "True"
+#      LDAP_HOST: "ldap://openldap_server:389"
+#      LDAP_USERNAME: "cn=admin,dc=example,dc=org"
+#      LDAP_PASSWORD: "admin"
+#      LDAP_BASE_DN: "dc=example,dc=org"
+#
+#  openldap-server:
+#    container_name: openldap_server
+#    image: osixia/openldap:1.3.0
 
 volumes:
   static-content:

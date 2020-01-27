@@ -13,3 +13,4 @@ bravado-core==5.13.1
 drf-yasg==1.10.2
 requests==2.21.0
 aiohttp==3.5.4
+django-auth-ldap==2.1.0

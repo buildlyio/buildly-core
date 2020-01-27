@@ -76,11 +76,6 @@ MIDDLEWARE_DJANGO = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-MIDDLEWARE_THIRD_PARTIES = [
-    'oauth2_provider.middleware.OAuth2TokenMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',
-]
-
 MIDDLEWARE_CSRF = [
     'core.middleware.DisableCsrfCheck',
 ]
@@ -89,8 +84,7 @@ EXCEPTION_MIDDLEWARE = [
     'core.middleware.ExceptionMiddleware'
 ]
 
-MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_THIRD_PARTIES + MIDDLEWARE_CSRF +\
-             EXCEPTION_MIDDLEWARE
+MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_CSRF + EXCEPTION_MIDDLEWARE
 
 ROOT_URLCONF = 'core.urls'
 
@@ -138,18 +132,6 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'core.CoreUser'
 
-# Authentication backends
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
-
-AUTHENTICATION_BACKENDS = (
-    'social_core.backends.github.GithubOAuth2',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.microsoft.MicrosoftOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-    'oauth2_provider.backends.OAuth2Backend',
-)
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -185,11 +167,10 @@ if os.getenv('USE_HTTPS') == 'True':
 REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',  # TODO check if disable, and also delete CSRF
         'rest_framework.authentication.TokenAuthentication',
-        'oauth2_provider_jwt.authentication.JWTAuthentication',
-    ),
+    ],
     'DEFAULT_PERMISSION_CLASSES': (
         'core.permissions.IsSuperUserBrowseableAPI',
     )
@@ -206,105 +187,6 @@ PASSWORD_RESET_TIMEOUT_DAYS = 1
 
 INVITATION_EXPIRE_HOURS = 24
 
-# Auth Application
-OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
-OAUTH_CLIENT_SECRET = os.getenv('OAUTH_CLIENT_SECRET', None)
-
-# JWT Authentication settings
-JWT_PAYLOAD_ENRICHER = 'core.jwt_utils.payload_enricher'
-JWT_ISSUER = os.getenv('JWT_ISSUER', '')
-JWT_ALLOWED_ISSUER = os.getenv('JWT_ISSUER', '')
-JWT_AUTH_DISABLED = False
-JWT_PRIVATE_KEY_RSA_BUILDLY = os.getenv('JWT_PRIVATE_KEY_RSA_BUILDLY')
-JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY')
-
-
-# Password Validators
-AUTH_PASSWORD_VALIDATORS = []
-
-AUTH_PASSWORD_VALIDATORS_MAP = {
-    'USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-        },
-    'USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-            'OPTIONS': {
-                'min_length': int(os.getenv('PASSWORD_MINIMUM_LENGTH', 6)),
-            }
-        },
-    'USE_PASSWORD_COMMON_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-        },
-    'USE_PASSWORD_NUMERIC_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-        },
-}
-
-for password_validator_env_var, password_validator in AUTH_PASSWORD_VALIDATORS_MAP.items():
-    if os.getenv(password_validator_env_var, 'True') == 'True':
-        AUTH_PASSWORD_VALIDATORS.append(password_validator)
-
-
-# Social Auth
-LOGIN_URL = os.getenv('LOGIN_URL', FRONTEND_URL)
-LOGIN_REDIRECT_URL = '/'
-SOCIAL_AUTH_URL_NAMESPACE = 'social'
-
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if os.getenv('SOCIAL_AUTH_REDIRECT_IS_HTTPS') == 'True' else False
-SOCIAL_AUTH_LOGIN_REDIRECT_URLS = {
-    'github': os.getenv('SOCIAL_AUTH_GITHUB_REDIRECT_URL', None),
-    'google-oauth2': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL', None),
-    'microsoft-graph': os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL', None)
-}
-
-SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.create_user',
-    'core.auth_pipeline.create_organization',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-)
-
-# Github social auth
-SOCIAL_AUTH_GITHUB_KEY = os.getenv('SOCIAL_AUTH_GITHUB_KEY', '')
-SOCIAL_AUTH_GITHUB_SECRET = os.getenv('SOCIAL_AUTH_GITHUB_SECRET', '')
-
-# Google social auth
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
-
-# Microsoft social auth
-SOCIAL_AUTH_MICROSOFT_GRAPH_KEY = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_KEY', '')
-SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET', '')
-
-
-# Whitelist of domains allowed to login via social auths
-# i.e. ['example.com', 'buildly.io','treeaid.org']
-if os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS'):
-    SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS').split(',')
-if os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'):
-    SOCIAL_AUTH_GOOGLE_MICROSOFT_DOMAINS = os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS').split(',')
-
-# oauth2 settings
-OAUTH2_PROVIDER = {
-    "ACCESS_TOKEN_EXPIRE_SECONDS": int(os.getenv('ACCESS_TOKEN_EXPIRE_SECONDS', 36000)),
-}
-
-DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')
-CREATE_DEFAULT_PROGRAM = True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
-
-# graphene schema
-GRAPHENE = {
-    'SCHEMA': 'workflow.graph-schema.schema' # Where your Graphene schema lives
-}
-
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORE_WEBSITE = "https://buildly.io"
@@ -312,20 +194,6 @@ CORE_WEBSITE = "https://buildly.io"
 # User and Organization configuration
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
 DEFAULT_ORG = os.getenv('DEFAULT_ORG')
-
-if os.getenv('EMAIL_BACKEND') == 'SMTP':
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.environ['EMAIL_HOST']
-    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
-    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
-    EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
-    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
-    EMAIL_SUBJECT_PREFIX = os.getenv('EMAIL_SUBJECT_PREFIX', '')
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'webmaster@localhost')
-DEFAULT_REPLYTO_EMAIL = os.getenv('DEFAULT_REPLYTO_EMAIL')
 
 # Swagger settings - for generate_swagger management command
 
