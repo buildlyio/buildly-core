@@ -73,6 +73,7 @@ services:
 #      LDAP_USERNAME: "cn=admin,dc=example,dc=org"
 #      LDAP_PASSWORD: "admin"
 #      LDAP_BASE_DN: "dc=example,dc=org"
+#      LDAP_USERNAME_FIELD_SEARCH: "uid"
 #
 #  openldap-server:
 #    container_name: openldap_server
