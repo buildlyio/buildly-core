@@ -70,7 +70,7 @@ To run the tests (without flake8) and have Python debugger open on error:
 
 .. code-block:: bash
    
-   docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb --bash_on_finish
+   docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb 
 
 To run the tests with flake8:
 
