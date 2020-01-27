@@ -104,6 +104,12 @@ The following table lists the configurable parameters of buildly and their defau
 | `USE_PASSWORD_COMMON_VALIDATOR`     | If true, checks whether the password occurs in a list of common passwords | None |
 | `USE_PASSWORD_NUMERIC_VALIDATOR`    | If true, checks whether the password isn’t entirely numeric | None |
 | `SUPER_USER_PASSWORD`               | Used to define the super user password when it's created for the first time | `admin` in Debug mode and None |
+| `LDAP_ENABLE`                       | If true, enable LDAP authentication  | False |
+| `LDAP_HOST`                         | The host to use when connecting to the LDAP server | `` |
+| `LDAP_USERNAME`                     | The username to use when connecting to the LDAP server  | `` |
+| `LDAP_PASSWORD`                     | The password to use when connecting to the LDAP server | `` |
+| `LDAP_BASE_DN`                      | The base domain name for search | `` |
+| `LDAP_USERNAME_FIELD_SEARCH`        | The username field used by the LDAP server for search | `` |
 
 Specify each parameter using `-e`, `--env`, and `--env-file` flags to set simple (non-array) environment variables to `docker run`. For example,
 

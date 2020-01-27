@@ -131,22 +131,16 @@ if AUTH_LDAP_ENABLE:
     AUTH_LDAP_BIND_DN = os.environ.get('LDAP_USERNAME')  # Bind Distinguished Name(DN)
     AUTH_LDAP_BIND_PASSWORD = os.environ.get('LDAP_PASSWORD')
     AUTH_LDAP_BASE_DN = os.environ.get('LDAP_BASE_DN')
+    AUTH_LDAP_USERNAME_FIELD_SEARCH = os.environ.get('LDAP_USERNAME_FIELD_SEARCH')
 
-    if os.environ.get('LDAP_ACTIVE_DIRECTORY'):
-        AUTH_LDAP_USER_SEARCH = LDAPSearch(
-            AUTH_LDAP_BASE_DN,
-            ldap.SCOPE_SUBTREE,
-            'sAMAccountName=%(user)s'
-        )
-    else:
-        AUTH_LDAP_USER_SEARCH = LDAPSearch(
-            AUTH_LDAP_BASE_DN,
-            ldap.SCOPE_SUBTREE,
-            '(uid=%(user)s)',
-        )
+    AUTH_LDAP_USER_SEARCH = LDAPSearch(
+        AUTH_LDAP_BASE_DN,
+        ldap.SCOPE_SUBTREE,
+        f'{AUTH_LDAP_USERNAME_FIELD_SEARCH}=%(user)s'
+    )
 
     AUTH_LDAP_USER_ATTR_MAP = {
-        'username': 'sAMAccountName' if os.environ.get('LDAP_ACTIVE_DIRECTORY') else 'cn',
+        'username': AUTH_LDAP_USERNAME_FIELD_SEARCH,
         'first_name': 'givenName',
         'last_name': 'sn',
         'email': 'mail',
