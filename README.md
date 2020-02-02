@@ -36,10 +36,10 @@ docker-compose run --rm --service-ports buildly
 
 ## Running the tests
 
-To run the tests (without flake8) and have `ipdb` open on error:
+To run the tests without flake8:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb --bash_on_finish
+docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
 ```
 
 To run the tests like if it was CI with flake8:
