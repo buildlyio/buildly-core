@@ -1,8 +1,7 @@
-import json
 import logging
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView
@@ -11,13 +10,10 @@ from django.shortcuts import render_to_response
 
 from rest_framework.reverse import reverse
 
-from oauth2_provider.views.generic import ProtectedResourceView
 from social_core.exceptions import AuthFailed
 from social_core.utils import (partial_pipeline_data, setting_url,
                                user_is_active, user_is_authenticated)
 from social_django.utils import psa
-
-from core.serializers import CoreUserSerializer, OrganizationSerializer
 
 from core.exceptions import SocialAuthFailed, SocialAuthNotConfigured
 from core.utils import generate_access_tokens
@@ -36,21 +32,6 @@ class IndexView(TemplateView):
         }
         context.update(extra_context)
         return context
-
-
-class OAuthUserEndpoint(ProtectedResourceView):
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        body = {
-            'username': user.username,
-            'email': user.email,
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'core_user': CoreUserSerializer(instance=user, context={'request': request}).data,
-            'organization': OrganizationSerializer(instance=user.organization, context={'request': request}).data
-        }
-        return HttpResponse(json.dumps(body))
 
 
 @never_cache

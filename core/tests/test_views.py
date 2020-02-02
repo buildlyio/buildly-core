@@ -54,17 +54,6 @@ class HealthCheckViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class TestOAuthUserEndpoint(object):
-
-    @pytest.mark.django_db()
-    def test_get_oauth_user(self, request_factory, core_user, monkeypatch):
-        request = request_factory.get('oauthuser')
-        request.user = core_user
-        monkeypatch.setattr(OAuthLibMixin, 'verify_request', lambda x, y: [True, request])
-        response = web.OAuthUserEndpoint.as_view()(request)
-        assert response.status_code == 200
-
-
 class TestOAuthComplete(object):
 
     def test_no_code_fail(self, client):
@@ -78,8 +67,7 @@ class TestOAuthComplete(object):
         assert data == expected_data
 
     @pytest.mark.django_db()
-    def test_is_authenticated_success(self, wsgi_request_factory, core_user,
-                                      monkeypatch):
+    def test_is_authenticated_success(self, wsgi_request_factory, core_user, monkeypatch):
 
         def mock_auth_complete(*args, **kwargs):
             return core_user
@@ -130,8 +118,7 @@ class TestOAuthComplete(object):
         monkeypatch.setattr(web, 'user_is_authenticated', lambda x: False)
         monkeypatch.setattr(web, 'partial_pipeline_data', lambda x, y: None)
         monkeypatch.setattr(oauth.BaseOAuth2, 'auth_complete', mock_auth_complete)
-        monkeypatch.setattr(web, 'generate_access_tokens',
-                            lambda x, y: tokens)
+        monkeypatch.setattr(web, 'generate_access_tokens', lambda x, y: tokens)
 
         # mock request object
         request = wsgi_request_factory()
