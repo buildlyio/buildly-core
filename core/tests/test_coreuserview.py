@@ -446,3 +446,10 @@ class TestCoreUserRead(object):
         response = CoreUserViewSet.as_view({'get': 'retrieve'})(request, pk=core_user.pk)
         assert response.status_code == 200
         assert set(response.data.keys()) == self.keys
+
+    def test_coreuser_retrieve_me(self, request_factory, org_member):
+        request = request_factory.get(reverse('coreuser-list'))
+        request.user = org_member
+        response = CoreUserViewSet.as_view({'get': 'me'})(request)
+        assert response.status_code == 200
+        assert response.data['username'] == org_member.username

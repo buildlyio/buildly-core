@@ -74,6 +74,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer = self.get_serializer(instance=user, context={'request': request})
         return Response(serializer.data)
 
+    @action(methods=['GET'], detail=False)
+    def me(self, request, *args, **kwargs):
+        """
+        Gives you the user information based on the user token sent within the request.
+        """
+        user = request.user
+        serializer = self.get_serializer(instance=user, context={'request': request})
+        return Response(serializer.data)
+
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserInvitationSerializer,
                          responses=COREUSER_INVITE_RESPONSE)
