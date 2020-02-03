@@ -5,7 +5,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from rest_framework import routers
 
 from core import views
-from core.views.web import IndexView, OAuthUserEndpoint, oauth_complete
+from core.views.web import IndexView, oauth_complete
 
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
@@ -26,7 +26,6 @@ router.register(r'logicmodule', views.LogicModuleViewSet)
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('admin/', admin.site.urls),
-    path('oauthuser/', OAuthUserEndpoint.as_view()),
     path('health_check/', include('health_check.urls')),
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),

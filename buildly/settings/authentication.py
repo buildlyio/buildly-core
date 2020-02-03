@@ -28,8 +28,11 @@ AUTHENTICATION_BACKENDS = [
 
 AUTHENTICATION_BACKENDS = AUTHENTICATION_LDAP_BACKEND + AUTHENTICATION_BACKENDS
 
-# Rest Framework
-REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].append('oauth2_provider_jwt.authentication.JWTAuthentication')
+# Rest Framework OAuth2 and JWT
+REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] += [
+    'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    'oauth2_provider_jwt.authentication.JWTAuthentication'
+]
 
 # Auth Application
 OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
