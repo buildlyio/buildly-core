@@ -1,5 +1,25 @@
 # Change Log
 
+## [0.6.1](https://github.com/buildlyio/buildly-core/tree/0.6.1) (2020-02-04)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.6.0...0.6.1)
+
+**Implemented enhancements:**
+
+- Implement LDAP User Authentication [\#276](https://github.com/buildlyio/buildly-core/issues/276)
+
+**Fixed bugs:**
+
+- OAuth User endpoint returns forbidden [\#252](https://github.com/buildlyio/buildly-core/issues/252)
+
+**Closed issues:**
+
+- CLI stepwise wizard for creating a buildly core application and service. [\#267](https://github.com/buildlyio/buildly-core/issues/267)
+- Services [\#266](https://github.com/buildlyio/buildly-core/issues/266)
+
+**Merged pull requests:**
+
+- \[Security\] Bump django from 2.2.8 to 2.2.9 [\#295](https://github.com/buildlyio/buildly-core/pull/295) ([jefmoura](https://github.com/jefmoura))
+
 ## [0.6.0](https://github.com/buildlyio/buildly-core/tree/0.6.0) (2020-02-03)
 [Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.5.0...0.6.0)
 
@@ -17,12 +37,12 @@
 
 - Remove dependency to ChargeBee [\#273](https://github.com/buildlyio/buildly-core/issues/273)
 - Remove GraphQL integration [\#196](https://github.com/buildlyio/buildly-core/issues/196)
+- Buildly Core [\#187](https://github.com/buildlyio/buildly-core/issues/187)
 
 **Merged pull requests:**
 
 - Replace oauthuser with coreuser/me endpoint [\#294](https://github.com/buildlyio/buildly-core/pull/294) ([jefmoura](https://github.com/jefmoura))
 - Update LDAP configuration and information [\#293](https://github.com/buildlyio/buildly-core/pull/293) ([jefmoura](https://github.com/jefmoura))
-- Implementation of LDAP Auth [\#292](https://github.com/buildlyio/buildly-core/pull/292) ([jefmoura](https://github.com/jefmoura))
 - Update landing page structure [\#291](https://github.com/buildlyio/buildly-core/pull/291) ([jefmoura](https://github.com/jefmoura))
 - Merge fixes that were done previously [\#290](https://github.com/buildlyio/buildly-core/pull/290) ([jefmoura](https://github.com/jefmoura))
 - Remove unneeded dependencies [\#288](https://github.com/buildlyio/buildly-core/pull/288) ([jefmoura](https://github.com/jefmoura))
@@ -63,6 +83,7 @@
 
 **Merged pull requests:**
 
+- Implementation of LDAP Auth [\#292](https://github.com/buildlyio/buildly-core/pull/292) ([jefmoura](https://github.com/jefmoura))
 - Re-organize scripts [\#262](https://github.com/buildlyio/buildly-core/pull/262) ([jefmoura](https://github.com/jefmoura))
 - Implement service group permission level [\#250](https://github.com/buildlyio/buildly-core/pull/250) ([jefmoura](https://github.com/jefmoura))
 - Remove Celery and RabbitMQ integration [\#249](https://github.com/buildlyio/buildly-core/pull/249) ([jefmoura](https://github.com/jefmoura))
@@ -78,7 +99,7 @@
 - Modified invitation token validation to prevent token reuse [\#233](https://github.com/buildlyio/buildly-core/pull/233) ([msradam](https://github.com/msradam))
 
 ## [0.3.0](https://github.com/buildlyio/buildly-core/tree/0.3.0) (2019-10-17)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.2.3...0.3.0)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.2.4...0.3.0)
 
 **Implemented enhancements:**
 
@@ -127,6 +148,12 @@
 - Remove envars.yml [\#173](https://github.com/buildlyio/buildly-core/pull/173) ([ralfzen](https://github.com/ralfzen))
 - New GPL v3 license [\#172](https://github.com/buildlyio/buildly-core/pull/172) ([glind](https://github.com/glind))
 - remove old license [\#171](https://github.com/buildlyio/buildly-core/pull/171) ([glind](https://github.com/glind))
+
+## [0.2.4](https://github.com/buildlyio/buildly-core/tree/0.2.4) (2019-08-01)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.2.3...0.2.4)
+
+**Merged pull requests:**
+
 - Add WorkflowLevel2Status-model, -viewset and filters - CU-799, CU-800 [\#170](https://github.com/buildlyio/buildly-core/pull/170) ([ralfzen](https://github.com/ralfzen))
 - Adapt loadrelationships command - CU-784 [\#169](https://github.com/buildlyio/buildly-core/pull/169) ([ralfzen](https://github.com/ralfzen))
 - Improve datamesh [\#168](https://github.com/buildlyio/buildly-core/pull/168) ([ralfzen](https://github.com/ralfzen))
@@ -138,7 +165,7 @@
 - Remove walhall notification from drone [\#162](https://github.com/buildlyio/buildly-core/pull/162) ([docktorrr](https://github.com/docktorrr))
 
 ## [0.2.3](https://github.com/buildlyio/buildly-core/tree/0.2.3) (2019-07-21)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.34...0.2.3)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.2.2...0.2.3)
 
 **Merged pull requests:**
 
@@ -162,8 +189,26 @@
 - Set endpoint mandatory in LogicModuleModel [\#144](https://github.com/buildlyio/buildly-core/pull/144) ([ralfzen](https://github.com/ralfzen))
 - Add query\_params and fix POST, PUT, PATCH data [\#143](https://github.com/buildlyio/buildly-core/pull/143) ([ralfzen](https://github.com/ralfzen))
 - PLAT-554: update gateway exceptions status codes [\#142](https://github.com/buildlyio/buildly-core/pull/142) ([docktorrr](https://github.com/docktorrr))
+
+## [0.2.2](https://github.com/buildlyio/buildly-core/tree/0.2.2) (2019-07-05)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.2.1...0.2.2)
+
+**Merged pull requests:**
+
 - Optimize load relationship command - CU-742 [\#141](https://github.com/buildlyio/buildly-core/pull/141) ([ralfzen](https://github.com/ralfzen))
+
+## [0.2.1](https://github.com/buildlyio/buildly-core/tree/0.2.1) (2019-07-04)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.2.0...0.2.1)
+
+**Merged pull requests:**
+
 - Optimize load data mesh relationship command - CU-742 [\#140](https://github.com/buildlyio/buildly-core/pull/140) ([ralfzen](https://github.com/ralfzen))
+
+## [0.2.0](https://github.com/buildlyio/buildly-core/tree/0.2.0) (2019-07-04)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.4...0.2.0)
+
+**Merged pull requests:**
+
 - Switch to python 3.7 [\#139](https://github.com/buildlyio/buildly-core/pull/139) ([docktorrr](https://github.com/docktorrr))
 - Add file handling [\#138](https://github.com/buildlyio/buildly-core/pull/138) ([ralfzen](https://github.com/ralfzen))
 - Add command for loading contact-siteprofile-relationships CU-742 [\#137](https://github.com/buildlyio/buildly-core/pull/137) ([ralfzen](https://github.com/ralfzen))
@@ -179,236 +224,83 @@
 - Data mesh models - PLAT-464 [\#127](https://github.com/buildlyio/buildly-core/pull/127) ([ralfzen](https://github.com/ralfzen))
 - Django update [\#126](https://github.com/buildlyio/buildly-core/pull/126) ([ralfzen](https://github.com/ralfzen))
 
-## [0.1.34](https://github.com/buildlyio/buildly-core/tree/0.1.34) (2019-06-04)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.33...0.1.34)
+## [0.1.4](https://github.com/buildlyio/buildly-core/tree/0.1.4) (2019-06-04)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.3...0.1.4)
 
 **Merged pull requests:**
 
 - Add UUIDPrimaryKeyRelatedField to CoreGroupSerializer [\#123](https://github.com/buildlyio/buildly-core/pull/123) ([ralfzen](https://github.com/ralfzen))
-
-## [0.1.33](https://github.com/buildlyio/buildly-core/tree/0.1.33) (2019-06-03)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.32...0.1.33)
-
-**Merged pull requests:**
-
 - Rename Organization.uuid back to organization\_uuid [\#122](https://github.com/buildlyio/buildly-core/pull/122) ([ralfzen](https://github.com/ralfzen))
-
-## [0.1.32](https://github.com/buildlyio/buildly-core/tree/0.1.32) (2019-06-03)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.31...0.1.32)
-
-**Merged pull requests:**
-
 - Organization PK to UUID - PLAT-481 [\#120](https://github.com/buildlyio/buildly-core/pull/120) ([ralfzen](https://github.com/ralfzen))
 - PLAT-429: fixing retrieving URL for caching for multipart response [\#119](https://github.com/buildlyio/buildly-core/pull/119) ([docktorrr](https://github.com/docktorrr))
-
-## [0.1.31](https://github.com/buildlyio/buildly-core/tree/0.1.31) (2019-05-29)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.30...0.1.31)
-
-**Merged pull requests:**
-
 - Revert "PLAT-429: cache responses from duplicated logic module requests" [\#117](https://github.com/buildlyio/buildly-core/pull/117) ([ralfzen](https://github.com/ralfzen))
 
-## [0.1.30](https://github.com/buildlyio/buildly-core/tree/0.1.30) (2019-05-28)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.29...0.1.30)
+## [0.1.3](https://github.com/buildlyio/buildly-core/tree/0.1.3) (2019-05-28)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.2...0.1.3)
 
 **Merged pull requests:**
 
 - Change primary\_key to level2\_uuid in WorkflowLevel2 - CU-631 [\#116](https://github.com/buildlyio/buildly-core/pull/116) ([ralfzen](https://github.com/ralfzen))
 - Narrative shift [\#115](https://github.com/buildlyio/buildly-core/pull/115) ([lemkeb](https://github.com/lemkeb))
-
-## [0.1.29](https://github.com/buildlyio/buildly-core/tree/0.1.29) (2019-05-27)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.28...0.1.29)
-
-**Merged pull requests:**
-
 - PLAT-459: fix swagger type [\#114](https://github.com/buildlyio/buildly-core/pull/114) ([docktorrr](https://github.com/docktorrr))
-- PLAT-429: cache swagger schema during request and small refactoring [\#113](https://github.com/buildlyio/buildly-core/pull/113) ([docktorrr](https://github.com/docktorrr))
-
-## [0.1.28](https://github.com/buildlyio/buildly-core/tree/0.1.28) (2019-05-23)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.27...0.1.28)
-
-**Merged pull requests:**
-
 - PLAT-457: default value for DEFAULT\_ORG env var [\#112](https://github.com/buildlyio/buildly-core/pull/112) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.27](https://github.com/buildlyio/buildly-core/tree/v0.1.27) (2019-05-22)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.26...v0.1.27)
-
-**Merged pull requests:**
-
 - Enable customizable password validation CU-620 [\#111](https://github.com/buildlyio/buildly-core/pull/111) ([ralfzen](https://github.com/ralfzen))
-
-## [0.1.26](https://github.com/buildlyio/buildly-core/tree/0.1.26) (2019-05-22)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.25...0.1.26)
-
-**Merged pull requests:**
-
 - PLAT-456: disable schema for API gateway view [\#110](https://github.com/buildlyio/buildly-core/pull/110) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.25](https://github.com/buildlyio/buildly-core/tree/v0.1.25) (2019-05-20)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.23...v0.1.25)
-
-**Merged pull requests:**
-
 - WAL-417: notify after build in drone [\#109](https://github.com/buildlyio/buildly-core/pull/109) ([docktorrr](https://github.com/docktorrr))
-
-## [0.1.23](https://github.com/buildlyio/buildly-core/tree/0.1.23) (2019-05-17)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.24...0.1.23)
-
-## [v0.1.24](https://github.com/buildlyio/buildly-core/tree/v0.1.24) (2019-05-17)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.22...v0.1.24)
-
-**Merged pull requests:**
-
 - WAL-417: drone notification to walhall webhook [\#108](https://github.com/buildlyio/buildly-core/pull/108) ([docktorrr](https://github.com/docktorrr))
 - Add PKRelatedField for WFLType - CU-583 [\#107](https://github.com/buildlyio/buildly-core/pull/107) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.1.22](https://github.com/buildlyio/buildly-core/tree/v0.1.22) (2019-05-16)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.21...v0.1.22)
-
-**Merged pull requests:**
-
 - Add pagination to WFL2 by default - CU-605 [\#106](https://github.com/buildlyio/buildly-core/pull/106) ([ralfzen](https://github.com/ralfzen))
 - Add DateRangeFilter for WFL2 CU-600 [\#105](https://github.com/buildlyio/buildly-core/pull/105) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.1.21](https://github.com/buildlyio/buildly-core/tree/v0.1.21) (2019-05-15)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.20...v0.1.21)
-
-**Merged pull requests:**
-
 - Add core\_groups to filter\_horizontal [\#104](https://github.com/buildlyio/buildly-core/pull/104) ([ralfzen](https://github.com/ralfzen))
-- New fields workflowlevel2 CU-583 [\#103](https://github.com/buildlyio/buildly-core/pull/103) ([ralfzen](https://github.com/ralfzen))
 - Extend admins [\#102](https://github.com/buildlyio/buildly-core/pull/102) ([ralfzen](https://github.com/ralfzen))
 - PLAT-429: query LogicModule SQL once [\#101](https://github.com/buildlyio/buildly-core/pull/101) ([docktorrr](https://github.com/docktorrr))
 
-## [v0.1.20](https://github.com/buildlyio/buildly-core/tree/v0.1.20) (2019-05-10)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.19...v0.1.20)
-
-## [v0.1.19](https://github.com/buildlyio/buildly-core/tree/v0.1.19) (2019-05-09)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.18...v0.1.19)
+## [0.1.2](https://github.com/buildlyio/buildly-core/tree/0.1.2) (2019-05-10)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.1...0.1.2)
 
 **Merged pull requests:**
 
-- Add username to refresh token payload CU-515 [\#99](https://github.com/buildlyio/buildly-core/pull/99) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.1.18](https://github.com/buildlyio/buildly-core/tree/v0.1.18) (2019-05-09)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.17...v0.1.18)
-
-**Merged pull requests:**
-
+- PLAT-429: cache swagger schema during request and small refactoring [\#113](https://github.com/buildlyio/buildly-core/pull/113) ([docktorrr](https://github.com/docktorrr))
+- New fields workflowlevel2 CU-583 [\#103](https://github.com/buildlyio/buildly-core/pull/103) ([ralfzen](https://github.com/ralfzen))
 - Fix for serializing M2M-fields of bifrost models [\#100](https://github.com/buildlyio/buildly-core/pull/100) ([ralfzen](https://github.com/ralfzen))
+- Add username to refresh token payload CU-515 [\#99](https://github.com/buildlyio/buildly-core/pull/99) ([ralfzen](https://github.com/ralfzen))
 - Add JWT payload to refresh\_token CU-515 [\#98](https://github.com/buildlyio/buildly-core/pull/98) ([ralfzen](https://github.com/ralfzen))
-- PLAT-394: Split workflow views [\#96](https://github.com/buildlyio/buildly-core/pull/96) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.17](https://github.com/buildlyio/buildly-core/tree/v0.1.17) (2019-05-08)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.16...v0.1.17)
-
-**Merged pull requests:**
-
 - update CoreGroup str method and admin [\#97](https://github.com/buildlyio/buildly-core/pull/97) ([docktorrr](https://github.com/docktorrr))
+- PLAT-394: Split workflow views [\#96](https://github.com/buildlyio/buildly-core/pull/96) ([docktorrr](https://github.com/docktorrr))
 - PLAT-410: make core\_groups field editable in core user endpoint [\#95](https://github.com/buildlyio/buildly-core/pull/95) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.16](https://github.com/buildlyio/buildly-core/tree/v0.1.16) (2019-05-07)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.15...v0.1.16)
-
-**Merged pull requests:**
-
 - Remove branch condition from drone file [\#94](https://github.com/buildlyio/buildly-core/pull/94) ([docktorrr](https://github.com/docktorrr))
 - PLAT-409: Default group [\#93](https://github.com/buildlyio/buildly-core/pull/93) ([docktorrr](https://github.com/docktorrr))
 - PLAT-408: update WFL1 permission logic [\#92](https://github.com/buildlyio/buildly-core/pull/92) ([docktorrr](https://github.com/docktorrr))
 - Add environment setting for Token expiration time - CU-515 [\#91](https://github.com/buildlyio/buildly-core/pull/91) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.1.15](https://github.com/buildlyio/buildly-core/tree/v0.1.15) (2019-04-29)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.14...v0.1.15)
-
-**Merged pull requests:**
-
 - Update drone file to deploy documentation [\#90](https://github.com/buildlyio/buildly-core/pull/90) ([jefmoura](https://github.com/jefmoura))
 - PLAT-385: Update coregroup endpoint [\#89](https://github.com/buildlyio/buildly-core/pull/89) ([docktorrr](https://github.com/docktorrr))
+- PLAT-377 - Add endpoint name [\#88](https://github.com/buildlyio/buildly-core/pull/88) ([jefmoura](https://github.com/jefmoura))
+- fix core user creation in admin [\#87](https://github.com/buildlyio/buildly-core/pull/87) ([docktorrr](https://github.com/docktorrr))
+- fix CoreUser admin [\#86](https://github.com/buildlyio/buildly-core/pull/86) ([docktorrr](https://github.com/docktorrr))
 - Add documentation folder for docs site contents [\#85](https://github.com/buildlyio/buildly-core/pull/85) ([lemkeb](https://github.com/lemkeb))
 - PLAT-165: refactor permission classes [\#84](https://github.com/buildlyio/buildly-core/pull/84) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.14](https://github.com/buildlyio/buildly-core/tree/v0.1.14) (2019-04-16)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.13...v0.1.14)
-
-**Merged pull requests:**
-
-- PLAT-377 - Add endpoint name [\#88](https://github.com/buildlyio/buildly-core/pull/88) ([jefmoura](https://github.com/jefmoura))
-
-## [v0.1.13](https://github.com/buildlyio/buildly-core/tree/v0.1.13) (2019-04-08)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.12...v0.1.13)
-
-**Merged pull requests:**
-
-- fix core user creation in admin [\#87](https://github.com/buildlyio/buildly-core/pull/87) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.12](https://github.com/buildlyio/buildly-core/tree/v0.1.12) (2019-04-05)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.11...v0.1.12)
-
-**Merged pull requests:**
-
-- fix CoreUser admin [\#86](https://github.com/buildlyio/buildly-core/pull/86) ([docktorrr](https://github.com/docktorrr))
 - PLAT-165: remove Group viewset and serializer [\#83](https://github.com/buildlyio/buildly-core/pull/83) ([docktorrr](https://github.com/docktorrr))
 - PLAT-165: Change CoreGroup model [\#82](https://github.com/buildlyio/buildly-core/pull/82) ([docktorrr](https://github.com/docktorrr))
 - PLAT-367: back to the normal migrations in entrypoint [\#81](https://github.com/buildlyio/buildly-core/pull/81) ([docktorrr](https://github.com/docktorrr))
+- Get back core\_user.id field in serializer [\#78](https://github.com/buildlyio/buildly-core/pull/78) ([docktorrr](https://github.com/docktorrr))
 
-## [v0.1.11](https://github.com/buildlyio/buildly-core/tree/v0.1.11) (2019-03-27)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.9...v0.1.11)
+## [0.1.1](https://github.com/buildlyio/buildly-core/tree/0.1.1) (2019-03-27)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.1.0...0.1.1)
 
 **Merged pull requests:**
 
 - PLAT-367: make fake migrations in entrypoint \(temporally\) [\#80](https://github.com/buildlyio/buildly-core/pull/80) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.9](https://github.com/buildlyio/buildly-core/tree/v0.1.9) (2019-03-26)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.8...v0.1.9)
-
-**Merged pull requests:**
-
 - PLAT-367: resetting workflow migrations [\#79](https://github.com/buildlyio/buildly-core/pull/79) ([docktorrr](https://github.com/docktorrr))
+- PLAT-349: fix oauth user endpoint [\#76](https://github.com/buildlyio/buildly-core/pull/76) ([docktorrr](https://github.com/docktorrr))
+- PLAT-349: fix workflow-user migration [\#75](https://github.com/buildlyio/buildly-core/pull/75) ([docktorrr](https://github.com/docktorrr))
+- PLAT-349: fix user migrations [\#74](https://github.com/buildlyio/buildly-core/pull/74) ([docktorrr](https://github.com/docktorrr))
 
-## [v0.1.8](https://github.com/buildlyio/buildly-core/tree/v0.1.8) (2019-03-26)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.7...v0.1.8)
-
-**Merged pull requests:**
-
-- Get back core\_user.id field in serializer [\#78](https://github.com/buildlyio/buildly-core/pull/78) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.7](https://github.com/buildlyio/buildly-core/tree/v0.1.7) (2019-03-25)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.6...v0.1.7)
+## [0.1.0](https://github.com/buildlyio/buildly-core/tree/0.1.0) (2019-03-22)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.0.5...0.1.0)
 
 **Merged pull requests:**
 
 - PLAT-349: fix oauth user endpoint [\#77](https://github.com/buildlyio/buildly-core/pull/77) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.6](https://github.com/buildlyio/buildly-core/tree/v0.1.6) (2019-03-25)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.5...v0.1.6)
-
-**Merged pull requests:**
-
-- PLAT-349: fix oauth user endpoint [\#76](https://github.com/buildlyio/buildly-core/pull/76) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.5](https://github.com/buildlyio/buildly-core/tree/v0.1.5) (2019-03-25)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.4...v0.1.5)
-
-**Merged pull requests:**
-
-- PLAT-349: fix workflow-user migration [\#75](https://github.com/buildlyio/buildly-core/pull/75) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.4](https://github.com/buildlyio/buildly-core/tree/v0.1.4) (2019-03-25)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.0...v0.1.4)
-
-**Merged pull requests:**
-
-- PLAT-349: fix user migrations [\#74](https://github.com/buildlyio/buildly-core/pull/74) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.1.0](https://github.com/buildlyio/buildly-core/tree/v0.1.0) (2019-03-22)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.1.3...v0.1.0)
-
-## [v0.1.3](https://github.com/buildlyio/buildly-core/tree/v0.1.3) (2019-03-22)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.47...v0.1.3)
-
-**Merged pull requests:**
-
 - PLAT-349: fix migration [\#73](https://github.com/buildlyio/buildly-core/pull/73) ([docktorrr](https://github.com/docktorrr))
 - PLAT-349: fix migration core\_user unique constraint migration [\#72](https://github.com/buildlyio/buildly-core/pull/72) ([docktorrr](https://github.com/docktorrr))
 - Update .drone.yml [\#71](https://github.com/buildlyio/buildly-core/pull/71) ([jefmoura](https://github.com/jefmoura))
@@ -422,8 +314,8 @@
 - Group names migration [\#63](https://github.com/buildlyio/buildly-core/pull/63) ([docktorrr](https://github.com/docktorrr))
 -  PLAT-165: CoreGroup for model-level permissions   [\#56](https://github.com/buildlyio/buildly-core/pull/56) ([docktorrr](https://github.com/docktorrr))
 
-## [v0.0.47](https://github.com/buildlyio/buildly-core/tree/v0.0.47) (2019-03-12)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.46...v0.0.47)
+## [0.0.5](https://github.com/buildlyio/buildly-core/tree/0.0.5) (2019-03-12)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.0.4...0.0.5)
 
 **Merged pull requests:**
 
@@ -431,44 +323,14 @@
 - Clear up default email-email-template-test [\#61](https://github.com/buildlyio/buildly-core/pull/61) ([ralfzen](https://github.com/ralfzen))
 - Add default organization for pw-reset-email-lookup [\#60](https://github.com/buildlyio/buildly-core/pull/60) ([ralfzen](https://github.com/ralfzen))
 - Fix social auth [\#58](https://github.com/buildlyio/buildly-core/pull/58) ([jefmoura](https://github.com/jefmoura))
-- EndpointNotFoundException w/ path and METHOD [\#51](https://github.com/buildlyio/buildly-core/pull/51) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.0.46](https://github.com/buildlyio/buildly-core/tree/v0.0.46) (2019-03-06)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.45...v0.0.46)
-
-**Merged pull requests:**
-
-- Use tcp port wait script in production [\#55](https://github.com/buildlyio/buildly-core/pull/55) ([jefmoura](https://github.com/jefmoura))
-
-## [v0.0.45](https://github.com/buildlyio/buildly-core/tree/v0.0.45) (2019-03-04)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.44...v0.0.45)
-
-**Merged pull requests:**
-
 - Improve social auth [\#57](https://github.com/buildlyio/buildly-core/pull/57) ([jefmoura](https://github.com/jefmoura))
+- Use tcp port wait script in production [\#55](https://github.com/buildlyio/buildly-core/pull/55) ([jefmoura](https://github.com/jefmoura))
+- Fix drone config removing matrix [\#52](https://github.com/buildlyio/buildly-core/pull/52) ([jefmoura](https://github.com/jefmoura))
+- EndpointNotFoundException w/ path and METHOD [\#51](https://github.com/buildlyio/buildly-core/pull/51) ([ralfzen](https://github.com/ralfzen))
 - PLAT-328: change password reset token validation response [\#50](https://github.com/buildlyio/buildly-core/pull/50) ([docktorrr](https://github.com/docktorrr))
 - Create LICENSE [\#49](https://github.com/buildlyio/buildly-core/pull/49) ([glind](https://github.com/glind))
-
-## [v0.0.44](https://github.com/buildlyio/buildly-core/tree/v0.0.44) (2019-02-28)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.43...v0.0.44)
-
-**Merged pull requests:**
-
 - define swagger schema for custom CoureUser endpoints [\#48](https://github.com/buildlyio/buildly-core/pull/48) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.0.43](https://github.com/buildlyio/buildly-core/tree/v0.0.43) (2019-02-28)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.42...v0.0.43)
-
-**Merged pull requests:**
-
 - add endpoint for reset password request validation [\#47](https://github.com/buildlyio/buildly-core/pull/47) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.0.42](https://github.com/buildlyio/buildly-core/tree/v0.0.42) (2019-02-27)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.41...v0.0.42)
-
-**Merged pull requests:**
-
-- Fix drone config removing matrix [\#52](https://github.com/buildlyio/buildly-core/pull/52) ([jefmoura](https://github.com/jefmoura))
 - Custom templating for resetting password [\#46](https://github.com/buildlyio/buildly-core/pull/46) ([docktorrr](https://github.com/docktorrr))
 - Update OAuth env var name [\#44](https://github.com/buildlyio/buildly-core/pull/44) ([jefmoura](https://github.com/jefmoura))
 - PLAT-191: Reset password [\#43](https://github.com/buildlyio/buildly-core/pull/43) ([docktorrr](https://github.com/docktorrr))
@@ -476,33 +338,21 @@
 - PLAT-166: remove unused or redundant fields in serializers [\#41](https://github.com/buildlyio/buildly-core/pull/41) ([docktorrr](https://github.com/docktorrr))
 - PLAT-162: remove unused templates and web forms [\#40](https://github.com/buildlyio/buildly-core/pull/40) ([docktorrr](https://github.com/docktorrr))
 - PLAT-283: pep8 fixes [\#39](https://github.com/buildlyio/buildly-core/pull/39) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.0.41](https://github.com/buildlyio/buildly-core/tree/v0.0.41) (2019-02-18)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.40...v0.0.41)
-
-**Merged pull requests:**
-
 - add invitation links to the response [\#38](https://github.com/buildlyio/buildly-core/pull/38) ([docktorrr](https://github.com/docktorrr))
 - Add GitHub PR template [\#37](https://github.com/buildlyio/buildly-core/pull/37) ([jefmoura](https://github.com/jefmoura))
 - Handle empty relationship when trying to aggregate - PLAT-278 [\#36](https://github.com/buildlyio/buildly-core/pull/36) ([ralfzen](https://github.com/ralfzen))
 - Test for query-filter-fix in Data Mesh [\#35](https://github.com/buildlyio/buildly-core/pull/35) ([ralfzen](https://github.com/ralfzen))
 - PLAT-219 - Implementation of Social auth [\#34](https://github.com/buildlyio/buildly-core/pull/34) ([jefmoura](https://github.com/jefmoura))
 - Ignore case sensitivity in aggregate query argument [\#32](https://github.com/buildlyio/buildly-core/pull/32) ([ralfzen](https://github.com/ralfzen))
+- PLAT-161 - Improve celery conf [\#22](https://github.com/buildlyio/buildly-core/pull/22) ([jefmoura](https://github.com/jefmoura))
 
-## [v0.0.40](https://github.com/buildlyio/buildly-core/tree/v0.0.40) (2019-02-14)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.39...v0.0.40)
+## [0.0.4](https://github.com/buildlyio/buildly-core/tree/0.0.4) (2019-02-14)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.0.3...0.0.4)
 
 **Merged pull requests:**
 
 - Fix query-filters in Data Mesh [\#33](https://github.com/buildlyio/buildly-core/pull/33) ([ralfzen](https://github.com/ralfzen))
 - PLAT-160: Refactor tests final [\#31](https://github.com/buildlyio/buildly-core/pull/31) ([docktorrr](https://github.com/docktorrr))
-- PLAT-161 - Improve celery conf [\#22](https://github.com/buildlyio/buildly-core/pull/22) ([jefmoura](https://github.com/jefmoura))
-
-## [v0.0.39](https://github.com/buildlyio/buildly-core/tree/v0.0.39) (2019-02-13)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.38...v0.0.39)
-
-**Merged pull requests:**
-
 - PLAT-160: fix tests for milestones and internationalization [\#30](https://github.com/buildlyio/buildly-core/pull/30) ([docktorrr](https://github.com/docktorrr))
 - PLAT-160: refactor organization and fix tests for it [\#29](https://github.com/buildlyio/buildly-core/pull/29) ([docktorrr](https://github.com/docktorrr))
 - Minimal approach on data mesh [\#28](https://github.com/buildlyio/buildly-core/pull/28) ([ralfzen](https://github.com/ralfzen))
@@ -514,153 +364,30 @@
 - Fix missing request when validating Bifrost objects - PLAT-202 [\#20](https://github.com/buildlyio/buildly-core/pull/20) ([ralfzen](https://github.com/ralfzen))
 - Clear exception for endpoint not found [\#19](https://github.com/buildlyio/buildly-core/pull/19) ([ralfzen](https://github.com/ralfzen))
 - PLAT-265 - Return raw data when processed one isn't available [\#18](https://github.com/buildlyio/buildly-core/pull/18) ([jefmoura](https://github.com/jefmoura))
-- Fix encoding responses is removing UUIDs - PLAT-243 [\#12](https://github.com/buildlyio/buildly-core/pull/12) ([ralfzen](https://github.com/ralfzen))
-- Add registration process [\#3](https://github.com/buildlyio/buildly-core/pull/3) ([docktorrr](https://github.com/docktorrr))
-
-## [v0.0.38](https://github.com/buildlyio/buildly-core/tree/v0.0.38) (2019-02-06)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.37...v0.0.38)
-
-**Merged pull requests:**
-
 -  Rename user\_uuid to core\_user\_uuid in jwt\_enricher - PLAT-146 [\#17](https://github.com/buildlyio/buildly-core/pull/17) ([ralfzen](https://github.com/ralfzen))
 - Add test script for pytest with idpb [\#16](https://github.com/buildlyio/buildly-core/pull/16) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.0.37](https://github.com/buildlyio/buildly-core/tree/v0.0.37) (2019-02-06)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.36...v0.0.37)
-
-**Merged pull requests:**
-
 - PLAT-254 - Make SECRET\_KEY mandatory [\#15](https://github.com/buildlyio/buildly-core/pull/15) ([Menda](https://github.com/Menda))
 - Remove unused PrimJSONEncoder - PLAT-243 [\#13](https://github.com/buildlyio/buildly-core/pull/13) ([ralfzen](https://github.com/ralfzen))
-- Add authorization to Bifrost aggregated data - PLAT-202 [\#10](https://github.com/buildlyio/buildly-core/pull/10) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.0.36](https://github.com/buildlyio/buildly-core/tree/v0.0.36) (2019-02-05)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.35...v0.0.36)
-
-**Merged pull requests:**
-
+- Fix encoding responses is removing UUIDs - PLAT-243 [\#12](https://github.com/buildlyio/buildly-core/pull/12) ([ralfzen](https://github.com/ralfzen))
 - Small improvements [\#11](https://github.com/buildlyio/buildly-core/pull/11) ([ralfzen](https://github.com/ralfzen))
-- Allow only superusers to use LogicModules endpoint - PLAT-180 [\#6](https://github.com/buildlyio/buildly-core/pull/6) ([ralfzen](https://github.com/ralfzen))
-
-## [v0.0.35](https://github.com/buildlyio/buildly-core/tree/v0.0.35) (2019-02-01)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.34...v0.0.35)
-
-**Merged pull requests:**
-
+- Add authorization to Bifrost aggregated data - PLAT-202 [\#10](https://github.com/buildlyio/buildly-core/pull/10) ([ralfzen](https://github.com/ralfzen))
 - Update Coreuser serializer [\#9](https://github.com/buildlyio/buildly-core/pull/9) ([jefmoura](https://github.com/jefmoura))
-- PLAT-203 - Aggregate multiple objects [\#7](https://github.com/buildlyio/buildly-core/pull/7) ([jefmoura](https://github.com/jefmoura))
-
-## [v0.0.34](https://github.com/buildlyio/buildly-core/tree/v0.0.34) (2019-02-01)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.33...v0.0.34)
-
-**Merged pull requests:**
-
 - Allow anybody to create a new user [\#8](https://github.com/buildlyio/buildly-core/pull/8) ([jefmoura](https://github.com/jefmoura))
+- PLAT-203 - Aggregate multiple objects [\#7](https://github.com/buildlyio/buildly-core/pull/7) ([jefmoura](https://github.com/jefmoura))
+- Allow only superusers to use LogicModules endpoint - PLAT-180 [\#6](https://github.com/buildlyio/buildly-core/pull/6) ([ralfzen](https://github.com/ralfzen))
 - PLAT-190 Fetch data for Bifrost relationships [\#5](https://github.com/buildlyio/buildly-core/pull/5) ([jefmoura](https://github.com/jefmoura))
-
-## [v0.0.33](https://github.com/buildlyio/buildly-core/tree/v0.0.33) (2019-02-01)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.32...v0.0.33)
-
-**Merged pull requests:**
-
 - PLAT 184: Add registration [\#4](https://github.com/buildlyio/buildly-core/pull/4) ([docktorrr](https://github.com/docktorrr))
+- Add registration process [\#3](https://github.com/buildlyio/buildly-core/pull/3) ([docktorrr](https://github.com/docktorrr))
 - PLAT-178 - Aggregate data from external services [\#2](https://github.com/buildlyio/buildly-core/pull/2) ([jefmoura](https://github.com/jefmoura))
 - PLAT-174 - Create relationship field in LogicModule [\#1](https://github.com/buildlyio/buildly-core/pull/1) ([jefmoura](https://github.com/jefmoura))
 
-## [v0.0.32](https://github.com/buildlyio/buildly-core/tree/v0.0.32) (2019-01-31)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.31...v0.0.32)
+## [0.0.3](https://github.com/buildlyio/buildly-core/tree/0.0.3) (2019-01-25)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.0.2...0.0.3)
 
-## [v0.0.31](https://github.com/buildlyio/buildly-core/tree/v0.0.31) (2019-01-29)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.30...v0.0.31)
+## [0.0.2](https://github.com/buildlyio/buildly-core/tree/0.0.2) (2019-01-16)
+[Full Changelog](https://github.com/buildlyio/buildly-core/compare/0.0.1...0.0.2)
 
-## [v0.0.30](https://github.com/buildlyio/buildly-core/tree/v0.0.30) (2019-01-25)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.29...v0.0.30)
-
-## [v0.0.29](https://github.com/buildlyio/buildly-core/tree/v0.0.29) (2019-01-24)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.28...v0.0.29)
-
-## [v0.0.28](https://github.com/buildlyio/buildly-core/tree/v0.0.28) (2019-01-23)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.27...v0.0.28)
-
-## [v0.0.27](https://github.com/buildlyio/buildly-core/tree/v0.0.27) (2019-01-23)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.26...v0.0.27)
-
-## [v0.0.26](https://github.com/buildlyio/buildly-core/tree/v0.0.26) (2019-01-22)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.25...v0.0.26)
-
-## [v0.0.25](https://github.com/buildlyio/buildly-core/tree/v0.0.25) (2019-01-22)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.24...v0.0.25)
-
-## [v0.0.24](https://github.com/buildlyio/buildly-core/tree/v0.0.24) (2019-01-18)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.23...v0.0.24)
-
-## [v0.0.23](https://github.com/buildlyio/buildly-core/tree/v0.0.23) (2019-01-17)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.22...v0.0.23)
-
-## [v0.0.22](https://github.com/buildlyio/buildly-core/tree/v0.0.22) (2019-01-16)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.21...v0.0.22)
-
-## [v0.0.21](https://github.com/buildlyio/buildly-core/tree/v0.0.21) (2019-01-16)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.20...v0.0.21)
-
-## [v0.0.20](https://github.com/buildlyio/buildly-core/tree/v0.0.20) (2019-01-16)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.19...v0.0.20)
-
-## [v0.0.19](https://github.com/buildlyio/buildly-core/tree/v0.0.19) (2019-01-16)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.17...v0.0.19)
-
-## [v0.0.17](https://github.com/buildlyio/buildly-core/tree/v0.0.17) (2019-01-15)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.18...v0.0.17)
-
-## [v0.0.18](https://github.com/buildlyio/buildly-core/tree/v0.0.18) (2019-01-15)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.16...v0.0.18)
-
-## [v0.0.16](https://github.com/buildlyio/buildly-core/tree/v0.0.16) (2019-01-14)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.15...v0.0.16)
-
-## [v0.0.15](https://github.com/buildlyio/buildly-core/tree/v0.0.15) (2019-01-11)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.14...v0.0.15)
-
-## [v0.0.14](https://github.com/buildlyio/buildly-core/tree/v0.0.14) (2019-01-08)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.13...v0.0.14)
-
-## [v0.0.13](https://github.com/buildlyio/buildly-core/tree/v0.0.13) (2018-12-21)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.12...v0.0.13)
-
-## [v0.0.12](https://github.com/buildlyio/buildly-core/tree/v0.0.12) (2018-12-20)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.11...v0.0.12)
-
-## [v0.0.11](https://github.com/buildlyio/buildly-core/tree/v0.0.11) (2018-12-20)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.10...v0.0.11)
-
-## [v0.0.10](https://github.com/buildlyio/buildly-core/tree/v0.0.10) (2018-12-20)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.9...v0.0.10)
-
-## [v0.0.9](https://github.com/buildlyio/buildly-core/tree/v0.0.9) (2018-12-20)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.8...v0.0.9)
-
-## [v0.0.8](https://github.com/buildlyio/buildly-core/tree/v0.0.8) (2018-12-20)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.7...v0.0.8)
-
-## [v0.0.7](https://github.com/buildlyio/buildly-core/tree/v0.0.7) (2018-12-19)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.6...v0.0.7)
-
-## [v0.0.6](https://github.com/buildlyio/buildly-core/tree/v0.0.6) (2018-12-18)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.5...v0.0.6)
-
-## [v0.0.5](https://github.com/buildlyio/buildly-core/tree/v0.0.5) (2018-12-18)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.4...v0.0.5)
-
-## [v0.0.4](https://github.com/buildlyio/buildly-core/tree/v0.0.4) (2018-12-17)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.3...v0.0.4)
-
-## [v0.0.3](https://github.com/buildlyio/buildly-core/tree/v0.0.3) (2018-12-17)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.2...v0.0.3)
-
-## [v0.0.2](https://github.com/buildlyio/buildly-core/tree/v0.0.2) (2018-12-14)
-[Full Changelog](https://github.com/buildlyio/buildly-core/compare/v0.0.1...v0.0.2)
-
-## [v0.0.1](https://github.com/buildlyio/buildly-core/tree/v0.0.1) (2018-12-13)
+## [0.0.1](https://github.com/buildlyio/buildly-core/tree/0.0.1) (2018-12-20)
 
 
 \* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
