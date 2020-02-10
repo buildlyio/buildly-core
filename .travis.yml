@@ -51,7 +51,6 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker tag $DOCKER_REPO "$DOCKER_REPO:$TRAVIS_TAG" && docker push "$DOCKER_REPO:$TRAVIS_TAG"
+  script: bash scripts/deploy.sh
   on:
     branch: master
-    tags: true
