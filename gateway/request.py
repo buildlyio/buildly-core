@@ -1,6 +1,5 @@
 import logging
 import json
-import uuid
 import asyncio
 from urllib.error import URLError
 from typing import Any, Dict, Union
@@ -9,7 +8,6 @@ import requests
 import aiohttp
 from bravado_core.spec import Spec
 from django.http.request import QueryDict
-from django.forms.models import model_to_dict
 from rest_framework.request import Request
 
 from . import exceptions
@@ -17,7 +15,6 @@ from . import utils
 from core.models import LogicModule
 from .clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
-from workflow import models as wfm
 
 logger = logging.getLogger(__name__)
 
@@ -108,13 +105,6 @@ class GatewayRequest(BaseGatewayRequest):
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
-        # old DataMesh aggregation TODO: remove after migrating to the new one
-        if self.request.query_params.get('aggregate', '_none').lower() == 'true' and status_code == 200:
-            try:
-                self._aggregate_response_data(resp_data=content)
-            except exceptions.ServiceDoesNotExist as e:
-                logger.error(e.content)
-
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)
 
@@ -155,107 +145,6 @@ class GatewayRequest(BaseGatewayRequest):
             spec = self._get_swagger_spec(service)
             client_map[service] = SwaggerClient(spec, self.request)
         datamesh.extend_data(resp_data, client_map)
-
-    # ===================================================================
-    # OLD DATAMESH METHODS (TODO: remove after migrating to new DataMesh)
-    def _aggregate_response_data(self, resp_data: Union[dict, list]):
-        """
-        Aggregate data from first response
-        """
-        service_name = self.url_kwargs['service']
-
-        if isinstance(resp_data, dict):
-            if 'results' in resp_data:
-                # DRF API payload structure
-                resp_data = resp_data.get('results', None)
-
-        logic_module = self._get_logic_module(service_name)
-
-        if isinstance(resp_data, list):
-            for data in resp_data:
-                extension_map = self._generate_extension_map(
-                    logic_module=logic_module,
-                    model_name=self.url_kwargs['model'],
-                    data=data
-                )
-                r = self._expand_data(extension_map)
-                data.update(**r)
-        elif isinstance(resp_data, dict):
-            extension_map = self._generate_extension_map(
-                logic_module=logic_module,
-                model_name=self.url_kwargs['model'],
-                data=resp_data
-            )
-            r = self._expand_data(extension_map)
-            resp_data.update(**r)
-
-    def _expand_data(self, extend_models: list):
-        """
-        Use extension maps to fetch data from different services and
-        replace the relationship key by real data.
-        """
-        result = dict()
-        for extend_model in extend_models:
-            content = None
-            if extend_model['service'] == 'buildly':
-                if hasattr(wfm, extend_model['model']):
-                    cls = getattr(wfm, extend_model['model'])
-                    uuid_name = self._get_buildly_uuid_name(cls)
-                    lookup = {
-                        uuid_name: extend_model['pk']
-                    }
-                    try:
-                        obj = cls.objects.get(**lookup)
-                    except cls.DoesNotExist as e:
-                        logger.info(e)
-                    except ValueError:
-                        logger.info(f' Not found: {extend_model["model"]} with uuid_name={extend_model["pk"]}')
-                    else:
-                        utils.validate_object_access(self.request, obj)
-                        content = model_to_dict(obj)
-            else:
-                spec = self._get_swagger_spec(extend_model['service'])
-
-                # remove query_params from original request
-                self.request._request.GET = QueryDict(mutable=True)
-
-                # create a client for performing data requests
-                client = SwaggerClient(spec, self.request)
-
-                # perform a service data request
-                content, _, _ = client.request(**extend_model)
-
-            if content is not None:
-                result[extend_model['relationship_key']] = content
-
-        return result
-
-    def _generate_extension_map(self, logic_module: LogicModule, model_name: str, data: dict):
-        """
-        Generate a list of relationship map of a specific service model.
-        """
-        extension_map = []
-        if not logic_module.relationships:
-            logger.warning(f'Tried to aggregate but no relationship defined in {logic_module}.')
-            return extension_map
-        for k, v in logic_module.relationships[model_name].items():
-            value = v.split('.')
-            collection_args = {
-                'service': value[0],
-                'model': value[1],
-                'pk': str(data[k]),
-                'relationship_key': k
-            }
-            extension_map.append(collection_args)
-
-        return extension_map
-
-    def _get_buildly_uuid_name(self, model):
-        for field in model._meta.fields:
-            if field.name.endswith('uuid') and field.unique and \
-                    field.default == uuid.uuid4:
-                return field.name
-    # ==================================================================
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):
