@@ -1,8 +1,8 @@
 from drf_yasg import generators as drf_gen
 from drf_yasg import openapi
 
-from . import aggregator
-from . import utils
+from gateway import utils
+from gateway.aggregator import SwaggerAggregator
 
 
 class OpenAPISchemaGenerator(drf_gen.OpenAPISchemaGenerator):
@@ -22,7 +22,7 @@ class OpenAPISchemaGenerator(drf_gen.OpenAPISchemaGenerator):
                          'application/x-www-form-urlencoded',
                          'multipart/form-data'],
         }
-        sw_aggregator = aggregator.SwaggerAggregator(config_aggregator)
+        sw_aggregator = SwaggerAggregator(config_aggregator)
         swagger_spec = sw_aggregator.generate_swagger()
 
         endpoints = self.get_endpoints(request)
