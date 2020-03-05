@@ -9,10 +9,10 @@ from bravado_core.spec import Spec
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
-from . import exceptions
-from . import utils
+from gateway import exceptions
+from gateway import utils
 from core.models import LogicModule
-from .clients import SwaggerClient, AsyncSwaggerClient
+from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
 
 logger = logging.getLogger(__name__)
