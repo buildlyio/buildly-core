@@ -11,7 +11,8 @@ class TestSwaggerAggregator:
 
     def test_get_aggregate_swagger_without_api_specification(self, aggregator, logic_module, monkeypatch):
         test_swagger = {'name': 'test'}
-        mocked_swagger = Mock(return_value=test_swagger)
+        mocked_swagger = Mock()
+        mocked_swagger.return_value.json.return_value = test_swagger
         monkeypatch.setattr(utils, 'get_swagger_from_url', mocked_swagger)
 
         result = aggregator.get_aggregate_swagger()

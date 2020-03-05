@@ -4,16 +4,15 @@ import asyncio
 from urllib.error import URLError
 from typing import Any, Dict, Union
 
-import requests
 import aiohttp
 from bravado_core.spec import Spec
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
-from . import exceptions
-from . import utils
+from gateway import exceptions
+from gateway import utils
 from core.models import LogicModule
-from .clients import SwaggerClient, AsyncSwaggerClient
+from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
 
 logger = logging.getLogger(__name__)
@@ -117,8 +116,16 @@ class GatewayRequest(BaseGatewayRequest):
 
         if schema_url not in self._specs:
             try:
-                response = requests.get(schema_url)
-                spec_dict = response.json()
+                # Use stored specification of the module
+                spec_dict = logic_module.api_specification
+
+                # Pull specification of the module from its service and store it
+                if spec_dict is None:
+                    response = utils.get_swagger_from_url(schema_url)
+                    spec_dict = response.json()
+                    logic_module.api_specification = spec_dict
+                    logic_module.save()
+
             except URLError:
                 raise URLError(f'Make sure that {schema_url} is accessible.')
 
@@ -192,16 +199,23 @@ class AsyncGatewayRequest(BaseGatewayRequest):
         schema_url = utils.get_swagger_url_by_logic_module(logic_module)
 
         if schema_url not in self._specs:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(schema_url) as response:
-                    try:
-                        spec_dict = await response.json()
-                    except aiohttp.ContentTypeError:
-                        raise exceptions.GatewayError(
-                            f'Failed to parse swagger schema from {schema_url}. Should be JSON.'
-                        )
-                swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
-                self._specs[schema_url] = swagger_spec
+            # Use stored specification of the module
+            spec_dict = logic_module.api_specification
+
+            # Pull specification of the module from its service and store it
+            if spec_dict is None:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(schema_url) as response:
+                        try:
+                            spec_dict = await response.json()
+                        except aiohttp.ContentTypeError:
+                            raise exceptions.GatewayError(
+                                f'Failed to parse swagger schema from {schema_url}. Should be JSON.'
+                            )
+                    logic_module.api_specification = spec_dict
+                    logic_module.save()
+                    swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
+                    self._specs[schema_url] = swagger_spec
         return self._specs[schema_url]
 
     async def _join_response_data(self, resp_data: Union[dict, list]) -> None:

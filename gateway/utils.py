@@ -67,7 +67,7 @@ def get_swagger_from_url(api_url: str):
     :return: dictionary representing the swagger definition
     """
     try:
-        return requests.get(api_url).json()
+        return requests.get(api_url)
     except requests.exceptions.ConnectTimeout as error:
         raise TimeoutError(
             f'Connection timed out. Please, check that {api_url} is accessible.') from error
