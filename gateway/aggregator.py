@@ -23,30 +23,31 @@ class SwaggerAggregator(object):
         """
         swagger_apis = {}
         if 'apis' in self.configuration:  # Check if apis is in the config file
-            for api_name, api_url in self.configuration['apis'].items():
-                if api_name not in swagger_apis:
+            for endpoint_name, schema_url in self.configuration['apis'].items():
+                if endpoint_name not in swagger_apis:
                     # Get the swagger.json
                     try:
                         # Use stored specification of the module
-                        api_specification = LogicModule.objects.values_list(
-                            'api_specification', flat=True).filter(endpoint_name=api_name).first()
+                        spec_dict = LogicModule.objects.values_list(
+                            'api_specification', flat=True).filter(endpoint_name=endpoint_name).first()
 
                         # Pull specification of the module from its service and store it
-                        if api_specification is None:
-                            api_specification = utils.get_swagger_from_url(api_url)
-                            LogicModule.objects.filter(endpoint_name=api_name).update(
-                                api_specification=api_specification)
+                        if spec_dict is None:
+                            response = utils.get_swagger_from_url(schema_url)
+                            spec_dict = response.json()
+                            LogicModule.objects.filter(endpoint_name=endpoint_name).update(
+                                api_specification=spec_dict)
 
-                        swagger_apis[api_name] = {
-                            'spec': api_specification,
-                            'url': api_url
+                        swagger_apis[endpoint_name] = {
+                            'spec': spec_dict,
+                            'url': schema_url
                         }
                     except ConnectionError as error:
                         logger.warning(error)
                     except TimeoutError as error:
                         logger.warning(error)
                     except ValueError:
-                        logger.info('Cannot remove {} from errors'.format(api_url))
+                        logger.info('Cannot remove {} from errors'.format(schema_url))
         return swagger_apis
 
     def _update_specification(self, name: str, api_name: str,
