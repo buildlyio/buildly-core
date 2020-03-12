@@ -67,7 +67,7 @@ services:
       PASSWORD_MINIMUM_LENGTH: "6"
       USE_PASSWORD_COMMON_VALIDATOR: "True"
       USE_PASSWORD_NUMERIC_VALIDATOR: "True"
-      FRONTEND_URL: "localhost:3000/login/"
+      FRONTEND_URL: "http://localhost:3000/login/"
 #      LDAP_ENABLE: "True"
 #      LDAP_HOST: "ldap://openldap_server:389"
 #      LDAP_USERNAME: "cn=admin,dc=example,dc=org"

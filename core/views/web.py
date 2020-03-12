@@ -86,8 +86,7 @@ def oauth_complete(request, backend, *args, **kwargs):
             tokens = generate_access_tokens(request, user)
             return JsonResponse(data=tokens, status=200)
         else:
-            url = setting_url(request.backend, 'INACTIVE_USER_URL',
-                              'LOGIN_ERROR_URL', 'LOGIN_URL')
+            url = setting_url(request.backend, 'INACTIVE_USER_URL', 'LOGIN_ERROR_URL', 'LOGIN_URL')
     else:
         url = setting_url(request.backend, 'LOGIN_ERROR_URL', 'LOGIN_URL')
 
