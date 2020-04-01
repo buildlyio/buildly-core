@@ -20,7 +20,7 @@ install:
 script:
   - flake8
   - bandit -r . -ll
-  - pytest --cache-clear
+  - pytest --cov-config=.coveragerc --cache-clear
   - docker build -t $DOCKER_REPO .
 env:
   global:
