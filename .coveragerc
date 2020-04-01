@@ -1,0 +1,10 @@
+[run]
+omit =
+  manage.py
+  conftest.py
+  */tests/*
+  */test_*
+  */migrations/*
+  */settings/*
+  */wsgi.py
+  */virtualenv/*
