@@ -1,6 +1,5 @@
 import uuid
 
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
