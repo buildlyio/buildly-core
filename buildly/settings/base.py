@@ -187,8 +187,6 @@ PASSWORD_RESET_TIMEOUT_DAYS = 1
 
 INVITATION_EXPIRE_HOURS = 24
 
-CORS_ORIGIN_ALLOW_ALL = True
-
 CORE_WEBSITE = "https://buildly.io"
 
 # User and Organization configuration
