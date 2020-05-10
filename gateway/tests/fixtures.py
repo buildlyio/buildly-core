@@ -2,6 +2,9 @@ import pytest
 
 import factories
 
+from core.tests.fixtures import logic_module
+from gateway.aggregator import SwaggerAggregator
+
 
 @pytest.fixture()
 def datamesh():
@@ -15,3 +18,13 @@ def datamesh():
                                       endpoint='/documents/', lookup_field_name='id')
     relationship = factories.Relationship(origin_model=lmm1, related_model=lmm2, key='documents')
     return lm1, lm2, relationship
+
+
+@pytest.fixture
+def aggregator(logic_module):
+    configuration = {
+        'apis': {
+            logic_module.endpoint_name: f'{logic_module.endpoint}/swagger.json'
+        }
+    }
+    return SwaggerAggregator(configuration)

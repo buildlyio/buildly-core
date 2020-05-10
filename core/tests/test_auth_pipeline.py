@@ -66,6 +66,8 @@ class OAuthTest(TestCase):
         self.assertIn('access_token', response.json())
         self.assertIn('access_token_jwt', response.json())
         self.assertIn('expires_in', response.json())
+        self.assertIn('scope', response.json())
+        self.assertIn('read write introspection', response.json()['scope'])
 
     def test_create_organization_new_default_org(self):
         Organization.objects.filter(name=settings.DEFAULT_ORG).delete()

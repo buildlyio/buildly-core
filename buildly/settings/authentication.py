@@ -79,6 +79,7 @@ for password_validator_env_var, password_validator in AUTH_PASSWORD_VALIDATORS_M
 LOGIN_URL = os.getenv('LOGIN_URL', FRONTEND_URL)
 LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if os.getenv('SOCIAL_AUTH_REDIRECT_IS_HTTPS') == 'True' else False
 SOCIAL_AUTH_LOGIN_REDIRECT_URLS = {
@@ -120,7 +121,12 @@ if os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'):
 
 # oauth2 settings
 OAUTH2_PROVIDER = {
-    "ACCESS_TOKEN_EXPIRE_SECONDS": int(os.getenv('ACCESS_TOKEN_EXPIRE_SECONDS', 36000)),
+    'ACCESS_TOKEN_EXPIRE_SECONDS': int(os.getenv('ACCESS_TOKEN_EXPIRE_SECONDS', 36000)),
+    'SCOPES': {
+        'read': 'Read scope',
+        'write': 'Write scope',
+        'introspection': 'Introspect token scope',
+    },
 }
 
 DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')

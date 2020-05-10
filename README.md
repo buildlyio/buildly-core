@@ -78,7 +78,9 @@ The following table lists the configurable parameters of buildly and their defau
 
 |             Parameter               |            Description             |                    Default                |
 |-------------------------------------|------------------------------------|-------------------------------------------|
+| `ACCESS_TOKEN_EXPIRE_SECONDS`       | The number of seconds an access token remains valid | 3600                     |
 | `ALLOWED_HOSTS`                     | A list of strings representing the domain names the app can serve  | `[]`      |
+| `CORS_ORIGIN_ALLOW_ALL`             | If True, CORS_ORIGIN_WHITELIST is not used and all origins are accepted  | False |
 | `CORS_ORIGIN_WHITELIST`             | A list of origins that are authorized to make cross-site HTTP requests  | `[]` |
 | `DATABASE_ENGINE`                   | The database backend to use. (`postgresql`, `mysql`, `sqlite3` or `oracle`) | `` |
 | `DATABASE_NAME`                     | The name of the database to use          | ``                                  |
@@ -86,30 +88,29 @@ The following table lists the configurable parameters of buildly and their defau
 | `DATABASE_PASSWORD`                 | The password to use when connecting to the database | ``                       |
 | `DATABASE_HOST`                     | The host to use when connecting to the database | ``                           |
 | `DATABASE_PORT`                     | The port to use when connecting to the database | ``                           |
-| `DEFAULT_ORG`                       | The first organization created in the database  | `My Organization`            |
+| `DEFAULT_ORG`                       | The first organization created in the database  | ``                           |
 | `JWT_ISSUER`                        | The name of the JWT issuer               | ``                                  |
 | `JWT_PRIVATE_KEY_RSA_BUILDLY`       | The private RSA KEY                      | ``                                  |
 | `JWT_PUBLIC_KEY_RSA_BUILDLY`        | The public RSA KEY                       | ``                                  |
-| `SOCIAL_AUTH_GITHUB_REDIRECT_URL`   | The redirect URL for GitHub Social auth  | None                                |
-| `SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL`  | The redirect URL for Google Social auth  | None                          |
-| `SOCIAL_AUTH_LOGIN_REDIRECT_URL`    | Redirect the user once the auth process ended successfully | None                              |
-| `SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL` | The redirect URL for Microsoft graph Social auth | None                 |
-| `ACCESS_TOKEN_EXPIRE_SECONDS`       | The number of seconds an access token remains valid | None                                |
-| `SECRET_KEY`                        | Used to provide cryptographic signing, and should be set to a unique, unpredictable value | None |
-| `OAUTH_CLIENT_ID`                   | Used in combination with OAUTH_CLIENT_SECRET to create OAuth2 password grant | None |
-| `OAUTH_CLIENT_SECRET`               | Used in combination with OAUTH_CLIENT_ID to create OAuth2 password grant | None |
-| `USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR`   | If true, checks whether the password meets a minimum length | None       |
-| `PASSWORD_MINIMUM_LENGTH`           | The minimum length of passwords      | `6` |
-| `USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR`  | If true, checks the similarity between the password and a set of attributes of the user | None |
-| `USE_PASSWORD_COMMON_VALIDATOR`     | If true, checks whether the password occurs in a list of common passwords | None |
-| `USE_PASSWORD_NUMERIC_VALIDATOR`    | If true, checks whether the password isn’t entirely numeric | None |
-| `SUPER_USER_PASSWORD`               | Used to define the super user password when it's created for the first time | `admin` in Debug mode and None |
 | `LDAP_ENABLE`                       | If true, enable LDAP authentication  | False |
 | `LDAP_HOST`                         | The host to use when connecting to the LDAP server | `` |
 | `LDAP_USERNAME`                     | The username to use when connecting to the LDAP server  | `` |
 | `LDAP_PASSWORD`                     | The password to use when connecting to the LDAP server | `` |
 | `LDAP_BASE_DN`                      | The base domain name for search | `` |
 | `LDAP_USERNAME_FIELD_SEARCH`        | The username field used by the LDAP server for search | `` |
+| `OAUTH_CLIENT_ID`                   | Used in combination with OAUTH_CLIENT_SECRET to create OAuth2 password grant | None |
+| `OAUTH_CLIENT_SECRET`               | Used in combination with OAUTH_CLIENT_ID to create OAuth2 password grant | None |
+| `PASSWORD_MINIMUM_LENGTH`           | The minimum length of passwords      | `6` |
+| `SECRET_KEY`                        | Used to provide cryptographic signing, and should be set to a unique, unpredictable value | None |
+| `SOCIAL_AUTH_GITHUB_REDIRECT_URL`   | The redirect URL for GitHub Social auth  | None                                |
+| `SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL`  | The redirect URL for Google Social auth  | None                          |
+| `SOCIAL_AUTH_LOGIN_REDIRECT_URL`    | Redirect the user once the auth process ended successfully | None                              |
+| `SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL` | The redirect URL for Microsoft graph Social auth | None                 |
+| `SUPER_USER_PASSWORD`               | Used to define the super user password when it's created for the first time | `admin` in Debug mode or None |
+| `USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR`   | Checks whether the password meets a minimum length | True       |
+| `USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR`  | Checks the similarity between the password and a set of attributes of the user | True |
+| `USE_PASSWORD_COMMON_VALIDATOR`     | Checks whether the password occurs in a list of common passwords | True |
+| `USE_PASSWORD_NUMERIC_VALIDATOR`    | Checks whether the password isn’t entirely numeric | True |
 
 Specify each parameter using `-e`, `--env`, and `--env-file` flags to set simple (non-array) environment variables to `docker run`. For example,
 

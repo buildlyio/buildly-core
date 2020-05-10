@@ -1,7 +1,8 @@
 import json
 import logging
 
-from . import utils
+from core.models import LogicModule
+from gateway import utils
 
 logger = logging.getLogger(__name__)
 
@@ -22,21 +23,31 @@ class SwaggerAggregator(object):
         """
         swagger_apis = {}
         if 'apis' in self.configuration:  # Check if apis is in the config file
-            for api_name, api_url in self.configuration['apis'].items():
-                if api_name not in swagger_apis:
+            for endpoint_name, schema_url in self.configuration['apis'].items():
+                if endpoint_name not in swagger_apis:
                     # Get the swagger.json
                     try:
-                        swagger_apis[api_name] = {
-                            'spec': utils.get_swagger_from_url(api_url),
-                            'url': api_url
+                        # Use stored specification of the module
+                        spec_dict = LogicModule.objects.values_list(
+                            'api_specification', flat=True).filter(endpoint_name=endpoint_name).first()
+
+                        # Pull specification of the module from its service and store it
+                        if spec_dict is None:
+                            response = utils.get_swagger_from_url(schema_url)
+                            spec_dict = response.json()
+                            LogicModule.objects.filter(endpoint_name=endpoint_name).update(
+                                api_specification=spec_dict)
+
+                        swagger_apis[endpoint_name] = {
+                            'spec': spec_dict,
+                            'url': schema_url
                         }
                     except ConnectionError as error:
                         logger.warning(error)
                     except TimeoutError as error:
                         logger.warning(error)
                     except ValueError:
-                        logger.info(
-                            'Cannot remove {} from errors'.format(api_url))
+                        logger.info('Cannot remove {} from errors'.format(schema_url))
         return swagger_apis
 
     def _update_specification(self, name: str, api_name: str,
