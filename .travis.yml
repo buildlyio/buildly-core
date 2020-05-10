@@ -51,6 +51,20 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: bash scripts/deploy-aws.sh
+  script: pip install --user awscli | export PATH=$PATH:$HOME/.local/bin | eval $(aws ecr get-login --region us-west-2)
   on:
     branch: master
+    tags: true
+
+
+  build-docker-image-tag:
+    image: plugins/docker
+    insecure: true
+    registry: 684870619712.dkr.ecr.us-west-2.amazonaws.com/transparent-path
+    repo: 684870619712.dkr.ecr.us-west-2.amazonaws.com/transparent-path/buildly-core
+    file: Dockerfile
+    auto_tag: true
+    secrets: [AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY]
+    when:
+      event: [tag]
+      status: [success]
