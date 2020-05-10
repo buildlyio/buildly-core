@@ -17,6 +17,7 @@ before_script:
 install:
   - cat requirements/base.txt | grep "^Django==\|^psycopg2" | xargs pip install
   - pip install -r requirements/ci.txt
+  - pip install awscli
 script:
   - flake8
   - bandit -r . -ll
