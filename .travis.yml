@@ -52,7 +52,7 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: scripts/deploy-aws.sh
+  script: bash scripts/deploy-aws.sh
   on:
     branch: master
     tags: true
