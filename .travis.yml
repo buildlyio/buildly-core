@@ -44,7 +44,7 @@ env:
     SECRET_KEY: "nothing"
     OAUTH_CLIENT_ID: "vBn4KsOCthm7TWzMH0kVV0dXkUPJEtOQwaLu0eoC"
     OAUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8EzjKqN6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJ"
-    DOCKER_REPO: "buildly/buildly"
+    DOCKER_REPO: "transparent-path/buildly-core"
     LDAP_ENABLE: "True"
     LDAP_HOST: "ldap://localhost:389"
     LDAP_USERNAME: "cn=admin,dc=example,dc=org"
@@ -52,7 +52,8 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: pip install awscli
+  script: pip install awscli | aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 684870619712.dkr.ecr.us-west-2.amazonaws.com
+
   on:
     branch: master
     tags: true
