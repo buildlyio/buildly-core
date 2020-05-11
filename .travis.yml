@@ -52,7 +52,7 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: pip install awscli | aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 684870619712.dkr.ecr.us-west-2.amazonaws.com
+  script: scripts/deploy-aws.sh
   on:
     branch: master
     tags: true
