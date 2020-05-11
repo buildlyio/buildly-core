@@ -52,7 +52,7 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: pip install awscli | export PATH=$PATH:$HOME/.local/bin | eval $(aws ecr get-login --region us-west-2)
+  script: pip install awscli
   on:
     branch: master
     tags: true
