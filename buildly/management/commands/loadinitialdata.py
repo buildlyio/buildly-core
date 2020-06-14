@@ -29,18 +29,6 @@ class Command(BaseCommand):
         self._su_group = None
         self._default_org = None
 
-    def _create_oauth_application(self):
-        if settings.OAUTH_CLIENT_ID and settings.OAUTH_CLIENT_SECRET:
-            app, created = Application.objects.update_or_create(
-                client_id=settings.OAUTH_CLIENT_ID,
-                client_secret=settings.OAUTH_CLIENT_SECRET,
-                defaults={
-                    'name': 'buildly oauth2',
-                    'client_type': Application.CLIENT_PUBLIC,
-                    'authorization_grant_type': Application.GRANT_PASSWORD,
-                }
-            )
-            self._application = app
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
@@ -89,5 +77,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self._create_groups()
         self._create_default_organization()
-        self._create_oauth_application()
         self._create_user()
