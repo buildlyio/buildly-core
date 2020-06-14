@@ -5,8 +5,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from oauth2_provider.models import Application
-
 from core.models import ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, \
     Organization, CoreUser, CoreGroup
 
@@ -28,7 +26,6 @@ class Command(BaseCommand):
         self._user = None
         self._su_group = None
         self._default_org = None
-
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
