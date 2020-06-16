@@ -96,8 +96,8 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
 class TestCoreUserCreate:
 
     def test_registration_fail(self, request_factory):
-        # check that 'password' and 'organization_name' fields are required
-        for field_name in ['password', 'organization_name']:
+        # check that 'password' fields are required
+        for field_name in ['password']:
             data = TEST_USER_DATA.copy()
             data.pop(field_name)
             request = request_factory.post(reverse('coreuser-list'), data)
@@ -113,7 +113,6 @@ class TestCoreUserCreate:
         assert user.email == TEST_USER_DATA['email']
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
-        assert user.organization.name == TEST_USER_DATA['organization_name']
         assert user.is_active
 
         # check this user is org admin
@@ -128,7 +127,6 @@ class TestCoreUserCreate:
         assert user.email == TEST_USER_DATA['email']
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
-        assert user.organization.name == TEST_USER_DATA['organization_name']
         assert not user.is_active
 
         # check this user is NOT org admin
@@ -147,7 +145,6 @@ class TestCoreUserCreate:
         assert user.email == TEST_USER_DATA['email']
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
-        assert user.organization.name == TEST_USER_DATA['organization_name']
         assert user.is_active
 
         # check this user is NOT org admin
@@ -162,7 +159,7 @@ class TestCoreUserCreate:
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
         assert response.status_code == 400
-    
+
     def test_email_mismatch_token_invalidation(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
         token = create_invitation_token("foobar@example.com", org_admin.organization)

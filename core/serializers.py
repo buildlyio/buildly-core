@@ -109,7 +109,6 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     Override default CoreUser serializer for writable actions (create, update, partial_update)
     """
     password = serializers.CharField(write_only=True)
-    organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
 
     class Meta:

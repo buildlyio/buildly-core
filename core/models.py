@@ -179,6 +179,8 @@ class CoreUser(AbstractUser):
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
+    REQUIRED_FIELDS = []
+
     class Meta:
         ordering = ('first_name',)
 
