@@ -15,7 +15,6 @@ TEST_USER_DATA = {
     'email': 'test@example.com',
     'username': 'johnsnow',
     'password': '123qwe',
-    'organization_name': 'Buidly',
     'organization_uuid': uuid.uuid4(),
 }
 
@@ -28,7 +27,6 @@ def superuser():
 @pytest.fixture
 def org():
     return factories.Organization(
-        name=TEST_USER_DATA['organization_name'],
         organization_uuid=TEST_USER_DATA['organization_uuid'],
     )
 
