@@ -104,52 +104,6 @@ class TestCoreUserCreate:
             response = CoreUserViewSet.as_view({'post': 'create'})(request)
             assert response.status_code == 400
 
-    def test_registration_of_first_org_user(self, request_factory):
-        request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
-        response = CoreUserViewSet.as_view({'post': 'create'})(request)
-        assert response.status_code == 201
-
-        user = CoreUser.objects.get(username=TEST_USER_DATA['username'])
-        assert user.email == TEST_USER_DATA['email']
-        assert user.first_name == TEST_USER_DATA['first_name']
-        assert user.last_name == TEST_USER_DATA['last_name']
-        assert user.is_active
-
-        # check this user is org admin
-        assert user.is_org_admin
-
-    def test_registration_of_second_org_user(self, request_factory, org_admin):
-        request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
-        response = CoreUserViewSet.as_view({'post': 'create'})(request)
-        assert response.status_code == 201
-
-        user = CoreUser.objects.get(username=TEST_USER_DATA['username'])
-        assert user.email == TEST_USER_DATA['email']
-        assert user.first_name == TEST_USER_DATA['first_name']
-        assert user.last_name == TEST_USER_DATA['last_name']
-        assert not user.is_active
-
-        # check this user is NOT org admin
-        assert not user.is_org_admin
-
-    def test_registration_of_invited_org_user(self, request_factory, org_admin):
-        data = TEST_USER_DATA.copy()
-        token = create_invitation_token(data['email'], org_admin.organization)
-        data['invitation_token'] = token
-
-        request = request_factory.post(reverse('coreuser-list'), data)
-        response = CoreUserViewSet.as_view({'post': 'create'})(request)
-        assert response.status_code == 201
-
-        user = CoreUser.objects.get(username=TEST_USER_DATA['username'])
-        assert user.email == TEST_USER_DATA['email']
-        assert user.first_name == TEST_USER_DATA['first_name']
-        assert user.last_name == TEST_USER_DATA['last_name']
-        assert user.is_active
-
-        # check this user is NOT org admin
-        assert not user.is_org_admin
-
     def test_reused_token_invalidation(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
         registered_user = factories.CoreUser.create(is_active=False, email=data['email'], username='user_org')
