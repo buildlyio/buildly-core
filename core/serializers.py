@@ -118,9 +118,9 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
     def create(self, validated_data):
         # get or create organization
-        if validated_data.pop('organization'):
+        try:
             organization = validated_data.pop('organization')
-        else:
+        except (TypeError, ValueError, OverflowError, KeyError):
             organization = None
         organization, is_new_org = Organization.objects.get_or_create(**organization)
 
