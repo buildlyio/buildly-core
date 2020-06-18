@@ -113,7 +113,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
     class Meta:
         model = CoreUser
-        fields = CoreUserSerializer.Meta.fields + ('password')
+        fields = CoreUserSerializer.Meta.fields + ('password',)
         read_only_fields = CoreUserSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
