@@ -55,4 +55,3 @@ deploy:
   script: bash scripts/deploy-aws.sh
   on:
     branch: master
-    tags: true
