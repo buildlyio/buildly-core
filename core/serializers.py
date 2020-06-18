@@ -118,7 +118,10 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
     def create(self, validated_data):
         # get or create organization
-        organization = validated_data.pop('organization')
+        if validated_data.pop('organization'):
+            organization = validated_data.pop('organization')
+        else:
+            organization = None
         organization, is_new_org = Organization.objects.get_or_create(**organization)
 
         core_groups = validated_data.pop('core_groups', [])
