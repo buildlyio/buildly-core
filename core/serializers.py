@@ -121,7 +121,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         try:
             organization = validated_data.pop('organization')
         except (TypeError, ValueError, OverflowError, KeyError):
-            organization = settings.DEFAULT_ORG
+            organization = Organization.objects.filter(name=settings.DEFAULT_ORG)
         organization, is_new_org = Organization.objects.get_or_create(**organization)
 
         core_groups = validated_data.pop('core_groups', [])
