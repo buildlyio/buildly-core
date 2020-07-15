@@ -196,17 +196,26 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         This endpoint is used to request password resetting.
         It requests the Email field
         """
-        print("EMAIL")
         logger.warning('EMAIL EVENT!')
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        count = serializer.save()
-        return Response(
-            {
-                'detail': 'The reset password link was sent successfully.',
-                'count': count,
-            },
-            status=status.HTTP_200_OK)
+
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            count = serializer.save()
+            return Response(
+                {
+                    'detail': 'The reset password link was sent successfully.',
+                    'count': count,
+                },
+                status=status.HTTP_200_OK)
+        except:
+            logger.error("Problem Restting Password")
+            return Response(
+                {
+                    'detail': 'Problem Resetting Password.',
+                    'count': 0,
+                },
+                status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserResetPasswordCheckSerializer,
