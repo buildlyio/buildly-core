@@ -208,7 +208,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'count': count,
                 },
                 status=status.HTTP_200_OK)
-        except:
+        except HTTPError:
             logger.error("Problem Restting Password")
             return Response(
                 {
