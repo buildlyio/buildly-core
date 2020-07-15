@@ -61,7 +61,7 @@ class BaseSwaggerClient:
     def get_request_data(self) -> dict:
         """
         Create the data structure to be used in Swagger request. GET and  DELETE
-        requests don't require body, so the data structure will have just
+        requests do not require body, so the data structure will have just
         query parameters if passed to swagger request.
         """
         if self._in_request.content_type == 'application/json':
