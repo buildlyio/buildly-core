@@ -17,6 +17,7 @@ before_script:
 install:
   - cat requirements/base.txt | grep "^Django==\|^psycopg2" | xargs pip install
   - pip install -r requirements/ci.txt
+  - pip install awscli
 script:
   - flake8
   - bandit -r . -ll
@@ -43,7 +44,7 @@ env:
     SECRET_KEY: "nothing"
     OAUTH_CLIENT_ID: "vBn4KsOCthm7TWzMH0kVV0dXkUPJEtOQwaLu0eoC"
     OAUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8EzjKqN6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJ"
-    DOCKER_REPO: "buildly/buildly"
+    DOCKER_REPO: "mediamash/buildly-core"
     LDAP_ENABLE: "True"
     LDAP_HOST: "ldap://localhost:389"
     LDAP_USERNAME: "cn=admin,dc=example,dc=org"
@@ -51,6 +52,6 @@ env:
     LDAP_BASE_DN: "dc=example,dc=org"
 deploy:
   provider: script
-  script: bash scripts/deploy.sh
+  script: bash scripts/deploy-aws.sh
   on:
     branch: master
