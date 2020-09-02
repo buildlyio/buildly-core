@@ -7,6 +7,8 @@ A gateway and service discovery system for “micro” services. A light weight 
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
+If your just getting started we suggest using the [Buildly-CLI](https://github.com/buidlyio/buildly-cli) for help creating a logic module or microservie and connecting it to a buidly core
+
 ### Prerequisites
 
 * Docker version 19+
