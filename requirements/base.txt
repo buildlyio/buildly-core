@@ -1,7 +1,7 @@
 Django==2.2.13
 django-filter==2.2.0
 django-health-check==3.6.1
-git+https://github.com/Humanitec/django-oauth-toolkit-jwt@v0.5.2#egg=django-oauth-toolkit-jwt
+git+https://github.com/buildlyio/django-oauth-toolkit-jwt@v0.5.2#egg=django-oauth-toolkit-jwt
 djangorestframework==3.9.4
 psycopg2-binary==2.8.3
 social-auth-app-django==3.1.0
