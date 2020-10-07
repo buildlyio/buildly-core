@@ -75,6 +75,10 @@ jobs:
         LDAP_PASSWORD: "admin"
         LDAP_BASE_DN: "dc=example,dc=org"
 
+    - name: docker build
+      run: |
+        docker build --tag buildly-core .
+
     # postgres!
     services:
       postgres:
