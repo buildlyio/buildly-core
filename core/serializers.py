@@ -154,6 +154,16 @@ class CoreUserInvitationSerializer(serializers.Serializer):
                                    min_length=1, max_length=10)
 
 
+class CoreUserEventInvitationSerializer(serializers.Serializer):
+    """
+    Serializer for event invitation 
+    """
+    room_id = serializers.IntegerField()
+    event_id = serializers.IntegerField()
+    emails = serializers.ListField(child=serializers.CharField(),
+                                   min_length=1, max_length=10)
+
+
 class CoreUserResetPasswordSerializer(serializers.Serializer):
     """Serializer for reset password request data
     """

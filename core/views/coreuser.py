@@ -1,5 +1,5 @@
 from urllib.parse import urljoin
-
+import re
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -13,7 +13,7 @@ from drf_yasg.utils import swagger_auto_schema
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer)
+                              CoreUserResetPasswordConfirmSerializer, CoreUserEventInvitationSerializer,)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -56,6 +56,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
+        'invite_event': CoreUserEventInvitationSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -258,3 +259,71 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
+    # @transaction.atomic
+
+    @swagger_auto_schema(methods=['post'],
+                         request_body=CoreUserEventInvitationSerializer,
+                         responses=SUCCESS_RESPONSE)
+    @action(methods=['POST'], detail=False)
+    def invite_event(self, request, *args, **kwargs):
+        """
+        a)Request
+            Event ID
+            Room Id
+            Email - attendees, host, panelist -  Array
+        b)Identify user type and send relevant emails with link
+            Registered 
+            Unregistered user
+        """
+        serializer = self.get_serializer(data=request.data)
+        print('serializer before validation -->', serializer)
+        serializer.is_valid(raise_exception=True)
+        event_id = request.data['event_id']
+        room_id = request.data['room_id']
+        emails = request.data['emails']
+        for email in emails:
+            user = CoreUser.objects.filter(email=email).first()
+            # if the user is registered
+            if user:
+                """
+                for registered users send them a test email "Registered Users! Welcome to a new event on MediaMash".
+                """
+                email_address = email
+                subject = 'Registered Users! Welcome to a new event on MediaMash'
+                context = {
+                    'organization_name': 'MediaMash',
+                    'event_link':  'http://mm-dev.buildly.io/',
+                    'event_id': event_id,
+                    'room_id': room_id
+                }
+                print('context for unregistered user is -->', context)
+                template_name = 'email/coreuser/invite_event.txt'
+                html_template_name = 'email/coreuser/invite_event.html'
+                send_email(email_address, subject, context, template_name, html_template_name)
+
+            # if the user is not registered
+            else:
+                """
+                for unregistered users send them a test email "Unregistered Users! Welcome to a new event on MediaMash'".
+                """
+                email_address = email
+                subject = 'Unregistered Users! Welcome to a new event on MediaMash'
+                context = {
+                    'organization_name': 'MediaMash',
+                    'event_link':  'http://mm-dev.buildly.io/',
+                    'event_id': event_id,
+                    'room_id': room_id
+                }
+                print('context for unregistered user is -->', context)
+                template_name = 'email/coreuser/invite_event.txt'
+                html_template_name = 'email/coreuser/invite_event.html'
+                send_email(email_address, subject, context, template_name, html_template_name)
+
+        return Response(
+            {
+                'detail': 'The invitations were sent successfully.',
+                'event_link': 'http://mm-dev.buildly.io/',
+                'event_id': event_id,
+                'room_id': room_id
+            }, status=status.HTTP_200_OK)

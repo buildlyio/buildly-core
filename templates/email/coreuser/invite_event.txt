@@ -1,0 +1,12 @@
+
+Invitation from {{organization_name}}
+
+You have been invited to join an event on MediaMash!
+Click the button below to go straight to your event
+{{ event_link}}
+
+Next steps
+Once you have registered, you will be within {{ organization_name }}'s portfolio.
+Incase you forgot your room id is {{room_id}} and event id is {{event_id}}
+
+MediaMash
