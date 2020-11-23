@@ -334,7 +334,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'room_id': room_id,
                     'event_name':event_name
                 }
-                print('context for unregistered user is -->', context)
                 template_name = 'email/coreuser/invite_event.txt'
                 html_template_name = 'email/coreuser/invite_event.html'
                 send_email(email_address, subject, context, template_name, html_template_name)
