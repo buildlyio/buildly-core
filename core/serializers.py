@@ -156,7 +156,7 @@ class CoreUserInvitationSerializer(serializers.Serializer):
 
 class CoreUserEventInvitationSerializer(serializers.Serializer):
     """
-    Serializer for event invitation 
+    Serializer for event invitation
     """
     room_id = serializers.IntegerField()
     event_id = serializers.IntegerField()

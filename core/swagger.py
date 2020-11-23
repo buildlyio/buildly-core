@@ -43,3 +43,13 @@ COREUSER_RESETPASS_RESPONSE = {200: Schema(
         'count': Schema(type='number')
     })
 }
+COREUSER_INVITE_EVENT_CHECK_RESPONSE = {200: Schema(
+    type='object',
+    properties={
+        'email': Schema(type='string'),
+        'room_id': Schema(type='number'),
+        'event_id': Schema(type='number'),
+        'organization': Schema(type='string'),
+    })
+
+}
