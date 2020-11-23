@@ -278,6 +278,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         event_id = request.data['event_id']
         room_id = request.data['room_id']
         emails = request.data['emails']
+        event_name= request.data['event_name']
         invitation_link_list = []
         for email in emails:
             user = CoreUser.objects.filter(email=email).first()
@@ -301,7 +302,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'organization_name': organization,
                     'event_link': invitation_link,
                     'event_id': event_id,
-                    'room_id': room_id
+                    'room_id': room_id,
+                    'event_name':event_name
                 }
                 print('context for unregistered user is -->', context)
                 template_name = 'email/coreuser/invite_event.txt'
@@ -329,7 +331,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     'organization_name': organization,
                     'event_link':  invitation_link,
                     'event_id': event_id,
-                    'room_id': room_id
+                    'room_id': room_id,
+                    'event_name':event_name
                 }
                 print('context for unregistered user is -->', context)
                 template_name = 'email/coreuser/invite_event.txt'
