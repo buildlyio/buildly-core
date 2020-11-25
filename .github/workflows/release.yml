@@ -28,6 +28,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
         sudo touch /var/log/buildly.log
         sudo chown runner:docker /var/log/buildly.log
