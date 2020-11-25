@@ -85,7 +85,6 @@ jobs:
         LDAP_BASE_DN: "dc=example,dc=org"
 
     - name: Docker Build & Release
-      if: steps.semantic.outputs.new_release_published == 'true'
       run: |
         echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
         docker build --tag ${BUILDLY_IMAGE} .
