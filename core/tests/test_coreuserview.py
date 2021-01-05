@@ -11,7 +11,7 @@ from django.utils.http import urlsafe_base64_encode
 from rest_framework.reverse import reverse
 
 import factories
-from core.models import CoreUser, EmailTemplate, Organization, TEMPLATE_RESET_PASSWORD
+from core.models import CoreUser, EmailTemplate, TEMPLATE_RESET_PASSWORD
 from core.views import CoreUserViewSet
 from core.jwt_utils import create_invitation_token
 from core.tests.fixtures import org, org_admin, org_member, reset_password_request, TEST_USER_DATA
@@ -96,13 +96,62 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
 class TestCoreUserCreate:
 
     def test_registration_fail(self, request_factory):
-        # check that 'password' fields are required
-        for field_name in ['password']:
+        # check that 'password' and 'organization name' fields are required
+        for field_name in ['password', 'organization_name']:
             data = TEST_USER_DATA.copy()
             data.pop(field_name)
             request = request_factory.post(reverse('coreuser-list'), data)
             response = CoreUserViewSet.as_view({'post': 'create'})(request)
             assert response.status_code == 400
+
+    def test_registration_of_first_org_user(self, request_factory):
+        request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 201
+
+        user = CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        assert user.email == TEST_USER_DATA['email']
+        assert user.first_name == TEST_USER_DATA['first_name']
+        assert user.last_name == TEST_USER_DATA['last_name']
+        assert user.organization.name == TEST_USER_DATA['organization_name']
+        assert user.is_active
+
+        # check this user is org admin
+        assert user.is_org_admin
+
+    def test_registration_of_second_org_user(self, request_factory, org_admin):
+        request = request_factory.post(reverse('coreuser-list'), TEST_USER_DATA)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 201
+
+        user = CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        assert user.email == TEST_USER_DATA['email']
+        assert user.first_name == TEST_USER_DATA['first_name']
+        assert user.last_name == TEST_USER_DATA['last_name']
+        assert user.organization.name == TEST_USER_DATA['organization_name']
+        assert not user.is_active
+
+        # check this user is NOT org admin
+        assert not user.is_org_admin
+
+    def test_registration_of_invited_org_user(self, request_factory, org_admin):
+        data = TEST_USER_DATA.copy()
+        token = create_invitation_token(data['email'], org_admin.organization)
+        data['invitation_token'] = token
+
+        request = request_factory.post(reverse('coreuser-list'), data)
+        response = CoreUserViewSet.as_view({'post': 'create'})(request)
+        assert response.status_code == 201
+
+        user = CoreUser.objects.get(username=TEST_USER_DATA['username'])
+        assert user.email == TEST_USER_DATA['email']
+        assert user.first_name == TEST_USER_DATA['first_name']
+        assert user.last_name == TEST_USER_DATA['last_name']
+        assert user.organization.name == TEST_USER_DATA['organization_name']
+        assert user.is_active
+
+        # check this user is NOT org admin
+        assert not user.is_org_admin
 
     def test_reused_token_invalidation(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
@@ -127,7 +176,6 @@ class TestCoreUserCreate:
         data = TEST_USER_DATA.copy()
         groups = factories.CoreGroup.create_batch(2, organization=org_admin.organization)
         data['core_groups'] = [item.pk for item in groups]
-
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
         assert response.status_code == 201
@@ -218,7 +266,7 @@ class TestResetPassword(object):
     def test_reset_password_using_default_emailtemplate(self, request_factory, org_member):
         email = org_member.email
         assert list(org_member.organization.emailtemplate_set.all()) == []
-        assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == []
+        # assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == [] -- Removed this assertion to support organization name here
         request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200

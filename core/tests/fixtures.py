@@ -16,7 +16,8 @@ TEST_USER_DATA = {
     'username': 'johnsnow',
     'password': '123qwe',
     'organization_uuid': uuid.uuid4(),
-    'organization': settings.DEFAULT_ORG,
+    # 'organization': settings.DEFAULT_ORG, # Tweaked this to support organization name from front end
+    'organization_name': settings.DEFAULT_ORG
 }
 
 
@@ -28,6 +29,7 @@ def superuser():
 @pytest.fixture
 def org():
     return factories.Organization(
+        name=TEST_USER_DATA['organization_name'],
         organization_uuid=TEST_USER_DATA['organization_uuid'],
     )
 

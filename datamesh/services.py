@@ -98,7 +98,7 @@ class DataMesh:
                 if hasattr(self._access_validator, 'validate') and callable(self._access_validator.validate):
                     self._access_validator.validate(obj)
                 else:
-                    raise DatameshConfigurationError(f'DataMesh Error: Access Validator should have validate method')
+                    raise DatameshConfigurationError(f'{"DataMesh Error:Access Validator should have validate method"}')
             obj_dict = model_to_dict(obj)
             data_item[relationship.key].append(obj_dict)
             self._cache[cache_key] = obj_dict
@@ -133,7 +133,7 @@ class DataMesh:
                 else:
                     logger.error(f'No response data for join record (request params: {params})')
             else:
-                raise DatameshConfigurationError(f'DataMesh Error: Client should have request method')
+                raise DatameshConfigurationError(f'{"DataMesh Error: Client should have request method"}')
 
     async def async_extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]):
         """
