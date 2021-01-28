@@ -45,8 +45,10 @@ class APIGatewayView(views.APIView):
     def patch(self, request, *args, **kwargs):
         return self.make_service_request(request, *args, **kwargs)
 
-    def options(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    """Commenting out options function to solve error which does not send response,
+    response for options method"""
+    # def options(self, request, *args, **kwargs):
+    #     return self.make_service_request(request, *args, **kwargs)
 
     def make_service_request(self, request, *args, **kwargs):
         """
