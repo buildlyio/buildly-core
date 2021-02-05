@@ -13,14 +13,14 @@ from drf_yasg.utils import swagger_auto_schema
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer)
+                              CoreUserResetPasswordConfirmSerializer,CoreUserEmailAlertSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
 import logging
-
+# from twilio.rest import Client
 logger = logging.getLogger(__name__)
 
 
@@ -59,6 +59,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
+        'excursion_alert': CoreUserEmailAlertSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -262,3 +263,43 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
+    @swagger_auto_schema(methods=['post'],
+                         request_body=CoreUserEmailAlertSerializer,
+                         responses=SUCCESS_RESPONSE)
+    @action(methods=['POST'], detail=False)
+    def excursion_alert(self, request, *args, **kwargs):
+        """
+        a)Request alert message and uuid of core user
+        b)Send Email to the user's email with alert message
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_uuid = request.data['user_uuid']
+        alert_message = request.data['alert_message']
+
+        user = CoreUser.objects.filter(core_user_uuid=user_uuid).first()
+        email_address = user.email
+        subject = 'Alert message for shipment'
+        context = {
+            'alert_message': alert_message,        
+        }
+        template_name = 'email/coreuser/shipment_alert.txt'
+        html_template_name = 'email/coreuser/shipment_alert.html'
+        send_email(email_address, subject, context, template_name, html_template_name)
+        return Response(
+            {
+                'detail': 'The alert messages were sent successfully on email.',
+            }, status=status.HTTP_200_OK)
+
+        # for phone in phones:
+        #     phone_number = phone
+        #     account_sid = os.environ['TWILIO_ACCOUNT_SID']
+        #     auth_token = os.environ['TWILIO_AUTH_TOKEN']
+        #     client = Client(account_sid, auth_token)
+        #     message = client.messages.create(
+        #                     body=alert_message,
+        #                     from_='+15082068927',
+        #                     to=phone_number
+        #                 )
+        #     print(message.sid)
