@@ -287,4 +287,4 @@ class CoreUserEmailAlertSerializer(serializers.Serializer):
     Serializer for email alert of shipment 
     """
     user_uuid = serializers.UUIDField()
-    alert_message = serializers.CharField()
+    message = serializers.CharField()

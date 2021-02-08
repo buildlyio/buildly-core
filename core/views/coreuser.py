@@ -59,7 +59,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
-        'excursion_alert': CoreUserEmailAlertSerializer,
+        'alert': CoreUserEmailAlertSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -268,7 +268,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                          request_body=CoreUserEmailAlertSerializer,
                          responses=SUCCESS_RESPONSE)
     @action(methods=['POST'], detail=False)
-    def excursion_alert(self, request, *args, **kwargs):
+    def alert(self, request, *args, **kwargs):
         """
         a)Request alert message and uuid of core user
         b)Send Email to the user's email with alert message
@@ -276,13 +276,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_uuid = request.data['user_uuid']
-        alert_message = request.data['alert_message']
+        message = request.data['message']
 
         user = CoreUser.objects.filter(core_user_uuid=user_uuid).first()
         email_address = user.email
         subject = 'Alert message for shipment'
         context = {
-            'alert_message': alert_message,        
+            'alert_message': message,        
         }
         template_name = 'email/coreuser/shipment_alert.txt'
         html_template_name = 'email/coreuser/shipment_alert.html'
