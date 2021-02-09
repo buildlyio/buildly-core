@@ -13,7 +13,7 @@ from drf_yasg.utils import swagger_auto_schema
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer)
+                              CoreUserResetPasswordConfirmSerializer, CoreUserProfileSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -53,8 +53,10 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     SERIALIZERS_MAP = {
         'default': CoreUserSerializer,
         'create': CoreUserWritableSerializer,
-        'update': CoreUserWritableSerializer,
-        'partial_update': CoreUserWritableSerializer,
+        # 'update': CoreUserWritableSerializer,
+        'update': CoreUserProfileSerializer,
+        # 'partial_update': CoreUserWritableSerializer,
+        'partial_update': CoreUserProfileSerializer,
         'invite': CoreUserInvitationSerializer,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
@@ -250,10 +252,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                'reset_password',
                                'reset_password_check',
                                'reset_password_confirm',
-                               'invite_check']:
+                               'invite_check', 'update', 'partial_update']:
                 return [permissions.AllowAny()]
 
-            if self.action in ['update', 'partial_update', 'invite']:
+            # if self.action in ['update', 'partial_update', 'invite']:
+            #     return [AllowOnlyOrgAdmin(), IsOrgMember()]
+            if self.action in ['invite']:
                 return [AllowOnlyOrgAdmin(), IsOrgMember()]
 
         return super(CoreUserViewSet, self).get_permissions()
