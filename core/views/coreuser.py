@@ -53,10 +53,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     SERIALIZERS_MAP = {
         'default': CoreUserSerializer,
         'create': CoreUserWritableSerializer,
-        # 'update': CoreUserWritableSerializer,
-        'update': CoreUserProfileSerializer,
-        # 'partial_update': CoreUserWritableSerializer,
-        'partial_update': CoreUserProfileSerializer,
+        'update': CoreUserWritableSerializer,
+        'partial_update': CoreUserWritableSerializer,
+        'update_profile': CoreUserProfileSerializer,
         'invite': CoreUserInvitationSerializer,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
@@ -252,11 +251,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                'reset_password',
                                'reset_password_check',
                                'reset_password_confirm',
-                               'invite_check', 'update', 'partial_update']:
+                               'invite_check',
+                               'update_profile']:
                 return [permissions.AllowAny()]
 
-            # if self.action in ['update', 'partial_update', 'invite']:
-            #     return [AllowOnlyOrgAdmin(), IsOrgMember()]
+            if self.action in ['update', 'partial_update', 'invite']:
+                return [AllowOnlyOrgAdmin(), IsOrgMember()]
             if self.action in ['invite']:
                 return [AllowOnlyOrgAdmin(), IsOrgMember()]
 
@@ -266,3 +266,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
+    @action(detail=True, methods=['patch'], name='Update Profile')
+    def update_profile(self, request, pk=None, *args, **kwargs):
+        """
+        Update a user Profile
+        """
+        # the particular user in CoreUser table
+        user = self.get_object()
+        serializer = CoreUserProfileSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

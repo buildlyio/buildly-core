@@ -152,12 +152,14 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         return coreuser
 
 
-class CoreUserProfileSerializer(serializers.ModelSerializer):
+class CoreUserProfileSerializer(serializers.Serializer):
     """ Let's user update his first_name,last_name,title,contact_info,
     password and organization_name """
 
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
+    title = serializers.CharField(required=False)
+    contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
 
