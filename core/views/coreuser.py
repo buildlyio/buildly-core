@@ -14,11 +14,8 @@ import time
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-<<<<<<< HEAD
-                              CoreUserResetPasswordConfirmSerializer,CoreUserEmailAlertSerializer)
-=======
-                              CoreUserResetPasswordConfirmSerializer, CoreUserProfileSerializer)
->>>>>>> 341ee5d6a3ac498c8eb2f71bf1ab76d26952c14c
+                              CoreUserResetPasswordConfirmSerializer,CoreUserEmailAlertSerializer,CoreUserProfileSerializer)
+                              
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -273,7 +270,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
 
-<<<<<<< HEAD
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserEmailAlertSerializer,
                          responses=SUCCESS_RESPONSE)
@@ -317,7 +313,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         #                     to=phone_number
         #                 )
         #     print(message.sid)
-=======
     @action(detail=True, methods=['patch'], name='Update Profile')
     def update_profile(self, request, pk=None, *args, **kwargs):
         """
@@ -329,4 +324,3 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
->>>>>>> 341ee5d6a3ac498c8eb2f71bf1ab76d26952c14c
