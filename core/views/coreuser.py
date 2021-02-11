@@ -9,7 +9,8 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
-
+import calendar
+import time
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
@@ -276,13 +277,17 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_uuid = request.data['user_uuid']
-        message = request.data['message']
-
+        date_time = request.data['date_time']
+        messages = request.data['messages']
         user = CoreUser.objects.filter(core_user_uuid=user_uuid).first()
         email_address = user.email
         subject = 'Alert message for shipment'
+        time_tuple = time.strptime(date_time, "%Y-%m-%dT%H:%M:%S.%f%z")
+        time_formate = calendar.timegm(time_tuple)
+        date_time_form = time.ctime(time_formate)
         context = {
-            'alert_message': message,        
+            'date_time': date_time_form,
+            'messages':messages,
         }
         template_name = 'email/coreuser/shipment_alert.txt'
         html_template_name = 'email/coreuser/shipment_alert.html'
