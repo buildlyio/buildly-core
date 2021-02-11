@@ -1,3 +1,1 @@
 Alert message from Transparent Path
-
-Status of shipment  {{ alert_message }}!
