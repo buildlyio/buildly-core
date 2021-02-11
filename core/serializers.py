@@ -152,6 +152,42 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         return coreuser
 
 
+class CoreUserProfileSerializer(serializers.Serializer):
+    """ Let's user update his first_name,last_name,title,contact_info,
+    password and organization_name """
+
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    title = serializers.CharField(required=False)
+    contact_info = serializers.CharField(required=False)
+    password = serializers.CharField(required=False)
+    organization_name = serializers.CharField(required=False)
+
+    class Meta:
+        model = CoreUser
+        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name',)
+
+    def update(self, instance, validated_data):
+
+        organization_name = validated_data.pop('organization_name')
+
+        name = Organization.objects.filter(name=organization_name).first()
+        if name is not None:
+            instance.organization = name
+            instance.organization_name = name
+
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.title = validated_data.get('title', instance.title)
+        instance.contact_info = validated_data.get('contact_info', instance.contact_info)
+        password = validated_data.get('password', None)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+
+        return instance
+
+
 class CoreUserInvitationSerializer(serializers.Serializer):
     emails = serializers.ListField(child=serializers.EmailField(),
                                    min_length=1, max_length=10)

@@ -14,7 +14,11 @@ import time
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
+<<<<<<< HEAD
                               CoreUserResetPasswordConfirmSerializer,CoreUserEmailAlertSerializer)
+=======
+                              CoreUserResetPasswordConfirmSerializer, CoreUserProfileSerializer)
+>>>>>>> 341ee5d6a3ac498c8eb2f71bf1ab76d26952c14c
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -56,6 +60,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'create': CoreUserWritableSerializer,
         'update': CoreUserWritableSerializer,
         'partial_update': CoreUserWritableSerializer,
+        'update_profile': CoreUserProfileSerializer,
         'invite': CoreUserInvitationSerializer,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
@@ -252,10 +257,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                'reset_password',
                                'reset_password_check',
                                'reset_password_confirm',
-                               'invite_check']:
+                               'invite_check',
+                               'update_profile']:
                 return [permissions.AllowAny()]
 
             if self.action in ['update', 'partial_update', 'invite']:
+                return [AllowOnlyOrgAdmin(), IsOrgMember()]
+            if self.action in ['invite']:
                 return [AllowOnlyOrgAdmin(), IsOrgMember()]
 
         return super(CoreUserViewSet, self).get_permissions()
@@ -265,6 +273,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
 
+<<<<<<< HEAD
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserEmailAlertSerializer,
                          responses=SUCCESS_RESPONSE)
@@ -308,3 +317,16 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         #                     to=phone_number
         #                 )
         #     print(message.sid)
+=======
+    @action(detail=True, methods=['patch'], name='Update Profile')
+    def update_profile(self, request, pk=None, *args, **kwargs):
+        """
+        Update a user Profile
+        """
+        # the particular user in CoreUser table
+        user = self.get_object()
+        serializer = CoreUserProfileSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+>>>>>>> 341ee5d6a3ac498c8eb2f71bf1ab76d26952c14c
