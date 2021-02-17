@@ -14,8 +14,9 @@ import time
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer,CoreUserEmailAlertSerializer,CoreUserProfileSerializer)
-                              
+                              CoreUserResetPasswordConfirmSerializer, CoreUserEmailAlertSerializer,
+                              CoreUserProfileSerializer)
+
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -292,7 +293,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         date_time_form = time.ctime(time_formate)
         context = {
             'date_time': date_time_form,
-            'messages':messages,
+            'messages': messages,
         }
         template_name = 'email/coreuser/shipment_alert.txt'
         html_template_name = 'email/coreuser/shipment_alert.html'
