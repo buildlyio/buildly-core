@@ -162,10 +162,12 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
+    email_alert_flag = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name',)
+        fields = ('first_name', 'last_name', 'password', 'title',
+                  'contact_info', 'organization_name', 'email_alert_flag',)
 
     def update(self, instance, validated_data):
 
@@ -180,6 +182,7 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
+        instance.email_alert_flag = validated_data.get('email_alert_flag', instance.email_alert_flag)
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
