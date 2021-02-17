@@ -321,9 +321,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
         validated_data['client_secret'] = secrets.token_urlsafe(190)
         return super(ApplicationSerializer, self).create(validated_data)
 
+
 class CoreUserEmailAlertSerializer(serializers.Serializer):
     """
-    Serializer for email alert of shipment 
+    Serializer for email alert of shipment
     """
     user_uuid = serializers.UUIDField()
     messages = serializers.JSONField()
