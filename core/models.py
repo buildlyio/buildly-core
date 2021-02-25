@@ -94,7 +94,7 @@ class Organization(models.Model):
     oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
-
+    allow_import_export = models.BooleanField('To allow import export functionality', default=False)
     class Meta:
         ordering = ('name',)
         verbose_name_plural = "Organizations"
