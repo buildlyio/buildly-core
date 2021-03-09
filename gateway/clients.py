@@ -45,9 +45,14 @@ class BaseSwaggerClient:
             path = f'/{model}/{{{pk_name}}}/'
 
         # Check that operation is valid according to spec
-        operation = spec.get_op_for_request(self._in_request.method, path)
+        request_method = self._in_request.method
+        operation = spec.get_op_for_request(request_method, path)
         if not operation:
-            raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
+            if request_method == 'OPTIONS':
+                operation = spec.get_op_for_request('GET',path)
+                operation.http_method = request_method
+            else:
+                raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
         method = operation.http_method.lower()
         path_name = operation.path_name
 
@@ -99,7 +104,6 @@ class BaseSwaggerClient:
         if self._in_request.content_type == 'application/json':
             headers['content-type'] = 'application/json'
         return headers
-
 
 class SwaggerClient(BaseSwaggerClient):
     """ Synchronous implementation of Swagger client using requests lib """
