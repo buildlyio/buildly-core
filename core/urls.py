@@ -6,6 +6,7 @@ from rest_framework import routers
 
 from core import views
 from core.views.web import IndexView, oauth_complete
+from core.views.oauth import github_login
 
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
@@ -30,6 +31,7 @@ urlpatterns = [
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
     path('', include('workflow.urls')),
+    path('github/', github_login, name='github_login'),
 
     # Auth backend URL's
     path('oauth/', include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
