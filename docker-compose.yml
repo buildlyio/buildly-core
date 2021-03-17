@@ -77,7 +77,7 @@ services:
       EMAIL_HOST_PASSWORD: "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"
       EMAIL_PORT: "587"
       EMAIL_USE_TLS: "False"
-      EMAIL_SUBJECT_PREFIX: "NO REPLY: Transparent Path - "
+      EMAIL_SUBJECT_PREFIX: "NO REPLY: Buildly - "
       EMAIL_BACKEND: "SMTP"
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"

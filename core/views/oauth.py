@@ -1,7 +1,5 @@
 from rest_framework import mixins, viewsets
 import django_filters
-from django.shortcuts import render
-from django.utils.encoding import smart_str
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 
 from core.serializers import AccessTokenSerializer, ApplicationSerializer, RefreshTokenSerializer
@@ -111,11 +109,3 @@ class RefreshTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     permission_classes = (IsSuperUser,)
     queryset = RefreshToken.objects.all()
     serializer_class = RefreshTokenSerializer
-
-
-def github_login(request):
-    encoded_client_id = smart_str('076e9a822c235db9057f', encoding='utf-8', strings_only=False, errors='strict')
-    context = {
-        'url': encoded_client_id
-    }
-    return render(request, 'email/index.html', context)
