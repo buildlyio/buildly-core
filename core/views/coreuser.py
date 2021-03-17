@@ -9,11 +9,15 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+
 
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer)
+                              CoreUserResetPasswordConfirmSerializer,CoreUserUpdateOrganizationSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -258,3 +262,18 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
+
+
+    @action(detail=True, methods=['patch'], name='Update Organization')
+    def update_org(self, request, pk=None, *args, **kwargs):
+        """
+        Update a user Organization
+        """
+        # the particular user in CoreUser table
+        user = self.get_object()
+        serializer = CoreUserUpdateOrganizationSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
