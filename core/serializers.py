@@ -299,9 +299,27 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
         instance.email = validated_data.get('email', instance.email)
         organization, is_new_org = Organization.objects.get_or_create(name=organization_name)
 
-        # if the current user is the first user
-        if is_new_org:
+        # if an already existing user in an org add him as user
+        if not is_new_org:
+            instance.organization = organization
+            instance.save()
+            # now attach the user role as USER
+            org_user = CoreGroup.objects.filter(organization__name=organization_name,
+                                                is_org_level=True,
+                                                permissions=PERMISSIONS_VIEW_ONLY).first()
 
+            instance.core_groups.add(org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                org_groups = CoreGroup.objects.filter(organization__name=organization_name,
+                                                      is_org_level=True,
+                                                      permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # if the current user is the first user
+        else:
             # first update the org name for that user
             instance.organization = organization
             instance.save()
@@ -311,24 +329,11 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
                                               permissions=PERMISSIONS_ORG_ADMIN)
             instance.core_groups.add(org_admin)
 
-            # add requested groups to the user
-            # for group in core_groups:
-            #     instance.core_groups.add(group)
-
-        else:
-            instance.organization = organization
-            instance.save()
-            # now attach the user role as USER
-            org_user = CoreGroup.objects.get(organization=organization,
-                                             is_org_level=True,
-                                             permissions=PERMISSIONS_VIEW_ONLY)
-            print("org_admin", org_user)
-            instance.core_groups.add(org_user)
+            core_groups_for_org = CoreGroup.objects.filter(organization__name=organization,
+                                                           is_org_level=True)
 
             # add requested groups to the user
-            # for group in core_groups:
-            #     instance.core_groups.add(group)
-
-        # instance.save()
+            for group in core_groups_for_org:
+                instance.core_groups.add(group)
 
         return instance
