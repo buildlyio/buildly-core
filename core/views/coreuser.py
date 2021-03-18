@@ -264,8 +264,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
 
-    @action(detail=True, methods=['patch'], name='Update Organization')
-    def update_org(self, request, pk=None, *args, **kwargs):
+    @action(detail=False, methods=['patch'], name='Update Organization', url_path='update_org/(?P<pk>\d+)')
+    def update_info(self, request, pk=None, *args, **kwargs):
         """
         Update a user Organization
         """

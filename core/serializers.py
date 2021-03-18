@@ -1,6 +1,5 @@
 import jwt
 import secrets
-
 from urllib.parse import urljoin
 
 from django.contrib.auth import password_validation
@@ -120,7 +119,8 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     def create(self, validated_data):
         # get or create organization
         organization = validated_data.pop('organization')
-        organization, is_new_org = Organization.objects.get_or_create(**organization)
+        org_name = organization['name']
+        organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
 
         core_groups = validated_data.pop('core_groups', [])
 
@@ -295,8 +295,11 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
 
-        organization_name = validated_data.pop('organization_name')
+        organization_name = str(validated_data.pop('organization_name')).lower()
         instance.email = validated_data.get('email', instance.email)
+        if instance.email is not None:
+            instance.save()
+
         organization, is_new_org = Organization.objects.get_or_create(name=organization_name)
 
         # if an already existing user in an org add him as user
@@ -328,12 +331,5 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
                                               is_org_level=True,
                                               permissions=PERMISSIONS_ORG_ADMIN)
             instance.core_groups.add(org_admin)
-
-            core_groups_for_org = CoreGroup.objects.filter(organization__name=organization,
-                                                           is_org_level=True)
-
-            # add requested groups to the user
-            for group in core_groups_for_org:
-                instance.core_groups.add(group)
 
         return instance
