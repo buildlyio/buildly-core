@@ -285,14 +285,21 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         user_uuid = request.data['user_uuid']
         date_time = request.data['date_time']
         messages = request.data['messages']
+        subject_line = request.data['subject_line']
         user = CoreUser.objects.filter(core_user_uuid=user_uuid).first()
         email_address = user.email
-        subject = 'Alert message for shipment'
-        time_tuple = time.strptime(date_time, "%Y-%m-%dT%H:%M:%S.%f%z")
-        time_formate = calendar.timegm(time_tuple)
-        date_time_form = time.ctime(time_formate)
+        if subject_line is not None:
+            subject = subject_line
+        else:
+            subject = 'Alert message for shipment'
+        for message in messages:
+            try:
+                time_tuple = time.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S%z")
+            except ValueError:
+                time_tuple = time.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            time_format = calendar.timegm(time_tuple)
+            message['date_time'] = time.ctime(time_format)
         context = {
-            'date_time': date_time_form,
             'messages': messages,
         }
         template_name = 'email/coreuser/shipment_alert.txt'
