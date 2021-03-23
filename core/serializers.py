@@ -328,4 +328,5 @@ class CoreUserEmailAlertSerializer(serializers.Serializer):
     """
     user_uuid = serializers.UUIDField()
     messages = serializers.JSONField()
+    subject_line = serializers.CharField(max_length=255)
     date_time = serializers.DateTimeField()
