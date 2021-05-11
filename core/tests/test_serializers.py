@@ -9,7 +9,7 @@ def test_org_serializer(request_factory, org):
     request = request_factory.get('')
     serializer = OrganizationSerializer(org, context={'request': request})
     data = serializer.data
-    print("test org serializer", data)
+
     keys = [
         'id',
         'organization_uuid',
