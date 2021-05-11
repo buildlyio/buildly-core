@@ -9,18 +9,22 @@ def test_org_serializer(request_factory, org):
     request = request_factory.get('')
     serializer = OrganizationSerializer(org, context={'request': request})
     data = serializer.data
-    keys = ['id',
-            'organization_uuid',
-            'name',
-            'description',
-            'organization_url',
-            'create_date',
-            'edit_date',
-            'oauth_domains',
-            'date_format',
-            'phone',
-            'industries',
-            ]
+    print("test org serializer", data)
+    keys = [
+        'id',
+        'organization_uuid',
+        'name',
+        'description',
+        'organization_url',
+        'create_date',
+        'edit_date',
+        'oauth_domains',
+        'date_format',
+        'phone',
+        'industries',
+        'allow_import_export',
+        'radius',
+    ]
     assert set(data.keys()) == set(keys)
 
 

@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from core.models import Organization
-from core.serializers import OrganizationSerializer
+from core.serializers import OrganizationSerializer, OrganizationNameSerializer
 from core.permissions import IsOrgMember
 
 
@@ -54,7 +54,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         Fetch Already existing Organizations in Buildly Core,
         Any logged in user can access this
         """
-        # all orgs in Buildly Core
-        queryset = Organization.objects.all()
-        serializer = OrganizationSerializer(queryset, many=True)
+        # returns names of existing orgs in Buildly Core
+        queryset = Organization.objects.values('name')
+        serializer = OrganizationNameSerializer(queryset, many=True)
         return Response(serializer.data)
