@@ -49,7 +49,7 @@ class BaseSwaggerClient:
         operation = spec.get_op_for_request(request_method, path)
         if not operation:
             if request_method == 'OPTIONS':
-                operation = spec.get_op_for_request('GET',path)
+                operation = spec.get_op_for_request('GET', path)
                 operation.http_method = request_method
             else:
                 raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
@@ -104,6 +104,7 @@ class BaseSwaggerClient:
         if self._in_request.content_type == 'application/json':
             headers['content-type'] = 'application/json'
         return headers
+
 
 class SwaggerClient(BaseSwaggerClient):
     """ Synchronous implementation of Swagger client using requests lib """

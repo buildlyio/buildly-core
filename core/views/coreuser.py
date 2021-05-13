@@ -283,7 +283,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_uuid = request.data['user_uuid']
-        date_time = request.data['date_time']
+        # date_time = request.data['date_time']
         messages = request.data['messages']
         subject_line = request.data['subject_line']
         user = CoreUser.objects.filter(core_user_uuid=user_uuid).first()
