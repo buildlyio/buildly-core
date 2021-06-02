@@ -277,17 +277,16 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     @action(methods=['POST'], detail=False)
     def alert(self, request, *args, **kwargs):
         """
-        a)Request alert message and uuid of core user
-        b)Send Email to the user's email with alert message
+        a)Request alert message and uuid of organization
+        b)Access user uuids for that respective organization
+        c)Check if opted for email alert service
+        d)Send Email to the user's email with alert message
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user_uuid = request.data['user_uuid']
-        # date_time = request.data['date_time']
+        org_uuid = request.data['organization_uuid']
         messages = request.data['messages']
         subject_line = request.data['subject_line']
-        user = CoreUser.objects.filter(core_user_uuid=user_uuid).first()
-        email_address = user.email
         if subject_line is not None:
             subject = subject_line
         else:
@@ -304,12 +303,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         }
         template_name = 'email/coreuser/shipment_alert.txt'
         html_template_name = 'email/coreuser/shipment_alert.html'
-        send_email(email_address, subject, context, template_name, html_template_name)
+        core_users = CoreUser.objects.filter(organization__organization_uuid=org_uuid, email_alert_flag=True)
+        for user in core_users:
+            email_address = user.email
+            send_email(email_address, subject, context, template_name, html_template_name)
         return Response(
             {
                 'detail': 'The alert messages were sent successfully on email.',
             }, status=status.HTTP_200_OK)
-
+        # This code is commented out as in future, It will need to impliment message service.
         # for phone in phones:
         #     phone_number = phone
         #     account_sid = os.environ['TWILIO_ACCOUNT_SID']
@@ -321,6 +323,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         #                     to=phone_number
         #                 )
         #     print(message.sid)
+
     @action(detail=True, methods=['patch'], name='Update Profile')
     def update_profile(self, request, pk=None, *args, **kwargs):
         """

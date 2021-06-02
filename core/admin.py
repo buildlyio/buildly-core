@@ -35,7 +35,8 @@ class CoreUserAdmin(UserAdmin):
     search_fields = ('first_name', 'first_name', 'username', 'title', 'organization__name', )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization')}),
+        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info',
+                                         'organization', 'email_alert_flag')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
     )
