@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization
+from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Consortium
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -69,3 +69,4 @@ admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(CoreSites, CoreSitesAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 admin.site.register(Industry)
+admin.site.register(Consortium)

@@ -264,3 +264,24 @@ class LogicModule(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+
+class Consortium(models.Model):
+    consortium_uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(blank=True, null=True, max_length=255)
+    core_users = models.ManyToManyField(CoreUser, blank=True, related_name='consortium_users')
+    create_date = models.DateTimeField(default=timezone.now)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name_plural = "Consortiums"
+
+    def save(self, *args, **kwargs):
+        if self.create_date is None:
+            self.create_date = timezone.now()
+        self.edit_date = timezone.now()
+        super(Consortium, self).save()
+
+    def __str__(self):
+        return str(self.name)

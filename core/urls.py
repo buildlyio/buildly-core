@@ -1,7 +1,7 @@
 from django.urls import include, path, re_path
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-
+from core.views.consortium import ConsortiumViewSet
 from rest_framework import routers
 
 from core import views
@@ -21,6 +21,7 @@ router.register(r'oauth/applications', views.ApplicationViewSet)
 router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
+router.register(r'consortium', ConsortiumViewSet)
 
 
 urlpatterns = [
