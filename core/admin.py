@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Consortium
+from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, \
+    Industry, LogicModule, Organization, OrganizationType, Consortium
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -17,8 +18,13 @@ class CoreSitesAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class OrganizationTypeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    display = 'Organization Type'
+
+
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'create_date', 'edit_date')
+    list_display = ('name', 'organization_type', 'create_date', 'edit_date')
     display = 'Organization'
 
 
@@ -64,6 +70,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 admin.site.register(LogicModule, LogicModuleAdmin)
 admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(OrganizationType, OrganizationTypeAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(CoreSites, CoreSitesAdmin)

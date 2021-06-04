@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import TransactionTestCase, override_settings
 
-from core.models import CoreGroup, CoreUser, Organization
+from core.models import CoreGroup, CoreUser, Organization, OrganizationType
 
 
 class DevNull(object):
@@ -34,6 +34,7 @@ class LoadInitialDataTest(TransactionTestCase):
         call_command('loadinitialdata', *args, **opts)
 
         assert CoreGroup.objects.filter(name='Global Admin', is_global=True, permissions=15).count() == 1
+        assert OrganizationType.objects.filter().count() >= 6
         assert Organization.objects.filter(name=settings.DEFAULT_ORG).count() == 1
         assert CoreUser.objects.filter(is_superuser=True).count() == 1
 

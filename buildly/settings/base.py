@@ -198,3 +198,12 @@ DEFAULT_ORG = os.getenv('DEFAULT_ORG')
 SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'gateway.urls.swagger_info',
 }
+
+ORGANIZATION_TYPES = [
+    'Logistics Provider',
+	'Packer',
+	'Producer',
+	'Receiver',
+	'Shipper',
+	'Warehouse'
+]

@@ -78,6 +78,25 @@ class Industry(models.Model):
     def __str__(self):
         return self.name
 
+class OrganizationType(models.Model):
+    """
+    Allows organization to be of multiple types.
+    Supported types are:
+    1. Logistics Provider
+	2. Packer
+	3. Producer
+	4. Receiver
+	5. Shipper
+	6. Warehouse
+    """
+    name = models.CharField("Name", max_length=255, blank=True, help_text="Organization type")
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name_plural = "Organization Types"
+
+    def __str__(self):
+        return str(self.name)
 
 class Organization(models.Model):
     """
@@ -96,6 +115,8 @@ class Organization(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     allow_import_export = models.BooleanField('To allow import export functionality', default=False)
     radius = models.FloatField(max_length=20, blank=True, null=True)
+    organization_type = models.ForeignKey(OrganizationType,on_delete=models.CASCADE,null=True)
+
     class Meta:
         ordering = ('name',)
         verbose_name_plural = "Organizations"

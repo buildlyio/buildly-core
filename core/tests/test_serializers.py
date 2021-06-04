@@ -24,6 +24,7 @@ def test_org_serializer(request_factory, org):
         'industries',
         'allow_import_export',
         'radius',
+        'organization_type'
     ]
     assert set(data.keys()) == set(keys)
 

@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from core.models import ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, \
-    Organization, CoreUser, CoreGroup
+    Organization, CoreUser, CoreGroup, OrganizationType
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,11 @@ class Command(BaseCommand):
         self._user = None
         self._su_group = None
         self._default_org = None
+
+    def _create_organization_types(self):
+        if settings.ORGANIZATION_TYPES:
+            for organization_type in settings.ORGANIZATION_TYPES:
+                OrganizationType.objects.get_or_create(name=organization_type)
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
@@ -73,5 +78,6 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         self._create_groups()
+        self._create_organization_types()
         self._create_default_organization()
         self._create_user()
