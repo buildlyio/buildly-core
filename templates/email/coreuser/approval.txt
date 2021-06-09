@@ -1,0 +1,5 @@
+New Approval Request Admin!
+
+Approve newly registered user {{ coreuser_name }} on {{ organization_name }} !
+Click the button below to create your user profile.
+{{ approval_link }}

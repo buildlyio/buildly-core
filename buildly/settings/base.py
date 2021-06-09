@@ -200,10 +200,6 @@ SWAGGER_SETTINGS = {
 }
 
 ORGANIZATION_TYPES = [
-    'Logistics Provider',
-	'Packer',
-	'Producer',
-	'Receiver',
-	'Shipper',
-	'Warehouse'
+    'Custodian',
+    'Producer'
 ]

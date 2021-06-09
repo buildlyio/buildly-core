@@ -3,7 +3,6 @@ import pytest
 from workflow.serializers import WorkflowLevel2Serializer, WorkflowLevelTypeSerializer
 from .fixtures import wfl2, wfl_type
 
-
 @pytest.mark.django_db()
 def test_workflow_level2_serializer(request_factory, wfl2):
     request = request_factory.get('')

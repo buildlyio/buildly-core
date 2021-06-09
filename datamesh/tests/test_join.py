@@ -8,7 +8,6 @@ import factories
 from datamesh.tests.fixtures import relationship, relationship2, relationship_with_10_records
 from core.tests.fixtures import auth_api_client, org
 
-
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
 @patch('gateway.request.SwaggerClient.request')

@@ -34,7 +34,7 @@ class LoadInitialDataTest(TransactionTestCase):
         call_command('loadinitialdata', *args, **opts)
 
         assert CoreGroup.objects.filter(name='Global Admin', is_global=True, permissions=15).count() == 1
-        assert OrganizationType.objects.filter().count() >= 6
+        assert OrganizationType.objects.filter().count() >= 2
         assert Organization.objects.filter(name=settings.DEFAULT_ORG).count() == 1
         assert CoreUser.objects.filter(is_superuser=True).count() == 1
 

@@ -17,7 +17,6 @@ from .fixtures import (
     relationship2
 )
 
-
 @pytest.mark.django_db()
 class TestJoinRecordBase:
 

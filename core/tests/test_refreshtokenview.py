@@ -3,7 +3,6 @@ import secrets
 
 from oauth2_provider.models import RefreshToken
 from rest_framework.reverse import reverse
-
 from core.tests.fixtures import auth_api_client, auth_superuser_api_client, oauth_application, oauth_access_token, \
     oauth_refresh_token, superuser
 

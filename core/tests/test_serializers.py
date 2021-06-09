@@ -3,7 +3,6 @@ import pytest
 from core.serializers import OrganizationSerializer, CoreGroupSerializer, CoreUserSerializer
 from core.tests.fixtures import core_group, org, org_member
 
-
 @pytest.mark.django_db()
 def test_org_serializer(request_factory, org):
     request = request_factory.get('')

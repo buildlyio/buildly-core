@@ -8,7 +8,7 @@ from core.models import CoreUser
 class AdminViewTest(TestCase):
     def test_admin_user_auth_page_with_superuser(self):
         """Super user should see superuser status field on django admin"""
-        admin = CoreUser.objects.create_superuser('admin', 'admin@example.com', 'Password123')
+        CoreUser.objects.create_superuser('admin', 'admin@example.com', 'Password123')
         another_user = factories.CoreUser(username='another_user')
 
         self.client.login(username='admin', password='Password123')

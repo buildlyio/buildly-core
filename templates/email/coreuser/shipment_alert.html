@@ -1,30 +1,41 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body style="margin:0px;">
-
-    <p><br/><br/></p>
-    <table align="center" style="width: 719px;">
-      <tbody>
-
-            <tr style="height: 104px;">
-              <td style="width: 691px; height: 104px;">
-                <h1 style="text-align: center;"><span style="color: #151f56;"><strong><span style="font-size: 40px; font-family: roboto,helvetica neue,helvetica,arial,sans-serif;">Message from Transparent Path <br />Admin!</span></strong></span></h1>
-                {% for message in messages %}
-                  <div>
-                    <h3>Shipment Id {{ message.shipment_uuid }} </h3>
-                    <p><b>{{ message.alert_message }}</b>
-                    <span style="float:right">{{ message.date_time }}</span>
-                    </p>
-                  </div>
-                  <hr color ="#D8D8D8">
-                {% endfor %}
-              </td>
-            </tr>
-      </tbody>
-    </table>
-  </body>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+	</head>
+	<body style="margin: 0px">
+		<p><br /><br /></p>
+		<table align="center" style="width: 719px">
+			<tbody>
+				<tr style="height: 104px">
+					<td style="width: 691px; height: 104px">
+						<h1 style="text-align: center">
+							<span style="color: #151f56"
+								><strong
+									><span
+										style="
+											font-size: 40px;
+											font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
+										"
+										>Message from Transparent Path <br />Admin!</span
+									></strong
+								></span
+							>
+						</h1>
+						{% for message in messages %}
+						<div>
+							<h3>Shipment Name {{ message.shipment_uuid }}</h3>
+							<p>
+								<b>{{ message.alert_message }}</b>
+								<span style="float: right">{{ message.date_time }}</span>
+							</p>
+						</div>
+						<hr color="#D8D8D8" />
+						{% endfor %}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
 </html>

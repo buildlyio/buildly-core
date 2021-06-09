@@ -138,6 +138,26 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         coreuser.set_password(validated_data['password'])
         coreuser.save()
 
+        # Triggers an approval email for newly registered user
+        approval_link = urljoin(settings.FRONTEND_URL, '/app/profile/users/current-users')
+        subject = 'Approval Request'
+        template_name = 'email/coreuser/approval.txt'
+        html_template_name = 'email/coreuser/approval.html'
+        context = {
+                    'approval_link': approval_link,
+                    'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
+                    'organization_name': organization
+        }
+        if is_new_org:
+            admin = CoreUser.objects.filter(is_superuser=True)  # Global Admin
+        else:
+            org_admin_groups = CoreGroup.objects.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True)
+            admin = CoreUser.objects.filter(core_groups__in=org_admin_groups,
+                                            organization=organization)  # Organization Admin
+        if admin:
+            for users in admin:
+                send_email(users.email, subject, context, template_name, html_template_name)
+
         # add org admin role to the user if org is new
         if is_new_org:
             group_org_admin = CoreGroup.objects.get(organization=organization,
