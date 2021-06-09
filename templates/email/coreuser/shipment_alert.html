@@ -46,10 +46,8 @@
 						</h1>
 						{% for message in messages %}
 						<div>
-							<h3 style="color: #000000">
-								<b>Shipment: {{ message.shipment_name }}</b>
-								<span style="float: right"> {{message.alert_message}} </span>
-							</h3>
+							<h3 style="color: #000000">Shipment: {{ message.shipment_name }}</h3>
+							<p style="color: #000000">{{message.alert_message}}</p>
 							<p>
 								<span style="color: #424242">Captured at: {{ message.date_time }} (UTC)</span>
 								<a
