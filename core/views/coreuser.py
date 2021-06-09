@@ -298,6 +298,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 time_tuple = time.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
             time_format = calendar.timegm(time_tuple)
             message['date_time'] = time.ctime(time_format)
+            message['shipment_url'] = urljoin(settings.FRONTEND_URL,
+                                              '/app/shipment/edit/:'+str(message['shipment_id']))
         context = {
             'messages': messages,
         }

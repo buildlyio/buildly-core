@@ -5,13 +5,34 @@
 		<title></title>
 	</head>
 	<body style="margin: 0px">
+		<div
+			style="
+				background-color: #f5f5f5;
+				padding: 30px 0px 30px 0px;
+				display: run-in;
+				text-align: center;
+			"
+		>
+			<img
+				align="center"
+				alt="Transparent Path spc"
+				src="https://app.tpath.io/ff52ab9d5b614f04101dcc68a3d253e7.png"
+				width="312.5"
+				style="
+					max-width: 625px;
+					padding-bottom: 0;
+					display: inline !important;
+					vertical-align: bottom;
+				"
+			/>
+		</div>
 		<p><br /><br /></p>
 		<table align="center" style="width: 719px">
 			<tbody>
 				<tr style="height: 104px">
-					<td style="width: 691px; height: 104px">
+					<td style="width: 691px; height: 150px">
 						<h1 style="text-align: center">
-							<span style="color: #151f56"
+							<span style="color: #383636"
 								><strong
 									><span
 										style="
@@ -25,10 +46,29 @@
 						</h1>
 						{% for message in messages %}
 						<div>
-							<h3>Shipment Name {{ message.shipment_uuid }}</h3>
+							<h3 style="color: #000000">
+								<b>Shipment: {{ message.shipment_name }}</b>
+								<span style="float: right"> {{message.alert_message}} </span>
+							</h3>
 							<p>
-								<b>{{ message.alert_message }}</b>
-								<span style="float: right">{{ message.date_time }}</span>
+								<span style="color: #424242">Captured at: {{ message.date_time }} (UTC)</span>
+								<a
+									href="{{ message.shipment_url }}"
+									target="_blank"
+									style="
+										float: right;
+										font-weight: bold;
+										letter-spacing: normal;
+										padding: 0.5rem;
+										line-height: 100%;
+										text-align: center;
+										text-decoration: none;
+										color: #ebc645;
+										background-color: #424242;
+									"
+								>
+									Go to Shipment</a
+								>
 							</p>
 						</div>
 						<hr color="#D8D8D8" />
@@ -37,5 +77,50 @@
 				</tr>
 			</tbody>
 		</table>
+		<p><br /><br /><br /><br /><br /></p>
+		<div style="background-color: #f5f5f5; padding: 1px 0px 1px 0px; text-align: center">
+			<p>
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>Transparent Path spc</span
+				><br />
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>1700 Westlake Avenue North Suite 200 Seattle, WA 98109</span
+				>
+			</p>
+			<p>
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>Have any questions or thoughts on Transparent Path spc?</span
+				><br />
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>Reach out to us at anytime at
+					<a
+						href="mailto:support@tpath.io"
+						target="_blank"
+						style="text-decoration: underline; color: #0abffc"
+						><span style="color: #0abffc">support@tpath.io</span></a
+					></span
+				>
+			</p>
+		</div>
 	</body>
 </html>
