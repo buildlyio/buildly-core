@@ -5,8 +5,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from core.models import Organization
-from core.serializers import OrganizationSerializer, OrganizationNameSerializer
+from core.serializers import OrganizationSerializer
 from core.permissions import IsOrgMember
+from django.views.decorators.csrf import csrf_exempt
 
 
 logger = logging.getLogger(__name__)
@@ -48,13 +49,17 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
 
+    @csrf_exempt
     @action(detail=False, methods=['get'], name='Fetch Already existing Organization', url_path='fetch_orgs')
     def fetch_existing_orgs(self, request, pk=None, *args, **kwargs):
         """
         Fetch Already existing Organizations in Buildly Core,
         Any logged in user can access this
         """
-        # returns names of existing orgs in Buildly Core
-        queryset = Organization.objects.values('name')
-        serializer = OrganizationNameSerializer(queryset, many=True)
-        return Response(serializer.data)
+        # returns names of existing orgs in Buildly Core as a list
+        queryset = Organization.objects.all()
+        names = list()
+        for record in queryset:
+            names.append(record.name)
+
+        return Response(names)

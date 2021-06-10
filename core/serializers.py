@@ -310,10 +310,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrganizationNameSerializer(serializers.Serializer):
-    name = serializers.CharField(required=False)
-
-
 class AccessTokenSerializer(serializers.ModelSerializer):
     user = CoreUserSerializer()
 
