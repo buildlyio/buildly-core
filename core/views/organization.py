@@ -1,6 +1,6 @@
 import logging
 from django_filters.rest_framework import DjangoFilterBackend
-from core.permissions import IsSuperUser
+
 import django_filters
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -98,6 +98,6 @@ class OrganizationTypeViewSet(viewsets.ModelViewSet):
 
     filter_fields = ('name',)
     filter_backends = (DjangoFilterBackend,)
-    permission_classes = (IsSuperUser,)
+    permission_classes = (IsOrgMember,)
     queryset = OrganizationType.objects.all()
     serializer_class = OrganizationTypeSerializer
