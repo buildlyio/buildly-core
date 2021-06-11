@@ -1,13 +1,13 @@
 import logging
 from django_filters.rest_framework import DjangoFilterBackend
-from core.permissions import IsSuperUser
+
 import django_filters
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from core.models import Organization, OrganizationType
 from core.serializers import OrganizationSerializer, OrganizationTypeSerializer
-from core.permissions import IsOrgMember
+from core.permissions import AllowOnlyOrgAdmin, IsOrgMember
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 
@@ -98,6 +98,6 @@ class OrganizationTypeViewSet(viewsets.ModelViewSet):
 
     filter_fields = ('name',)
     filter_backends = (DjangoFilterBackend,)
-    permission_classes = (IsSuperUser,)
+    permission_classes = (AllowOnlyOrgAdmin,)
     queryset = OrganizationType.objects.all()
     serializer_class = OrganizationTypeSerializer
