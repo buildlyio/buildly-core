@@ -1,11 +1,12 @@
 import logging
-
+from django_filters.rest_framework import DjangoFilterBackend
+from core.permissions import IsSuperUser
 import django_filters
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from core.models import Organization
-from core.serializers import OrganizationSerializer
+from core.models import Organization, OrganizationType
+from core.serializers import OrganizationSerializer, OrganizationTypeSerializer
 from core.permissions import IsOrgMember
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
@@ -64,3 +65,39 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             names.append(record.name)
 
         return Response(names)
+
+
+class OrganizationTypeViewSet(viewsets.ModelViewSet):
+    """
+    Organization type  is associated with an organization which defines type of organization.
+
+    title:
+    Organization Type
+
+    description:
+    An organization type are custodian and producer
+
+    They are associated with an organization.
+    Only admin has access to organization type.
+
+    retrieve:
+    Return the  Organization Type.
+
+    list:
+    Return a list of all the existing  Organization Types.
+
+    create:
+    Create a new Organization Type instance.
+
+    update:
+    Update a Organization Type instance.
+
+    delete:
+    Delete a Organization Type instance.
+    """
+
+    filter_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    permission_classes = (IsSuperUser,)
+    queryset = OrganizationType.objects.all()
+    serializer_class = OrganizationTypeSerializer

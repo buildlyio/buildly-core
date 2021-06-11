@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from core.views.consortium import ConsortiumViewSet
 from rest_framework import routers
-
+from core.views.organization import OrganizationTypeViewSet
 from core import views
 from core.views.web import IndexView, oauth_complete
 
@@ -22,7 +22,7 @@ router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
 router.register(r'consortium', ConsortiumViewSet)
-
+router.register(r'organization_type', OrganizationTypeViewSet)
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),

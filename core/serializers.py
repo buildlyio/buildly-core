@@ -17,7 +17,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, Consortium
+    TEMPLATE_RESET_PASSWORD, Consortium, OrganizationType
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -357,4 +357,12 @@ class ConsortiumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Consortium
+        fields = '__all__'
+
+
+class OrganizationTypeSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+
+    class Meta:
+        model = OrganizationType
         fields = '__all__'
