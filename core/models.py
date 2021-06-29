@@ -296,9 +296,12 @@ class LogicModule(models.Model):
 
 
 class Consortium(models.Model):
-    consortium_uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(blank=True, null=True, max_length=255)
-    core_users = models.ManyToManyField(CoreUser, blank=True, related_name='consortium_users')
+    """
+    The consortium instance. Allows sharing of data between 2 or more organizations
+    """
+    consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
+    name = models.CharField("Consortium Name", max_length=255, blank=True, help_text="Multiple organizations form a consortium together")
+    custodian_uuids = ArrayField(models.CharField("Custodian UUIDs", max_length=255, null=True, blank=True), null=True, blank=True)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
