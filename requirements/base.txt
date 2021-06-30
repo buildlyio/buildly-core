@@ -1,9 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 Django==3.2.24
 django-filter==2.4.0
 jsonschema==3.2.0
 =======
 Django==2.2.18
+=======
+Django==2.2.24
+>>>>>>> f3e2512 ([Security] Bump django from 2.2.18 to 2.2.24 (#341))
 django-filter==2.2.0
 >>>>>>> 035909a ([Security] Bump django from 2.2.13 to 2.2.18 (#339))
 django-health-check==3.6.1
