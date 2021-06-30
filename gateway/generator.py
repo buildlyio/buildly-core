@@ -26,7 +26,7 @@ class OpenAPISchemaGenerator(drf_gen.OpenAPISchemaGenerator):
         swagger_spec = sw_aggregator.generate_swagger()
 
         endpoints = self.get_endpoints(request)
-        components = openapi.ReferenceResolver(openapi.SCHEMA_DEFINITIONS)
+        components = self.reference_resolver_class(openapi.SCHEMA_DEFINITIONS, force_init=True)
         paths, prefix = self.get_paths(endpoints, components, request, public)
         paths.update(swagger_spec['paths'])
         components['definitions'].update(swagger_spec['definitions'])
