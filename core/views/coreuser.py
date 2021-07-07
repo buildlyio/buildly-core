@@ -305,7 +305,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         }
         template_name = 'email/coreuser/shipment_alert.txt'
         html_template_name = 'email/coreuser/shipment_alert.html'
-        core_users = CoreUser.objects.filter(organization__organization_uuid=org_uuid, email_alert_flag=True)
+        # TODO send email via preferences
+        core_users = CoreUser.objects.filter(organization__organization_uuid=org_uuid)
         for user in core_users:
             email_address = user.email
             send_email(email_address, subject, context, template_name, html_template_name)

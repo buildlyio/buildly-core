@@ -208,7 +208,9 @@ class CoreUser(AbstractUser):
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
-    email_alert_flag = models.BooleanField(default=False,blank=True,null=True)
+    email_preferences = JSONField(blank=True, null=True)
+    push_preferences = JSONField(blank=True, null=True)
+    user_timezone = models.CharField(blank=True,null=True,max_length=255)
 
     REQUIRED_FIELDS = []
 

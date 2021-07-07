@@ -98,8 +98,9 @@ class CoreUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
-                  'title', 'email_alert_flag', 'contact_info', 'privacy_disclaimer_accepted',
-                  'organization', 'core_groups', 'invitation_token')
+                  'title', 'contact_info', 'privacy_disclaimer_accepted',
+                  'organization', 'core_groups', 'invitation_token', 'email_preferences',
+                  'push_preferences', 'user_timezone')
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
@@ -182,12 +183,14 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
-    email_alert_flag = serializers.BooleanField(required=False)
+    email_preferences = serializers.JSONField(required=False)
+    push_preferences = serializers.JSONField(required=False)
+    user_timezone = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
         fields = ('first_name', 'last_name', 'password', 'title',
-                  'contact_info', 'organization_name', 'email_alert_flag',)
+                  'contact_info', 'organization_name', 'email_preferences', 'push_preferences', 'user_timezone')
 
     def update(self, instance, validated_data):
 
@@ -202,7 +205,9 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
-        instance.email_alert_flag = validated_data.get('email_alert_flag', instance.email_alert_flag)
+        instance.email_preferences = validated_data.get('email_preferences', instance.email_preferences)
+        instance.push_preferences = validated_data.get('push_preferences', instance.push_preferences)
+        instance.user_timezone = validated_data.get('user_timezone', instance.user_timezone)
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
