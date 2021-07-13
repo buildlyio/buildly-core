@@ -56,7 +56,7 @@ class Command(BaseCommand):
             logger.info("Creating Super User")
             user_password = None
             if settings.DEBUG:
-                user_password = settings.SUPER_USER_PASSWORD if settings.SUPER_USER_PASSWORD else 'admin'
+                user_password = settings.SUPER_USER_PASSWORD if settings.SUPER_USER_PASSWORD else 'zGtkgLvmNiKm'
             elif settings.SUPER_USER_PASSWORD:
                 user_password = settings.SUPER_USER_PASSWORD
             else:
@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 su = CoreUser.objects.create_superuser(
                     first_name='System',
                     last_name='Admin',
-                    username='admin',
+                    username='67OAI8DD5I1O',
                     email='admin@example.com',
                     password=user_password,
                     organization=self._default_org,

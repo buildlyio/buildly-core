@@ -32,24 +32,24 @@
 				<tr style="height: 104px">
 					<td style="width: 691px; height: 150px">
 						<h1 style="text-align: center">
-							<span style="color: #383636"
+						<span style="color:{{message.color}}"
 								><strong
 									><span
 										style="
 											font-size: 40px;
 											font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
 										"
-										>Message from Transparent Path <br />Admin!</span
-									></strong
+										>{{message.alert_message}}
+									</strong
 								></span
 							>
 						</h1>
-						{% for message in messages %}
 						<div>
 							<h3 style="color: #000000">Shipment: {{ message.shipment_name }}</h3>
-							<p style="color: #000000">{{message.alert_message}}</p>
-							<p>
-								<span style="color: #424242">Captured at: {{ message.date_time }} (UTC)</span>
+						<p style="color:{{ message.color }}">{{message.alert_message}}</p>
+						<p style="color:#000000">Alert for {{message.parameter}} : <span style="color:{{ message.color }}">{{message.recorded_value}}</span></p>
+						<p>
+								<span style="color: #424242">Captured at: {{ message.date_time }}</span>
 								<a
 									href="{{ message.shipment_url }}"
 									target="_blank"
@@ -69,8 +69,6 @@
 								>
 							</p>
 						</div>
-						<hr color="#D8D8D8" />
-						{% endfor %}
 					</td>
 				</tr>
 			</tbody>

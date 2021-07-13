@@ -353,7 +353,6 @@ class CoreUserEmailAlertSerializer(serializers.Serializer):
     """
     organization_uuid = serializers.UUIDField()
     messages = serializers.JSONField()
-    subject_line = serializers.CharField(max_length=255)
 
 
 class OrganizationTypeSerializer(serializers.ModelSerializer):
