@@ -9,7 +9,6 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
-import calendar
 from datetime import datetime
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
@@ -296,7 +295,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 subject = '{} Alert'.format(message['parameter'].capitalize())
                 message['date_time'] = time_tuple.replace(tzinfo=tz.gettz('UTC'))
                 message['shipment_url'] = urljoin(settings.FRONTEND_URL,
-                                                '/app/shipment/edit/:'+str(message['shipment_id']))
+                                                  '/app/shipment/edit/:'+str(message['shipment_id']))
                 message['color'] = color_codes.get(message['severity'])
                 context = {
                     'message': message,
@@ -308,12 +307,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 for user in core_users:
                     email_address = user.email
                     preferences = user.email_preferences
-                    if preferences and (preferences.get('environmental',None) or preferences.get('geofence',None)):
+                    if preferences and (preferences.get('environmental', None) or preferences.get('geofence', None)):
                         local_zone = tz.gettz(user.user_timezone)
                         message['date_time'] = message['date_time'].astimezone(local_zone)
                         send_email(email_address, subject, context, template_name, html_template_name)
         except Exception as ex:
-            print('Exception: ',ex)
+            print('Exception: ', ex)
         return Response(
             {
                 'detail': 'The alert messages were sent successfully on email.',
@@ -343,8 +342,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.save()
         return Response(serializer.data)
 
+
 color_codes = {
-    'error':'#cc3300',
-    'info':'#2196F3',
-    'success':'#339900'
+    'error': '#cc3300',
+    'info': '#2196F3',
+    'success': '#339900'
 }

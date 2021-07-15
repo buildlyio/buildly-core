@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from core.models import Consortium
 from core.serializers import ConsortiumSerializer
-from core.permissions import AllowAuthenticatedRead
+from core.permissions import AllowOnlyOrgAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,6 @@ class ConsortiumViewSet(viewsets.ModelViewSet):
 
     filter_fields = ('name',)
     filter_backends = (DjangoFilterBackend,)
-    permission_classes = (AllowAuthenticatedRead,)
+    permission_classes = (AllowOnlyOrgAdmin,)
     queryset = Consortium.objects.all()
     serializer_class = ConsortiumSerializer
