@@ -303,7 +303,7 @@ class Consortium(models.Model):
     """
     consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
     name = models.CharField("Consortium Name", max_length=255, blank=True, help_text="Multiple organizations form a consortium together")
-    organization_uuids = ArrayField(models.CharField("Organization UUIDs", max_length=255, null=True, blank=True), null=True, blank=True)
+    organization_uuids = ArrayField(models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True), null=True, blank=True)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
