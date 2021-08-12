@@ -40,7 +40,13 @@ class BaseSwaggerClient:
         if kwargs.get('pk') is None:
             path = f'/{model}/'
         else:
-            pk_name = 'uuid' if utils.valid_uuid4(pk) else 'id'
+            # It was checking shipment/{uuid} in API specification when pk is of uuid type,
+            # as TP services are mainly using
+            # shipment/{id}
+            # Commenting code to make it work for id, as TP services don't have endpoint to 
+            # make request by uuid
+            # pk_name = 'uuid' if utils.valid_uuid4(pk) else 'id'
+            pk_name = 'id'
             path_kwargs = {pk_name: pk}
             path = f'/{model}/{{{pk_name}}}/'
 
