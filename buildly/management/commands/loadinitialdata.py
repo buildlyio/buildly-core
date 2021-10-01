@@ -17,7 +17,7 @@ class Command(BaseCommand):
     help = """
     Loads initial data for Buildly.
     """
-
+    print('Settings: ', settings)
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
