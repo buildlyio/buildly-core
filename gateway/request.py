@@ -214,8 +214,8 @@ class AsyncGatewayRequest(BaseGatewayRequest):
                             )
                     logic_module.api_specification = spec_dict
                     logic_module.save()
-                    swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
-                    self._specs[schema_url] = swagger_spec
+            swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
+            self._specs[schema_url] = swagger_spec
         return self._specs[schema_url]
 
     async def _join_response_data(self, resp_data: Union[dict, list]) -> None:
