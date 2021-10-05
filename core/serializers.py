@@ -356,3 +356,13 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             instance.core_groups.add(org_admin)
 
         return instance
+
+
+class CoreUserEmailNotificationSerializer(serializers.Serializer):
+    """
+    Serializer for email Notification
+    """
+    organization_uuid = serializers.UUIDField()
+    notification_messages = serializers.CharField()
+
+

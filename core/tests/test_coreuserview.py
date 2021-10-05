@@ -162,7 +162,7 @@ class TestCoreUserCreate:
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
         assert response.status_code == 400
-    
+
     def test_email_mismatch_token_invalidation(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
         token = create_invitation_token("foobar@example.com", org_admin.organization)
@@ -453,3 +453,17 @@ class TestCoreUserRead(object):
         response = CoreUserViewSet.as_view({'get': 'me'})(request)
         assert response.status_code == 200
         assert response.data['username'] == org_member.username
+
+
+@pytest.mark.django_db()
+class TestNotification:
+
+    def test_notification(self, request_factory):
+        dif_org = factories.Organization(name='Another Org')
+        data = {
+            "organization_uuid": dif_org.organization_uuid,
+            "notification_messages": "message"
+        }
+        request = request_factory.post(reverse('coreuser-notification'), data)
+        response = CoreUserViewSet.as_view({'post': 'notification'})(request)
+        assert response.status_code == 200

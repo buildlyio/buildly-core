@@ -17,12 +17,14 @@ from rest_framework.permissions import AllowAny
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer)
+                              CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer,
+                              CoreUserEmailNotificationSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
+
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -61,6 +63,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
         'update_org': CoreUserUpdateOrganizationSerializer,
+        'notification': CoreUserEmailNotificationSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -275,3 +278,36 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    @swagger_auto_schema(methods=['post'], request_body=CoreUserEmailNotificationSerializer, responses=SUCCESS_RESPONSE)
+    @action(methods=['POST'], detail=False)
+    def notification(self, request, *args, **kwargs):
+        """
+        a)Request notification and uuid of organization
+        b)Access user uuids for that respective organization
+        c)Send Email to the user's email with notification
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        org_uuid = request.data['organization_uuid']
+        message = request.data['notification_messages']
+        try:
+
+            subject = 'Notification Message'
+            context = {
+                'message': message,
+            }
+            template_name = 'email/coreuser/user_notification.txt'
+            html_template_name = 'email/coreuser/user_notification.html'
+            core_users = CoreUser.objects.filter(organization__organization_uuid=org_uuid)
+            for user in core_users:
+                email_address = user.email
+                send_email(email_address, subject, context, template_name, html_template_name)
+        except Exception as ex:
+            print('Exception: ', ex)
+        return Response(
+            {
+                'detail': 'The notification were sent successfully on email.',
+            }, status=status.HTTP_200_OK)
+
+
