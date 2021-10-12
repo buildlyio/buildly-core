@@ -1,11 +1,5 @@
 from django.core.management.base import BaseCommand
-import json
-from datamesh.models import JoinRecord, Relationship, LogicModuleModel
-from core.models import LogicModule
-from .gateway import gateway_custodian_relationship, organization_gateway_relationship
-from .shipment import shipment_gateway_relationship, consortium_shipment_relationship, shipment_item_relationship, \
-    organization_shipment_relationship
-from .custody import custody_shipment_relationship, custodian_custody_relationship
+from datamesh.management.commands.datamesh_join_script import join_relationship
 
 
 class Command(BaseCommand):
@@ -22,10 +16,82 @@ class Command(BaseCommand):
 
 def run_seed(self, mode):
     """call function here."""
-    """ create a functions for model and call that functions here """
 
-    """shipment"""
+    # product <-> product_tool - within service model join.
+    join_relationship(
+        json_file="product.json",
 
-    """shipment_gateway_relationship()"""
+        is_local=False,
 
+        origin_logic_module='product',
+        related_logic_module='product',
 
+        origin_module_model='Product',
+        origin_module_endpoint='/product/',
+        origin_module_lookup_field_name='product_uuid',
+
+        related_module_model='ProductTools',
+        related_module_endpoint='/producttools/',
+        related_module_lookup_field_name='product_tool_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='product_product_tool_relationship',
+        field_name='product_tool',
+        is_list=False,
+        organization=None,
+    )
+
+    # product <-> product_team - within service model join.
+    join_relationship(
+        json_file="product.json",
+
+        is_local=False,
+
+        origin_logic_module='product',
+        related_logic_module='product',
+
+        origin_module_model='Product',
+        origin_module_endpoint='/product/',
+        origin_module_lookup_field_name='product_uuid',
+
+        related_module_model='ProductTeam',
+        related_module_endpoint='/productteam/',
+        related_module_lookup_field_name='product_team_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='product_product_team_relationship',
+
+        field_name='product_team',
+        is_list=False,
+        organization=None,
+    )
+
+    # product_tool <-> users -  service and core model join.
+    join_relationship(
+        json_file="ProductTeam.json",
+
+        is_local=True,
+
+        origin_logic_module='product',
+        related_logic_module='product',
+
+        origin_module_model='ProductTools',
+        origin_module_endpoint='/producttools/',
+        origin_module_lookup_field_name='product_tool_uuid',
+
+        related_module_model='CoreUser',
+        related_module_endpoint='/coreuser/',
+        related_module_lookup_field_name='core_user_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='product_user_relationship',
+        field_name='users',
+        is_list=True,
+        organization=None,
+    )
