@@ -73,12 +73,14 @@ class BaseSwaggerClient:
             return json.dumps(self._in_request.data)
 
         method = self._in_request.META['REQUEST_METHOD'].lower()
-        data = self._in_request.query_params.dict()
 
-        data.pop('aggregate', None)
-        data.pop('join', None)
-
+        data = {}
         if method in ['post', 'put', 'patch']:
+            data = self._in_request.query_params.dict()
+
+            data.pop('aggregate', None)
+            data.pop('join', None)
+
             query_dict_body = self._in_request.data if hasattr(self._in_request, 'data') else dict()
             body = query_dict_body.dict() if isinstance(query_dict_body, QueryDict) else query_dict_body
             data.update(body)
