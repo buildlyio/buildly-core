@@ -409,3 +409,31 @@ def run_seed(self, mode):
         is_list=False,
         organization=None,
     )
+
+    # timesheethour <-> timesheet team within service model join.
+    """timesheethour.json"""
+    join_relationship(
+        json_file="timesheethour.json",
+
+        is_local=False,
+
+        origin_logic_module='devpartner',
+        related_logic_module='devpartner',
+
+        origin_module_model='TimeSheetHour',
+        origin_module_endpoint='/timesheethour/',
+        origin_module_lookup_field_name='timesheet_hour_uuid',
+
+        related_module_model='TimeSheet',
+        related_module_endpoint='/timesheet/',
+        related_module_lookup_field_name='timesheet_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='timesheethour_timesheet_relationship',
+
+        field_name='timesheet_uuid',
+        is_list=False,
+        organization=None,
+    )
