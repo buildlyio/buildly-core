@@ -17,29 +17,29 @@ class Command(BaseCommand):
 def run_seed(self, mode):
     """call function here."""
 
-    # product <-> product_tool - within service model join.
+    # product <-> third party tool - within service model join.
     join_relationship(
         json_file="product.json",
 
         is_local=False,
 
-        origin_logic_module='product',
-        related_logic_module='product',
+        origin_logic_module='projecttool',
+        related_logic_module='projecttool',
 
         origin_module_model='Product',
         origin_module_endpoint='/product/',
         origin_module_lookup_field_name='product_uuid',
 
-        related_module_model='ProductTools',
-        related_module_endpoint='/producttools/',
-        related_module_lookup_field_name='product_tool_uuid',
+        related_module_model='ThirdPartyTool',
+        related_module_endpoint='/thirdpartytool/',
+        related_module_lookup_field_name='third_party_tool_uuid',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
         relationship_key_name='product_product_tool_relationship',
-        field_name='product_tool',
-        is_list=False,
+        field_name='third_party_tool',
+        is_list=True,
         organization=None,
     )
 
@@ -49,8 +49,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='product',
-        related_logic_module='product',
+        origin_logic_module='projecttool',
+        related_logic_module='projecttool',
 
         origin_module_model='Product',
         origin_module_endpoint='/product/',
@@ -70,28 +70,4 @@ def run_seed(self, mode):
         organization=None,
     )
 
-    # product_tool <-> users -  service and core model join.
-    join_relationship(
-        json_file="ProductTeam.json",
 
-        is_local=True,
-
-        origin_logic_module='product',
-        related_logic_module='product',
-
-        origin_module_model='ProductTools',
-        origin_module_endpoint='/producttools/',
-        origin_module_lookup_field_name='product_tool_uuid',
-
-        related_module_model='CoreUser',
-        related_module_endpoint='/coreuser/',
-        related_module_lookup_field_name='core_user_uuid',
-
-        origin_lookup_field_type='uuid',
-        related_lookup_field_type='uuid',
-
-        relationship_key_name='product_user_relationship',
-        field_name='users',
-        is_list=True,
-        organization=None,
-    )
