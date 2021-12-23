@@ -38,7 +38,7 @@ def run_seed(self, mode):
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
-        relationship_key_name='product_product_tool_relationship',
+        relationship_key_name='product_thirdpartytool_relationship',
         field_name='third_party_tool',
         is_list=True,
         organization=None,
@@ -235,96 +235,96 @@ def run_seed(self, mode):
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
-        relationship_key_name='decision_feature_relationship',
+        relationship_key_name='decision_issue_relationship',
 
         field_name='issue',
         is_list=False,
         organization=None,
     )
 
-    # status <-> issue team within service model join.
-    """status.json"""
-    join_relationship(
-        json_file="status.json",
-
-        is_local=False,
-
-        origin_logic_module='release',
-        related_logic_module='release',
-
-        origin_module_model='Status',
-        origin_module_endpoint='/status/',
-        origin_module_lookup_field_name='status_uuid',
-
-        related_module_model='Issue',
-        related_module_endpoint='/issue/',
-        related_module_lookup_field_name='issue_uuid',
-
-        origin_lookup_field_type='uuid',
-        related_lookup_field_type='uuid',
-
-        relationship_key_name='status_issue_relationship',
-
-        field_name='issue',
-        is_list=False,
-        organization=None,
-    )
-
-    # status <-> feature team within service model join.
-    """status.json"""
-    join_relationship(
-        json_file="status.json",
-
-        is_local=False,
-
-        origin_logic_module='release',
-        related_logic_module='release',
-
-        origin_module_model='Status',
-        origin_module_endpoint='/status/',
-        origin_module_lookup_field_name='status_uuid',
-
-        related_module_model='Feature',
-        related_module_endpoint='/feature/',
-        related_module_lookup_field_name='feature_uuid',
-
-        origin_lookup_field_type='uuid',
-        related_lookup_field_type='uuid',
-
-        relationship_key_name='status_feature_relationship',
-
-        field_name='feature',
-        is_list=False,
-        organization=None,
-    )
-
-    # # feature <-> status  team within service model join.
-    # """feature.json"""
+    # # status <-> issue team within service model join.
+    # """status.json"""
     # join_relationship(
-    #     json_file="feature.json",
+    #     json_file="status.json",
     #
     #     is_local=False,
     #
     #     origin_logic_module='release',
     #     related_logic_module='release',
     #
-    #     origin_module_model='Feature',
-    #     origin_module_endpoint='/feature/',
-    #     origin_module_lookup_field_name='feature_uuid',
+    #     origin_module_model='Status',
+    #     origin_module_endpoint='/status/',
+    #     origin_module_lookup_field_name='status_uuid',
     #
-    #     related_module_model='Status',
-    #     related_module_endpoint='/status/',
-    #     related_module_lookup_field_name='status_uuid',
+    #     related_module_model='Issue',
+    #     related_module_endpoint='/issue/',
+    #     related_module_lookup_field_name='issue_uuid',
     #
     #     origin_lookup_field_type='uuid',
     #     related_lookup_field_type='uuid',
     #
-    #     relationship_key_name='feature_status_relationship',
+    #     relationship_key_name='status_issue_relationship',
     #
-    #     field_name='status',
+    #     field_name='issue',
     #     is_list=False,
     #     organization=None,
     # )
+    #
+    # # status <-> feature team within service model join.
+    # """status.json"""
+    # join_relationship(
+    #     json_file="status.json",
+    #
+    #     is_local=False,
+    #
+    #     origin_logic_module='release',
+    #     related_logic_module='release',
+    #
+    #     origin_module_model='Status',
+    #     origin_module_endpoint='/status/',
+    #     origin_module_lookup_field_name='status_uuid',
+    #
+    #     related_module_model='Feature',
+    #     related_module_endpoint='/feature/',
+    #     related_module_lookup_field_name='feature_uuid',
+    #
+    #     origin_lookup_field_type='uuid',
+    #     related_lookup_field_type='uuid',
+    #
+    #     relationship_key_name='status_feature_relationship',
+    #
+    #     field_name='feature',
+    #     is_list=False,
+    #     organization=None,
+    # )
+
+    # feature <-> status  team within service model join.
+    """feature.json"""
+    join_relationship(
+        json_file="feature.json",
+
+        is_local=False,
+
+        origin_logic_module='release',
+        related_logic_module='release',
+
+        origin_module_model='Feature',
+        origin_module_endpoint='/feature/',
+        origin_module_lookup_field_name='feature_uuid',
+
+        related_module_model='Status',
+        related_module_endpoint='/status/',
+        related_module_lookup_field_name='status_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='feature_status_relationship',
+
+        field_name='status',
+        is_list=False,
+        organization=None,
+    )
 
     # issue <-> feature team within service model join.
     """issue.json"""
@@ -347,9 +347,37 @@ def run_seed(self, mode):
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
-        relationship_key_name='status_feature_relationship',
+        relationship_key_name='issue_feature_relationship',
 
         field_name='feature_uuid',
+        is_list=False,
+        organization=None,
+    )
+
+    # issue <-> status team within service model join.
+    """issue.json"""
+    join_relationship(
+        json_file="issue.json",
+
+        is_local=False,
+
+        origin_logic_module='release',
+        related_logic_module='release',
+
+        origin_module_model='Issue',
+        origin_module_endpoint='/issue/',
+        origin_module_lookup_field_name='issue_uuid',
+
+        related_module_model='Status',
+        related_module_endpoint='/status/',
+        related_module_lookup_field_name='status_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='issue_status_relationship',
+
+        field_name='status',
         is_list=False,
         organization=None,
     )
