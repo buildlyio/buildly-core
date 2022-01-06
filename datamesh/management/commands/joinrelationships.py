@@ -24,8 +24,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='projecttool',
-        related_logic_module='projecttool',
+        origin_logic_module='product',
+        related_logic_module='product',
 
         origin_module_model='Product',
         origin_module_endpoint='/product/',
@@ -51,8 +51,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='projecttool',
-        related_logic_module='projecttool',
+        origin_logic_module='product',
+        related_logic_module='product',
 
         origin_module_model='Product',
         origin_module_endpoint='/product/',
@@ -79,8 +79,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='projecttool',
-        related_logic_module='projecttool',
+        origin_logic_module='product',
+        related_logic_module='product',
 
         origin_module_model='Credential',
         origin_module_endpoint='/credential/',
@@ -107,8 +107,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='projecttool',
-        related_logic_module='projecttool',
+        origin_logic_module='product',
+        related_logic_module='product',
 
         origin_module_model='Release',
         origin_module_endpoint='/release/',
@@ -135,7 +135,7 @@ def run_seed(self, mode):
     #
     #     is_local=False,
     #
-    #     origin_logic_module='projecttool',
+    #     origin_logic_module='product',
     #     related_logic_module='hostedadmin',
     #
     #     origin_module_model='Release',
@@ -163,7 +163,7 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='projecttool',
+        origin_logic_module='product',
         related_logic_module='devpartner',
 
         origin_module_model='Release',
@@ -193,8 +193,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Decision',
         origin_module_endpoint='/decision/',
@@ -221,8 +221,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Decision',
         origin_module_endpoint='/decision/',
@@ -249,8 +249,8 @@ def run_seed(self, mode):
     #
     #     is_local=False,
     #
-    #     origin_logic_module='release',
-    #     related_logic_module='release',
+    #     origin_logic_module='decision',
+    #     related_logic_module='decision',
     #
     #     origin_module_model='Status',
     #     origin_module_endpoint='/status/',
@@ -277,8 +277,8 @@ def run_seed(self, mode):
     #
     #     is_local=False,
     #
-    #     origin_logic_module='release',
-    #     related_logic_module='release',
+    #     origin_logic_module='decision',
+    #     related_logic_module='decision',
     #
     #     origin_module_model='Status',
     #     origin_module_endpoint='/status/',
@@ -305,8 +305,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Feature',
         origin_module_endpoint='/feature/',
@@ -333,8 +333,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Issue',
         origin_module_endpoint='/issue/',
@@ -361,8 +361,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Issue',
         origin_module_endpoint='/issue/',
@@ -389,8 +389,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Feedback',
         origin_module_endpoint='/feedback/',
@@ -417,8 +417,8 @@ def run_seed(self, mode):
 
         is_local=False,
 
-        origin_logic_module='release',
-        related_logic_module='release',
+        origin_logic_module='decision',
+        related_logic_module='decision',
 
         origin_module_model='Feedback',
         origin_module_endpoint='/feedback/',
