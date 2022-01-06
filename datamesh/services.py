@@ -127,7 +127,10 @@ class DataMesh:
             if hasattr(client, 'request') and callable(client.request):
                 content = client.request(**params)
                 if isinstance(content, tuple):  # assume that response body is the first returned value
-                    content = content[0]
+                    if content[1] == 200:
+                        content = content[0]
+                    else:
+                        content = []
                 if isinstance(content, dict):
                     data_item[relationship.key].append(dict(content))
                 else:
