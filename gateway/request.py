@@ -14,6 +14,7 @@ from gateway import utils
 from core.models import LogicModule
 from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
+from datamesh.models import JoinRecord, Relationship
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class BaseGatewayRequest(object):
 
         # find out forwards relations through logic module from request as origin
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
-        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
+        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}') + padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         return DataMesh(logic_module_endpoint=logic_module.endpoint_name,
                         model_endpoint=endpoint,
@@ -86,19 +87,20 @@ class GatewayRequest(BaseGatewayRequest):
         Make request to underlying service(s) and returns aggregated response.
         """
         # init swagger spec from the service swagger doc file
+        print("'self.url_kwargs['service']'", self.url_kwargs['service'])
         try:
             spec = self._get_swagger_spec(self.url_kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
             return GatewayResponse(e.content, e.status, {'Content-Type': e.content_type})
-
+        print('spec', spec)
         # create a client for performing data requests
+        print('self.url_kwargs', self.url_kwargs)
         client = SwaggerClient(spec, self.request)
-
         # perform a service data request
         content, status_code, headers = client.request(**self.url_kwargs)
 
         # aggregate/join with the JoinRecord-models
-        if 'join' in self.request.query_params and status_code == 200 and type(content) in [dict, list]:
+        if 'join' in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
             try:
                 self._join_response_data(resp_data=content)
             except exceptions.ServiceDoesNotExist as e:
@@ -139,6 +141,7 @@ class GatewayRequest(BaseGatewayRequest):
         Aggregates data from the requested service and from related services.
         Uses DataMesh relationship model for this.
         """
+
         self.request._request.GET = QueryDict(mutable=True)
 
         if isinstance(resp_data, dict):
@@ -148,10 +151,56 @@ class GatewayRequest(BaseGatewayRequest):
 
         datamesh = self.get_datamesh()
         client_map = {}
+
         for service in datamesh.related_logic_modules:
             spec = self._get_swagger_spec(service)
             client_map[service] = SwaggerClient(spec, self.request)
-        datamesh.extend_data(resp_data, client_map)
+
+        # check the request method
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            # fetch datamesh logic module info for current request from datamesh
+            datamesh_relationship, request_param = datamesh.fetch_datamesh_relationship()
+
+            # iterate over the datamesh relationships
+            for relationship in datamesh_relationship:
+                # from the relationship get the set of data for given individual relationship
+                post_data = self.request.data[relationship]
+                request_relationship_data = self.request  # copy the request data to another variable
+
+                for data in post_data:  # iterate over the list of objects
+                    request_param['method'] = self.request.method
+
+                    # clearing all the form current request and updating it with related data the going to POST/PUT
+                    request_relationship_data.data.clear()
+                    request_relationship_data.data.update(data)
+
+                    # update the created object reference to request_relationship_data
+                    if self.request.method in ['POST']:
+                        request_relationship_data.data[request_param[relationship]['related_model_pk_name']] = resp_data['url']
+
+                    # for the PUT/PATCH request update PK in request param
+                    if self.request.method in ['PUT', 'PATCH']:
+                        request_param[relationship]['pk'] = \
+                            request_relationship_data.data[request_param[relationship]['origin_model_pk_name']]
+                        request_param[relationship]['method'] = self.request.method
+
+                    # create a client for performing data requests
+                    spec = self._get_swagger_spec(request_param[relationship]['service'])
+                    client = SwaggerClient(spec, request_relationship_data)
+
+                    # perform a service data request
+                    content, status_code, headers = client.request(**request_param[relationship])
+
+                    if self.request.method in ['POST']:  # create join record
+                        JoinRecord.objects.create(
+                            relationship=Relationship.objects.filter(key=relationship).first(),
+                            record_uuid=content[str(request_param[relationship]['origin_model_pk_name'])],
+                            related_record_uuid=resp_data[str(request_param[relationship]['related_model_pk_name'])],
+                            organization_id=None
+                        )
+
+        if self.request.method in ['GET']:
+            datamesh.extend_data(resp_data, client_map)
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):

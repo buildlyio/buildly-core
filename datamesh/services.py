@@ -47,18 +47,18 @@ class DataMesh:
         """
         for relationship, is_forward_lookup in self._relationships:
             join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
+            print('join_records', join_records)
             if join_records:
                 related_model, related_record_field = prepare_lookup_kwargs(
                     is_forward_lookup, relationship, join_records[0])
 
                 for join_record in join_records:
-
                     params = {
-                            'pk': (str(getattr(join_record, related_record_field))),
-                            'model': related_model.endpoint.strip('/'),
-                            'service': related_model.logic_module_endpoint_name,
-                            'pk_name': related_model.lookup_field_name,
-                        }
+                        'pk': (str(getattr(join_record, related_record_field))),
+                        'model': related_model.endpoint.strip('/'),
+                        'service': related_model.logic_module_endpoint_name,
+                        'pk_name': related_model.lookup_field_name,
+                    }
 
                     yield relationship, params
 
@@ -107,6 +107,7 @@ class DataMesh:
         """
         Nest data retrieved from related services.
         """
+        print()
         origin_pk = data_item.get(self._origin_lookup_field)
         if not origin_pk:
             raise DatameshConfigurationError(
@@ -123,7 +124,8 @@ class DataMesh:
 
             params['method'] = 'get'
             client = client_map.get(params['service'])
-
+            print('client', client)
+            print("params", params)
             if hasattr(client, 'request') and callable(client.request):
                 content = client.request(**params)
                 if isinstance(content, tuple):  # assume that response body is the first returned value
@@ -134,6 +136,23 @@ class DataMesh:
                     logger.error(f'No response data for join record (request params: {params})')
             else:
                 raise DatameshConfigurationError(f'DataMesh Error: Client should have request method')
+
+    def fetch_datamesh_relationship(self):
+        relationship_list = []
+        request_param = {}
+        for relationship, _ in self._relationships:
+            relationship_list.append(relationship.key)
+
+            params = {
+                'pk': None,
+                'model': relationship.origin_model.endpoint.strip('/'),
+                'service': relationship.origin_model.logic_module_endpoint_name,
+                'related_model_pk_name': relationship.related_model.lookup_field_name,
+                'origin_model_pk_name': relationship.origin_model.lookup_field_name
+            }
+
+            request_param[relationship.key] = params
+        return relationship_list, request_param
 
     async def async_extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]):
         """
