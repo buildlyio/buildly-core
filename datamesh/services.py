@@ -47,7 +47,6 @@ class DataMesh:
         """
         for relationship, is_forward_lookup in self._relationships:
             join_records = JoinRecord.objects.get_join_records(origin_pk, relationship, is_forward_lookup)
-            print('join_records', join_records)
             if join_records:
                 related_model, related_record_field = prepare_lookup_kwargs(
                     is_forward_lookup, relationship, join_records[0])
@@ -107,7 +106,7 @@ class DataMesh:
         """
         Nest data retrieved from related services.
         """
-        print()
+
         origin_pk = data_item.get(self._origin_lookup_field)
         if not origin_pk:
             raise DatameshConfigurationError(
@@ -124,8 +123,7 @@ class DataMesh:
 
             params['method'] = 'get'
             client = client_map.get(params['service'])
-            print('client', client)
-            print("params", params)
+
             if hasattr(client, 'request') and callable(client.request):
                 content = client.request(**params)
                 if isinstance(content, tuple):  # assume that response body is the first returned value

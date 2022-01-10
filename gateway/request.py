@@ -87,22 +87,20 @@ class GatewayRequest(BaseGatewayRequest):
         Make request to underlying service(s) and returns aggregated response.
         """
         # init swagger spec from the service swagger doc file
-        print("'self.url_kwargs['service']'", self.url_kwargs['service'])
         try:
             spec = self._get_swagger_spec(self.url_kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
             return GatewayResponse(e.content, e.status, {'Content-Type': e.content_type})
-        print('spec', spec)
+
         # create a client for performing data requests
-        print('self.url_kwargs', self.url_kwargs)
         client = SwaggerClient(spec, self.request)
         # perform a service data request
         content, status_code, headers = client.request(**self.url_kwargs)
 
         # aggregate/join with the JoinRecord-models
-        if 'join' in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
+        if 'join' or 'extend' in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
             try:
-                self._join_response_data(resp_data=content)
+                self._join_response_data(resp_data=content, query_params=self.request.query_params)
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
@@ -136,12 +134,11 @@ class GatewayRequest(BaseGatewayRequest):
 
         return self._specs[schema_url]
 
-    def _join_response_data(self, resp_data: Union[dict, list]) -> None:
+    def _join_response_data(self, resp_data: Union[dict, list], query_params: str) -> None:
         """
         Aggregates data from the requested service and from related services.
         Uses DataMesh relationship model for this.
         """
-
         self.request._request.GET = QueryDict(mutable=True)
 
         if isinstance(resp_data, dict):
@@ -168,39 +165,52 @@ class GatewayRequest(BaseGatewayRequest):
                 request_relationship_data = self.request  # copy the request data to another variable
 
                 for data in post_data:  # iterate over the list of objects
-                    request_param['method'] = self.request.method
 
                     # clearing all the form current request and updating it with related data the going to POST/PUT
                     request_relationship_data.data.clear()
                     request_relationship_data.data.update(data)
 
+                    # get organization
+                    organization = self.request.session.get('jwt_organization_uuid', None)
+
+                    # post the origin_model model data and create join with related_model
+                    if self.request.method in ['POST'] and 'extend' in query_params:
+                        origin_model_pk = resp_data[request_param[relationship]['origin_model_pk_name']]
+                        related_model_pk = self.request.data[request_param[relationship]['related_model_pk_name']]
+                        self._join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
+
                     # update the created object reference to request_relationship_data
-                    if self.request.method in ['POST']:
+                    if self.request.method in ['POST'] and 'join' in query_params:
                         request_relationship_data.data[request_param[relationship]['related_model_pk_name']] = resp_data['url']
 
                     # for the PUT/PATCH request update PK in request param
-                    if self.request.method in ['PUT', 'PATCH']:
-                        request_param[relationship]['pk'] = \
-                            request_relationship_data.data[request_param[relationship]['origin_model_pk_name']]
+                    if self.request.method in ['PUT', 'PATCH'] and 'join' in query_params:
+                        request_param[relationship]['pk'] = request_relationship_data.data[request_param[relationship]['origin_model_pk_name']]
                         request_param[relationship]['method'] = self.request.method
 
-                    # create a client for performing data requests
-                    spec = self._get_swagger_spec(request_param[relationship]['service'])
-                    client = SwaggerClient(spec, request_relationship_data)
+                    # allow only if origin model needs to update or create
+                    if self.request.method in ['POST', 'PUT', 'PATCH'] and 'join' in query_params:
+                        # create a client for performing data requests
+                        spec = self._get_swagger_spec(request_param[relationship]['service'])
+                        client = SwaggerClient(spec, request_relationship_data)
 
-                    # perform a service data request
-                    content, status_code, headers = client.request(**request_param[relationship])
+                        # perform a service data request
+                        content, status_code, headers = client.request(**request_param[relationship])
 
-                    if self.request.method in ['POST']:  # create join record
-                        JoinRecord.objects.create(
-                            relationship=Relationship.objects.filter(key=relationship).first(),
-                            record_uuid=content[str(request_param[relationship]['origin_model_pk_name'])],
-                            related_record_uuid=resp_data[str(request_param[relationship]['related_model_pk_name'])],
-                            organization_id=None
-                        )
+                        if self.request.method in ['POST'] and 'join' in query_params:  # create join record
+                            origin_model_pk = content[request_param[relationship]['origin_model_pk_name']]
+                            related_model_pk = resp_data[request_param[relationship]['related_model_pk_name']]
+                            self._join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
 
-        if self.request.method in ['GET']:
-            datamesh.extend_data(resp_data, client_map)
+        datamesh.extend_data(resp_data, client_map)
+
+    def _join_record(self, relationship: str, origin_model_pk: str, related_model_pk: str, organization: any) -> None:
+        JoinRecord.objects.create(
+            relationship=Relationship.objects.filter(key=relationship).first(),
+            record_uuid=origin_model_pk,
+            related_record_uuid=related_model_pk,
+            organization_id=organization
+        )
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):
