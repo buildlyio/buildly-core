@@ -6,6 +6,7 @@ from typing import Any, Dict, Union
 
 import aiohttp
 from bravado_core.spec import Spec
+from django.db.models import Q
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
@@ -94,15 +95,19 @@ class GatewayRequest(BaseGatewayRequest):
 
         # create a client for performing data requests
         client = SwaggerClient(spec, self.request)
+
         # perform a service data request
         content, status_code, headers = client.request(**self.url_kwargs)
 
         # aggregate/join with the JoinRecord-models
-        if 'join' or 'extend' in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
+        if ("join" or "extend") in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
             try:
                 self._join_response_data(resp_data=content, query_params=self.request.query_params)
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
+
+        if 'join' in self.request.query_params and self.request.method == 'DELETE' and status_code == 204:
+            self._delete_join_record(pk=self.url_kwargs['pk'])  # delete join record
 
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)
@@ -211,6 +216,12 @@ class GatewayRequest(BaseGatewayRequest):
             related_record_uuid=related_model_pk,
             organization_id=organization
         )
+
+    def _delete_join_record(self, pk: [str, int]) -> None:
+
+        JoinRecord.objects.filter(Q(record_uuid__icontains=pk) | Q(related_record_uuid__icontains=pk)
+                                  | Q(record_id__icontains=pk) | Q(related_record_id__icontains=pk)
+                                  ).delete()
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):
