@@ -5,22 +5,22 @@ from datamesh.models import JoinRecord, Relationship, LogicModuleModel
 from core.models import LogicModule
 
 """
-# add logic module from core 
+# add logic module from core
     origin_logic_module = logic module from core
     related_logic_module = logic module from core
 
-# send is_local =True/False if join is it with core   
-    
-# origin_module_model = send Model name of origin 
+# send is_local =True/False if join is it with core
+
+# origin_module_model = send Model name of origin
 # origin_module_endpoint = send origin module endpoint
 # origin_module_lookup_field_name = send origin module model lookup field
 
-# related_module_model = send Model name of origin 
+# related_module_model = send Model name of origin
 # related_module_endpoint = send origin module endpoint
 # related_module_lookup_field_name = send origin module model lookup field
 
 # lookup_field_type = it's either id or uuid
-# relationship_key_name = send relation name 
+# relationship_key_name = send relation name
 
 # field_name = send field of json file which want to join with
 # is_list = True/False if the field type is array then send it True else False
@@ -29,36 +29,39 @@ from core.models import LogicModule
 
 join_relationship(
     json_file=,
-    
+
     is_local=,
-    
+
     origin_logic_module = ,
     related_logic_module = ,
-    
+
     origin_module_model =,
     origin_module_endpoint =,
     origin_module_lookup_field_name =,
-    
+
     related_module_model =,
     related_module_endpoint=,
     related_module_lookup_field_name=,
-    
+
     lookup_field_type = ,
-    
+
     relationship_key_name=,
     field_name=,
     is_list=,
-    organization=,     
+    organization=,
 )
 """
 
 
 def join_relationship(*args, **kwargs):
-    model_json_file = str(kwargs.get('json_file'))
+    if kwargs.get('json_file'):
+        model_json_file = str(kwargs.get('json_file'))
 
-    # load json file and take data into model_data variable
-    with open(model_json_file, 'r', encoding='utf-8') as file_data:
-        model_data = json.load(file_data)
+        # load json file and take data into model_data variable
+        with open(model_json_file, 'r', encoding='utf-8') as file_data:
+            model_data = json.load(file_data)
+    else:
+        pass
 
     # get logic module from core
     origin_logic_module = LogicModule.objects.get(endpoint_name=str(kwargs.get('origin_logic_module')))

@@ -99,6 +99,9 @@ class GatewayRequest(BaseGatewayRequest):
         # perform a service data request
         content, status_code, headers = client.request(**self.url_kwargs)
 
+        # calls to individual service as per relationship
+
+        # call to join record insertion method
         # aggregate/join with the JoinRecord-models
         if ("join" or "extend") in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
             try:
