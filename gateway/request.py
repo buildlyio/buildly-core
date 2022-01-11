@@ -157,7 +157,7 @@ class GatewayRequest(BaseGatewayRequest):
         for service in datamesh.related_logic_modules:
             spec = self._get_swagger_spec(service)
             client_map[service] = SwaggerClient(spec, self.request)
-
+        # print('self.request.data',self.request.data)
         # check the request method
         if self.request.method in ['POST', 'PUT', 'PATCH']:
             # fetch datamesh logic module info for current request from datamesh
@@ -166,7 +166,12 @@ class GatewayRequest(BaseGatewayRequest):
             # iterate over the datamesh relationships
             for relationship in datamesh_relationship:
                 # from the relationship get the set of data for given individual relationship
-                post_data = self.request.data[relationship]
+                post_data = self.request.data.get(relationship, None)
+
+                # if relationship data is empty in this case continue
+                if not post_data:
+                    continue
+
                 request_relationship_data = self.request  # copy the request data to another variable
 
                 for data in post_data:  # iterate over the list of objects
@@ -186,11 +191,18 @@ class GatewayRequest(BaseGatewayRequest):
 
                     # update the created object reference to request_relationship_data
                     if self.request.method in ['POST'] and 'join' in query_params:
-                        request_relationship_data.data[request_param[relationship]['related_model_pk_name']] = resp_data['url']
+                        # print('request_relationship_data.data', request_relationship_data.data)
+                        # print('resp_data', resp_data)
+                        print('request_param[relationship]', request_param[relationship])
+                        request_relationship_data.data[request_param[relationship]['related_model_pk_name']] = resp_data.get(request_param[relationship]['related_model_pk_name'], None)
 
                     # for the PUT/PATCH request update PK in request param
                     if self.request.method in ['PUT', 'PATCH'] and 'join' in query_params:
-                        request_param[relationship]['pk'] = request_relationship_data.data[request_param[relationship]['origin_model_pk_name']]
+                        # print('request_param',request_param)
+                        # print('relationship', relationship)
+                        # print('request_param[relationship]["origin_model_pk_name"]', request_param[relationship]['related_model_pk_name'])
+                        # print('request_relationship_data.data', request_relationship_data.data)
+                        request_param[relationship]['pk'] = request_relationship_data.data[request_param[relationship]['related_model_pk_name']]
                         request_param[relationship]['method'] = self.request.method
 
                     # allow only if origin model needs to update or create
@@ -198,11 +210,13 @@ class GatewayRequest(BaseGatewayRequest):
                         # create a client for performing data requests
                         spec = self._get_swagger_spec(request_param[relationship]['service'])
                         client = SwaggerClient(spec, request_relationship_data)
-
+                        print('relationship', relationship)
+                        print('request_param[relationship]', request_param[relationship])
                         # perform a service data request
                         content, status_code, headers = client.request(**request_param[relationship])
 
                         if self.request.method in ['POST'] and 'join' in query_params:  # create join record
+                            print('content', content, request_param[relationship]['related_model_pk_name'])
                             origin_model_pk = content[request_param[relationship]['origin_model_pk_name']]
                             related_model_pk = resp_data[request_param[relationship]['related_model_pk_name']]
                             self._join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
