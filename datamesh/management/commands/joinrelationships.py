@@ -172,7 +172,7 @@ def run_seed(self, mode):
 
         related_module_model='DevTeam',
         related_module_endpoint='/devteam/',
-        related_module_lookup_field_name='dev_team_uuid',
+        related_module_lookup_field_name='devteam_uuid',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
@@ -450,7 +450,7 @@ def run_seed(self, mode):
 
         origin_module_model='TimeSheetHour',
         origin_module_endpoint='/timesheethour/',
-        origin_module_lookup_field_name='timesheet_hour_uuid',
+        origin_module_lookup_field_name='timesheethour_uuid',
 
         related_module_model='TimeSheet',
         related_module_endpoint='/timesheet/',
