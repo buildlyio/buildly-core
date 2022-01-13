@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
+from datamesh.exceptions import DatameshConfigurationError
 from gateway import exceptions
 from gateway import utils
 from core.models import LogicModule
@@ -157,59 +158,79 @@ class GatewayRequest(BaseGatewayRequest):
         datamesh = self.get_datamesh()
         client_map = {}
 
-        for service in datamesh.related_logic_modules:
-            spec = self._get_swagger_spec(service)
-            client_map[service] = SwaggerClient(spec, self.request)
         # print('self.request.data',self.request.data)
         # check the request method
         if self.request.method in ['POST', 'PUT', 'PATCH']:
             # fetch datamesh logic module info for current request from datamesh
             datamesh_relationship, request_param = datamesh.fetch_datamesh_relationship()
             self.retrieve_relationship_data(datamesh_relationship=datamesh_relationship, query_params=query_params, request_param=request_param, resp_data=resp_data)
+
+        for service in datamesh.related_logic_modules:
+            spec = self._get_swagger_spec(service)
+            client_map[service] = SwaggerClient(spec, self.request)
+
         datamesh.extend_data(resp_data, client_map)
 
     def retrieve_relationship_data(self, datamesh_relationship: any, query_params: str, request_param: any, resp_data: Union[dict, list]):
         # iterate over the datamesh relationships
-        for relationship in datamesh_relationship:
-            # from the relationship get the set of data for given individual relationship
-            post_data = self.request.data.get(relationship, None)
+        # print('datamesh_relationship', datamesh_relationship)
+        relationship_data = {}
+        for relationship in datamesh_relationship:  # retrieve relationship data from request.data
+            relationship_data[relationship] = self.request.data.get(relationship)
 
-            # if relationship data is empty in this case continue
-            if not post_data:
+        for relationship, data in relationship_data.items():  # iterate over the relationship and data
+            if not data:
                 continue
 
-            request_relationship_data = self.request  # copy the request data to another variable
-
-            for data in post_data:  # iterate over the list of objects
+            # iterate over the relationship data as the data always in list
+            for instance in data:
                 # clearing all the form current request and updating it with related data the going to POST/PUT
-                request_relationship_data.data.clear()
-                request_relationship_data.data.update(data)
+                request_relationship_data = self.request  # copy the request data to another variable
+                request_relationship_data.data.clear()  # clear request.data.data
+                request_relationship_data.data.update(instance)  # update the relationship_data to request.data to perform request
 
                 # validate request
-                self.validate_request(resp_data=resp_data, request_param=request_param, relationship=relationship, query_params=query_params, request_relationship_data=request_relationship_data)
+                self.validate_request(resp_data=resp_data, request_param=request_param, relationship=relationship,
+                                      query_params=query_params, relationship_data=request_relationship_data
+                                      )
 
-    def validate_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, request_relationship_data: any):
+    def validate_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, relationship_data: any):
         # get organization
         organization = self.request.session.get('jwt_organization_uuid', None)
+        origin_model_pk_name = request_param[relationship]['origin_model_pk_name']
+        related_model_pk_name = request_param[relationship]['related_model_pk_name']
+        request_method = self.request.method
 
         # post the origin_model model data and create join with related_model
         if self.request.method in ['POST'] and 'extend' in query_params:
-            origin_model_pk = resp_data[request_param[relationship]['origin_model_pk_name']]
-            related_model_pk = self.request.data[request_param[relationship]['related_model_pk_name']]
+            origin_model_pk = resp_data[origin_model_pk_name]
+            related_model_pk = self.request.data[related_model_pk_name]
             self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
 
         # update the created object reference to request_relationship_data
         if self.request.method in ['POST'] and 'join' in query_params:
-            request_relationship_data.data[request_param[relationship]['related_model_pk_name']] = resp_data.get(request_param[relationship]['related_model_pk_name'], None)
+            relationship_data.data[related_model_pk_name] = resp_data.get(related_model_pk_name, None)
 
         # for the PUT/PATCH request update PK in request param
         if self.request.method in ['PUT', 'PATCH'] and 'join' in query_params:
-            request_param[relationship]['pk'] = request_relationship_data.data[request_param[relationship]['related_model_pk_name']]
-            request_param[relationship]['method'] = self.request.method
+            # assuming if request doesn't have pk then data needed to be created
+            pk = relationship_data.data.get(origin_model_pk_name, None)
+            if not pk:
+                # update the request method and update the request data
+                # validation for
+                import re
+                reference_field_name = related_model_pk_name if relationship_data.data.get(related_model_pk_name) else re.split("_", related_model_pk_name)[0]
+
+                if relationship_data.data[reference_field_name]:
+                    request_param[relationship]['pk'], self.request.method = None, 'POST'
+                    relationship_data.data[reference_field_name] = resp_data[related_model_pk_name]
+            else:
+                self.request.method, request_param[relationship]['method'] = request_method, request_method
+                request_param[relationship]['pk'] = pk
 
         # perform request
-        self.perform_request(resp_data=resp_data, request_param=request_param, relationship=relationship, query_params=query_params, request_relationship_data=request_relationship_data,
-                                 organization=organization)
+        self.perform_request(resp_data=resp_data, request_param=request_param, relationship=relationship,
+                             query_params=query_params, request_relationship_data=relationship_data, organization=organization)
 
     def perform_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, request_relationship_data: any, organization: any):
         # allow only if origin model needs to update or create
@@ -224,7 +245,15 @@ class GatewayRequest(BaseGatewayRequest):
             if self.request.method in ['POST'] and 'join' in query_params:  # create join record
                 origin_model_pk = content[request_param[relationship]['origin_model_pk_name']]
                 related_model_pk = resp_data[request_param[relationship]['related_model_pk_name']]
-                self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
+                self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
+                                 organization=organization)
+
+    def validate_relationship_joins(self):
+        pass
+
+    def validate_join(self):
+        join_record = JoinRecord.objects.filter()
+        return True if join_record else False
 
     def join_record(self, relationship: str, origin_model_pk: str, related_model_pk: str, organization: any) -> None:
         JoinRecord.objects.create(
