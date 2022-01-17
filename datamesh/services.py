@@ -149,7 +149,9 @@ class DataMesh:
                 'model': relationship.origin_model.endpoint.strip('/'),
                 'service': relationship.origin_model.logic_module_endpoint_name,
                 'related_model_pk_name': relationship.related_model.lookup_field_name,
-                'origin_model_pk_name': relationship.origin_model.lookup_field_name
+                'origin_model_pk_name': relationship.origin_model.lookup_field_name,
+                'origin_lookup_field_name': relationship.origin_lookup_field_name,
+                'related_lookup_field_name': relationship.related_lookup_field_name
             }
 
             request_param[relationship.key] = params

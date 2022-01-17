@@ -3,6 +3,7 @@ import json
 import asyncio
 from urllib.error import URLError
 from typing import Any, Dict, Union
+import re
 
 import aiohttp
 from bravado_core.spec import Spec
@@ -162,13 +163,14 @@ class GatewayRequest(BaseGatewayRequest):
         # check the request method
         if self.request.method in ['POST', 'PUT', 'PATCH']:
             # fetch datamesh logic module info for current request from datamesh
-            datamesh_relationship, request_param = datamesh.fetch_datamesh_relationship()
-            self.retrieve_relationship_data(datamesh_relationship=datamesh_relationship, query_params=query_params, request_param=request_param, resp_data=resp_data)
+            self.datamesh_relationship, self.request_param = datamesh.fetch_datamesh_relationship()
+            self.retrieve_relationship_data(datamesh_relationship=self.datamesh_relationship, query_params=query_params, request_param=self.request_param, resp_data=resp_data)
 
         for service in datamesh.related_logic_modules:
             spec = self._get_swagger_spec(service)
             client_map[service] = SwaggerClient(spec, self.request)
 
+        # self.request.method = 'GET'
         datamesh.extend_data(resp_data, client_map)
 
     def retrieve_relationship_data(self, datamesh_relationship: any, query_params: str, request_param: any, resp_data: Union[dict, list]):
@@ -179,7 +181,9 @@ class GatewayRequest(BaseGatewayRequest):
             relationship_data[relationship] = self.request.data.get(relationship)
 
         for relationship, data in relationship_data.items():  # iterate over the relationship and data
+            print('relationship--->', relationship)
             if not data:
+                self.validate_relationship_data(relationship=relationship, resp_data=resp_data)
                 continue
 
             # iterate over the relationship data as the data always in list
@@ -216,17 +220,21 @@ class GatewayRequest(BaseGatewayRequest):
             # assuming if request doesn't have pk then data needed to be created
             pk = relationship_data.data.get(origin_model_pk_name, None)
             if not pk:
-                # update the request method and update the request data
-                # validation for
-                import re
+                # validation for to save reference of related model
                 reference_field_name = related_model_pk_name if relationship_data.data.get(related_model_pk_name) else re.split("_", related_model_pk_name)[0]
 
                 if relationship_data.data[reference_field_name]:
+                    # update the method as we are creating relation object and save pk to none as we are performing post request
                     request_param[relationship]['pk'], self.request.method = None, 'POST'
                     relationship_data.data[reference_field_name] = resp_data[related_model_pk_name]
             else:
+                # update the request and param method here we are keeping original request in
+                # request_method considering request might update for above condition
                 self.request.method, request_param[relationship]['method'] = request_method, request_method
                 request_param[relationship]['pk'] = pk
+
+                if 'join' in relationship_data.data:
+                    pass
 
         # perform request
         self.perform_request(resp_data=resp_data, request_param=request_param, relationship=relationship,
@@ -248,14 +256,28 @@ class GatewayRequest(BaseGatewayRequest):
                 self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
                                  organization=organization)
 
-    def validate_relationship_joins(self):
-        pass
+    def validate_relationship_data(self, resp_data: any, relationship: any):
+        """This function will validate the type of field and the relationship data"""
+        origin_lookup_field_uuid = resp_data[self.request_param[relationship]['origin_lookup_field_name']]
+        related_lookup_field_uuid = resp_data[self.request_param[relationship]['related_lookup_field_name']]
 
-    def validate_join(self):
-        join_record = JoinRecord.objects.filter()
-        return True if join_record else False
+        if related_lookup_field_uuid:
+            if type(related_lookup_field_uuid) == type([]):  # check for array type
+                for uuid in related_lookup_field_uuid:  # for each item in array/list
+                    related_lookup_field_uuid = uuid
+                    # validate the join
+                    self.validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
+            else:
+                self.validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
+
+    def validate_join(self, record_uuid: any, related_record_uuid: any, relationship: any):
+        """This function is validating the join if the join not created, yet then it will create the join """
+        join_record_instance = JoinRecord.objects.filter(relationship__key=relationship, record_uuid=record_uuid, related_record_uuid=related_record_uuid)
+        if not join_record_instance:
+            self.join_record(relationship=relationship, origin_model_pk=record_uuid, related_model_pk=related_record_uuid, organization=None)
 
     def join_record(self, relationship: str, origin_model_pk: str, related_model_pk: str, organization: any) -> None:
+        """This function will create datamesh join"""
         JoinRecord.objects.create(
             relationship=Relationship.objects.filter(key=relationship).first(),
             record_uuid=origin_model_pk,
