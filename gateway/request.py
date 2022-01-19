@@ -102,10 +102,10 @@ class GatewayRequest(BaseGatewayRequest):
         content, status_code, headers = client.request(**self.url_kwargs)
 
         # calls to individual service as per relationship
-
         # call to join record insertion method
         # aggregate/join with the JoinRecord-models
         if ("join" or "extend") in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
+
             try:
                 self._join_response_data(resp_data=content, query_params=self.request.query_params)
             except exceptions.ServiceDoesNotExist as e:
@@ -159,35 +159,37 @@ class GatewayRequest(BaseGatewayRequest):
         datamesh = self.get_datamesh()
         client_map = {}
 
-        # print('self.request.data',self.request.data)
         # check the request method
         if self.request.method in ['POST', 'PUT', 'PATCH']:
             # fetch datamesh logic module info for current request from datamesh
             self.datamesh_relationship, self.request_param = datamesh.fetch_datamesh_relationship()
+            self.request_method = self.request.method
             self.retrieve_relationship_data(datamesh_relationship=self.datamesh_relationship, query_params=query_params, request_param=self.request_param, resp_data=resp_data)
 
         for service in datamesh.related_logic_modules:
             spec = self._get_swagger_spec(service)
             client_map[service] = SwaggerClient(spec, self.request)
 
-        # self.request.method = 'GET'
         datamesh.extend_data(resp_data, client_map)
 
     def retrieve_relationship_data(self, datamesh_relationship: any, query_params: str, request_param: any, resp_data: Union[dict, list]):
         # iterate over the datamesh relationships
-        # print('datamesh_relationship', datamesh_relationship)
+
         relationship_data = {}
         for relationship in datamesh_relationship:  # retrieve relationship data from request.data
             relationship_data[relationship] = self.request.data.get(relationship)
 
         for relationship, data in relationship_data.items():  # iterate over the relationship and data
-            print('relationship--->', relationship)
+
             if not data:
                 self.validate_relationship_data(relationship=relationship, resp_data=resp_data)
                 continue
 
             # iterate over the relationship data as the data always in list
             for instance in data:
+                # print('relationship-->', relationship, self.request.method, self.request_method)
+                self.request.method = self.request_method
+                # print('relationship-->', relationship, self.request.method, self.request_method)
                 # clearing all the form current request and updating it with related data the going to POST/PUT
                 request_relationship_data = self.request  # copy the request data to another variable
                 request_relationship_data.data.clear()  # clear request.data.data
@@ -201,9 +203,10 @@ class GatewayRequest(BaseGatewayRequest):
     def validate_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, relationship_data: any):
         # get organization
         organization = self.request.session.get('jwt_organization_uuid', None)
-        origin_model_pk_name = request_param[relationship]['origin_model_pk_name']
-        related_model_pk_name = request_param[relationship]['related_model_pk_name']
-        request_method = self.request.method
+        origin_model_pk_name = request_param[relationship]['origin_lookup_field_name']
+        related_model_pk_name = request_param[relationship]['related_lookup_field_name']
+        origin_fk_name = request_param[relationship]['origin_fk_name']
+        related_fk_name = request_param[relationship]['related_fk_name']
 
         # post the origin_model model data and create join with related_model
         if self.request.method in ['POST'] and 'extend' in query_params:
@@ -213,24 +216,40 @@ class GatewayRequest(BaseGatewayRequest):
 
         # update the created object reference to request_relationship_data
         if self.request.method in ['POST'] and 'join' in query_params:
-            relationship_data.data[related_model_pk_name] = resp_data.get(related_model_pk_name, None)
+            pk = resp_data.get(origin_model_pk_name) if resp_data.get(origin_model_pk_name, None) else resp_data.get(related_model_pk_name, None)
+            key_name = origin_fk_name if origin_fk_name in relationship_data.data.keys() else related_fk_name
+            if pk and key_name:
+                relationship_data.data[key_name] = pk
+            else:
+                return
 
         # for the PUT/PATCH request update PK in request param
         if self.request.method in ['PUT', 'PATCH'] and 'join' in query_params:
+            # print('relationship-->', relationship, self.request.method, self.request_method)
             # assuming if request doesn't have pk then data needed to be created
-            pk = relationship_data.data.get(origin_model_pk_name, None)
+            pk_name = list(relationship_data.data.keys())[0]
+
+            if str(pk_name) == str(origin_model_pk_name):
+                pk = relationship_data.data.get(origin_model_pk_name)
+            elif str(pk_name) == str(related_model_pk_name):
+                pk = relationship_data.data.get(related_model_pk_name)
+            else:
+                pk = None
+
             if not pk:
                 # validation for to save reference of related model
-                reference_field_name = related_model_pk_name if relationship_data.data.get(related_model_pk_name) else re.split("_", related_model_pk_name)[0]
+                # pk = resp_data.get(origin_model_pk_name) if resp_data.get(origin_model_pk_name, None) else resp_data.get(related_model_pk_name, None)
+                # Note : Not updating fk reference considering when we're updating we have it already on request relation data
+                reference_field_name = origin_fk_name if origin_fk_name in relationship_data.data.keys() else related_fk_name
 
-                if relationship_data.data[reference_field_name]:
+                if reference_field_name in relationship_data.data.keys():
                     # update the method as we are creating relation object and save pk to none as we are performing post request
                     request_param[relationship]['pk'], self.request.method = None, 'POST'
-                    relationship_data.data[reference_field_name] = resp_data[related_model_pk_name]
+                    relationship_data.data[reference_field_name] = pk
             else:
                 # update the request and param method here we are keeping original request in
-                # request_method considering request might update for above condition
-                self.request.method, request_param[relationship]['method'] = request_method, request_method
+                # request_method considering for above condition request method might be updated
+                self.request.method, request_param[relationship]['method'] = self.request_method, self.request_method
                 request_param[relationship]['pk'] = pk
 
                 if 'join' in relationship_data.data:
@@ -241,6 +260,7 @@ class GatewayRequest(BaseGatewayRequest):
                              query_params=query_params, request_relationship_data=relationship_data, organization=organization)
 
     def perform_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, request_relationship_data: any, organization: any):
+
         # allow only if origin model needs to update or create
         if self.request.method in ['POST', 'PUT', 'PATCH'] and 'join' in query_params:
             # create a client for performing data requests
@@ -258,10 +278,11 @@ class GatewayRequest(BaseGatewayRequest):
 
     def validate_relationship_data(self, resp_data: any, relationship: any):
         """This function will validate the type of field and the relationship data"""
-        origin_lookup_field_uuid = resp_data[self.request_param[relationship]['origin_lookup_field_name']]
-        related_lookup_field_uuid = resp_data[self.request_param[relationship]['related_lookup_field_name']]
+        origin_lookup_field_uuid = resp_data.get(self.request_param[relationship]['origin_lookup_field_name'], None)
+        related_lookup_field_uuid = resp_data.get(self.request_param[relationship]['related_lookup_field_name'], None)
 
-        if related_lookup_field_uuid:
+        if related_lookup_field_uuid and origin_lookup_field_uuid:
+
             if type(related_lookup_field_uuid) == type([]):  # check for array type
                 for uuid in related_lookup_field_uuid:  # for each item in array/list
                     related_lookup_field_uuid = uuid

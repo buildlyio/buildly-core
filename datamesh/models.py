@@ -60,7 +60,9 @@ class Relationship(models.Model):
     origin_model = models.ForeignKey(LogicModuleModel, related_name='joins_origins', on_delete=models.CASCADE)
     related_model = models.ForeignKey(LogicModuleModel, related_name='joins_relateds', on_delete=models.CASCADE)
     origin_lookup_field_name = models.CharField(max_length=128, blank=True, null=True)
+    origin_fk_field_name = models.CharField(max_length=128, blank=True, null=True)
     related_lookup_field_name = models.CharField(max_length=128, blank=True, null=True)
+    related_fk_field_name = models.CharField(max_length=128, blank=True, null=True)
 
     def __str__(self):
         return f'{self.origin_model} -> {self.related_model}'
