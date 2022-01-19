@@ -125,8 +125,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         core_groups = validated_data.pop('core_groups', [])
 
         # create core user
-        invitation_token = validated_data.pop('invitation_token', None)
-        validated_data['is_active'] = is_new_org or bool(invitation_token)
+        if bool(settings.AUTO_APPROVE_USER):  # If auto-approval set to true
+            validated_data['is_active'] = True
+        else:
+            invitation_token = validated_data.pop('invitation_token', None)
+            validated_data['is_active'] = is_new_org or bool(invitation_token)
         coreuser = CoreUser.objects.create(
             organization=organization,
             **validated_data
