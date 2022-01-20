@@ -154,7 +154,7 @@ class DataMesh:
             params = {
                 'pk': None,
                 'model': related_model.endpoint.strip('/'),
-                'service': origin_model.logic_module_endpoint_name,
+                'service': related_model.logic_module_endpoint_name,
                 'related_model_pk_name': relationship.related_model.lookup_field_name,
                 'origin_model_pk_name': relationship.origin_model.lookup_field_name,
 
