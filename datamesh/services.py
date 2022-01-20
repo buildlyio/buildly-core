@@ -144,17 +144,20 @@ class DataMesh:
 
             if is_forward_lookup:
                 related_model = relationship.related_model
+                origin_model = relationship.origin_model
             else:
                 related_model = relationship.origin_model
+                origin_model = relationship.related_model
 
             relationship_list.append(relationship.key)
 
             params = {
                 'pk': None,
                 'model': related_model.endpoint.strip('/'),
-                'service': relationship.origin_model.logic_module_endpoint_name,
+                'service': origin_model.logic_module_endpoint_name,
                 'related_model_pk_name': relationship.related_model.lookup_field_name,
                 'origin_model_pk_name': relationship.origin_model.lookup_field_name,
+
                 'origin_lookup_field_name': relationship.origin_lookup_field_name,
                 'origin_fk_name': relationship.origin_fk_field_name,
                 'related_lookup_field_name': relationship.related_lookup_field_name,

@@ -187,9 +187,8 @@ class GatewayRequest(BaseGatewayRequest):
 
             # iterate over the relationship data as the data always in list
             for instance in data:
-                # print('relationship-->', relationship, self.request.method, self.request_method)
                 self.request.method = self.request_method
-                # print('relationship-->', relationship, self.request.method, self.request_method)
+
                 # clearing all the form current request and updating it with related data the going to POST/PUT
                 request_relationship_data = self.request  # copy the request data to another variable
                 request_relationship_data.data.clear()  # clear request.data.data
@@ -212,14 +211,16 @@ class GatewayRequest(BaseGatewayRequest):
         if self.request.method in ['POST'] and 'extend' in query_params:
             origin_model_pk = resp_data[origin_model_pk_name]
             related_model_pk = self.request.data[related_model_pk_name]
-            self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
+            return self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
 
         # update the created object reference to request_relationship_data
         if self.request.method in ['POST'] and 'join' in query_params:
             pk = resp_data.get(origin_model_pk_name) if resp_data.get(origin_model_pk_name, None) else resp_data.get(related_model_pk_name, None)
             key_name = origin_fk_name if origin_fk_name in relationship_data.data.keys() else related_fk_name
+
             if pk and key_name:
                 relationship_data.data[key_name] = pk
+                request_param[relationship]['method'] = self.request_method
             else:
                 return
 
@@ -278,8 +279,12 @@ class GatewayRequest(BaseGatewayRequest):
 
     def validate_relationship_data(self, resp_data: any, relationship: any):
         """This function will validate the type of field and the relationship data"""
-        origin_lookup_field_uuid = resp_data.get(self.request_param[relationship]['origin_lookup_field_name'], None)
-        related_lookup_field_uuid = resp_data.get(self.request_param[relationship]['related_lookup_field_name'], None)
+
+        origin_field_name = self.request_param[relationship]['origin_lookup_field_name']
+        related_field_name = self.request_param[relationship]['origin_fk_name']
+
+        origin_lookup_field_uuid = resp_data.get(origin_field_name, None)
+        related_lookup_field_uuid = resp_data.get(related_field_name, None)
 
         if related_lookup_field_uuid and origin_lookup_field_uuid:
 
