@@ -180,11 +180,9 @@ class GatewayRequest(BaseGatewayRequest):
             relationship_data[relationship] = self.request.data.get(relationship)
 
         for relationship, data in relationship_data.items():  # iterate over the relationship and data
-
             if not data:
                 self.validate_relationship_data(relationship=relationship, resp_data=resp_data)
                 continue
-
             # iterate over the relationship data as the data always in list
             for instance in data:
                 self.request.method = self.request_method
@@ -226,16 +224,18 @@ class GatewayRequest(BaseGatewayRequest):
 
         # for the PUT/PATCH request update PK in request param
         if self.request.method in ['PUT', 'PATCH'] and 'join' in query_params:
-            # print('relationship-->', relationship, self.request.method, self.request_method)
+
             # assuming if request doesn't have pk then data needed to be created
             pk_name = list(relationship_data.data.keys())[0]
 
             if str(pk_name) == str(origin_model_pk_name):
                 pk = relationship_data.data.get(origin_model_pk_name)
+                res_pk = resp_data.get(related_model_pk_name)
             elif str(pk_name) == str(related_model_pk_name):
                 pk = relationship_data.data.get(related_model_pk_name)
+                res_pk = resp_data.get(origin_model_pk_name)
             else:
-                pk = None
+                pk, res_pk = None, None
 
             if not pk:
                 # validation for to save reference of related model
@@ -253,15 +253,19 @@ class GatewayRequest(BaseGatewayRequest):
                 self.request.method, request_param[relationship]['method'] = self.request_method, self.request_method
                 request_param[relationship]['pk'] = pk
 
-                if 'join' in relationship_data.data:
-                    pass
+                if ("join" and "previous_pk") in relationship_data.data:
+                    if self.delete_join_record(pk=res_pk, previous_pk=relationship_data.data['previous_pk'])[0]:
+                        origin_model_pk = resp_data[request_param[relationship]['origin_model_pk_name']]
+                        related_model_pk = relationship_data.data[request_param[relationship]['related_model_pk_name']]
+
+                        self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
+                                         organization=organization)
 
         # perform request
         self.perform_request(resp_data=resp_data, request_param=request_param, relationship=relationship,
                              query_params=query_params, request_relationship_data=relationship_data, organization=organization)
 
     def perform_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, request_relationship_data: any, organization: any):
-
         # allow only if origin model needs to update or create
         if self.request.method in ['POST', 'PUT', 'PATCH'] and 'join' in query_params:
             # create a client for performing data requests
@@ -276,6 +280,9 @@ class GatewayRequest(BaseGatewayRequest):
                 related_model_pk = resp_data[request_param[relationship]['related_model_pk_name']]
                 self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
                                  organization=organization)
+
+            if self.request_method in ['PUT', 'PATCH'] and self.request.method in ['POST']:
+                self.request.method = self.request_method
 
     def validate_relationship_data(self, resp_data: any, relationship: any):
         """This function will validate the type of field and the relationship data"""
@@ -311,11 +318,16 @@ class GatewayRequest(BaseGatewayRequest):
             organization_id=organization
         )
 
-    def delete_join_record(self, pk: [str, int]) -> None:
+    def delete_join_record(self, pk: [str, int], previous_pk: [str, int]) -> None:
 
-        JoinRecord.objects.filter(Q(record_uuid__icontains=pk) | Q(related_record_uuid__icontains=pk)
-                                  | Q(record_id__icontains=pk) | Q(related_record_id__icontains=pk)
-                                  ).delete()
+        if previous_pk and pk:
+            return JoinRecord.objects.filter(Q(record_uuid__icontains=pk, related_record_uuid__icontains=previous_pk) |
+                                             Q(record_uuid__icontains=previous_pk, related_record_uuid__icontains=pk)).delete()
+
+        if pk and not previous_pk:
+            return JoinRecord.objects.filter(Q(record_uuid__icontains=pk) | Q(related_record_uuid__icontains=pk)
+                                             | Q(record_id__icontains=pk) | Q(related_record_id__icontains=pk)
+                                             ).delete()
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):
