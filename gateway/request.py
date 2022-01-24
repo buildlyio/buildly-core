@@ -13,12 +13,15 @@ from django.http.request import QueryDict
 from rest_framework.request import Request
 
 from datamesh.exceptions import DatameshConfigurationError
+from datamesh.handle_request import RequestHandler
+from datamesh.utils import delete_join_record
 from gateway import exceptions
 from gateway import utils
 from core.models import LogicModule
 from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
 from datamesh.models import JoinRecord, Relationship
+from gateway.utils import prepare_get_request
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +115,7 @@ class GatewayRequest(BaseGatewayRequest):
                 logger.error(e.content)
 
         if 'join' in self.request.query_params and self.request.method == 'DELETE' and status_code == 204:
-            self.delete_join_record(pk=self.url_kwargs['pk'], previous_pk=None)  # delete join record
+            delete_join_record(pk=self.url_kwargs['pk'], previous_pk=None)  # delete join record
 
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)
@@ -165,18 +168,24 @@ class GatewayRequest(BaseGatewayRequest):
             self.datamesh_relationship, self.request_param = datamesh.fetch_datamesh_relationship()
             self.request_method = self.request.method
 
-            self.retrieve_relationship_data(datamesh_relationship=self.datamesh_relationship, query_params=query_params, request_param=self.request_param, resp_data=resp_data)
+            request_kwargs = {
+                'query_params': query_params,
+                'request_param': self.request_param,
+                'datamesh_relationship': self.datamesh_relationship,
+                'resp_data': resp_data,
+                'request_method': self.request.method,
+                'request': self.request
+            }
 
-            meta_data, service_url = self.request.META, None
-            request_host = f'{meta_data["wsgi.url_scheme"]}://{meta_data["HTTP_HOST"]}'
+            # handle datamesh requests
+            request_handler = RequestHandler()
+            request_handler.retrieve_relationship_data(request_kwargs=request_kwargs)
 
-            if self.request.method in ['PUT', 'PATCH']:
-                service_url = f'{request_host}{meta_data.get("PATH_INFO", None)}?{meta_data.get("QUERY_STRING", None)}'
-            elif self.request.method in ['POST']:
-                service_url = f'{request_host}{meta_data.get("PATH_INFO", None)}{list(resp_data.values())[0]}/?{meta_data.get("QUERY_STRING", None)}'
-
-            header = {'Authorization': meta_data["HTTP_AUTHORIZATION"]}
+            # perform get
+            service_url, header = prepare_get_request(request=self.request, resp_data=resp_data)
             result = requests.get(url=service_url, headers=header)
+
+            # clear and update datamesh get response
             resp_data.clear()
             resp_data.update(result.json())
         else:
@@ -186,163 +195,6 @@ class GatewayRequest(BaseGatewayRequest):
                 client_map[service] = SwaggerClient(spec, self.request)
 
             datamesh.extend_data(resp_data, client_map)
-
-    def retrieve_relationship_data(self, datamesh_relationship: any, query_params: str, request_param: any, resp_data: Union[dict, list]):
-        # iterate over the datamesh relationships
-
-        relationship_data = {}
-        for relationship in datamesh_relationship:  # retrieve relationship data from request.data
-            relationship_data[relationship] = self.request.data.get(relationship)
-
-        for relationship, data in relationship_data.items():  # iterate over the relationship and data
-            if not data:
-                self.validate_relationship_data(relationship=relationship, resp_data=resp_data)
-                continue
-            # iterate over the relationship data as the data always in list
-            for instance in data:
-                self.request.method = self.request_method
-
-                # clearing all the form current request and updating it with related data the going to POST/PUT
-                request_relationship_data = self.request  # copy the request data to another variable
-                request_relationship_data.data.clear()  # clear request.data.data
-                request_relationship_data.data.update(instance)  # update the relationship_data to request.data to perform request
-
-                # validate request
-                self.validate_request(resp_data=resp_data, request_param=request_param, relationship=relationship,
-                                      query_params=query_params, relationship_data=request_relationship_data
-                                      )
-
-    def validate_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, relationship_data: any):
-        # get organization
-        organization = self.request.session.get('jwt_organization_uuid', None)
-        origin_model_pk_name = request_param[relationship]['origin_lookup_field_name']
-        related_model_pk_name = request_param[relationship]['related_lookup_field_name']
-        origin_fk_name = request_param[relationship]['origin_fk_name']
-        related_fk_name = request_param[relationship]['related_fk_name']
-
-        # post the origin_model model data and create join with related_model
-        if self.request.method in ['POST'] and 'extend' in query_params:
-            origin_model_pk = resp_data[origin_model_pk_name]
-            related_model_pk = self.request.data[related_model_pk_name]
-            return self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk, organization=organization)
-
-        # update the created object reference to request_relationship_data
-        if self.request.method in ['POST'] and 'join' in query_params:
-            pk = resp_data.get(origin_model_pk_name) if resp_data.get(origin_model_pk_name, None) else resp_data.get(related_model_pk_name, None)
-            key_name = origin_fk_name if origin_fk_name in relationship_data.data.keys() else related_fk_name
-
-            if pk and key_name:
-                relationship_data.data[key_name] = pk
-                request_param[relationship]['method'] = self.request_method
-            else:
-                return
-
-        # for the PUT/PATCH request update PK in request param
-        if self.request.method in ['PUT', 'PATCH'] and 'join' in query_params:
-
-            # assuming if request doesn't have pk then data needed to be created
-            pk_name = list(relationship_data.data.keys())[0]
-
-            if str(pk_name) == str(origin_model_pk_name):
-                pk = relationship_data.data.get(origin_model_pk_name)
-                res_pk = resp_data.get(related_model_pk_name)
-            elif str(pk_name) == str(related_model_pk_name):
-                pk = relationship_data.data.get(related_model_pk_name)
-                res_pk = resp_data.get(origin_model_pk_name)
-            else:
-                pk, res_pk = None, None
-
-            if not pk:
-                # validation for to save reference of related model
-                # pk = resp_data.get(origin_model_pk_name) if resp_data.get(origin_model_pk_name, None) else resp_data.get(related_model_pk_name, None)
-                # Note : Not updating fk reference considering when we're updating we have it already on request relation data
-                reference_field_name = origin_fk_name if origin_fk_name in relationship_data.data.keys() else related_fk_name
-
-                if reference_field_name in relationship_data.data.keys():
-                    # update the method as we are creating relation object and save pk to none as we are performing post request
-                    request_param[relationship]['pk'], self.request.method = None, 'POST'
-                    relationship_data.data[reference_field_name] = pk
-            else:
-                # update the request and param method here we are keeping original request in
-                # request_method considering for above condition request method might be updated
-                self.request.method, request_param[relationship]['method'] = self.request_method, self.request_method
-                request_param[relationship]['pk'] = pk
-
-                if ("join" and "previous_pk") in relationship_data.data:
-                    if self.delete_join_record(pk=res_pk, previous_pk=relationship_data.data['previous_pk'])[0]:
-                        origin_model_pk = resp_data[request_param[relationship]['origin_model_pk_name']]
-                        related_model_pk = relationship_data.data[request_param[relationship]['related_model_pk_name']]
-
-                        self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
-                                         organization=organization)
-
-        # perform request
-        self.perform_request(resp_data=resp_data, request_param=request_param, relationship=relationship,
-                             query_params=query_params, request_relationship_data=relationship_data, organization=organization)
-
-    def perform_request(self, resp_data: any, request_param: any, relationship: any, query_params: any, request_relationship_data: any, organization: any):
-        # allow only if origin model needs to update or create
-        if self.request.method in ['POST', 'PUT', 'PATCH'] and 'join' in query_params:
-            # create a client for performing data requests
-            spec = self._get_swagger_spec(request_param[relationship]['service'])
-            client = SwaggerClient(spec, request_relationship_data)
-
-            # perform a service data request
-            content, status_code, headers = client.request(**request_param[relationship])
-
-            if self.request.method in ['POST'] and 'join' in query_params:  # create join record
-                origin_model_pk = content[request_param[relationship]['origin_model_pk_name']]
-                related_model_pk = resp_data[request_param[relationship]['related_model_pk_name']]
-                self.join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
-                                 organization=organization)
-
-            if self.request_method in ['PUT', 'PATCH'] and self.request.method in ['POST']:
-                self.request.method = self.request_method
-
-    def validate_relationship_data(self, resp_data: any, relationship: any):
-        """This function will validate the type of field and the relationship data"""
-
-        origin_field_name = self.request_param[relationship]['origin_lookup_field_name']
-        related_field_name = self.request_param[relationship]['origin_fk_name']
-
-        origin_lookup_field_uuid = resp_data.get(origin_field_name, None)
-        related_lookup_field_uuid = resp_data.get(related_field_name, None)
-
-        if related_lookup_field_uuid and origin_lookup_field_uuid:
-
-            if type(related_lookup_field_uuid) == type([]):  # check for array type
-                for uuid in related_lookup_field_uuid:  # for each item in array/list
-                    related_lookup_field_uuid = uuid
-                    # validate the join
-                    self.validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
-            else:
-                self.validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
-
-    def validate_join(self, record_uuid: any, related_record_uuid: any, relationship: any):
-        """This function is validating the join if the join not created, yet then it will create the join """
-        join_record_instance = JoinRecord.objects.filter(relationship__key=relationship, record_uuid=record_uuid, related_record_uuid=related_record_uuid)
-        if not join_record_instance:
-            self.join_record(relationship=relationship, origin_model_pk=record_uuid, related_model_pk=related_record_uuid, organization=None)
-
-    def join_record(self, relationship: str, origin_model_pk: str, related_model_pk: str, organization: any) -> None:
-        """This function will create datamesh join"""
-        JoinRecord.objects.create(
-            relationship=Relationship.objects.filter(key=relationship).first(),
-            record_uuid=origin_model_pk,
-            related_record_uuid=related_model_pk,
-            organization_id=organization
-        )
-
-    def delete_join_record(self, pk: [str, int], previous_pk: [str, int]) -> None:
-
-        if previous_pk and pk:
-            return JoinRecord.objects.filter(Q(record_uuid__icontains=pk, related_record_uuid__icontains=previous_pk) |
-                                             Q(record_uuid__icontains=previous_pk, related_record_uuid__icontains=pk)).delete()
-
-        if pk and not previous_pk:
-            return JoinRecord.objects.filter(Q(record_uuid__icontains=pk) | Q(related_record_uuid__icontains=pk)
-                                             | Q(record_id__icontains=pk) | Q(related_record_id__icontains=pk)
-                                             ).delete()
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):
