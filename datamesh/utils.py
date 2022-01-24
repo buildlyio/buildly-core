@@ -21,14 +21,14 @@ def prepare_lookup_kwargs(is_forward_lookup: bool,
     return related_model, related_record_field
 
 
-def validate_join(record_uuid: any, related_record_uuid: any, relationship: any):
+def validate_join(record_uuid: [str, int], related_record_uuid: [str, int], relationship: str) -> None:
     """This function is validating the join if the join not created, yet then it will create the join """
     join_record_instance = JoinRecord.objects.filter(relationship__key=relationship, record_uuid=record_uuid, related_record_uuid=related_record_uuid)
     if not join_record_instance:
         join_record(relationship=relationship, origin_model_pk=record_uuid, related_model_pk=related_record_uuid, organization=None)
 
 
-def join_record(relationship: str, origin_model_pk: str, related_model_pk: str, organization: any) -> None:
+def join_record(relationship: str, origin_model_pk: [str, int], related_model_pk: [str, int], organization: [str, any]) -> None:
     """This function will create datamesh join"""
     JoinRecord.objects.create(
         relationship=Relationship.objects.filter(key=relationship).first(),

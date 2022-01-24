@@ -20,7 +20,7 @@ class RequestHandler:
         self.related_model_pk_name, self.origin_model_pk_name = None, None
         self.organization, self.request, self.relation_data = None, None, None
 
-    def validate_request(self, relationship: any, relationship_data: any, request_kwargs: any):
+    def validate_request(self, relationship: str, relationship_data: Union[dict, list], request_kwargs: dict):
 
         # update the variable
         self.organization = self.request.session.get('jwt_organization_uuid', None)
@@ -54,7 +54,7 @@ class RequestHandler:
         # perform request
         self.perform_request(relationship=relationship, relation_data=self.relation_data)
 
-    def prepare_update_request(self, relationship):
+    def prepare_update_request(self, relationship: str):
         # assuming if request doesn't have pk then data needed to be created
         pk_name = list(self.relationship_data.data.keys())[0]
 
@@ -68,8 +68,6 @@ class RequestHandler:
             pk, res_pk = None, None
 
         if not pk:
-            # validation for to save reference of related model
-            # pk = resp_data.get(origin_model_pk_name) if resp_data.get(origin_model_pk_name, None) else resp_data.get(related_model_pk_name, None)
             # Note : Not updating fk reference considering when we're updating we have it already on request relation data
             reference_field_name = self.origin_fk_name if self.origin_fk_name in self.relationship_data.data.keys() else self.related_fk_name
             if reference_field_name in self.relationship_data.data.keys():
@@ -87,12 +85,14 @@ class RequestHandler:
                     origin_model_pk = self.resp_data[self.request_param[relationship]['origin_model_pk_name']]
                     related_model_pk = self.relationship_data.data[self.request_param[relationship]['related_model_pk_name']]
 
-                    join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
-                                organization=self.organization)
+                    return join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
+                                       organization=self.organization)
         return self.relationship_data
 
-    def retrieve_relationship_data(self, request_kwargs: any):
+    def retrieve_relationship_data(self, request_kwargs: dict):
+        """ This function will retrieve relation data from request relationship list data """
 
+        # update the variable
         self.resp_data = request_kwargs.get('resp_data', None)
         self.request = request_kwargs['request']
         self.request_kwargs = request_kwargs
@@ -107,6 +107,8 @@ class RequestHandler:
 
         for relationship, data in self.relationship_data.items():  # iterate over the relationship and data
             if not data:
+                # if data is empty then check the related relation pk is preset on origin request response
+                # or not else continue
                 self.validate_relationship_data(relationship=relationship, resp_data=self.resp_data)
                 continue
 
@@ -122,14 +124,13 @@ class RequestHandler:
                 # validate request
                 self.validate_request(relationship=relationship, relationship_data=self.relationship_data, request_kwargs=request_kwargs)
 
-    def perform_request(self, relationship: any, relation_data: any):
+    def perform_request(self, relationship: str, relation_data: any):
         # allow only if origin model needs to update or create
         if self.request.method in ['POST', 'PUT', 'PATCH'] and 'join' in self.query_params:
 
             # create a client for performing data requests
             g_request = gateway_request.GatewayRequest(self.request_kwargs['request'])
             spec = g_request._get_swagger_spec(self.request_param[relationship]['service'])
-
             client = SwaggerClient(spec, relation_data)
 
             # perform a service data request
@@ -141,24 +142,28 @@ class RequestHandler:
                 join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
                             organization=self.organization)
 
-            if self.request_method in ['PUT', 'PATCH'] and self.request.method in ['POST']:
-                self.request.method = self.request_method
-
-    def validate_relationship_data(self, resp_data: any, relationship: any):
+    def validate_relationship_data(self, resp_data: Union[dict, list], relationship: str):
         """This function will validate the type of field and the relationship data"""
 
+        # get the pk name
         origin_field_name = self.request_param[relationship]['origin_lookup_field_name']
         related_field_name = self.request_param[relationship]['origin_fk_name']
 
+        # get pk from origin request response
         origin_lookup_field_uuid = resp_data.get(origin_field_name, None)
         related_lookup_field_uuid = resp_data.get(related_field_name, None)
 
         if related_lookup_field_uuid and origin_lookup_field_uuid:
-
             if type(related_lookup_field_uuid) == type([]):  # check for array type
                 for uuid in related_lookup_field_uuid:  # for each item in array/list
                     related_lookup_field_uuid = uuid
                     # validate the join
                     validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
+
+            elif type(origin_lookup_field_uuid) == type([]):  # check for array type
+                for uuid in origin_lookup_field_uuid:  # for each item in array/list
+                    origin_lookup_field_uuid = uuid
+                    # validate the join
+                    validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
             else:
-                validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
+                return validate_join(record_uuid=origin_lookup_field_uuid, related_record_uuid=related_lookup_field_uuid, relationship=relationship)
