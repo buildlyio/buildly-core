@@ -6,6 +6,7 @@ from typing import Any, Dict, Union
 import re
 
 import aiohttp
+import requests
 from bravado_core.spec import Spec
 from django.db.models import Q
 from django.http.request import QueryDict
@@ -105,14 +106,13 @@ class GatewayRequest(BaseGatewayRequest):
         # call to join record insertion method
         # aggregate/join with the JoinRecord-models
         if ("join" or "extend") in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
-
             try:
                 self._join_response_data(resp_data=content, query_params=self.request.query_params)
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
         if 'join' in self.request.query_params and self.request.method == 'DELETE' and status_code == 204:
-            self.delete_join_record(pk=self.url_kwargs['pk'])  # delete join record
+            self.delete_join_record(pk=self.url_kwargs['pk'], previous_pk=None)  # delete join record
 
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)
@@ -164,13 +164,28 @@ class GatewayRequest(BaseGatewayRequest):
             # fetch datamesh logic module info for current request from datamesh
             self.datamesh_relationship, self.request_param = datamesh.fetch_datamesh_relationship()
             self.request_method = self.request.method
+
             self.retrieve_relationship_data(datamesh_relationship=self.datamesh_relationship, query_params=query_params, request_param=self.request_param, resp_data=resp_data)
 
-        for service in datamesh.related_logic_modules:
-            spec = self._get_swagger_spec(service)
-            client_map[service] = SwaggerClient(spec, self.request)
+            meta_data, service_url = self.request.META, None
+            request_host = f'{meta_data["wsgi.url_scheme"]}://{meta_data["HTTP_HOST"]}'
 
-        datamesh.extend_data(resp_data, client_map)
+            if self.request.method in ['PUT', 'PATCH']:
+                service_url = f'{request_host}{meta_data.get("PATH_INFO", None)}?{meta_data.get("QUERY_STRING", None)}'
+            elif self.request.method in ['POST']:
+                service_url = f'{request_host}{meta_data.get("PATH_INFO", None)}{list(resp_data.values())[0]}/?{meta_data.get("QUERY_STRING", None)}'
+
+            header = {'Authorization': meta_data["HTTP_AUTHORIZATION"]}
+            result = requests.get(url=service_url, headers=header)
+            resp_data.clear()
+            resp_data.update(result.json())
+        else:
+
+            for service in datamesh.related_logic_modules:
+                spec = self._get_swagger_spec(service)
+                client_map[service] = SwaggerClient(spec, self.request)
+
+            datamesh.extend_data(resp_data, client_map)
 
     def retrieve_relationship_data(self, datamesh_relationship: any, query_params: str, request_param: any, resp_data: Union[dict, list]):
         # iterate over the datamesh relationships
