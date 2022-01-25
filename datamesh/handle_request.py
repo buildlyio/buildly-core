@@ -1,9 +1,4 @@
-from typing import Any, Dict, Union
-import re
-from django.db.models import Q
-from gateway import utils
-from urllib.error import URLError
-from bravado_core.spec import Spec
+from typing import Union
 from datamesh.utils import validate_join, delete_join_record, join_record
 from gateway.clients import SwaggerClient
 
@@ -38,21 +33,25 @@ class RequestHandler:
 
         # update the created object reference to request_relationship_data
         if self.request.method in ['POST'] and 'join' in self.query_params:
-            pk = self.resp_data.get(self.origin_model_pk_name) if self.resp_data.get(self.origin_model_pk_name, None) else self.resp_data.get(self.related_model_pk_name, None)
-            key_name = self.origin_fk_name if self.origin_fk_name in self.relation_data.data.keys() else self.related_fk_name
-
-            if pk and key_name:
-                self.relation_data.data[key_name] = pk
-                self.request_param[relationship]['method'] = self.request_method
-            else:
-                return
+            return self.prepare_create_request(relationship=relationship)
 
         # for the PUT/PATCH request update PK in request param
         if self.request.method in ['PUT', 'PATCH'] and 'join' in self.query_params:
             self.relation_data = self.prepare_update_request(relationship=relationship)
-
+            if not self.relation_data:
+                return
         # perform request
         self.perform_request(relationship=relationship, relation_data=self.relation_data)
+
+    def prepare_create_request(self, relationship: str):
+        pk = self.resp_data.get(self.origin_model_pk_name) if self.resp_data.get(self.origin_model_pk_name, None) else self.resp_data.get(self.related_model_pk_name, None)
+        key_name = self.origin_fk_name if self.origin_fk_name in self.relation_data.data.keys() else self.related_fk_name
+
+        if pk and key_name:
+            self.relation_data.data[key_name] = pk
+            self.request_param[relationship]['method'] = self.request_method
+        else:
+            return
 
     def prepare_update_request(self, relationship: str):
         # assuming if request doesn't have pk then data needed to be created
@@ -81,12 +80,13 @@ class RequestHandler:
             self.request_param[relationship]['pk'] = pk
 
             if ("join" and "previous_pk") in self.relationship_data.data:
-                if delete_join_record(pk=res_pk, previous_pk=self.relationship_data.data['previous_pk'])[0]:
+                if delete_join_record(pk=res_pk, previous_pk=self.relationship_data.data['previous_pk']):
                     origin_model_pk = self.resp_data[self.request_param[relationship]['origin_model_pk_name']]
                     related_model_pk = self.relationship_data.data[self.request_param[relationship]['related_model_pk_name']]
-
-                    return join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
+                    join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
                                        organization=self.organization)
+                    return False
+
         return self.relationship_data
 
     def retrieve_relationship_data(self, request_kwargs: dict):

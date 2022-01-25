@@ -142,14 +142,10 @@ class DataMesh:
 
         for relationship, is_forward_lookup in self._relationships:
 
-            print(relationship, is_forward_lookup)
-
             if is_forward_lookup:
                 related_model = relationship.related_model
-                origin_model = relationship.origin_model
             else:
                 related_model = relationship.origin_model
-                origin_model = relationship.related_model
 
             relationship_list.append(relationship.key)
 
