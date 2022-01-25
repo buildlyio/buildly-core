@@ -30,6 +30,7 @@ def validate_join(record_uuid: [str, int], related_record_uuid: [str, int], rela
 
 def join_record(relationship: str, origin_model_pk: [str, int], related_model_pk: [str, int], organization: [str, any]) -> None:
     """This function will create datamesh join"""
+
     JoinRecord.objects.create(
         relationship=Relationship.objects.filter(key=relationship).first(),
         record_uuid=origin_model_pk,
@@ -38,12 +39,13 @@ def join_record(relationship: str, origin_model_pk: [str, int], related_model_pk
     )
 
 
-def delete_join_record(pk: [str, int], previous_pk: [str, int]) -> None:
+def delete_join_record(pk: [str, int], previous_pk: [str, int]):
+    pk_query_set = JoinRecord.objects.filter(Q(record_uuid__icontains=pk) | Q(related_record_uuid__icontains=pk)
+                                             | Q(record_id__icontains=pk) | Q(related_record_id__icontains=pk))
     if previous_pk and pk:
-        return JoinRecord.objects.filter(Q(record_uuid__icontains=pk, related_record_uuid__icontains=previous_pk) |
-                                         Q(record_uuid__icontains=previous_pk, related_record_uuid__icontains=pk)).delete()
+        pk_query_set.filter(record_uuid=pk, related_record_uuid=previous_pk).delete()
+        pk_query_set.filter(record_uuid=previous_pk, related_record_uuid=pk).delete()
+        return True
 
     if pk and not previous_pk:
-        return JoinRecord.objects.filter(Q(record_uuid__icontains=pk) | Q(related_record_uuid__icontains=pk)
-                                         | Q(record_id__icontains=pk) | Q(related_record_id__icontains=pk)
-                                         ).delete()
+        return pk_query_set.delete()

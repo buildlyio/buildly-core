@@ -80,12 +80,17 @@ class RequestHandler:
             self.request_param[relationship]['pk'] = pk
 
             if ("join" and "previous_pk") in self.relationship_data.data:
-                if delete_join_record(pk=res_pk, previous_pk=self.relationship_data.data['previous_pk']):
-                    origin_model_pk = self.resp_data[self.request_param[relationship]['origin_model_pk_name']]
-                    related_model_pk = self.relationship_data.data[self.request_param[relationship]['related_model_pk_name']]
-                    join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
-                                       organization=self.organization)
-                    return False
+                # delete join record
+                delete_join_record(pk=res_pk, previous_pk=self.relationship_data.data['previous_pk'])
+
+                # update new values
+                origin_model_pk = self.resp_data[self.request_param[relationship]['origin_model_pk_name']]
+                related_model_pk = self.relationship_data.data[self.request_param[relationship]['related_model_pk_name']]
+
+                # join record
+                join_record(relationship=relationship, origin_model_pk=origin_model_pk, related_model_pk=related_model_pk,
+                            organization=self.organization)
+                return False
 
         return self.relationship_data
 
