@@ -3,6 +3,8 @@
 
 A gateway and service discovery system for “micro” services. A light weight Gateway that connects all of your data services, API’s and endpoints to a single easy-to-use URL.
 
+Public Roadmap - https://docs.google.com/spreadsheets/d/1tnmAy-tiQOVWSAigJIQ5HhdatbE3WTC00tzdwtOe2Hk
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
