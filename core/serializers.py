@@ -98,7 +98,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
                   'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token')
+                  'invitation_token', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
