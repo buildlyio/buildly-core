@@ -13,18 +13,16 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 
-
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
                               CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer,
-                              CoreUserEmailNotificationSerializer)
+                              CoreUserEmailNotificationSerializer, CoreUserProfileSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
-
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -57,6 +55,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'default': CoreUserSerializer,
         'create': CoreUserWritableSerializer,
         'update': CoreUserWritableSerializer,
+        'update_profile': CoreUserProfileSerializer,
         'partial_update': CoreUserWritableSerializer,
         'invite': CoreUserInvitationSerializer,
         'reset_password': CoreUserResetPasswordSerializer,
@@ -142,8 +141,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             return Response({'detail': 'Token has been used.'},
                             status.HTTP_401_UNAUTHORIZED)
 
-        organization = Organization.objects\
-            .values('organization_uuid', 'name')\
+        organization = Organization.objects \
+            .values('organization_uuid', 'name') \
             .get(organization_uuid=decoded['org_uuid']) \
             if decoded['org_uuid'] else None
 
@@ -254,7 +253,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                'reset_password',
                                'reset_password_check',
                                'reset_password_confirm',
-                               'invite_check']:
+                               'invite_check',
+                               'update_profile']:
                 return [permissions.AllowAny()]
 
             if self.action in ['update', 'partial_update', 'invite']:
@@ -266,6 +266,18 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
+    @action(detail=True, methods=['patch'], name='Update Profile')
+    def update_profile(self, request, pk=None, *args, **kwargs):
+        """
+        Update a user Profile
+        """
+        # the particular user in CoreUser table
+        user = self.get_object()
+        serializer = CoreUserProfileSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @action(detail=False, methods=['patch'], name='Update Organization', url_path='update_org/(?P<pk>\d+)')
     def update_info(self, request, pk=None, *args, **kwargs):
@@ -309,5 +321,3 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             {
                 'detail': 'The notification were sent successfully on email.',
             }, status=status.HTTP_200_OK)
-
-

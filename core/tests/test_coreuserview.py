@@ -129,7 +129,7 @@ class TestCoreUserCreate:
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
         assert user.organization.name == TEST_USER_DATA['organization_name']
-        assert not user.is_active
+        assert user.is_active
 
         # check this user is NOT org admin
         assert not user.is_org_admin
@@ -233,6 +233,18 @@ class TestCoreUserUpdate:
         coreuser = CoreUser.objects.get(pk=pk)
         assert set(coreuser.core_groups.all()) == set(new_groups)
 
+    def test_coreuser_profile_update(self, request_factory, org_admin):
+        user = factories.CoreUser.create(is_active=False, organization=org_admin.organization, username='org_user')
+        pk = user.pk
+
+        data = {'contact_info': "data"}
+
+        request = request_factory.patch(reverse('coreuser-update-profile', args=(pk,)), data)
+        request.user = org_admin
+        response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
+        assert response.status_code == 200
+        coreuser = CoreUser.objects.get(pk=pk)
+        assert coreuser.contact_info == "data"
 
 @pytest.mark.django_db()
 class TestCoreUserInvite:
@@ -424,7 +436,7 @@ class TestResetPassword(object):
 class TestCoreUserRead(object):
 
     keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-            'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups'}
+            'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups', 'user_type', 'survey_status'}
 
     def test_coreuser_list(self, request_factory, org_member):
         factories.CoreUser.create(organization=org_member.organization, username='another_user')  # 2nd user of the org
