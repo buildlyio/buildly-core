@@ -181,6 +181,8 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
+        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
