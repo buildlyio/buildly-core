@@ -43,7 +43,7 @@ class Command(BaseCommand):
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
-            self._default_org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
+            self._default_org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG.lower())
 
     def _create_groups(self):
         self._su_group = CoreGroup.objects.filter(is_global=True, permissions=15).first()

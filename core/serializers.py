@@ -137,6 +137,23 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         coreuser.set_password(validated_data['password'])
         coreuser.save()
 
+        # check whether org_name is "default"
+        if org_name in ['default']:
+            default_org_user = CoreGroup.objects.filter(organization__name='default organization',
+                                                        is_org_level=True,
+                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            coreuser.core_groups.add(default_org_user)
+
+        # check whether an old organization
+        if not is_new_org:
+            coreuser.is_active = False
+            coreuser.save()
+
+            org_user = CoreGroup.objects.filter(organization__name=organization,
+                                                is_org_level=True,
+                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+            coreuser.core_groups.add(org_user)
+
         # add org admin role to the user if org is new
         if is_new_org:
             group_org_admin = CoreGroup.objects.get(organization=organization,
@@ -333,30 +350,34 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',)
+                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
+                  'user_type', 'survey_status')
 
     def update(self, instance, validated_data):
 
         organization_name = str(validated_data.pop('organization_name')).lower()
         instance.email = validated_data.get('email', instance.email)
+        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
+
         if instance.email is not None:
             instance.save()
         is_new_org = Organization.objects.filter(name=organization_name)
 
         # check whether org_name is "default"
         if organization_name == 'default':
-            default_org = Organization.objects.filter(name='Default Organization').first()
+            default_org = Organization.objects.filter(name='default organization').first()
             instance.organization = default_org
             instance.save()
             # now attach the user role as USER to default organization
-            default_org_user = CoreGroup.objects.filter(organization__name='Default Organization',
+            default_org_user = CoreGroup.objects.filter(organization__name='default organization',
                                                         is_org_level=True,
                                                         permissions=PERMISSIONS_VIEW_ONLY).first()
             instance.core_groups.add(default_org_user)
 
             # remove any other group permissions he is not added
             for single_group in instance.core_groups.all():
-                default_org_groups = CoreGroup.objects.filter(organization__name='Default Organization',
+                default_org_groups = CoreGroup.objects.filter(organization__name='default organization',
                                                               is_org_level=True,
                                                               permissions=PERMISSIONS_VIEW_ONLY)
                 if single_group not in default_org_groups:

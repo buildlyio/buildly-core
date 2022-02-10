@@ -38,7 +38,7 @@ services:
       DATABASE_HOST: "postgres_buildly"
       DATABASE_PORT: "5432"
       DEFAULT_ORG: "Default Organization"
-      AUTO_APPROVE_USER: "True"
+      AUTO_APPROVE_USER: "False"
       JWT_ISSUER: "buildly"
       JWT_PRIVATE_KEY_RSA_BUILDLY: |-
         -----BEGIN RSA PRIVATE KEY-----
