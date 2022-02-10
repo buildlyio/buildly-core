@@ -122,7 +122,7 @@ class Organization(models.Model):
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
     allow_import_export = models.BooleanField('To allow import export functionality', default=False)
-    radius = models.FloatField(max_length=20, blank=True, null=True)
+    radius = models.FloatField(max_length=20, blank=True, null=True, default = 0.0)
     organization_type = models.ForeignKey(OrganizationType,on_delete=models.CASCADE,null=True)
 
     class Meta:
