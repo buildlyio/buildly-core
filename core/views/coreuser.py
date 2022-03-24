@@ -294,8 +294,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
                 subject = '{} Alert'.format(message['parameter'].capitalize())
                 message['date_time'] = time_tuple.replace(tzinfo=tz.gettz('UTC'))
-                message['shipment_url'] = urljoin(settings.FRONTEND_URL,
+                if message.get('shipment_id'):
+                    message['shipment_url'] = urljoin(settings.FRONTEND_URL,
                                                   '/app/shipment/edit/:'+str(message['shipment_id']))
+                else:
+                    message['shipment_url'] = None
                 message['color'] = color_codes.get(message['severity'])
                 context = {
                     'message': message,
