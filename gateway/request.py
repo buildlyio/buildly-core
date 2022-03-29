@@ -117,13 +117,14 @@ class GatewayRequest(BaseGatewayRequest):
             if consortium:
                 # if consortium exist,update consortium for organization uuid
                 organization_list = consortium.organization_uuids
-                import uuid
-                org_uuid = uuid.UUID(related_organization)
-                if org_uuid not in organization_list:
-                    # To avoid repeated organization uuid adding in consortium organization uuid
-                    organization_list.append(related_organization)
-                    consortium.organization_uuids = organization_list
-                    consortium.save()
+                if related_organization:
+                    import uuid
+                    org_uuid = uuid.UUID(related_organization)
+                    if org_uuid not in organization_list:
+                        # To avoid repeated organization uuid adding in consortium organization uuid
+                        organization_list.append(related_organization)
+                        consortium.organization_uuids = organization_list
+                        consortium.save()
             else:
                 # If consortium does not exists for shipment name, then create consortium
                 Consortium.objects.create(name=shipment_name, organization_uuids=[related_organization])
