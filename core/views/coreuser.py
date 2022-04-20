@@ -9,7 +9,6 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
-from datetime import datetime
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
@@ -22,7 +21,8 @@ from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPON
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
 import logging
-from dateutil import tz
+# from datetime import datetime
+# from dateutil import tz
 # from twilio.rest import Client
 logger = logging.getLogger(__name__)
 
@@ -288,12 +288,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         messages = request.data['messages']
         try:
             for message in messages:
-                try:
-                    time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S%z")
-                except ValueError:
-                    time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
+                # try:
+                #     time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S%z")
+                # except ValueError:
+                #     time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
+                # message['date_time'] = time_tuple.replace(tzinfo=tz.gettz('UTC'))
                 subject = '{} Alert'.format(message['parameter'].capitalize())
-                message['date_time'] = time_tuple.replace(tzinfo=tz.gettz('UTC'))
                 if message.get('shipment_id'):
                     message['shipment_url'] = urljoin(settings.FRONTEND_URL,
                                                   '/app/shipment/edit/:'+str(message['shipment_id']))
@@ -311,12 +311,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     email_address = user.email
                     preferences = user.email_preferences
                     if preferences and (preferences.get('environmental', None) or preferences.get('geofence', None)):
-                        user_timezone = user.user_timezone
-                        if user_timezone:
-                            local_zone = tz.gettz(user_timezone)
-                            message['date_time'] = message['date_time'].astimezone(local_zone)
-                        else:
-                            message['date_time'] = time_tuple.strftime("%B %d, %Y, %I:%M %p")+" (UTC)"
+                        # user_timezone = user.user_timezone
+                        # if user_timezone:
+                        #     local_zone = tz.gettz(user_timezone)
+                        #     message['date_time'] = message['date_time'].astimezone(local_zone)
+                        # else:
+                        #     message['date_time'] = time_tuple.strftime("%B %d, %Y, %I:%M %p")+" (UTC)"
                         send_email(email_address, subject, context, template_name, html_template_name)
         except Exception as ex:
             print('Exception: ', ex)

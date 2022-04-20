@@ -51,7 +51,7 @@
 							<p style="color:{{ message.color }}">{{message.alert_message}}</p>
 							<p style="color:#000000">Alert for {{message.parameter}} : <span style="color:{{ message.color }}">{{message.recorded_value}}</span></p>
 							<p>
-								<span style="color: #424242">Captured at: {{ message.date_time }}</span>
+								<!--<span style="color: #424242">Captured at: {{ message.date_time }}</span>-->
 								{% if message.shipment_id != None %}
 									<a
 										href="{{ message.shipment_url }}"
