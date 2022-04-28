@@ -267,10 +267,3 @@ class LogicModule(models.Model):
 
     def __str__(self):
         return str(self.name)
-
-
-class Partner(models.Model):
-    partner_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(blank=True, null=True, max_length=255)
-    create_date = models.DateTimeField(null=True, blank=True)
-    edit_date = models.DateTimeField(null=True, blank=True)

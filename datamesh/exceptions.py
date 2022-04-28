@@ -1,3 +1,0 @@
-
-class DatameshConfigurationError(BaseException):
-    pass
