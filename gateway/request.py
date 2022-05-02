@@ -3,16 +3,14 @@ import json
 import asyncio
 from urllib.error import URLError
 from typing import Any, Dict, Union
-import re
 
 import aiohttp
-import requests
+
 from bravado_core.spec import Spec
-from django.db.models import Q
+
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
-from datamesh.exceptions import DatameshConfigurationError
 from datamesh.handle_request import RequestHandler
 from datamesh.utils import delete_join_record
 from gateway import exceptions
@@ -20,8 +18,7 @@ from gateway import utils
 from core.models import LogicModule
 from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
-from datamesh.models import JoinRecord, Relationship
-from gateway.utils import prepare_get_request
+
 
 logger = logging.getLogger(__name__)
 
@@ -179,15 +176,12 @@ class GatewayRequest(BaseGatewayRequest):
 
             # handle datamesh requests
             request_handler = RequestHandler()
-            request_handler.retrieve_relationship_data(request_kwargs=request_kwargs)
-
-            # perform get
-            service_url, header = prepare_get_request(request=self.request, resp_data=resp_data)
-            result = requests.get(url=service_url, headers=header)
+            response = request_handler.retrieve_relationship_data(request_kwargs=request_kwargs)
 
             # clear and update datamesh get response
             resp_data.clear()
-            resp_data.update(result.json())
+            resp_data.update(response)
+
         else:
 
             for service in datamesh.related_logic_modules:

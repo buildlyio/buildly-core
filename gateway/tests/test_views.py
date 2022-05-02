@@ -6,6 +6,7 @@ import httpretty
 
 import factories
 from core.tests.fixtures import auth_api_client, logic_module
+from datamesh.models import LogicModuleModel
 from .fixtures import datamesh
 
 
@@ -18,7 +19,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 @httpretty.activate
 def test_make_service_request_data_and_raw(auth_api_client, logic_module, content, content_type):
     url = f'/{logic_module.endpoint_name}/thumbnail/1/'
-
+    print('url', url , auth_api_client, logic_module, content, content_type)
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
         swagger_body = r.read()
@@ -93,7 +94,7 @@ def test_make_service_request_to_unexisting_detail_endpoint(auth_api_client, log
     assert response.status_code == 404
     assert response.has_header('Content-Type')
     assert response.get('Content-Type') == 'application/json'
-    assert json.loads(response.content)['detail'] == "Endpoint not found: GET /nowhere/{id}/"
+    assert json.loads(response.content)['detail'] == "Endpoint not found: GET /nowhere/{nowhere_id}/"
 
 
 @pytest.mark.django_db()
@@ -156,6 +157,7 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
 @httpretty.activate
 def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, datamesh):
     lm1, lm2, relationship = datamesh
+
     factories.JoinRecord(relationship=relationship,
                          record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
                          related_record_id=1, related_record_uuid=None)
@@ -205,7 +207,7 @@ def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, da
     data = response.json()
     assert relationship.key in data
     assert len(data[relationship.key]) == 1
-    assert data[relationship.key][0]['uuid'] == '19a7f600-74a0-4123-9be5-dfa69aa172cc'
+    assert data[relationship.key][0][list(data[relationship.key][0].keys())[0]] == '19a7f600-74a0-4123-9be5-dfa69aa172cc'
 
 
 @pytest.mark.django_db()
@@ -264,7 +266,8 @@ def test_make_service_request_with_datamesh_list(auth_api_client, datamesh):
     item1 = data["results"][0]
     assert relationship.key in item1
     assert len(item1[relationship.key]) == 1
-    assert item1[relationship.key][0]['id'] == 1
+
+    assert item1[relationship.key][0][list(item1[relationship.key][0].keys())[0]] == 1
 
     # second item in the list doesn't have a joined record
     item2 = data["results"][1]

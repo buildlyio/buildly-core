@@ -97,7 +97,7 @@ def test_make_service_request_to_unexisting_detail_endpoint(client_session_mock,
     assert response.status_code == 404
     assert response.has_header('Content-Type')
     assert response.get('Content-Type') == 'application/json'
-    assert json.loads(response.content)['detail'] == "Endpoint not found: GET /nowhere/{id}/"
+    assert json.loads(response.content)['detail'] == "Endpoint not found: GET /nowhere/{nowhere_id}/"
 
 
 @pytest.mark.django_db()
@@ -141,7 +141,7 @@ def test_make_service_request_with_datamesh_detailed(client_session_mock, auth_a
     data = response.json()
     assert relationship.key in data
     assert len(data[relationship.key]) == 1
-    assert data[relationship.key][0]['id'] == 1
+    assert data[relationship.key][0][list(data[relationship.key][0].keys())[0]] == 1
 
 
 @pytest.mark.django_db()
@@ -187,7 +187,7 @@ def test_make_service_request_with_datamesh_list(client_session_mock, auth_api_c
     item1 = data["results"][0]
     assert relationship.key in item1
     assert len(item1[relationship.key]) == 1
-    assert item1[relationship.key][0]['id'] == 1
+    assert item1[relationship.key][0][list(item1[relationship.key][0].keys())[0]] == 1
 
     # second item in the list doesn't have a joined record
     item2 = data["results"][1]

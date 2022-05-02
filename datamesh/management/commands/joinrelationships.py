@@ -17,6 +17,35 @@ class Command(BaseCommand):
 def run_seed(self, mode):
     """call function here."""
 
+    # # product <-> organization - with core model join.
+    # """product.json"""
+    # join_relationship(
+    #     json_file="product.json",
+    #
+    #     is_local=True,
+    #
+    #     origin_logic_module='product',
+    #     related_logic_module='core',
+    #
+    #     origin_module_model='Product',
+    #     origin_module_endpoint='/product/',
+    #     origin_module_lookup_field_name='product_uuid',
+    #
+    #     related_module_model='Organization',
+    #     related_module_endpoint='/organization/',
+    #     related_module_lookup_field_name='organization_uuid',
+    #
+    #     fk_field_name='organization_uuid',
+    #
+    #     origin_lookup_field_type='uuid',
+    #     related_lookup_field_type='uuid',
+    #
+    #     relationship_key_name='product_organization_relationship',
+    #     field_name='organization_uuid',
+    #     is_list=False,
+    #     organization=None,
+    # )
+
     # product <-> third party tool - within service model join.
     """product.json"""
     join_relationship(
@@ -33,7 +62,9 @@ def run_seed(self, mode):
 
         related_module_model='ThirdPartyTool',
         related_module_endpoint='/thirdpartytool/',
-        related_module_lookup_field_name='third_party_tool_uuid',
+        related_module_lookup_field_name='thirdpartytool_uuid',
+
+        fk_field_name='third_party_tool',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
@@ -60,7 +91,9 @@ def run_seed(self, mode):
 
         related_module_model='ProductTeam',
         related_module_endpoint='/productteam/',
-        related_module_lookup_field_name='product_team_uuid',
+        related_module_lookup_field_name='productteam_uuid',
+
+        fk_field_name='product_team',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
@@ -90,6 +123,8 @@ def run_seed(self, mode):
         related_module_endpoint='/product/',
         related_module_lookup_field_name='product_uuid',
 
+        fk_field_name='product_uuid',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -118,6 +153,8 @@ def run_seed(self, mode):
         related_module_endpoint='/product/',
         related_module_lookup_field_name='product_uuid',
 
+        fk_field_name='product_uuid',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -128,33 +165,35 @@ def run_seed(self, mode):
         organization=None,
     )
 
-    # # release <-> module with two different service model join.
-    # """release.json"""
-    # join_relationship(
-    #     json_file="release.json",
-    #
-    #     is_local=False,
-    #
-    #     origin_logic_module='product',
-    #     related_logic_module='hostedadmin',
-    #
-    #     origin_module_model='Release',
-    #     origin_module_endpoint='/release/',
-    #     origin_module_lookup_field_name='release_uuid',
-    #
-    #     related_module_model='Module',
-    #     related_module_endpoint='/module/',
-    #     related_module_lookup_field_name='module_uuid',
-    #
-    #     origin_lookup_field_type='uuid',
-    #     related_lookup_field_type='uuid',
-    #
-    #     relationship_key_name='release_module_relationship',
-    #
-    #     field_name='modules_uuid',
-    #     is_list=False,
-    #     organization=None,
-    # )
+    # release <-> module within  service model join.
+    """release.json"""
+    join_relationship(
+        json_file="release.json",
+
+        is_local=False,
+
+        origin_logic_module='product',
+        related_logic_module='product',
+
+        origin_module_model='Release',
+        origin_module_endpoint='/release/',
+        origin_module_lookup_field_name='release_uuid',
+
+        related_module_model='Module',
+        related_module_endpoint='/module/',
+        related_module_lookup_field_name='module_uuid',
+
+        fk_field_name='modules_uuid',
+
+        origin_lookup_field_type='uuid',
+        related_lookup_field_type='uuid',
+
+        relationship_key_name='release_module_relationship',
+
+        field_name='modules_uuid',
+        is_list=False,
+        organization=None,
+    )
 
     # release <-> dev team with two different service model join.
     """release.json"""
@@ -173,6 +212,8 @@ def run_seed(self, mode):
         related_module_model='DevTeam',
         related_module_endpoint='/devteam/',
         related_module_lookup_field_name='devteam_uuid',
+
+        fk_field_name='dev_team_uuid',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
@@ -204,6 +245,8 @@ def run_seed(self, mode):
         related_module_endpoint='/feature/',
         related_module_lookup_field_name='feature_uuid',
 
+        fk_field_name='feature',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -232,6 +275,8 @@ def run_seed(self, mode):
         related_module_endpoint='/issue/',
         related_module_lookup_field_name='issue_uuid',
 
+        fk_field_name='issue',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -241,62 +286,6 @@ def run_seed(self, mode):
         is_list=False,
         organization=None,
     )
-
-    # # status <-> issue team within service model join.
-    # """status.json"""
-    # join_relationship(
-    #     json_file="status.json",
-    #
-    #     is_local=False,
-    #
-    #     origin_logic_module='decision',
-    #     related_logic_module='decision',
-    #
-    #     origin_module_model='Status',
-    #     origin_module_endpoint='/status/',
-    #     origin_module_lookup_field_name='status_uuid',
-    #
-    #     related_module_model='Issue',
-    #     related_module_endpoint='/issue/',
-    #     related_module_lookup_field_name='issue_uuid',
-    #
-    #     origin_lookup_field_type='uuid',
-    #     related_lookup_field_type='uuid',
-    #
-    #     relationship_key_name='status_issue_relationship',
-    #
-    #     field_name='issue',
-    #     is_list=False,
-    #     organization=None,
-    # )
-    #
-    # # status <-> feature team within service model join.
-    # """status.json"""
-    # join_relationship(
-    #     json_file="status.json",
-    #
-    #     is_local=False,
-    #
-    #     origin_logic_module='decision',
-    #     related_logic_module='decision',
-    #
-    #     origin_module_model='Status',
-    #     origin_module_endpoint='/status/',
-    #     origin_module_lookup_field_name='status_uuid',
-    #
-    #     related_module_model='Feature',
-    #     related_module_endpoint='/feature/',
-    #     related_module_lookup_field_name='feature_uuid',
-    #
-    #     origin_lookup_field_type='uuid',
-    #     related_lookup_field_type='uuid',
-    #
-    #     relationship_key_name='status_feature_relationship',
-    #
-    #     field_name='feature',
-    #     is_list=False,
-    #     organization=None,
-    # )
 
     # feature <-> status  team within service model join.
     """feature.json"""
@@ -315,6 +304,8 @@ def run_seed(self, mode):
         related_module_model='Status',
         related_module_endpoint='/status/',
         related_module_lookup_field_name='status_uuid',
+
+        fk_field_name='status',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
@@ -344,6 +335,8 @@ def run_seed(self, mode):
         related_module_endpoint='/feature/',
         related_module_lookup_field_name='feature_uuid',
 
+        fk_field_name='feature_uuid',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -371,6 +364,8 @@ def run_seed(self, mode):
         related_module_model='Status',
         related_module_endpoint='/status/',
         related_module_lookup_field_name='status_uuid',
+
+        fk_field_name='status',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
@@ -400,6 +395,8 @@ def run_seed(self, mode):
         related_module_endpoint='/issue/',
         related_module_lookup_field_name='issue_uuid',
 
+        fk_field_name='issue',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -428,6 +425,8 @@ def run_seed(self, mode):
         related_module_endpoint='/feature/',
         related_module_lookup_field_name='feature_uuid',
 
+        fk_field_name='feature',
+
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
 
@@ -455,6 +454,8 @@ def run_seed(self, mode):
         related_module_model='TimeSheet',
         related_module_endpoint='/timesheet/',
         related_module_lookup_field_name='timesheet_uuid',
+
+        fk_field_name='timesheet_uuid',
 
         origin_lookup_field_type='uuid',
         related_lookup_field_type='uuid',
