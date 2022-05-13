@@ -193,6 +193,7 @@ CORE_WEBSITE = "https://buildly.io"
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
 DEFAULT_ORG = os.getenv('DEFAULT_ORG')
 AUTO_APPROVE_USER = os.getenv('AUTO_APPROVE_USER', False)
+STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 
 # Swagger settings - for generate_swagger management command
 

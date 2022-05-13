@@ -4,3 +4,4 @@ from .oauth import AccessTokenViewSet, ApplicationViewSet, RefreshTokenViewSet  
 from .organization import OrganizationViewSet  # noqa
 from .logicmodule import LogicModuleViewSet  # noqa
 from .partner import PartnerViewSet  # noqa
+from .stripe import StripeViewSet # noqa# noqa

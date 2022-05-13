@@ -67,10 +67,10 @@ services:
       PASSWORD_MINIMUM_LENGTH: "6"
       USE_PASSWORD_COMMON_VALIDATOR: "True"
       USE_PASSWORD_NUMERIC_VALIDATOR: "True"
-      FRONTEND_URL: "http://localhost:3000/"
-      SOCIAL_AUTH_GITHUB_REDIRECT_URL: "http://localhost:3000/"
-      SOCIAL_AUTH_GITHUB_KEY: "25fc5ab2bdfca0e70c63"
-      SOCIAL_AUTH_GITHUB_SECRET: "ff981a6390929445153092d0dbbf4a507c0ecf8b"
+      FRONTEND_URL: "https://localhost:3000/"
+      SOCIAL_AUTH_GITHUB_REDIRECT_URL: "https://localhost:3000/"
+      SOCIAL_AUTH_GITHUB_KEY: "9a05980c46f7fc8fc8d7"
+      SOCIAL_AUTH_GITHUB_SECRET: "f85afed46854e4d71e64db1f69032643b15f164d"
       # SOCIAL_AUTH_CLIENT_ID: "vBn4KsOCthm7TWzMH0kVV0dXkUPJEtOQwaLu0eoC"
       # SOCIAL_AUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8Ezj3jd7aKq2C7yRDZ6FbAL4SgRFxY8N6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJxyXKbta7ebxULLULjXwnJYGhUgT2hPyCfptkWFhsZVV"
       EMAIL_HOST: "smtp.sendgrid.net"
@@ -82,6 +82,7 @@ services:
       EMAIL_BACKEND: "SMTP"
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
+      STRIPE_SECRET: "sk_test_ddLjeqLRWcj8znVAhMaNPu7J00evbJrikA"
 
 volumes:
   static-content:

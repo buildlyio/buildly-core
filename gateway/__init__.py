@@ -13,4 +13,5 @@ API_GATEWAY_RESERVED_NAMES = [
     'logicmodule',
     'organization',
     'datamesh',
+    'stripe',
 ]
