@@ -41,14 +41,8 @@ class BaseSwaggerClient:
             path = f'/{model}/'
         else:
             pk_name = 'uuid' if utils.valid_uuid4(pk) else 'id'
-
-            # update path kwargs key name
-            # example: {"product_uuid" :"db827034-30bb-4062-ac35-f8c24e8f81ad"}
-            path_kwargs = {f'{model}_{pk_name}': pk}
-
-            # create path for retrieving individual data example : /product/{{product_uuid}}/
-            path_parameter_name = f'{model}_{pk_name}'
-            path = f'/{model}/{{{path_parameter_name}}}/'
+            path_kwargs = {pk_name: pk}
+            path = f'/{model}/{{{pk_name}}}/'
 
         # Check that operation is valid according to spec
         operation = spec.get_op_for_request(self._in_request.method, path)

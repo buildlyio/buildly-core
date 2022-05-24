@@ -61,6 +61,7 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
+
     permissions = PermissionsField(required=False)
     organization = UUIDPrimaryKeyRelatedField(required=False,
                                               queryset=Organization.objects.all(),
@@ -97,7 +98,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
                   'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token', 'user_type', 'survey_status')
+                  'invitation_token')
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
@@ -178,12 +179,10 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
-    user_type = serializers.CharField(required=False)
-    survey_status = serializers.BooleanField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name', 'user_type', 'survey_status')
+        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name')
 
     def update(self, instance, validated_data):
 
@@ -198,8 +197,6 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
-        instance.user_type = validated_data.get('user_type', instance.user_type)
-        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
@@ -282,6 +279,7 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
     new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, attrs):
+
         attrs = super().validate(attrs)
 
         password1 = attrs.get('new_password1')
@@ -350,15 +348,12 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
-                  'user_type', 'survey_status')
+                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups')
 
     def update(self, instance, validated_data):
 
         organization_name = str(validated_data.pop('organization_name')).lower()
         instance.email = validated_data.get('email', instance.email)
-        instance.user_type = validated_data.get('user_type', instance.user_type)
-        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
 
         if instance.email is not None:
             instance.save()

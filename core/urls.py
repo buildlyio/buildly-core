@@ -7,7 +7,6 @@ from rest_framework import routers
 from core import views
 from core.views.web import IndexView, oauth_complete
 
-
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
 

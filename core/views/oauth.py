@@ -1,5 +1,6 @@
 from rest_framework import mixins, viewsets
 import django_filters
+
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 
 from core.serializers import AccessTokenSerializer, ApplicationSerializer, RefreshTokenSerializer
