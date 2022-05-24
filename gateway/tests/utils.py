@@ -28,7 +28,7 @@ class AiohttpResponseMock:
     @property
     def content(self):
         protocol = Mock(_reading_paused=False)
-        stream = StreamReader(protocol)
+        stream = StreamReader(protocol, limit=65536)
         stream.feed_data(self.body)
         stream.feed_eof()
         return stream
