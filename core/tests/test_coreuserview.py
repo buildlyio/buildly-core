@@ -129,7 +129,7 @@ class TestCoreUserCreate:
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
         assert user.organization.name == TEST_USER_DATA['organization_name']
-        assert user.is_active
+        assert not user.is_active
 
         # check this user is NOT org admin
         assert not user.is_org_admin
@@ -148,7 +148,7 @@ class TestCoreUserCreate:
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
         assert user.organization.name == TEST_USER_DATA['organization_name']
-        assert user.is_active
+        assert not user.is_active
 
         # check this user is NOT org admin
         assert not user.is_org_admin
