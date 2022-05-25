@@ -78,7 +78,6 @@ class BaseSwaggerClient:
             return json.dumps(self._in_request.data)
 
         method = self._in_request.META['REQUEST_METHOD'].lower()
-
         data = {}
         if method in ['post', 'put', 'patch']:
             data = self._in_request.query_params.dict()
