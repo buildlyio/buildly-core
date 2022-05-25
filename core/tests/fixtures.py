@@ -15,7 +15,7 @@ TEST_USER_DATA = {
     'email': 'test@example.com',
     'username': 'johnsnow',
     'password': '123qwe',
-    'organization_name': 'Buidly',
+    'organization_name': 'buidly',
     'organization_uuid': uuid.uuid4(),
 }
 

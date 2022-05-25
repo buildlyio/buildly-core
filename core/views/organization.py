@@ -3,10 +3,11 @@ import logging
 import django_filters
 from rest_framework import viewsets
 from rest_framework.response import Response
-
+from rest_framework.decorators import action
 from core.models import Organization
 from core.serializers import OrganizationSerializer
 from core.permissions import IsOrgMember
+from rest_framework.permissions import AllowAny
 
 
 logger = logging.getLogger(__name__)
@@ -47,3 +48,19 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     permission_classes = (IsOrgMember,)
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
+
+    # /organization/names/
+    # send only the names
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny], name='Fetch Already existing Organization', url_path='names')
+    def fetch_existing_orgs(self, request, pk=None, *args, **kwargs):
+        """
+        Fetch Already existing Organizations in Buildly Core,
+        Any logged in user can access this
+        """
+        # all orgs in Buildly Core
+        queryset = Organization.objects.all()
+        names = list()
+        for record in queryset:
+            names.append(record.name)
+
+        return Response(names)

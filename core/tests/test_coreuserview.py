@@ -148,7 +148,7 @@ class TestCoreUserCreate:
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
         assert user.organization.name == TEST_USER_DATA['organization_name']
-        assert user.is_active
+        assert not user.is_active
 
         # check this user is NOT org admin
         assert not user.is_org_admin
@@ -162,7 +162,7 @@ class TestCoreUserCreate:
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
         assert response.status_code == 400
-    
+
     def test_email_mismatch_token_invalidation(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
         token = create_invitation_token("foobar@example.com", org_admin.organization)
@@ -233,6 +233,18 @@ class TestCoreUserUpdate:
         coreuser = CoreUser.objects.get(pk=pk)
         assert set(coreuser.core_groups.all()) == set(new_groups)
 
+    def test_coreuser_profile_update(self, request_factory, org_admin):
+        user = factories.CoreUser.create(is_active=False, organization=org_admin.organization, username='org_user')
+        pk = user.pk
+
+        data = {'contact_info': "data"}
+
+        request = request_factory.patch(reverse('coreuser-update-profile', args=(pk,)), data)
+        request.user = org_admin
+        response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
+        assert response.status_code == 200
+        coreuser = CoreUser.objects.get(pk=pk)
+        assert coreuser.contact_info == "data"
 
 @pytest.mark.django_db()
 class TestCoreUserInvite:
@@ -453,3 +465,17 @@ class TestCoreUserRead(object):
         response = CoreUserViewSet.as_view({'get': 'me'})(request)
         assert response.status_code == 200
         assert response.data['username'] == org_member.username
+
+
+@pytest.mark.django_db()
+class TestNotification:
+
+    def test_notification(self, request_factory):
+        dif_org = factories.Organization(name='Another Org')
+        data = {
+            "organization_uuid": dif_org.organization_uuid,
+            "notification_messages": "message"
+        }
+        request = request_factory.post(reverse('coreuser-notification'), data)
+        response = CoreUserViewSet.as_view({'post': 'notification'})(request)
+        assert response.status_code == 200
