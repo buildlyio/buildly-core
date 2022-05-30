@@ -130,12 +130,12 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         core_groups = validated_data.pop('core_groups', [])
         product = validated_data.pop('product', None)
         card = validated_data.pop('card', None)
+        invitation_token = validated_data.pop('invitation_token', None)
 
         # create core user
         if bool(settings.AUTO_APPROVE_USER):  # If auto-approval set to true
             validated_data['is_active'] = True
         else:
-            invitation_token = validated_data.pop('invitation_token', None)
             validated_data['is_active'] = is_new_org or bool(invitation_token)
         coreuser = CoreUser.objects.create(
             organization=organization,
@@ -147,7 +147,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         # check whether org_name is "default"
         if org_name in ['default']:
-            default_org_user = CoreGroup.objects.filter(organization__name='default organization',
+            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
                                                         is_org_level=True,
                                                         permissions=PERMISSIONS_VIEW_ONLY).first()
             coreuser.core_groups.add(default_org_user)
@@ -391,18 +391,18 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
 
         # check whether org_name is "default"
         if organization_name == 'default':
-            default_org = Organization.objects.filter(name='default organization').first()
+            default_org = Organization.objects.filter(name=settings.DEFAULT_ORG).first()
             instance.organization = default_org
             instance.save()
             # now attach the user role as USER to default organization
-            default_org_user = CoreGroup.objects.filter(organization__name='default organization',
+            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
                                                         is_org_level=True,
                                                         permissions=PERMISSIONS_VIEW_ONLY).first()
             instance.core_groups.add(default_org_user)
 
             # remove any other group permissions he is not added
             for single_group in instance.core_groups.all():
-                default_org_groups = CoreGroup.objects.filter(organization__name='default organization',
+                default_org_groups = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
                                                               is_org_level=True,
                                                               permissions=PERMISSIONS_VIEW_ONLY)
                 if single_group not in default_org_groups:

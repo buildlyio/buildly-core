@@ -19,7 +19,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 @httpretty.activate
 def test_make_service_request_data_and_raw(auth_api_client, logic_module, content, content_type):
     url = f'/{logic_module.endpoint_name}/thumbnail/1/'
-    print('url', url , auth_api_client, logic_module, content, content_type)
+
     # mock requests
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json')) as r:
         swagger_body = r.read()
@@ -150,7 +150,7 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
     data = response.json()
     assert relationship.key in data
     assert len(data[relationship.key]) == 1
-    assert data[relationship.key][0]['id'] == 1
+    assert data[relationship.key][0][list(data[relationship.key][0].keys())[0]] == 1
 
 
 @pytest.mark.django_db()

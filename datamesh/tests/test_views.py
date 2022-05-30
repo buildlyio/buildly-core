@@ -314,10 +314,7 @@ class TestRelationshipView:
             'origin_model',
             'related_model',
             'key',
-            'origin_lookup_field_name',
-            'origin_fk_field_name',
-            'related_lookup_field_name',
-            'related_fk_field_name'
+            'fk_field_name'
         }
 
     def test_list_relationships(self, request_factory, relationship, relationship2):

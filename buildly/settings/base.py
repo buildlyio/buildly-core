@@ -191,7 +191,7 @@ CORE_WEBSITE = "https://buildly.io"
 
 # User and Organization configuration
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
-DEFAULT_ORG = os.getenv('DEFAULT_ORG')
+DEFAULT_ORG = os.getenv('DEFAULT_ORG').lower() if os.getenv('DEFAULT_ORG') else None
 AUTO_APPROVE_USER = os.getenv('AUTO_APPROVE_USER', False)
 STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 

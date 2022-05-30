@@ -17,6 +17,7 @@ class Command(BaseCommand):
     help = """
     Loads initial data for Buildly.
     """
+
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
@@ -43,7 +44,7 @@ class Command(BaseCommand):
 
     def _create_default_organization(self):
         if settings.DEFAULT_ORG:
-            self._default_org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG.lower())
+            self._default_org, _ = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
 
     def _create_groups(self):
         self._su_group = CoreGroup.objects.filter(is_global=True, permissions=15).first()
