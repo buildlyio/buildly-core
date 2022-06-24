@@ -1,0 +1,82 @@
+name: Build and Push Docker Image to Prod
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  build:
+    name: Build and Push image to GCR
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: gcr.io/dev-buildly/insights/prod/buildly-core
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # auto generate tag from label defined in Dockerfile
+    - uses: butlerlogic/action-autotag@stable
+      id: tag_version
+      with:
+        GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
+        strategy: docker
+        tag_prefix: "v"
+
+    # Create release notes
+    - name: Build changelog
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+    # Create release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag_version.outputs.tagname }}
+        release_name: Release ${{ steps.tag_version.outputs.tagname }}
+        body: ${{ steps.build_changelog.outputs.changelog }}
+        draft: false
+        prerelease: false
+
+    # Login to docker
+    - name: Docker login
+      uses: docker/login-action@v1
+      with:
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.GCR_JSON_KEY }}
+
+    # Build docker image
+    - name: Build docker image
+      run: docker build -t $IMAGE_NAME:latest .
+
+    # Push docker image to GCR
+    - name: Push to Google Container Registry
+      run: docker push $IMAGE_NAME:latest
+
+    # Send message on Slack
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_MESSAGE: 'Production Docker Image of buildly core pushed to Google Container Registry Successfully'
+        MSG_MINIMAL: true
+
+    # Send email alert
+    - name: Email Alert
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Github Actions Build and Push job alert
+        to: ${{ secrets.RECIPIENT_EMAIL }}
+        from: ${{ secrets.SENDER_EMAIL }}
+        body: Production Docker Image of buildly core pushed to Google Container Registry Successfully
