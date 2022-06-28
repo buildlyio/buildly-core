@@ -56,20 +56,27 @@ class APIGatewayView(views.APIView):
         try:
             self._validate_incoming_request(request, **kwargs)
         except exceptions.RequestValidationError as e:
-            return HttpResponse(content=e.content, status=e.status, content_type=e.content_type)
+            return HttpResponse(
+                content=e.content, status=e.status, content_type=e.content_type
+            )
 
         gw_request = self.gateway_request_class(request, **kwargs)
         gw_response = gw_request.perform()
 
-        return HttpResponse(content=gw_response.content,
-                            status=gw_response.status_code,
-                            content_type=gw_response.headers.get('Content-Type'))
+        return HttpResponse(
+            content=gw_response.content,
+            status=gw_response.status_code,
+            content_type=gw_response.headers.get('Content-Type'),
+        )
 
     def _validate_incoming_request(self, request: Request, **kwargs: dict) -> None:
         """
         Do certain validations to the request before starting to create a new request to services
         """
-        if request.META['REQUEST_METHOD'] in ['PUT', 'PATCH', 'DELETE'] and kwargs['pk'] is None:
+        if (
+            request.META['REQUEST_METHOD'] in ['PUT', 'PATCH', 'DELETE']
+            and kwargs['pk'] is None
+        ):
             raise exceptions.RequestValidationError('The object ID is missing.', 400)
 
 

@@ -28,7 +28,10 @@ class BaseSwaggerClient:
 
     def is_valid_for_cache(self) -> bool:
         """ Checks if request is valid for caching operations """
-        return self._in_request.method.lower() == 'get' and not self._in_request.query_params
+        return (
+            self._in_request.method.lower() == 'get'
+            and not self._in_request.query_params
+        )
 
     def prepare_data(self, spec: Spec, **kwargs) -> Tuple[str, str]:
         """ Parse request URL, validates operation, and returns method and URL for outgoing request"""
@@ -52,7 +55,9 @@ class BaseSwaggerClient:
                 operation = spec.get_op_for_request('GET', path)
                 operation.http_method = request_method
             else:
-                raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
+                raise exceptions.EndpointNotFound(
+                    f'Endpoint not found: {self._in_request.method} {path}'
+                )
         method = operation.http_method.lower()
         path_name = operation.path_name
 
@@ -81,17 +86,21 @@ class BaseSwaggerClient:
             data.pop('aggregate', None)
             data.pop('join', None)
 
-            query_dict_body = self._in_request.data if hasattr(self._in_request, 'data') else dict()
-            body = query_dict_body.dict() if isinstance(query_dict_body, QueryDict) else query_dict_body
+            query_dict_body = (
+                self._in_request.data if hasattr(self._in_request, 'data') else dict()
+            )
+            body = (
+                query_dict_body.dict()
+                if isinstance(query_dict_body, QueryDict)
+                else query_dict_body
+            )
             data.update(body)
 
             # handle uploaded files
             if self._in_request.FILES:
                 for key, value in self._in_request.FILES.items():
                     data[key] = {
-                        'header': {
-                            'Content-Type': value.content_type,
-                        },
+                        'header': {'Content-Type': value.content_type},
                         'data': value,
                         'filename': value.name,
                     }
@@ -101,7 +110,7 @@ class BaseSwaggerClient:
     def get_headers(self) -> dict:
         """Get data and headers from the incoming request."""
         headers = {
-            'Authorization': get_authorization_header(self._in_request).decode('utf-8'),
+            'Authorization': get_authorization_header(self._in_request).decode('utf-8')
         }
         if self._in_request.content_type == 'application/json':
             headers['content-type'] = 'application/json'
@@ -126,15 +135,19 @@ class SwaggerClient(BaseSwaggerClient):
         # Make request to the service
         method = getattr(requests, method)
         try:
-            response = method(url,
-                              headers=self.get_headers(),
-                              params=self._in_request.query_params,
-                              data=self.get_request_data(),
-                              files=self._in_request.FILES)
+            response = method(
+                url,
+                headers=self.get_headers(),
+                params=self._in_request.query_params,
+                data=self.get_request_data(),
+                files=self._in_request.FILES,
+            )
         except Exception as e:
-            error_msg = (f'An error occurred when redirecting the request to '
-                         f'or receiving the response from the service.\n'
-                         f'Origin: ({e.__class__.__name__}: {e})')
+            error_msg = (
+                f'An error occurred when redirecting the request to '
+                f'or receiving the response from the service.\n'
+                f'Origin: ({e.__class__.__name__}: {e})'
+            )
             raise exceptions.GatewayError(error_msg)
 
         try:

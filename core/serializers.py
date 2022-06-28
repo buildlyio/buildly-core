@@ -16,8 +16,17 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 
 from core.email_utils import send_email, send_email_body
 
-from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, OrganizationType, Consortium
+from core.models import (
+    CoreUser,
+    CoreGroup,
+    EmailTemplate,
+    LogicModule,
+    Organization,
+    PERMISSIONS_ORG_ADMIN,
+    TEMPLATE_RESET_PASSWORD,
+    OrganizationType,
+    Consortium,
+)
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -35,6 +44,7 @@ class PermissionsField(serializers.DictField):
     For example:
     9 -> '1001' (binary representation) -> `{'create': True, 'read': False, 'update': False, 'delete': True}`
     """
+
     _keys = ('create', 'read', 'update', 'delete')
 
     def __init__(self, *args, **kwargs):
@@ -49,14 +59,15 @@ class PermissionsField(serializers.DictField):
         data = super().to_internal_value(data)
         keys = data.keys()
         if not set(keys) == set(self._keys):
-            raise serializers.ValidationError("Permissions field: incorrect keys format")
+            raise serializers.ValidationError(
+                "Permissions field: incorrect keys format"
+            )
 
         permissions = ''.join([str(int(data[key])) for key in self._keys])
         return int(permissions, 2)
 
 
 class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
-
     def to_representation(self, value):
         return str(super().to_representation(value))
 
@@ -64,21 +75,33 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 class CoreGroupSerializer(serializers.ModelSerializer):
 
     permissions = PermissionsField(required=False)
-    organization = UUIDPrimaryKeyRelatedField(required=False,
-                                              queryset=Organization.objects.all(),
-                                              help_text="Related Org to associate with")
+    organization = UUIDPrimaryKeyRelatedField(
+        required=False,
+        queryset=Organization.objects.all(),
+        help_text="Related Org to associate with",
+    )
 
     class Meta:
         model = CoreGroup
         read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
-        fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
-                  'workflowlevel2s')
+        fields = (
+            'id',
+            'uuid',
+            'name',
+            'is_global',
+            'is_org_level',
+            'permissions',
+            'organization',
+            'workflowlevel1s',
+            'workflowlevel2s',
+        )
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
     """
     Default CoreUser serializer
     """
+
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
@@ -97,11 +120,25 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreUser
-        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
-                  'title', 'contact_info', 'privacy_disclaimer_accepted',
-                  'organization', 'core_groups', 'invitation_token', 'email_preferences',
-                  'push_preferences', 'user_timezone')
-        read_only_fields = ('core_user_uuid', 'organization',)
+        fields = (
+            'id',
+            'core_user_uuid',
+            'first_name',
+            'last_name',
+            'email',
+            'username',
+            'is_active',
+            'title',
+            'contact_info',
+            'privacy_disclaimer_accepted',
+            'organization',
+            'core_groups',
+            'invitation_token',
+            'email_preferences',
+            'push_preferences',
+            'user_timezone',
+        )
+        read_only_fields = ('core_user_uuid', 'organization')
         depth = 1
 
 
@@ -109,9 +146,12 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     """
     Override default CoreUser serializer for writable actions (create, update, partial_update)
     """
+
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
-    core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
+    core_groups = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=CoreGroup.objects.all(), required=False
+    )
 
     class Meta:
         model = CoreUser
@@ -131,39 +171,45 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         # create core user
         invitation_token = validated_data.pop('invitation_token', None)
         validated_data['is_active'] = is_new_org or bool(invitation_token)
-        coreuser = CoreUser.objects.create(
-            organization=organization,
-            **validated_data
-        )
+        coreuser = CoreUser.objects.create(organization=organization, **validated_data)
         # set user password
         coreuser.set_password(validated_data['password'])
         coreuser.save()
 
         # Triggers an approval email for newly registered user
-        approval_link = urljoin(settings.FRONTEND_URL, '/app/profile/users/current-users')
+        approval_link = urljoin(
+            settings.FRONTEND_URL, '/app/profile/users/current-users'
+        )
         subject = 'Approval Request'
         template_name = 'email/coreuser/approval.txt'
         html_template_name = 'email/coreuser/approval.html'
         context = {
-                    'approval_link': approval_link,
-                    'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
-                    'organization_name': organization
+            'approval_link': approval_link,
+            'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
+            'organization_name': organization,
         }
         if is_new_org:
             admin = CoreUser.objects.filter(is_superuser=True)  # Global Admin
         else:
-            org_admin_groups = CoreGroup.objects.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True)
-            admin = CoreUser.objects.filter(core_groups__in=org_admin_groups,
-                                            organization=organization)  # Organization Admin
+            org_admin_groups = CoreGroup.objects.filter(
+                permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True
+            )
+            admin = CoreUser.objects.filter(
+                core_groups__in=org_admin_groups, organization=organization
+            )  # Organization Admin
         if admin:
             for users in admin:
-                send_email(users.email, subject, context, template_name, html_template_name)
+                send_email(
+                    users.email, subject, context, template_name, html_template_name
+                )
 
         # add org admin role to the user if org is new
         if is_new_org:
-            group_org_admin = CoreGroup.objects.get(organization=organization,
-                                                    is_org_level=True,
-                                                    permissions=PERMISSIONS_ORG_ADMIN)
+            group_org_admin = CoreGroup.objects.get(
+                organization=organization,
+                is_org_level=True,
+                permissions=PERMISSIONS_ORG_ADMIN,
+            )
             coreuser.core_groups.add(group_org_admin)
 
         # add requested groups to the user
@@ -189,8 +235,17 @@ class CoreUserProfileSerializer(serializers.Serializer):
 
     class Meta:
         model = CoreUser
-        fields = ('first_name', 'last_name', 'password', 'title',
-                  'contact_info', 'organization_name', 'email_preferences', 'push_preferences', 'user_timezone')
+        fields = (
+            'first_name',
+            'last_name',
+            'password',
+            'title',
+            'contact_info',
+            'organization_name',
+            'email_preferences',
+            'push_preferences',
+            'user_timezone',
+        )
 
     def update(self, instance, validated_data):
 
@@ -204,10 +259,18 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
-        instance.contact_info = validated_data.get('contact_info', instance.contact_info)
-        instance.email_preferences = validated_data.get('email_preferences', instance.email_preferences)
-        instance.push_preferences = validated_data.get('push_preferences', instance.push_preferences)
-        instance.user_timezone = validated_data.get('user_timezone', instance.user_timezone)
+        instance.contact_info = validated_data.get(
+            'contact_info', instance.contact_info
+        )
+        instance.email_preferences = validated_data.get(
+            'email_preferences', instance.email_preferences
+        )
+        instance.push_preferences = validated_data.get(
+            'push_preferences', instance.push_preferences
+        )
+        instance.user_timezone = validated_data.get(
+            'user_timezone', instance.user_timezone
+        )
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
@@ -217,17 +280,21 @@ class CoreUserProfileSerializer(serializers.Serializer):
 
 
 class CoreUserInvitationSerializer(serializers.Serializer):
-    emails = serializers.ListField(child=serializers.EmailField(),
-                                   min_length=1, max_length=10)
+    emails = serializers.ListField(
+        child=serializers.EmailField(), min_length=1, max_length=10
+    )
 
 
 class CoreUserResetPasswordSerializer(serializers.Serializer):
     """Serializer for reset password request data
     """
+
     email = serializers.EmailField()
 
     def save(self, **kwargs):
-        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = urljoin(
+            settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH
+        )
         resetpass_url = resetpass_url + '{uid}/{token}/'
 
         email = self.validated_data["email"]
@@ -242,14 +309,22 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             }
 
             # get specific subj and templates for user's organization
-            tpl = EmailTemplate.objects.filter(organization=user.organization, type=TEMPLATE_RESET_PASSWORD).first()
+            tpl = EmailTemplate.objects.filter(
+                organization=user.organization, type=TEMPLATE_RESET_PASSWORD
+            ).first()
             if not tpl:
-                tpl = EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                   type=TEMPLATE_RESET_PASSWORD).first()
+                tpl = EmailTemplate.objects.filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    type=TEMPLATE_RESET_PASSWORD,
+                ).first()
             if tpl and tpl.template:
                 context = Context(context)
                 text_content = Template(tpl.template).render(context)
-                html_content = Template(tpl.template_html).render(context) if tpl.template_html else None
+                html_content = (
+                    Template(tpl.template_html).render(context)
+                    if tpl.template_html
+                    else None
+                )
                 count += send_email_body(email, tpl.subject, text_content, html_content)
                 continue
 
@@ -257,7 +332,9 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             subject = 'Reset your password'
             template_name = 'email/coreuser/password_reset.txt'
             html_template_name = 'email/coreuser/password_reset.html'
-            count += send_email(email, subject, context, template_name, html_template_name)
+            count += send_email(
+                email, subject, context, template_name, html_template_name
+            )
 
         return count
 
@@ -265,6 +342,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
     """Serializer for checking token for resetting password
     """
+
     uid = serializers.CharField()
     token = serializers.CharField()
 
@@ -286,6 +364,7 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
 class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerializer):
     """Serializer for reset password data
     """
+
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
 
@@ -338,8 +417,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ('id', 'authorization_grant_type', 'client_id', 'client_secret', 'client_type', 'name',
-                  'redirect_uris')
+        fields = (
+            'id',
+            'authorization_grant_type',
+            'client_id',
+            'client_secret',
+            'client_type',
+            'name',
+            'redirect_uris',
+        )
 
     def create(self, validated_data):
         validated_data['client_id'] = secrets.token_urlsafe(75)
@@ -351,6 +437,7 @@ class CoreUserEmailAlertSerializer(serializers.Serializer):
     """
     Serializer for email alert of shipment
     """
+
     organization_uuid = serializers.UUIDField()
     messages = serializers.JSONField()
 

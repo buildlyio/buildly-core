@@ -1,0 +1,89 @@
+name: Build and Push to Production
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  build:
+    name: Build and Push to AWS
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    # auto generate tag from label defined in Dockerfile
+    - uses: butlerlogic/action-autotag@stable
+      id: tag_version
+      with:
+        GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
+        strategy: docker
+        tag_prefix: "v"
+
+    # Create release notes
+    - name: Build changelog
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+    # Create release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag_version.outputs.tagname }}
+        release_name: Release ${{ steps.tag_version.outputs.tagname }}
+        body: ${{ steps.build_changelog.outputs.changelog }}
+        draft: false
+        prerelease: false
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
+
+    # Login to Amazon ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # Build, tag and push docker image
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: transparent-path/buildly_core
+
+        IMAGE_TAG: latest
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    # Send message on Slack
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_MESSAGE: 'Production Release for Transparent Path buildly-core created and Docker Image pushed to AWS ECR Successfully'
+        MSG_MINIMAL: true
+
+    # Send email alert
+    - name: Email Alert
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Github Actions Build and Push job alert
+        to: ${{ secrets.RECIPIENT_EMAIL }}
+        from: ${{ secrets.SENDER_EMAIL }}
+        body: Production Release for Transparent Path buildly-core created and Docker Image pushed to AWS ECR Successfully
+
+# Reference : https://towardsaws.com/build-push-docker-image-to-aws-ecr-using-github-actions-8396888a8f9e

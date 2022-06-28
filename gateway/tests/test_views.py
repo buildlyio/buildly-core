@@ -11,11 +11,18 @@ from .fixtures import datamesh
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-@pytest.mark.parametrize("content,content_type", [('{"details": "IT IS A TEST"}', 'application/json'),
-                                                  ('IT IS A TEST', 'text/html; charset=utf-8')])
+@pytest.mark.parametrize(
+    "content,content_type",
+    [
+        ('{"details": "IT IS A TEST"}', 'application/json'),
+        ('IT IS A TEST', 'text/html; charset=utf-8'),
+    ],
+)
 @pytest.mark.django_db()
 @httpretty.activate
-def test_make_service_request_data_and_raw(auth_api_client, logic_module, content, content_type):
+def test_make_service_request_data_and_raw(
+    auth_api_client, logic_module, content, content_type
+):
     url = f'/{logic_module.endpoint_name}/thumbnail/1/'
 
     # mock requests
@@ -25,13 +32,13 @@ def test_make_service_request_data_and_raw(auth_api_client, logic_module, conten
         httpretty.GET,
         f'{logic_module.endpoint}/docs/swagger.json',
         body=swagger_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{logic_module.endpoint}/thumbnail/1/',
         body=content,
-        adding_headers={'Content-Type': content_type}
+        adding_headers={'Content-Type': content_type},
     )
 
     # make api request
@@ -45,7 +52,9 @@ def test_make_service_request_data_and_raw(auth_api_client, logic_module, conten
 
 @pytest.mark.django_db()
 @httpretty.activate
-def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic_module):
+def test_make_service_request_to_unexisting_list_endpoint(
+    auth_api_client, logic_module
+):
 
     url = f'/{logic_module.endpoint_name}/nowhere/'
 
@@ -56,7 +65,7 @@ def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic
         httpretty.GET,
         f'{logic_module.endpoint}/docs/swagger.json',
         body=swagger_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
 
     # make api request
@@ -71,7 +80,9 @@ def test_make_service_request_to_unexisting_list_endpoint(auth_api_client, logic
 
 @pytest.mark.django_db()
 @httpretty.activate
-def test_make_service_request_to_unexisting_detail_endpoint(auth_api_client, logic_module):
+def test_make_service_request_to_unexisting_detail_endpoint(
+    auth_api_client, logic_module
+):
 
     url = f'/{logic_module.endpoint_name}/nowhere/123/'
 
@@ -82,7 +93,7 @@ def test_make_service_request_to_unexisting_detail_endpoint(auth_api_client, log
         httpretty.GET,
         f'{logic_module.endpoint}/docs/swagger.json',
         body=swagger_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
 
     # make api request
@@ -92,16 +103,23 @@ def test_make_service_request_to_unexisting_detail_endpoint(auth_api_client, log
     assert response.status_code == 404
     assert response.has_header('Content-Type')
     assert response.get('Content-Type') == 'application/json'
-    assert json.loads(response.content)['detail'] == "Endpoint not found: GET /nowhere/{id}/"
+    assert (
+        json.loads(response.content)['detail']
+        == "Endpoint not found: GET /nowhere/{id}/"
+    )
 
 
 @pytest.mark.django_db()
 @httpretty.activate
 def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
     lm1, lm2, relationship = datamesh
-    factories.JoinRecord(relationship=relationship,
-                         record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
-                         related_record_id=1, related_record_uuid=None)
+    factories.JoinRecord(
+        relationship=relationship,
+        record_id=None,
+        record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
+        related_record_id=1,
+        related_record_uuid=None,
+    )
 
     url = f'/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
 
@@ -118,25 +136,25 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
         httpretty.GET,
         f'{lm1.endpoint}/docs/swagger.json',
         body=swagger_location_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm2.endpoint}/docs/swagger.json',
         body=swagger_documents_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm1.endpoint}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/',
         body=data_location_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm2.endpoint}/documents/1/',
         body=data_documents_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
 
     # make api request
@@ -155,9 +173,13 @@ def test_make_service_request_with_datamesh_detailed(auth_api_client, datamesh):
 @httpretty.activate
 def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, datamesh):
     lm1, lm2, relationship = datamesh
-    factories.JoinRecord(relationship=relationship,
-                         record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
-                         related_record_id=1, related_record_uuid=None)
+    factories.JoinRecord(
+        relationship=relationship,
+        record_id=None,
+        record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
+        related_record_id=1,
+        related_record_uuid=None,
+    )
 
     url = f'/{lm2.endpoint_name}/documents/1/'
 
@@ -174,25 +196,25 @@ def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, da
         httpretty.GET,
         f'{lm1.endpoint}/docs/swagger.json',
         body=swagger_location_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm2.endpoint}/docs/swagger.json',
         body=swagger_documents_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm1.endpoint}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/',
         body=data_location_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm2.endpoint}/documents/1/',
         body=data_documents_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
 
     # make api request
@@ -211,9 +233,13 @@ def test_make_service_request_with_reverse_datamesh_detailed(auth_api_client, da
 @httpretty.activate
 def test_make_service_request_with_datamesh_list(auth_api_client, datamesh):
     lm1, lm2, relationship = datamesh
-    factories.JoinRecord(relationship=relationship,
-                         record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
-                         related_record_id=1, related_record_uuid=None)
+    factories.JoinRecord(
+        relationship=relationship,
+        record_id=None,
+        record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
+        related_record_id=1,
+        related_record_uuid=None,
+    )
 
     url = f'/{lm1.endpoint_name}/siteprofiles/'
 
@@ -230,25 +256,25 @@ def test_make_service_request_with_datamesh_list(auth_api_client, datamesh):
         httpretty.GET,
         f'{lm1.endpoint}/docs/swagger.json',
         body=swagger_location_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm2.endpoint}/docs/swagger.json',
         body=swagger_documents_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm1.endpoint}/siteprofiles/',
         body=data_location_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
     httpretty.register_uri(
         httpretty.GET,
         f'{lm2.endpoint}/documents/1/',
         body=data_documents_body,
-        adding_headers={'Content-Type': 'application/json'}
+        adding_headers={'Content-Type': 'application/json'},
     )
 
     # make api request

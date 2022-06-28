@@ -18,17 +18,18 @@ def create_organization(core_user=None, *args, **kwargs):
 
     # create or get an organization and associate it to the core user
     if settings.DEFAULT_ORG:
-        organization, created = Organization.objects.get_or_create(name=settings.DEFAULT_ORG)
+        organization, created = Organization.objects.get_or_create(
+            name=settings.DEFAULT_ORG
+        )
     else:
-        organization, created = Organization.objects.get_or_create(name=core_user.username)
+        organization, created = Organization.objects.get_or_create(
+            name=core_user.username
+        )
 
     core_user.organization = organization
     core_user.save()
 
-    return {
-        'is_new_org': created,
-        'organization': organization
-    }
+    return {'is_new_org': created, 'organization': organization}
 
 
 def auth_allowed(backend, details, response, *args, **kwargs):
@@ -60,28 +61,31 @@ def auth_allowed(backend, details, response, *args, **kwargs):
     else:
         domain = email.split('@', 1)[1]
         if whitelisted_emails or whitelisted_domains:
-            allowed = (email in whitelisted_emails or domain in
-                       whitelisted_domains)
+            allowed = email in whitelisted_emails or domain in whitelisted_domains
 
         # Check if the user email domain matches with one of the org oauth
         # domains and add the organization uuid in the details
         if allowed:
             org_uuid = Organization.objects.values_list(
-                'organization_uuid', flat=True).get(name=settings.DEFAULT_ORG)
+                'organization_uuid', flat=True
+            ).get(name=settings.DEFAULT_ORG)
             details.update({'organization_uuid': org_uuid})
         else:
             try:
                 org_uuid = Organization.objects.values_list(
-                    'organization_uuid', flat=True).get(
-                    oauth_domains__contains=[domain])
+                    'organization_uuid', flat=True
+                ).get(oauth_domains__contains=[domain])
                 details.update({'organization_uuid': org_uuid})
                 allowed = True
             except Organization.DoesNotExist:
                 pass
             except Organization.MultipleObjectsReturned as e:
-                logger.warning('There is more than one Organization with '
-                               'the domain {}.\n{}'.format(domain, e))
+                logger.warning(
+                    'There is more than one Organization with '
+                    'the domain {}.\n{}'.format(domain, e)
+                )
 
     if not allowed:
-        return render_to_response('unauthorized.html',
-                                  context={'STATIC_URL': static_url})
+        return render_to_response(
+            'unauthorized.html', context={'STATIC_URL': static_url}
+        )

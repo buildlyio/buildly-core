@@ -29,10 +29,13 @@ urlpatterns = [
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
     path('', include('workflow.urls')),
-
     # Auth backend URL's
-    path('oauth/', include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')),
-    re_path(r'^oauth/complete/(?P<backend>[^/]+)/$', oauth_complete, name='oauth_complete'),
+    path(
+        'oauth/', include('oauth2_provider_jwt.urls', namespace='oauth2_provider_jwt')
+    ),
+    re_path(
+        r'^oauth/complete/(?P<backend>[^/]+)/$', oauth_complete, name='oauth_complete'
+    ),
 ]
 
 urlpatterns += staticfiles_urlpatterns() + router.urls

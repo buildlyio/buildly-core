@@ -3,14 +3,16 @@ import pytest
 from datamesh.serializers import JoinRecordSerializer
 from .fixtures import join_record
 
+
 @pytest.mark.django_db()
 def test_join_record_serializer_from_instance(request_factory, join_record):
     request = request_factory.get('')
     request.session = {
-        'jwt_organization_uuid': join_record.organization.organization_uuid,
+        'jwt_organization_uuid': join_record.organization.organization_uuid
     }
-    serializer = JoinRecordSerializer(instance=join_record,
-                                      context={'request': request})
+    serializer = JoinRecordSerializer(
+        instance=join_record, context={'request': request}
+    )
     keys = [
         "join_record_uuid",
         "record_id",

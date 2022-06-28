@@ -43,8 +43,9 @@ class WorkflowLevelStatusViewSet(viewsets.ModelViewSet):
 
     Delete the WorkflowlevelStatus instance.
     """
+
     queryset = WorkflowLevelStatus.objects.all()
-    ordering = ('order', )
-    filter_backends = (filters.OrderingFilter, )
+    ordering = ('order',)
+    filter_backends = (filters.OrderingFilter,)
     serializer_class = WorkflowLevelStatusSerializer
     pagination_class = DefaultLimitOffsetPagination

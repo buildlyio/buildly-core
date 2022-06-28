@@ -6,7 +6,12 @@ import django_filters
 
 from core.permissions import IsOrgMember
 from workflow.filters import WorkflowLevel2Filter
-from workflow.models import WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, ROLE_ORGANIZATION_ADMIN
+from workflow.models import (
+    WorkflowLevel2,
+    WorkflowLevel2Sort,
+    WorkflowTeam,
+    ROLE_ORGANIZATION_ADMIN,
+)
 from workflow.serializers import WorkflowLevel2Serializer, WorkflowLevel2SortSerializer
 from workflow.permissions import CoreGroupsPermissions
 from workflow.pagination import DefaultLimitOffsetPagination
@@ -31,6 +36,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     create:
     Create a new workflow level 2 instance.
     """
+
     # Remove CSRF request verification for posts to this API
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
@@ -65,7 +71,7 @@ class WorkflowLevel2ViewSet(viewsets.ModelViewSet):
     ordering = ('name',)
     filter_backends = (
         django_filters.rest_framework.DjangoFilterBackend,
-        filters.OrderingFilter
+        filters.OrderingFilter,
     )
     filter_class = WorkflowLevel2Filter
     queryset = WorkflowLevel2.objects.all()
@@ -102,11 +108,12 @@ class WorkflowLevel2SortViewSet(viewsets.ModelViewSet):
             if ROLE_ORGANIZATION_ADMIN in user_groups:
                 organization_id = request.user.organization_id
                 queryset = queryset.filter(
-                    workflowlevel1__organization_id=organization_id)
+                    workflowlevel1__organization_id=organization_id
+                )
             else:
                 wflvl1_ids = WorkflowTeam.objects.filter(
-                    workflow_user=request.user).values_list(
-                    'workflowlevel1__id', flat=True)
+                    workflow_user=request.user
+                ).values_list('workflowlevel1__id', flat=True)
                 queryset = queryset.filter(workflowlevel1__in=wflvl1_ids)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

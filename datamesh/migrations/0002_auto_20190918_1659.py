@@ -8,21 +8,28 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('core', '0001_initial'),
-        ('datamesh', '0001_initial'),
-    ]
+    dependencies = [('core', '0001_initial'), ('datamesh', '0001_initial')]
 
     operations = [
         migrations.AddField(
             model_name='joinrecord',
             name='organization',
-            field=models.ForeignKey(blank=True, help_text='Related Organization with access', null=True, on_delete=django.db.models.deletion.CASCADE, to='core.Organization'),
+            field=models.ForeignKey(
+                blank=True,
+                help_text='Related Organization with access',
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to='core.Organization',
+            ),
         ),
         migrations.AddField(
             model_name='joinrecord',
             name='relationship',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='joinrecords', to='datamesh.Relationship'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='joinrecords',
+                to='datamesh.Relationship',
+            ),
         ),
         migrations.AlterUniqueTogether(
             name='relationship',
@@ -30,26 +37,68 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='joinrecord',
-            constraint=models.UniqueConstraint(condition=models.Q(('record_uuid', None), ('related_record_uuid', None)), fields=('relationship', 'record_id', 'related_record_id'), name='unique_join_record_ids'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(
+                    ('record_uuid', None), ('related_record_uuid', None)
+                ),
+                fields=('relationship', 'record_id', 'related_record_id'),
+                name='unique_join_record_ids',
+            ),
         ),
         migrations.AddConstraint(
             model_name='joinrecord',
-            constraint=models.UniqueConstraint(condition=models.Q(('record_id', None), ('related_record_id', None)), fields=('relationship', 'record_uuid', 'related_record_uuid'), name='unique_join_record_uuids'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(('record_id', None), ('related_record_id', None)),
+                fields=('relationship', 'record_uuid', 'related_record_uuid'),
+                name='unique_join_record_uuids',
+            ),
         ),
         migrations.AddConstraint(
             model_name='joinrecord',
-            constraint=models.UniqueConstraint(condition=models.Q(('record_uuid', None), ('related_record_id', None)), fields=('relationship', 'record_id', 'related_record_uuid'), name='unique_join_record_id_uuid'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(('record_uuid', None), ('related_record_id', None)),
+                fields=('relationship', 'record_id', 'related_record_uuid'),
+                name='unique_join_record_id_uuid',
+            ),
         ),
         migrations.AddConstraint(
             model_name='joinrecord',
-            constraint=models.UniqueConstraint(condition=models.Q(('record_id', None), ('related_record_uuid', None)), fields=('relationship', 'record_uuid', 'related_record_id'), name='unique_join_record_uuid_id'),
+            constraint=models.UniqueConstraint(
+                condition=models.Q(('record_id', None), ('related_record_uuid', None)),
+                fields=('relationship', 'record_uuid', 'related_record_id'),
+                name='unique_join_record_uuid_id',
+            ),
         ),
         migrations.AddConstraint(
             model_name='joinrecord',
-            constraint=models.CheckConstraint(check=models.Q(models.Q(('record_id', None), ('record_uuid', None), _negated=True), models.Q(models.Q(_negated=True, record_id=None), models.Q(_negated=True, record_uuid=None), _negated=True)), name='one_record_primary_key'),
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    models.Q(('record_id', None), ('record_uuid', None), _negated=True),
+                    models.Q(
+                        models.Q(_negated=True, record_id=None),
+                        models.Q(_negated=True, record_uuid=None),
+                        _negated=True,
+                    ),
+                ),
+                name='one_record_primary_key',
+            ),
         ),
         migrations.AddConstraint(
             model_name='joinrecord',
-            constraint=models.CheckConstraint(check=models.Q(models.Q(('related_record_id', None), ('related_record_uuid', None), _negated=True), models.Q(models.Q(_negated=True, related_record_id=None), models.Q(_negated=True, related_record_uuid=None), _negated=True)), name='one_related_record_primary_key'),
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    models.Q(
+                        ('related_record_id', None),
+                        ('related_record_uuid', None),
+                        _negated=True,
+                    ),
+                    models.Q(
+                        models.Q(_negated=True, related_record_id=None),
+                        models.Q(_negated=True, related_record_uuid=None),
+                        _negated=True,
+                    ),
+                ),
+                name='one_related_record_primary_key',
+            ),
         ),
     ]

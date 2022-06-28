@@ -57,9 +57,13 @@ class BaseGatewayRequest(object):
         """ Retrieve LogicModule by service name. """
         if service_name not in self._logic_modules:
             try:
-                self._logic_modules[service_name] = LogicModule.objects.get(endpoint_name=service_name)
+                self._logic_modules[service_name] = LogicModule.objects.get(
+                    endpoint_name=service_name
+                )
             except LogicModule.DoesNotExist:
-                raise exceptions.ServiceDoesNotExist(f'Service "{service_name}" not found.')
+                raise exceptions.ServiceDoesNotExist(
+                    f'Service "{service_name}" not found.'
+                )
         return self._logic_modules[service_name]
 
     def get_datamesh(self) -> DataMesh:
@@ -69,11 +73,13 @@ class BaseGatewayRequest(object):
 
         # find out forwards relations through logic module from request as origin
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
-        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
-        endpoint = endpoint[:endpoint.index('/', 1) + 1]
-        return DataMesh(logic_module_endpoint=logic_module.endpoint_name,
-                        model_endpoint=endpoint,
-                        access_validator=utils.ObjectAccessValidator(self.request))
+        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}') + padding:]
+        endpoint = endpoint[: endpoint.index('/', 1) + 1]
+        return DataMesh(
+            logic_module_endpoint=logic_module.endpoint_name,
+            model_endpoint=endpoint,
+            access_validator=utils.ObjectAccessValidator(self.request),
+        )
 
 
 class GatewayRequest(BaseGatewayRequest):
@@ -89,7 +95,9 @@ class GatewayRequest(BaseGatewayRequest):
         try:
             spec = self._get_swagger_spec(self.url_kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
-            return GatewayResponse(e.content, e.status, {'Content-Type': e.content_type})
+            return GatewayResponse(
+                e.content, e.status, {'Content-Type': e.content_type}
+            )
 
         # create a client for performing data requests
         client = SwaggerClient(spec, self.request)
@@ -98,16 +106,27 @@ class GatewayRequest(BaseGatewayRequest):
         content, status_code, headers = client.request(**self.url_kwargs)
 
         # aggregate/join with the JoinRecord-models
-        if 'join' in self.request.query_params and status_code == 200 and type(content) in [dict, list]:
+        if (
+            'join' in self.request.query_params
+            and status_code == 200
+            and type(content) in [dict, list]
+        ):
             try:
                 self._join_response_data(resp_data=content)
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
         path_url = self.request.path  # Get request path
-        list_string_path = path_url.split("/")  # Split the request path to check if custody include in it
-        if ('join' not in self.request.query_params and 'custody' in list_string_path and
-                status_code == 201 and type(content) in [dict, list] and self.request.method == 'POST'):
+        list_string_path = path_url.split(
+            "/"
+        )  # Split the request path to check if custody include in it
+        if (
+            'join' not in self.request.query_params
+            and 'custody' in list_string_path
+            and status_code == 201
+            and type(content) in [dict, list]
+            and self.request.method == 'POST'
+        ):
             # This functionality will execute only when request include custody with post request,
             # It will not execute if its join request
             related_organization = content.get('organization_uuid')
@@ -119,6 +138,7 @@ class GatewayRequest(BaseGatewayRequest):
                 organization_list = consortium.organization_uuids
                 if related_organization:
                     import uuid
+
                     org_uuid = uuid.UUID(related_organization)
                     if org_uuid not in organization_list:
                         # To avoid repeated organization uuid adding in consortium organization uuid
@@ -127,7 +147,9 @@ class GatewayRequest(BaseGatewayRequest):
                         consortium.save()
             else:
                 # If consortium does not exists for shipment name, then create consortium
-                Consortium.objects.create(name=shipment_name, organization_uuids=[related_organization])
+                Consortium.objects.create(
+                    name=shipment_name, organization_uuids=[related_organization]
+                )
 
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)
@@ -191,14 +213,18 @@ class AsyncGatewayRequest(BaseGatewayRequest):
         result = {}
         asyncio.run(self.async_perform(result))
         if 'response' not in result:
-            raise exceptions.GatewayError('Error performing asynchronous gateway request')
+            raise exceptions.GatewayError(
+                'Error performing asynchronous gateway request'
+            )
         return result['response']
 
     async def async_perform(self, result: dict):
         try:
             spec = await self._get_swagger_spec(self.url_kwargs['service'])
         except exceptions.ServiceDoesNotExist as e:
-            return GatewayResponse(e.content, e.status, {'Content-Type': e.content_type})
+            return GatewayResponse(
+                e.content, e.status, {'Content-Type': e.content_type}
+            )
 
         # create a client for performing data requests
         client = AsyncSwaggerClient(spec, self.request)
@@ -207,7 +233,11 @@ class AsyncGatewayRequest(BaseGatewayRequest):
         content, status_code, headers = await client.request(**self.url_kwargs)
 
         # aggregate/join with the JoinRecord-models
-        if 'join' in self.request.query_params and status_code == 200 and type(content) in [dict, list]:
+        if (
+            'join' in self.request.query_params
+            and status_code == 200
+            and type(content) in [dict, list]
+        ):
             try:
                 await self._join_response_data(resp_data=content)
             except exceptions.ServiceDoesNotExist as e:

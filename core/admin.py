@@ -2,8 +2,17 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, \
-    Industry, LogicModule, Organization, OrganizationType, Consortium
+from core.models import (
+    CoreUser,
+    CoreGroup,
+    CoreSites,
+    EmailTemplate,
+    Industry,
+    LogicModule,
+    Organization,
+    OrganizationType,
+    Consortium,
+)
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -29,25 +38,72 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'organization', 'is_global', 'is_org_level', 'is_default', 'permissions')
+    list_display = (
+        'name',
+        'organization',
+        'is_global',
+        'is_org_level',
+        'is_default',
+        'permissions',
+    )
     display = 'Core Group'
-    search_fields = ('name', 'organization__name', )
+    search_fields = ('name', 'organization__name')
 
 
 class CoreUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'organization', 'title', 'is_active', 'user_timezone')
+    list_display = (
+        'username',
+        'first_name',
+        'last_name',
+        'organization',
+        'title',
+        'is_active',
+        'user_timezone',
+    )
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
-    search_fields = ('first_name', 'first_name', 'username', 'title', 'organization__name', )
+    search_fields = (
+        'first_name',
+        'first_name',
+        'username',
+        'title',
+        'organization__name',
+    )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info',
-                                         'organization', 'user_timezone')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
+        (
+            _('Personal info'),
+            {
+                'fields': (
+                    'title',
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'contact_info',
+                    'organization',
+                    'user_timezone',
+                )
+            },
+        ),
+        (
+            _('Permissions'),
+            {
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'core_groups',
+                    'user_permissions',
+                )
+            },
+        ),
         (_('Preferences'), {'fields': ('email_preferences', 'push_preferences')}),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
+        (
+            _('Important dates'),
+            {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')},
+        ),
     )
-    filter_horizontal = ('core_groups', 'user_permissions', )
+    filter_horizontal = ('core_groups', 'user_permissions')
 
     def get_fieldsets(self, request, obj=None):
 
@@ -59,7 +115,13 @@ class CoreUserAdmin(UserAdmin):
         if not request.user.is_superuser:
             fieldsets[2][1]['fields'] = ('is_active', 'is_staff')
         else:
-            fieldsets[2][1]['fields'] = ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')
+            fieldsets[2][1]['fields'] = (
+                'is_active',
+                'is_staff',
+                'is_superuser',
+                'core_groups',
+                'user_permissions',
+            )
 
         return fieldsets
 

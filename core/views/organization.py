@@ -51,8 +51,13 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     serializer_class = OrganizationSerializer
 
     @csrf_exempt
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny],
-            name='Fetch Already existing Organization', url_path='fetch_orgs')
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[AllowAny],
+        name='Fetch Already existing Organization',
+        url_path='fetch_orgs',
+    )
     def fetch_existing_orgs(self, request, pk=None, *args, **kwargs):
         """
         Fetch Already existing Organizations in Buildly Core,

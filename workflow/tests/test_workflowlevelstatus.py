@@ -7,6 +7,7 @@ from workflow.models import WorkflowLevelStatus
 from ..views import WorkflowLevelStatusViewSet
 from core.tests.fixtures import org_member, org
 
+
 @pytest.mark.django_db()
 def test_list_workflowlevelstatus(request_factory, org_member):
     request = request_factory.get(reverse('workflowlevelstatus-list'))
@@ -29,8 +30,7 @@ def test_create_workflowlevelstatus(request_factory, org_member):
 @pytest.mark.django_db()
 def test_update_workflowlevelstatus(request_factory, org_member):
     wflstatus = factories.WorkflowLevelStatus(name='change this')
-    data = {"name": "Changed WFL Status Name",
-            "short_name": "changed"}
+    data = {"name": "Changed WFL Status Name", "short_name": "changed"}
     request = request_factory.put('', data)
     request.user = org_member
     view = WorkflowLevelStatusViewSet.as_view({'put': 'update'})

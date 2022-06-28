@@ -5,10 +5,12 @@ from unittest.mock import Mock
 from gateway import utils
 from gateway.tests.fixtures import aggregator, logic_module
 
+
 @pytest.mark.django_db()
 class TestSwaggerAggregator:
-
-    def test_get_aggregate_swagger_without_api_specification(self, aggregator, logic_module, monkeypatch):
+    def test_get_aggregate_swagger_without_api_specification(
+        self, aggregator, logic_module, monkeypatch
+    ):
         test_swagger = {'name': 'test'}
         mocked_swagger = Mock()
         mocked_swagger.return_value.json.return_value = test_swagger
@@ -22,7 +24,9 @@ class TestSwaggerAggregator:
 
         mocked_swagger.assert_called_once()
 
-    def test_get_aggregate_swagger_with_api_specification(self, aggregator, logic_module, monkeypatch):
+    def test_get_aggregate_swagger_with_api_specification(
+        self, aggregator, logic_module, monkeypatch
+    ):
         test_swagger = {'name': 'test'}
         logic_module.api_specification = test_swagger
         logic_module.save()
@@ -38,7 +42,9 @@ class TestSwaggerAggregator:
 
         mocked_swagger.assert_not_called()
 
-    def test_get_aggregate_swagger_connection_error(self, aggregator, logic_module, monkeypatch):
+    def test_get_aggregate_swagger_connection_error(
+        self, aggregator, logic_module, monkeypatch
+    ):
         mocked_swagger = Mock(side_effect=ConnectionError)
         monkeypatch.setattr(utils, 'get_swagger_from_url', mocked_swagger)
 
@@ -46,7 +52,9 @@ class TestSwaggerAggregator:
         assert result == {}
         mocked_swagger.assert_called_once()
 
-    def test_get_aggregate_swagger_timeout_error(self, aggregator, logic_module, monkeypatch):
+    def test_get_aggregate_swagger_timeout_error(
+        self, aggregator, logic_module, monkeypatch
+    ):
         mocked_swagger = Mock(side_effect=TimeoutError)
         monkeypatch.setattr(utils, 'get_swagger_from_url', mocked_swagger)
 
@@ -54,7 +62,9 @@ class TestSwaggerAggregator:
         assert result == {}
         mocked_swagger.assert_called_once()
 
-    def test_get_aggregate_swagger_value_error(self, aggregator, logic_module, monkeypatch):
+    def test_get_aggregate_swagger_value_error(
+        self, aggregator, logic_module, monkeypatch
+    ):
         mocked_swagger = Mock(side_effect=ValueError)
         monkeypatch.setattr(utils, 'get_swagger_from_url', mocked_swagger)
 

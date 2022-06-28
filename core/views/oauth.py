@@ -3,13 +3,20 @@ import django_filters
 
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 
-from core.serializers import AccessTokenSerializer, ApplicationSerializer, RefreshTokenSerializer
+from core.serializers import (
+    AccessTokenSerializer,
+    ApplicationSerializer,
+    RefreshTokenSerializer,
+)
 from core.permissions import IsSuperUser
 
 
-class AccessTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                         mixins.DestroyModelMixin,
-                         viewsets.GenericViewSet):
+class AccessTokenViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     title:
     Users' access tokens
@@ -79,9 +86,12 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = ApplicationSerializer
 
 
-class RefreshTokenViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                          mixins.DestroyModelMixin,
-                          viewsets.GenericViewSet):
+class RefreshTokenViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     title:
     Users' refresh tokens

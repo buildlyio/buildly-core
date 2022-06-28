@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from core.models import Consortium
 from core.serializers import ConsortiumSerializer
 from core.permissions import IsSuperUser, AllowAuthenticatedRead
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +36,7 @@ class ConsortiumViewSet(viewsets.ModelViewSet):
     delete:
     Delete a Consortium instance.
     """
+
     permission_classes_by_action = {'list': [AllowAuthenticatedRead]}
 
     def list(self, request):
@@ -49,7 +51,10 @@ class ConsortiumViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         try:
             # return permission_classes depending on `action`
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
+            return [
+                permission()
+                for permission in self.permission_classes_by_action[self.action]
+            ]
         except KeyError:
             # action is not set return default permission_classes
             return [permission() for permission in self.permission_classes]

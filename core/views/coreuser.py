@@ -10,26 +10,43 @@ import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
 from core.models import CoreUser, Organization
-from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
-                              CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer, CoreUserEmailAlertSerializer,
-                              CoreUserProfileSerializer)
+from core.serializers import (
+    CoreUserSerializer,
+    CoreUserWritableSerializer,
+    CoreUserInvitationSerializer,
+    CoreUserResetPasswordSerializer,
+    CoreUserResetPasswordCheckSerializer,
+    CoreUserResetPasswordConfirmSerializer,
+    CoreUserEmailAlertSerializer,
+    CoreUserProfileSerializer,
+)
 
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
-from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
-                          DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
+from core.swagger import (
+    COREUSER_INVITE_RESPONSE,
+    COREUSER_INVITE_CHECK_RESPONSE,
+    COREUSER_RESETPASS_RESPONSE,
+    DETAIL_RESPONSE,
+    SUCCESS_RESPONSE,
+    TOKEN_QUERY_PARAM,
+)
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
 import logging
+
 # from datetime import datetime
 # from dateutil import tz
 # from twilio.rest import Client
 logger = logging.getLogger(__name__)
 
 
-class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                      mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                      viewsets.GenericViewSet):
+class CoreUserViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     A core user is an extension of the default User object.  A core user is also the primary relationship for identity
     and access to a logged in user. They are associated with an organization, Group (for permission though WorkflowTeam)
@@ -73,7 +90,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             organization_id = request.user.organization_id
             queryset = queryset.filter(organization_id=organization_id)
         serializer = self.get_serializer(
-            instance=queryset, context={'request': request}, many=True)
+            instance=queryset, context={'request': request}, many=True
+        )
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
@@ -91,9 +109,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer = self.get_serializer(instance=user, context={'request': request})
         return Response(serializer.data)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserInvitationSerializer,
-                         responses=COREUSER_INVITE_RESPONSE)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserInvitationSerializer,
+        responses=COREUSER_INVITE_RESPONSE,
+    )
     @action(methods=['POST'], detail=False)
     def invite(self, request, *args, **kwargs):
         """
@@ -108,15 +128,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         links = self.perform_invite(serializer)
 
         return Response(
-            {
-                'detail': 'The invitations were sent successfully.',
-                'invitations': links,
-            },
-            status=status.HTTP_200_OK)
+            {'detail': 'The invitations were sent successfully.', 'invitations': links},
+            status=status.HTTP_200_OK,
+        )
 
-    @swagger_auto_schema(methods=['get'],
-                         responses=COREUSER_INVITE_CHECK_RESPONSE,
-                         manual_parameters=[TOKEN_QUERY_PARAM])
+    @swagger_auto_schema(
+        methods=['get'],
+        responses=COREUSER_INVITE_CHECK_RESPONSE,
+        manual_parameters=[TOKEN_QUERY_PARAM],
+    )
     @action(methods=['GET'], detail=False)
     def invite_check(self, request, *args, **kwargs):
         """
@@ -126,43 +146,50 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         try:
             token = self.request.query_params['token']
         except KeyError:
-            return Response({'detail': 'No token is provided.'},
-                            status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'detail': 'No token is provided.'}, status.HTTP_401_UNAUTHORIZED
+            )
         try:
-            decoded = jwt.decode(token, settings.SECRET_KEY,
-                                 algorithms='HS256')
+            decoded = jwt.decode(token, settings.SECRET_KEY, algorithms='HS256')
         except jwt.DecodeError:
-            return Response({'detail': 'Token is not valid.'},
-                            status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'detail': 'Token is not valid.'}, status.HTTP_401_UNAUTHORIZED
+            )
         except jwt.ExpiredSignatureError:
-            return Response({'detail': 'Token is expired.'},
-                            status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'detail': 'Token is expired.'}, status.HTTP_401_UNAUTHORIZED
+            )
 
         if CoreUser.objects.filter(email=decoded['email']).exists():
-            return Response({'detail': 'Token has been used.'},
-                            status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'detail': 'Token has been used.'}, status.HTTP_401_UNAUTHORIZED
+            )
 
-        organization = Organization.objects\
-            .values('organization_uuid', 'name')\
-            .get(organization_uuid=decoded['org_uuid']) \
-            if decoded['org_uuid'] else None
+        organization = (
+            Organization.objects.values('organization_uuid', 'name').get(
+                organization_uuid=decoded['org_uuid']
+            )
+            if decoded['org_uuid']
+            else None
+        )
 
-        return Response({
-            'email': decoded['email'],
-            'organization': organization
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {'email': decoded['email'], 'organization': organization},
+            status=status.HTTP_200_OK,
+        )
 
     @transaction.atomic
     def perform_invite(self, serializer):
 
-        reg_location = urljoin(settings.FRONTEND_URL,
-                               settings.REGISTRATION_URL_PATH)
+        reg_location = urljoin(settings.FRONTEND_URL, settings.REGISTRATION_URL_PATH)
         reg_location = reg_location + '?token={}'
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
 
         organization = user.organization
-        registered_emails = CoreUser.objects.filter(email__in=email_addresses).values_list('email', flat=True)
+        registered_emails = CoreUser.objects.filter(
+            email__in=email_addresses
+        ).values_list('email', flat=True)
 
         links = []
         for email_address in email_addresses:
@@ -180,21 +207,23 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 # create the used context for the E-mail templates
                 context = {
                     'invitation_link': invitation_link,
-                    'org_admin_name': user.name
-                    if hasattr(user, 'coreuser') else '',
-                    'organization_name': organization.name
-                    if organization else ''
+                    'org_admin_name': user.name if hasattr(user, 'coreuser') else '',
+                    'organization_name': organization.name if organization else '',
                 }
                 subject = 'Application Access'  # TODO we need to make this dynamic
                 template_name = 'email/coreuser/invitation.txt'
                 html_template_name = 'email/coreuser/invitation.html'
-                send_email(email_address, subject, context, template_name, html_template_name)
+                send_email(
+                    email_address, subject, context, template_name, html_template_name
+                )
 
         return links
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordSerializer,
-                         responses=COREUSER_RESETPASS_RESPONSE)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordSerializer,
+        responses=COREUSER_RESETPASS_RESPONSE,
+    )
     @action(methods=['POST'], detail=False)
     def reset_password(self, request, *args, **kwargs):
         """
@@ -210,26 +239,27 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 'detail': 'The reset password link was sent successfully.',
                 'count': count,
             },
-            status=status.HTTP_200_OK)
+            status=status.HTTP_200_OK,
+        )
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordCheckSerializer,
-                         responses=SUCCESS_RESPONSE)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordCheckSerializer,
+        responses=SUCCESS_RESPONSE,
+    )
     @action(methods=['POST'], detail=False)
     def reset_password_check(self, request, *args, **kwargs):
         """
         This endpoint is used to check that token is valid.
         """
         serializer = self.get_serializer(data=request.data)
-        return Response(
-            {
-                'success': serializer.is_valid(),
-            },
-            status=status.HTTP_200_OK)
+        return Response({'success': serializer.is_valid()}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordConfirmSerializer,
-                         responses=DETAIL_RESPONSE)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordConfirmSerializer,
+        responses=DETAIL_RESPONSE,
+    )
     @action(methods=['POST'], detail=False)
     def reset_password_confirm(self, request, *args, **kwargs):
         """
@@ -239,10 +269,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {
-                'detail': 'The password was changed successfully.',
-            },
-            status=status.HTTP_200_OK)
+            {'detail': 'The password was changed successfully.'},
+            status=status.HTTP_200_OK,
+        )
 
     def get_serializer_class(self):
         action_ = getattr(self, 'action', 'default')
@@ -251,12 +280,14 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     def get_permissions(self):
         if hasattr(self, 'action'):
             # different permissions when creating a new user or resetting password
-            if self.action in ['create',
-                               'reset_password',
-                               'reset_password_check',
-                               'reset_password_confirm',
-                               'invite_check',
-                               'update_profile']:
+            if self.action in [
+                'create',
+                'reset_password',
+                'reset_password_check',
+                'reset_password_confirm',
+                'invite_check',
+                'update_profile',
+            ]:
                 return [permissions.AllowAny()]
 
             if self.action in ['update', 'partial_update', 'invite']:
@@ -271,9 +302,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserEmailAlertSerializer,
-                         responses=SUCCESS_RESPONSE)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserEmailAlertSerializer,
+        responses=SUCCESS_RESPONSE,
+    )
     @action(methods=['POST'], detail=False)
     def alert(self, request, *args, **kwargs):
         """
@@ -295,35 +328,46 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 # message['date_time'] = time_tuple.replace(tzinfo=tz.gettz('UTC'))
                 subject = '{} Alert'.format(message['parameter'].capitalize())
                 if message.get('shipment_id'):
-                    message['shipment_url'] = urljoin(settings.FRONTEND_URL,
-                                                  '/app/shipment/edit/:'+str(message['shipment_id']))
+                    message['shipment_url'] = urljoin(
+                        settings.FRONTEND_URL,
+                        '/app/shipment/edit/:' + str(message['shipment_id']),
+                    )
                 else:
                     message['shipment_url'] = None
                 message['color'] = color_codes.get(message['severity'])
-                context = {
-                    'message': message,
-                }
+                context = {'message': message}
                 template_name = 'email/coreuser/shipment_alert.txt'
                 html_template_name = 'email/coreuser/shipment_alert.html'
                 # TODO send email via preferences
-                core_users = CoreUser.objects.filter(organization__organization_uuid=org_uuid)
+                core_users = CoreUser.objects.filter(
+                    organization__organization_uuid=org_uuid
+                )
                 for user in core_users:
                     email_address = user.email
                     preferences = user.email_preferences
-                    if preferences and (preferences.get('environmental', None) or preferences.get('geofence', None)):
+                    if preferences and (
+                        preferences.get('environmental', None)
+                        or preferences.get('geofence', None)
+                    ):
                         # user_timezone = user.user_timezone
                         # if user_timezone:
                         #     local_zone = tz.gettz(user_timezone)
                         #     message['date_time'] = message['date_time'].astimezone(local_zone)
                         # else:
                         #     message['date_time'] = time_tuple.strftime("%B %d, %Y, %I:%M %p")+" (UTC)"
-                        send_email(email_address, subject, context, template_name, html_template_name)
+                        send_email(
+                            email_address,
+                            subject,
+                            context,
+                            template_name,
+                            html_template_name,
+                        )
         except Exception as ex:
             print('Exception: ', ex)
         return Response(
-            {
-                'detail': 'The alert messages were sent successfully on email.',
-            }, status=status.HTTP_200_OK)
+            {'detail': 'The alert messages were sent successfully on email.'},
+            status=status.HTTP_200_OK,
+        )
         # This code is commented out as in future, It will need to impliment message service.
         # for phone in phones:
         #     phone_number = phone
@@ -350,8 +394,4 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return Response(serializer.data)
 
 
-color_codes = {
-    'error': '#cc3300',
-    'info': '#2196F3',
-    'success': '#339900'
-}
+color_codes = {'error': '#cc3300', 'info': '#2196F3', 'success': '#339900'}

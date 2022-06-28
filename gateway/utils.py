@@ -14,8 +14,19 @@ from workflow import views as wfv
 from workflow import models as wfm
 
 from . import exceptions
-from core.models import CoreUser, LogicModule, Organization, OrganizationType, Consortium
-from core.views import CoreUserViewSet, OrganizationViewSet, OrganizationTypeViewSet, ConsortiumViewSet
+from core.models import (
+    CoreUser,
+    LogicModule,
+    Organization,
+    OrganizationType,
+    Consortium,
+)
+from core.views import (
+    CoreUserViewSet,
+    OrganizationViewSet,
+    OrganizationTypeViewSet,
+    ConsortiumViewSet,
+)
 
 
 SWAGGER_LOOKUP_FIELD = 'swagger'
@@ -40,8 +51,12 @@ def get_swagger_url_by_logic_module(module: LogicModule) -> str:
     :param LogicModule module: the logic module (service)
     :return: OpenAPI schema URL for the logic module
     """
-    swagger_lookup = module.docs_endpoint if module.docs_endpoint else SWAGGER_LOOKUP_PATH
-    return '{}/{}/{}.{}'.format(module.endpoint, swagger_lookup, SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT)
+    swagger_lookup = (
+        module.docs_endpoint if module.docs_endpoint else SWAGGER_LOOKUP_PATH
+    )
+    return '{}/{}/{}.{}'.format(
+        module.endpoint, swagger_lookup, SWAGGER_LOOKUP_FIELD, SWAGGER_LOOKUP_FORMAT
+    )
 
 
 def get_swagger_urls() -> Dict[str, str]:
@@ -72,10 +87,10 @@ def get_swagger_from_url(api_url: str):
         return requests.get(api_url)
     except requests.exceptions.ConnectTimeout as error:
         raise TimeoutError(
-            f'Connection timed out. Please, check that {api_url} is accessible.') from error
+            f'Connection timed out. Please, check that {api_url} is accessible.'
+        ) from error
     except requests.exceptions.ConnectionError as error:
-        raise ConnectionError(
-            f'Please, check that {api_url} is accessible.') from error
+        raise ConnectionError(f'Please, check that {api_url} is accessible.') from error
 
 
 def validate_object_access(request: Request, obj):
@@ -93,7 +108,8 @@ def validate_object_access(request: Request, obj):
     except KeyError:
         logging.critical(f'{model} needs to be added to MODEL_VIEWSETS_DICT')
         raise exceptions.GatewayError(
-            msg=f'{model} not defined for object access lookup.')
+            msg=f'{model} not defined for object access lookup.'
+        )
     else:
         viewset.request = request
         viewset.check_object_permissions(request, obj)
@@ -103,6 +119,7 @@ class ObjectAccessValidator:
     """
     Create an instance of this class to validate access to an object
     """
+
     def __init__(self, request: Request):
         self._request = request
 
@@ -114,6 +131,7 @@ class GatewayJSONEncoder(json.JSONEncoder):
     """
     JSON encoder for API Gateway
     """
+
     def default(self, obj):
         """
         JSON doesn't have a default datetime and UUID type, so this is why
@@ -133,7 +151,9 @@ class GatewayJSONEncoder(json.JSONEncoder):
 
 
 def valid_uuid4(uuid_string):
-    uuid4hex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z',  # noqa
-                          re.I)
+    uuid4hex = re.compile(
+        '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z',  # noqa
+        re.I,
+    )
     match = uuid4hex.match(uuid_string)
     return bool(match)

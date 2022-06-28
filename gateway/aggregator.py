@@ -28,19 +28,25 @@ class SwaggerAggregator(object):
                     # Get the swagger.json
                     try:
                         # Use stored specification of the module
-                        spec_dict = LogicModule.objects.values_list(
-                            'api_specification', flat=True).filter(endpoint_name=endpoint_name).first()
+                        spec_dict = (
+                            LogicModule.objects.values_list(
+                                'api_specification', flat=True
+                            )
+                            .filter(endpoint_name=endpoint_name)
+                            .first()
+                        )
 
                         # Pull specification of the module from its service and store it
                         if spec_dict is None:
                             response = utils.get_swagger_from_url(schema_url)
                             spec_dict = response.json()
-                            LogicModule.objects.filter(endpoint_name=endpoint_name).update(
-                                api_specification=spec_dict)
+                            LogicModule.objects.filter(
+                                endpoint_name=endpoint_name
+                            ).update(api_specification=spec_dict)
 
                         swagger_apis[endpoint_name] = {
                             'spec': spec_dict,
-                            'url': schema_url
+                            'url': schema_url,
                         }
                     except ConnectionError as error:
                         logger.warning(error)
@@ -50,8 +56,7 @@ class SwaggerAggregator(object):
                         logger.info('Cannot remove {} from errors'.format(schema_url))
         return swagger_apis
 
-    def _update_specification(self, name: str, api_name: str,
-                              api_spec: dict) -> dict:
+    def _update_specification(self, name: str, api_name: str, api_spec: dict) -> dict:
         """
         Update names of the specification of a service's API
 
@@ -83,19 +88,23 @@ class SwaggerAggregator(object):
             'consumes': self.configuration.get('consumes', None),
             'produces': self.configuration.get('produces', None),
             'definitions': {},
-            'paths': {}
+            'paths': {},
         }
 
         swagger_apis = self.get_aggregate_swagger()
         for api, api_spec in swagger_apis.items():
             # Rename definition to avoid collision.
-            api_spec['spec'] = json.loads(json.dumps(api_spec['spec']).replace(
-                '#/definitions/', u'#/definitions/{}'.format(api)))
+            api_spec['spec'] = json.loads(
+                json.dumps(api_spec['spec']).replace(
+                    '#/definitions/', u'#/definitions/{}'.format(api)
+                )
+            )
 
             # update the definitions
             if 'definitions' in api_spec['spec']:
-                basic_swagger['definitions'].update(self._update_specification(
-                    'definitions', api, api_spec))
+                basic_swagger['definitions'].update(
+                    self._update_specification('definitions', api, api_spec)
+                )
 
             # update the paths to match with the gateway
             if 'paths' in api_spec['spec']:
@@ -103,8 +112,9 @@ class SwaggerAggregator(object):
                     basic_swagger['paths'].update(api_spec['spec']['paths'])
                 else:
                     api_name = '/{}'.format(api)
-                    basic_swagger['paths'].update(self._update_specification(
-                        'paths', api_name, api_spec))
+                    basic_swagger['paths'].update(
+                        self._update_specification('paths', api_name, api_spec)
+                    )
 
         return basic_swagger
 
@@ -121,7 +131,8 @@ class SwaggerAggregator(object):
                 if 'operationId' in action_spec:
                     current_op_id = action_spec['operationId']
                     action_spec['operationId'] = '{}.{}'.format(
-                        service_name, current_op_id)
+                        service_name, current_op_id
+                    )
 
     def generate_swagger(self):
         """

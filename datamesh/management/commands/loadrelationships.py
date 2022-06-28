@@ -27,7 +27,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         """Add --file argument to Command."""
         parser.add_argument(
-            '--file', default=None, nargs='?', help='Path of file to import.',
+            '--file', default=None, nargs='?', help='Path of file to import.'
         )
 
     def handle(self, *args, **options):
@@ -58,7 +58,7 @@ class Command(BaseCommand):
         relationship, _ = Relationship.objects.get_or_create(
             origin_model=origin_model,
             related_model=related_model,
-            key='contact_siteprofile_relationship'
+            key='contact_siteprofile_relationship',
         )
         eligible_join_records = []
         # create JoinRecords with contact.id and siteprofile_uuid for all contacts
@@ -78,11 +78,15 @@ class Command(BaseCommand):
                     relationship=relationship,
                     record_uuid=contact['pk'],
                     related_record_uuid=siteprofile_uuid,
-                    defaults={'organization': organization}
+                    defaults={'organization': organization},
                 )
                 print(join_record)
                 eligible_join_records.append(join_record.pk)
         print(f'{self.counter} Contacts parsed and written to the JoinRecords.')
         # delete not eligible JoinRecords in this relationship
-        deleted, _ = JoinRecord.objects.exclude(pk__in=eligible_join_records).filter(relationship=relationship).delete()
+        deleted, _ = (
+            JoinRecord.objects.exclude(pk__in=eligible_join_records)
+            .filter(relationship=relationship)
+            .delete()
+        )
         print(f'{deleted} JoinRecord(s) deleted.')

@@ -20,20 +20,21 @@ class IsSuperUserOrReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return (
-                request.method in permissions.SAFE_METHODS or
-                request.user and
-                request.user.is_authenticated and
-                request.user.is_superuser
+            request.method in permissions.SAFE_METHODS
+            or request.user
+            and request.user.is_authenticated
+            and request.user.is_superuser
         )
 
 
 class CoreGroupsPermissions(permissions.BasePermission):
-
     def _get_workflowlevel(self, view, request_data, field_name):
         wflvl_serializer = view.serializer_class().get_fields()[field_name]
 
         # Check if the field is Many-To-Many or not
-        if wflvl_serializer.__class__ == ManyRelatedField and isinstance(request_data, QueryDict):
+        if wflvl_serializer.__class__ == ManyRelatedField and isinstance(
+            request_data, QueryDict
+        ):
             primitive_value = request_data.getlist(field_name)
         else:
             primitive_value = request_data.get(field_name)
@@ -57,23 +58,36 @@ class CoreGroupsPermissions(permissions.BasePermission):
             return True
 
         # TODO: check if we can optimize following query using 'through' M2M Models
-        user_groups = request.user.core_groups.prefetch_related('workflowlevel1s', 'workflowlevel2s')
+        user_groups = request.user.core_groups.prefetch_related(
+            'workflowlevel1s', 'workflowlevel2s'
+        )
 
         # sort up permissions into more convenient way (default is read-only '0100')
         viewonly_display_permissions = '{0:04b}'.format(PERMISSIONS_VIEW_ONLY)
-        global_permissions, org_permissions = viewonly_display_permissions, viewonly_display_permissions
+        global_permissions, org_permissions = (
+            viewonly_display_permissions,
+            viewonly_display_permissions,
+        )
         wl1_permissions = defaultdict(lambda: viewonly_display_permissions)
         wl2_permissions = defaultdict(lambda: viewonly_display_permissions)
         for group in user_groups:
             if group.is_global:
-                global_permissions = merge_permissions(global_permissions, group.display_permissions)
+                global_permissions = merge_permissions(
+                    global_permissions, group.display_permissions
+                )
             elif group.is_org_level:
-                org_permissions = merge_permissions(org_permissions, group.display_permissions)
+                org_permissions = merge_permissions(
+                    org_permissions, group.display_permissions
+                )
             else:
                 for wl1 in group.workflowlevel1s.all():
-                    wl1_permissions[wl1.pk] = merge_permissions(wl1_permissions[wl1.pk], group.display_permissions)
+                    wl1_permissions[wl1.pk] = merge_permissions(
+                        wl1_permissions[wl1.pk], group.display_permissions
+                    )
                 for wl2 in group.workflowlevel2s.all():
-                    wl2_permissions[wl2.pk] = merge_permissions(wl2_permissions[wl2.pk], group.display_permissions)
+                    wl2_permissions[wl2.pk] = merge_permissions(
+                        wl2_permissions[wl2.pk], group.display_permissions
+                    )
 
         action = view.action
         if has_permission(global_permissions, action):
@@ -90,7 +104,9 @@ class CoreGroupsPermissions(permissions.BasePermission):
                 if data.get('workflowlevel1'):
                     wflvl1 = self._get_workflowlevel(view, data, 'workflowlevel1')
                 else:
-                    wflvl1 = self._get_workflowlevel1_from_level2(data['workflowlevel2'])
+                    wflvl1 = self._get_workflowlevel1_from_level2(
+                        data['workflowlevel2']
+                    )
 
                 if not wflvl1:
                     return False
@@ -114,16 +130,19 @@ class CoreGroupsPermissions(permissions.BasePermission):
         :param view:
         :return: QuerySet
         """
-        assert hasattr(view, 'get_queryset') or getattr(view, 'queryset', None) is not None, (
+        assert (
+            hasattr(view, 'get_queryset') or getattr(view, 'queryset', None) is not None
+        ), (
             'Cannot apply {} on a view that does not set '
             '`.queryset` or have a `.get_queryset()` method.'
-        ).format(self.__class__.__name__)
+        ).format(
+            self.__class__.__name__
+        )
 
         if hasattr(view, 'get_queryset'):
             queryset = view.get_queryset()
-            assert queryset is not None, (
-                '{}.get_queryset() returned None'.format(
-                    view.__class__.__name__)
+            assert queryset is not None, '{}.get_queryset() returned None'.format(
+                view.__class__.__name__
             )
             return queryset
 
@@ -147,7 +166,9 @@ class CoreGroupsPermissions(permissions.BasePermission):
             # Permissions on WorkflowLevel1 itself are defined by Org-level permissions
             groups = request.user.core_groups.filter(is_org_level=True)
         elif hasattr(obj, 'workflowlevel1'):
-            groups = request.user.core_groups.all().intersection(obj.workflowlevel1.core_groups.all())
+            groups = request.user.core_groups.all().intersection(
+                obj.workflowlevel1.core_groups.all()
+            )
         else:
             return True
 

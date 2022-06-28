@@ -11,8 +11,12 @@ from django.shortcuts import render_to_response
 from rest_framework.reverse import reverse
 
 from social_core.exceptions import AuthFailed
-from social_core.utils import (partial_pipeline_data, setting_url,
-                               user_is_active, user_is_authenticated)
+from social_core.utils import (
+    partial_pipeline_data,
+    setting_url,
+    user_is_active,
+    user_is_authenticated,
+)
 from social_django.utils import psa
 
 from core.exceptions import SocialAuthFailed, SocialAuthNotConfigured
@@ -60,7 +64,9 @@ def oauth_complete(request, backend, *args, **kwargs):
         if backend not in settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS:
             raise SocialAuthNotConfigured(f'The backend {backend} is not supported.')
         elif not settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS.get(backend):
-            raise SocialAuthNotConfigured(f'A redirect URL for the backend {backend} was not defined.')
+            raise SocialAuthNotConfigured(
+                f'A redirect URL for the backend {backend} was not defined.'
+            )
 
         # prepare request to validate code
         data = request.backend.strategy.request_data()
@@ -86,7 +92,9 @@ def oauth_complete(request, backend, *args, **kwargs):
             tokens = generate_access_tokens(request, user)
             return JsonResponse(data=tokens, status=200)
         else:
-            url = setting_url(request.backend, 'INACTIVE_USER_URL', 'LOGIN_ERROR_URL', 'LOGIN_URL')
+            url = setting_url(
+                request.backend, 'INACTIVE_USER_URL', 'LOGIN_ERROR_URL', 'LOGIN_URL'
+            )
     else:
         url = setting_url(request.backend, 'LOGIN_ERROR_URL', 'LOGIN_URL')
 

@@ -13,15 +13,24 @@ from .utils import AiohttpResponseMock, create_aiohttp_session_mock
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-@pytest.mark.parametrize("content,content_type", [
-    (b'{"details": "IT IS A TEST"}', 'application/json'),
-    (b'IT IS A TEST', 'text/html; charset=utf-8'),
-    (None, 'application/octet-stream'), ]
+@pytest.mark.parametrize(
+    "content,content_type",
+    [
+        (b'{"details": "IT IS A TEST"}', 'application/json'),
+        (b'IT IS A TEST', 'text/html; charset=utf-8'),
+        (None, 'application/octet-stream'),
+    ],
 )
 @pytest.mark.django_db()
 @patch('gateway.request.aiohttp.ClientSession')
-def test_make_service_request_data_and_raw(client_session_mock, auth_api_client, logic_module, content, content_type,
-                                           event_loop):
+def test_make_service_request_data_and_raw(
+    client_session_mock,
+    auth_api_client,
+    logic_module,
+    content,
+    content_type,
+    event_loop,
+):
     url = f'/async/{logic_module.endpoint_name}/thumbnail/1/'
 
     # mock aiohttp responses
@@ -29,12 +38,24 @@ def test_make_service_request_data_and_raw(client_session_mock, auth_api_client,
         swagger_body = r.read()
 
     responses = [
-        AiohttpResponseMock(method='GET', url=f'{logic_module.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{logic_module.endpoint}/thumbnail/1/', status=200, body=content,
-                            headers={'Content-Type': content_type}),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{logic_module.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{logic_module.endpoint}/thumbnail/1/',
+            status=200,
+            body=content,
+            headers={'Content-Type': content_type},
+        ),
     ]
-    client_session_mock.return_value = create_aiohttp_session_mock(responses, loop=event_loop)
+    client_session_mock.return_value = create_aiohttp_session_mock(
+        responses, loop=event_loop
+    )
 
     # make api request
     response = auth_api_client.get(url)
@@ -50,8 +71,9 @@ def test_make_service_request_data_and_raw(client_session_mock, auth_api_client,
 
 @pytest.mark.django_db()
 @patch('gateway.request.aiohttp.ClientSession')
-def test_make_service_request_to_unexisting_list_endpoint(client_session_mock, auth_api_client, logic_module,
-                                                          event_loop):
+def test_make_service_request_to_unexisting_list_endpoint(
+    client_session_mock, auth_api_client, logic_module, event_loop
+):
 
     url = f'/async/{logic_module.endpoint_name}/nowhere/'
 
@@ -59,10 +81,17 @@ def test_make_service_request_to_unexisting_list_endpoint(client_session_mock, a
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
         swagger_body = r.read()
     responses = [
-        AiohttpResponseMock(method='GET', url=f'{logic_module.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_body, headers={'Content-Type': 'application/json'}),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{logic_module.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_body,
+            headers={'Content-Type': 'application/json'},
+        )
     ]
-    client_session_mock.return_value = create_aiohttp_session_mock(responses, loop=event_loop)
+    client_session_mock.return_value = create_aiohttp_session_mock(
+        responses, loop=event_loop
+    )
 
     # make api request
     response = auth_api_client.get(url)
@@ -76,8 +105,9 @@ def test_make_service_request_to_unexisting_list_endpoint(client_session_mock, a
 
 @pytest.mark.django_db()
 @patch('gateway.request.aiohttp.ClientSession')
-def test_make_service_request_to_unexisting_detail_endpoint(client_session_mock, auth_api_client, logic_module,
-                                                            event_loop):
+def test_make_service_request_to_unexisting_detail_endpoint(
+    client_session_mock, auth_api_client, logic_module, event_loop
+):
 
     url = f'/async/{logic_module.endpoint_name}/nowhere/123/'
 
@@ -85,10 +115,17 @@ def test_make_service_request_to_unexisting_detail_endpoint(client_session_mock,
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
         swagger_body = r.read()
     responses = [
-        AiohttpResponseMock(method='GET', url=f'{logic_module.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_body, headers={'Content-Type': 'application/json'}),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{logic_module.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_body,
+            headers={'Content-Type': 'application/json'},
+        )
     ]
-    client_session_mock.return_value = create_aiohttp_session_mock(responses, loop=event_loop)
+    client_session_mock.return_value = create_aiohttp_session_mock(
+        responses, loop=event_loop
+    )
 
     # make api request
     response = auth_api_client.get(url)
@@ -97,40 +134,76 @@ def test_make_service_request_to_unexisting_detail_endpoint(client_session_mock,
     assert response.status_code == 404
     assert response.has_header('Content-Type')
     assert response.get('Content-Type') == 'application/json'
-    assert json.loads(response.content)['detail'] == "Endpoint not found: GET /nowhere/{id}/"
+    assert (
+        json.loads(response.content)['detail']
+        == "Endpoint not found: GET /nowhere/{id}/"
+    )
 
 
 @pytest.mark.django_db()
 @patch('gateway.request.aiohttp.ClientSession')
-def test_make_service_request_with_datamesh_detailed(client_session_mock, auth_api_client, datamesh, event_loop):
+def test_make_service_request_with_datamesh_detailed(
+    client_session_mock, auth_api_client, datamesh, event_loop
+):
     lm1, lm2, relationship = datamesh
-    factories.JoinRecord(relationship=relationship,
-                         record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
-                         related_record_id=1, related_record_uuid=None)
+    factories.JoinRecord(
+        relationship=relationship,
+        record_id=None,
+        record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
+        related_record_id=1,
+        related_record_uuid=None,
+    )
 
-    url = f'/async/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
+    url = (
+        f'/async/{lm1.endpoint_name}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/'
+    )
 
     # mock aiohttp responses
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_location.json'), 'rb') as r:
         swagger_location_body = r.read()
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
         swagger_documents_body = r.read()
-    with open(os.path.join(CURRENT_PATH, 'fixtures/data_detail_siteprofile.json'), 'rb') as r:
+    with open(
+        os.path.join(CURRENT_PATH, 'fixtures/data_detail_siteprofile.json'), 'rb'
+    ) as r:
         data_location_body = r.read()
-    with open(os.path.join(CURRENT_PATH, 'fixtures/data_detail_document.json'), 'rb') as r:
+    with open(
+        os.path.join(CURRENT_PATH, 'fixtures/data_detail_document.json'), 'rb'
+    ) as r:
         data_documents_body = r.read()
     responses = [
-        AiohttpResponseMock(method='GET', url=f'{lm1.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_location_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{lm2.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_documents_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{lm1.endpoint}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/',
-                            status=200,
-                            body=data_location_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{lm2.endpoint}/documents/1/', status=200,
-                            body=data_documents_body, headers={'Content-Type': 'application/json'}),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm1.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_location_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm2.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_documents_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm1.endpoint}/siteprofiles/19a7f600-74a0-4123-9be5-dfa69aa172cc/',
+            status=200,
+            body=data_location_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm2.endpoint}/documents/1/',
+            status=200,
+            body=data_documents_body,
+            headers={'Content-Type': 'application/json'},
+        ),
     ]
-    client_session_mock.return_value = create_aiohttp_session_mock(responses, loop=event_loop)
+    client_session_mock.return_value = create_aiohttp_session_mock(
+        responses, loop=event_loop
+    )
 
     # make api request
     response = auth_api_client.get(url, {'join': 'true'})
@@ -146,11 +219,17 @@ def test_make_service_request_with_datamesh_detailed(client_session_mock, auth_a
 
 @pytest.mark.django_db()
 @patch('gateway.request.aiohttp.ClientSession')
-def test_make_service_request_with_datamesh_list(client_session_mock, auth_api_client, datamesh, event_loop):
+def test_make_service_request_with_datamesh_list(
+    client_session_mock, auth_api_client, datamesh, event_loop
+):
     lm1, lm2, relationship = datamesh
-    factories.JoinRecord(relationship=relationship,
-                         record_id=None, record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
-                         related_record_id=1, related_record_uuid=None)
+    factories.JoinRecord(
+        relationship=relationship,
+        record_id=None,
+        record_uuid='19a7f600-74a0-4123-9be5-dfa69aa172cc',
+        related_record_id=1,
+        related_record_uuid=None,
+    )
 
     url = f'/async/{lm1.endpoint_name}/siteprofiles/'
 
@@ -159,21 +238,47 @@ def test_make_service_request_with_datamesh_list(client_session_mock, auth_api_c
         swagger_location_body = r.read()
     with open(os.path.join(CURRENT_PATH, 'fixtures/swagger_documents.json'), 'rb') as r:
         swagger_documents_body = r.read()
-    with open(os.path.join(CURRENT_PATH, 'fixtures/data_list_siteprofile.json'), 'rb') as r:
+    with open(
+        os.path.join(CURRENT_PATH, 'fixtures/data_list_siteprofile.json'), 'rb'
+    ) as r:
         data_location_body = r.read()
-    with open(os.path.join(CURRENT_PATH, 'fixtures/data_detail_document.json'), 'rb') as r:
+    with open(
+        os.path.join(CURRENT_PATH, 'fixtures/data_detail_document.json'), 'rb'
+    ) as r:
         data_documents_body = r.read()
     responses = [
-        AiohttpResponseMock(method='GET', url=f'{lm1.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_location_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{lm2.endpoint}/docs/swagger.json', status=200,
-                            body=swagger_documents_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{lm1.endpoint}/siteprofiles/', status=200,
-                            body=data_location_body, headers={'Content-Type': 'application/json'}),
-        AiohttpResponseMock(method='GET', url=f'{lm2.endpoint}/documents/1/', status=200,
-                            body=data_documents_body, headers={'Content-Type': 'application/json'}),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm1.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_location_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm2.endpoint}/docs/swagger.json',
+            status=200,
+            body=swagger_documents_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm1.endpoint}/siteprofiles/',
+            status=200,
+            body=data_location_body,
+            headers={'Content-Type': 'application/json'},
+        ),
+        AiohttpResponseMock(
+            method='GET',
+            url=f'{lm2.endpoint}/documents/1/',
+            status=200,
+            body=data_documents_body,
+            headers={'Content-Type': 'application/json'},
+        ),
     ]
-    client_session_mock.return_value = create_aiohttp_session_mock(responses, loop=event_loop)
+    client_session_mock.return_value = create_aiohttp_session_mock(
+        responses, loop=event_loop
+    )
 
     # make api request
     response = auth_api_client.get(url, {'join': 'true'})

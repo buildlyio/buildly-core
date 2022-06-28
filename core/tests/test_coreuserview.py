@@ -14,7 +14,13 @@ import factories
 from core.models import CoreUser, EmailTemplate, TEMPLATE_RESET_PASSWORD
 from core.views import CoreUserViewSet
 from core.jwt_utils import create_invitation_token
-from core.tests.fixtures import TEST_USER_DATA, org_admin, org_member, org, reset_password_request
+from core.tests.fixtures import (
+    TEST_USER_DATA,
+    org_admin,
+    org_member,
+    org,
+    reset_password_request,
+)
 
 
 @pytest.mark.django_db()
@@ -51,8 +57,7 @@ def test_coreuser_views_permissions_unauth(request_factory):
 
     # has no permission
     request = request_factory.patch(reverse('coreuser-detail', args=(1,)))
-    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
-                                                                    pk=1)
+    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=1)
     assert response.status_code == 403
 
 
@@ -87,14 +92,12 @@ def test_coreuser_views_permissions_org_member(request_factory, org_member):
     # has no permission
     request = request_factory.patch(reverse('coreuser-detail', args=(1,)))
     request.user = org_member
-    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request,
-                                                                    pk=1)
+    response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=1)
     assert response.status_code == 403
 
 
 @pytest.mark.django_db()
 class TestCoreUserCreate:
-
     def test_registration_fail(self, request_factory):
         # check that 'password' and 'organization name' fields are required
         for field_name in ['password', 'organization_name']:
@@ -155,7 +158,9 @@ class TestCoreUserCreate:
 
     def test_reused_token_invalidation(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
-        registered_user = factories.CoreUser.create(is_active=False, email=data['email'], username='user_org')
+        registered_user = factories.CoreUser.create(
+            is_active=False, email=data['email'], username='user_org'
+        )
         token = create_invitation_token(data['email'], org_admin.organization)
         data['invitation_token'] = token
 
@@ -174,7 +179,9 @@ class TestCoreUserCreate:
 
     def test_registration_with_core_groups(self, request_factory, org_admin):
         data = TEST_USER_DATA.copy()
-        groups = factories.CoreGroup.create_batch(2, organization=org_admin.organization)
+        groups = factories.CoreGroup.create_batch(
+            2, organization=org_admin.organization
+        )
         data['core_groups'] = [item.pk for item in groups]
         request = request_factory.post(reverse('coreuser-list'), data)
         response = CoreUserViewSet.as_view({'post': 'create'})(request)
@@ -187,14 +194,13 @@ class TestCoreUserCreate:
 
 @pytest.mark.django_db()
 class TestCoreUserUpdate:
-
     def test_coreuser_update(self, request_factory, org_admin):
-        user = factories.CoreUser.create(is_active=False, organization=org_admin.organization, username='org_user')
+        user = factories.CoreUser.create(
+            is_active=False, organization=org_admin.organization, username='org_user'
+        )
         pk = user.pk
 
-        data = {
-            'is_active': True,
-        }
+        data = {'is_active': True}
         request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
         request.user = org_admin
         response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
@@ -204,27 +210,29 @@ class TestCoreUserUpdate:
 
     def test_coreuser_update_dif_org(self, request_factory, org_admin):
         dif_org = factories.Organization(name='Another Org')
-        user = factories.CoreUser.create(is_active=False, organization=dif_org, username='another_org_user')
+        user = factories.CoreUser.create(
+            is_active=False, organization=dif_org, username='another_org_user'
+        )
         pk = user.pk
 
-        data = {
-            'is_active': True,
-        }
+        data = {'is_active': True}
         request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
         request.user = org_admin
         response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
         assert response.status_code == 403
 
     def test_coreuser_update_groups(self, request_factory, org_admin):
-        user = factories.CoreUser.create(is_active=False, organization=org_admin.organization, username='user_org')
-        initial_groups = factories.CoreGroup.create_batch(2, organization=user.organization)
+        user = factories.CoreUser.create(
+            is_active=False, organization=org_admin.organization, username='user_org'
+        )
+        initial_groups = factories.CoreGroup.create_batch(
+            2, organization=user.organization
+        )
         user.core_groups.add(*initial_groups)
         pk = user.pk
 
         new_groups = factories.CoreGroup.create_batch(2, organization=user.organization)
-        data = {
-            'core_groups': [item.pk for item in new_groups],
-        }
+        data = {'core_groups': [item.pk for item in new_groups]}
         request = request_factory.patch(reverse('coreuser-detail', args=(pk,)), data)
         request.user = org_admin
         response = CoreUserViewSet.as_view({'patch': 'partial_update'})(request, pk=pk)
@@ -235,7 +243,6 @@ class TestCoreUserUpdate:
 
 @pytest.mark.django_db()
 class TestCoreUserInvite:
-
     def test_invitation(self, request_factory, org_admin):
         data = {'emails': [TEST_USER_DATA['email']]}
         request = request_factory.post(reverse('coreuser-invite'), data)
@@ -246,28 +253,39 @@ class TestCoreUserInvite:
 
     def test_invitation_check(self, request_factory, org):
         token = create_invitation_token(TEST_USER_DATA['email'], org)
-        request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
+        request = request_factory.get(
+            reverse('coreuser-invite-check'), {'token': token}
+        )
         response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
         assert response.status_code == 200
         assert response.data['email'] == TEST_USER_DATA['email']
-        assert response.data['organization']['organization_uuid'] == org.organization_uuid
+        assert (
+            response.data['organization']['organization_uuid'] == org.organization_uuid
+        )
 
     def test_prevent_token_reuse(self, request_factory, org):
         token = create_invitation_token(TEST_USER_DATA['email'], org)
-        registered_user = factories.CoreUser.create(is_active=False, email=TEST_USER_DATA['email'], username='user_org')
-        request = request_factory.get(reverse('coreuser-invite-check'), {'token': token})
+        registered_user = factories.CoreUser.create(
+            is_active=False, email=TEST_USER_DATA['email'], username='user_org'
+        )
+        request = request_factory.get(
+            reverse('coreuser-invite-check'), {'token': token}
+        )
         response = CoreUserViewSet.as_view({'get': 'invite_check'})(request)
         assert response.status_code == 401
 
 
 @pytest.mark.django_db()
 class TestResetPassword(object):
-
-    def test_reset_password_using_default_emailtemplate(self, request_factory, org_member):
+    def test_reset_password_using_default_emailtemplate(
+        self, request_factory, org_member
+    ):
         email = org_member.email
         assert list(org_member.organization.emailtemplate_set.all()) == []
         # assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == [] -- Removed this assertion to support organization name here
-        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
+        request = request_factory.post(
+            reverse('coreuser-reset-password'), {'email': email}
+        )
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
         assert response.data['count'] == 1
@@ -276,7 +294,9 @@ class TestResetPassword(object):
         message = mail.outbox[0]
         assert message.to == [email]
 
-        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = urljoin(
+            settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH
+        )
         uid = urlsafe_base64_encode(force_bytes(org_member.pk))
         token = default_token_generator.make_token(org_member)
         assert f'{resetpass_url}{uid}/{token}/' in message.body
@@ -292,10 +312,12 @@ class TestResetPassword(object):
             template="""
                 Custom template
                 {{ password_reset_link }}
-                """
+                """,
         )
 
-        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
+        request = request_factory.post(
+            reverse('coreuser-reset-password'), {'email': email}
+        )
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
         assert response.data['count'] == 1
@@ -304,14 +326,18 @@ class TestResetPassword(object):
         message = mail.outbox[0]
         assert message.to == [email]
 
-        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = urljoin(
+            settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH
+        )
         uid = urlsafe_base64_encode(force_bytes(org_member.pk))
         token = default_token_generator.make_token(org_member)
         assert message.subject == 'Custom subject'
         assert 'Custom template' in message.body
         assert f'{resetpass_url}{uid}/{token}/' in message.body
 
-    def test_reset_password_using_default_org_template(self, request_factory, org_member):
+    def test_reset_password_using_default_org_template(
+        self, request_factory, org_member
+    ):
         email = org_member.email
 
         default_organization = factories.Organization(name=settings.DEFAULT_ORG)
@@ -323,10 +349,12 @@ class TestResetPassword(object):
             template="""
                 Custom template
                 {{ password_reset_link }}
-                """
+                """,
         )
 
-        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
+        request = request_factory.post(
+            reverse('coreuser-reset-password'), {'email': email}
+        )
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
         assert response.data['count'] == 1
@@ -335,7 +363,9 @@ class TestResetPassword(object):
         message = mail.outbox[0]
         assert message.to == [email]
 
-        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = urljoin(
+            settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH
+        )
         uid = urlsafe_base64_encode(force_bytes(org_member.pk))
         token = default_token_generator.make_token(org_member)
         assert message.subject == 'Custom subject'
@@ -343,32 +373,39 @@ class TestResetPassword(object):
         assert f'{resetpass_url}{uid}/{token}/' in message.body
 
     def test_reset_password_no_user(self, request_factory):
-        request = request_factory.post(reverse('coreuser-reset-password'), {'email': 'foo@example.com'})
+        request = request_factory.post(
+            reverse('coreuser-reset-password'), {'email': 'foo@example.com'}
+        )
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
         assert response.data['count'] == 0
 
     def test_reset_password_check(self, request_factory, reset_password_request):
         user, uid, token = reset_password_request
-        data = {
-            'uid': uid,
-            'token': token,
-        }
+        data = {'uid': uid, 'token': token}
         request = request_factory.post(reverse('coreuser-reset-password-check'), data)
         response = CoreUserViewSet.as_view({'post': 'reset_password_check'})(request)
         assert response.status_code == 200
         assert response.data['success'] is True
 
-    def test_reset_password_check_expired(self, request_factory, reset_password_request):
+    def test_reset_password_check_expired(
+        self, request_factory, reset_password_request
+    ):
         user, uid, token = reset_password_request
-        data = {
-            'uid': uid,
-            'token': token,
-        }
-        mock_date = date.today() + timedelta(int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1)
-        with mock.patch('django.contrib.auth.tokens.PasswordResetTokenGenerator._today', return_value=mock_date):
-            request = request_factory.post(reverse('coreuser-reset-password-check'), data)
-            response = CoreUserViewSet.as_view({'post': 'reset_password_check'})(request)
+        data = {'uid': uid, 'token': token}
+        mock_date = date.today() + timedelta(
+            int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1
+        )
+        with mock.patch(
+            'django.contrib.auth.tokens.PasswordResetTokenGenerator._today',
+            return_value=mock_date,
+        ):
+            request = request_factory.post(
+                reverse('coreuser-reset-password-check'), data
+            )
+            response = CoreUserViewSet.as_view({'post': 'reset_password_check'})(
+                request
+            )
             assert response.status_code == 200
             assert response.data['success'] is False
 
@@ -389,7 +426,9 @@ class TestResetPassword(object):
         updated_user = CoreUser.objects.get(pk=user.pk)
         assert updated_user.check_password(test_password)
 
-    def test_reset_password_confirm_diff_passwords(self, request_factory, reset_password_request):
+    def test_reset_password_confirm_diff_passwords(
+        self, request_factory, reset_password_request
+    ):
         test_password1 = '5UU74e7nfU'
         test_password2 = '5UU74e7nfUa'
         user, uid, token = reset_password_request
@@ -401,9 +440,13 @@ class TestResetPassword(object):
         }
         request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
         response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
-        assert response.status_code == 400  # validation error (password fields didn't match)
+        assert (
+            response.status_code == 400
+        )  # validation error (password fields didn't match)
 
-    def test_reset_password_confirm_token_expired(self, request_factory, reset_password_request):
+    def test_reset_password_confirm_token_expired(
+        self, request_factory, reset_password_request
+    ):
         test_password = '5UU74e7nfU'
         user, uid, token = reset_password_request
         data = {
@@ -412,23 +455,53 @@ class TestResetPassword(object):
             'uid': uid,
             'token': token,
         }
-        mock_date = date.today() + timedelta(int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1)
-        with mock.patch('django.contrib.auth.tokens.PasswordResetTokenGenerator._today', return_value=mock_date):
-            request = request_factory.post(reverse('coreuser-reset-password-confirm'), data)
-            response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(request)
-            assert response.status_code == 400  # validation error (the token is expired)
+        mock_date = date.today() + timedelta(
+            int(settings.PASSWORD_RESET_TIMEOUT_DAYS) + 1
+        )
+        with mock.patch(
+            'django.contrib.auth.tokens.PasswordResetTokenGenerator._today',
+            return_value=mock_date,
+        ):
+            request = request_factory.post(
+                reverse('coreuser-reset-password-confirm'), data
+            )
+            response = CoreUserViewSet.as_view({'post': 'reset_password_confirm'})(
+                request
+            )
+            assert (
+                response.status_code == 400
+            )  # validation error (the token is expired)
 
 
 @pytest.mark.django_db()
 class TestCoreUserRead(object):
 
-    keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-            'contact_info','privacy_disclaimer_accepted', 'organization', 'core_groups', 'email_preferences', 'push_preferences', 'user_timezone'}
+    keys = {
+        'id',
+        'core_user_uuid',
+        'first_name',
+        'last_name',
+        'email',
+        'username',
+        'is_active',
+        'title',
+        'contact_info',
+        'privacy_disclaimer_accepted',
+        'organization',
+        'core_groups',
+        'email_preferences',
+        'push_preferences',
+        'user_timezone',
+    }
 
     def test_coreuser_list(self, request_factory, org_member):
-        factories.CoreUser.create(organization=org_member.organization, username='another_user')  # 2nd user of the org
-        factories.CoreUser.create(organization=factories.Organization(name='another otg'),
-                                  username='yet_another_user')  # user of the different org
+        factories.CoreUser.create(
+            organization=org_member.organization, username='another_user'
+        )  # 2nd user of the org
+        factories.CoreUser.create(
+            organization=factories.Organization(name='another otg'),
+            username='yet_another_user',
+        )  # user of the different org
         request = request_factory.get(reverse('coreuser-list'))
         request.user = org_member
         response = CoreUserViewSet.as_view({'get': 'list'})(request)
@@ -438,11 +511,15 @@ class TestCoreUserRead(object):
         assert set(data[0].keys()) == self.keys
 
     def test_coreuser_retrieve(self, request_factory, org_member):
-        core_user = factories.CoreUser.create(organization=org_member.organization, username='another_user')
+        core_user = factories.CoreUser.create(
+            organization=org_member.organization, username='another_user'
+        )
 
         request = request_factory.get(reverse('coreuser-detail', args=(core_user.pk,)))
         request.user = org_member
-        response = CoreUserViewSet.as_view({'get': 'retrieve'})(request, pk=core_user.pk)
+        response = CoreUserViewSet.as_view({'get': 'retrieve'})(
+            request, pk=core_user.pk
+        )
         assert response.status_code == 200
         assert set(response.data.keys()) == self.keys
 

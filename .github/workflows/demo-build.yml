@@ -1,0 +1,52 @@
+name: Build and Push to Demo
+
+on:
+  push:
+    branches:
+      - demo
+
+jobs:
+  build:
+    name: Build and Push to GCR
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: gcr.io/spry-bricolage-298920/transparent-path/buildly-core
+    steps:
+    - uses: actions/checkout@v2
+
+    # Login to docker
+    - name: Docker login
+      uses: docker/login-action@v1
+      with:
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.DEMO_GCR_JSON_KEY }}
+
+    # Build docker image
+    - name: Build docker image
+      run: docker build -t $IMAGE_NAME:latest .
+
+    # Push docker image to GCR
+    - name: Push to Google Container Registry
+      run: docker push $IMAGE_NAME:latest
+
+    # Send message on Slack
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_MESSAGE: 'Demo Docker Image of Transparent Path buildly-core pushed to Google Container Registry Successfully'
+        MSG_MINIMAL: true
+
+    # Send email alert
+    - name: Email Alert
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Github Actions Build and Push job alert
+        to: ${{ secrets.RECIPIENT_EMAIL }}
+        from: ${{ secrets.SENDER_EMAIL }}
+        body: Demo Docker Image of Transparent Path buildly-core pushed to Google Container Registry Successfully

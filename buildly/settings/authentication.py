@@ -31,7 +31,7 @@ AUTHENTICATION_BACKENDS = AUTHENTICATION_LDAP_BACKEND + AUTHENTICATION_BACKENDS
 # Rest Framework OAuth2 and JWT
 REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] += [
     'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    'oauth2_provider_jwt.authentication.JWTAuthentication'
+    'oauth2_provider_jwt.authentication.JWTAuthentication',
 ]
 
 # Auth Application
@@ -50,28 +50,25 @@ JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY')
 AUTH_PASSWORD_VALIDATORS = []
 
 AUTH_PASSWORD_VALIDATORS_MAP = {
-    'USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-        },
-    'USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-            'OPTIONS': {
-                'min_length': int(os.getenv('PASSWORD_MINIMUM_LENGTH', 6)),
-            }
-        },
-    'USE_PASSWORD_COMMON_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-        },
-    'USE_PASSWORD_NUMERIC_VALIDATOR':
-        {
-            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-        },
+    'USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR': {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+    },
+    'USE_PASSWORD_MINIMUM_LENGTH_VALIDATOR': {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': int(os.getenv('PASSWORD_MINIMUM_LENGTH', 6))},
+    },
+    'USE_PASSWORD_COMMON_VALIDATOR': {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'
+    },
+    'USE_PASSWORD_NUMERIC_VALIDATOR': {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'
+    },
 }
 
-for password_validator_env_var, password_validator in AUTH_PASSWORD_VALIDATORS_MAP.items():
+for (
+    password_validator_env_var,
+    password_validator,
+) in AUTH_PASSWORD_VALIDATORS_MAP.items():
     if os.getenv(password_validator_env_var, 'True') == 'True':
         AUTH_PASSWORD_VALIDATORS.append(password_validator)
 
@@ -81,11 +78,13 @@ LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = True if os.getenv('SOCIAL_AUTH_REDIRECT_IS_HTTPS') == 'True' else False
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = (
+    True if os.getenv('SOCIAL_AUTH_REDIRECT_IS_HTTPS') == 'True' else False
+)
 SOCIAL_AUTH_LOGIN_REDIRECT_URLS = {
     'github': os.getenv('SOCIAL_AUTH_GITHUB_REDIRECT_URL', None),
     'google-oauth2': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL', None),
-    'microsoft-graph': os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL', None)
+    'microsoft-graph': os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL', None),
 }
 
 SOCIAL_AUTH_PIPELINE = (
@@ -115,9 +114,13 @@ SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_SECR
 # Whitelist of domains allowed to login via social auths
 # i.e. ['example.com', 'buildly.io','treeaid.org']
 if os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS'):
-    SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS').split(',')
+    SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = os.getenv(
+        'SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS'
+    ).split(',')
 if os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'):
-    SOCIAL_AUTH_GOOGLE_MICROSOFT_DOMAINS = os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS').split(',')
+    SOCIAL_AUTH_GOOGLE_MICROSOFT_DOMAINS = os.getenv(
+        'SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'
+    ).split(',')
 
 # oauth2 settings
 OAUTH2_PROVIDER = {
@@ -130,7 +133,9 @@ OAUTH2_PROVIDER = {
 }
 
 DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')
-CREATE_DEFAULT_PROGRAM = True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
+CREATE_DEFAULT_PROGRAM = (
+    True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
+)
 
 # LDAP configuration
 # https://django-auth-ldap.readthedocs.io/en/latest/reference.html#settings
@@ -145,7 +150,7 @@ if AUTH_LDAP_ENABLE:
     AUTH_LDAP_USER_SEARCH = LDAPSearch(
         AUTH_LDAP_BASE_DN,
         ldap.SCOPE_SUBTREE,
-        f'{AUTH_LDAP_USERNAME_FIELD_SEARCH}=%(user)s'
+        f'{AUTH_LDAP_USERNAME_FIELD_SEARCH}=%(user)s',
     )
 
     AUTH_LDAP_USER_ATTR_MAP = {
@@ -155,4 +160,6 @@ if AUTH_LDAP_ENABLE:
         'email': 'mail',
     }
     AUTH_LDAP_ALWAYS_UPDATE_USER = True
-    AUTH_LDAP_CACHE_TIMEOUT = 3600  # Cache distinguished names and group memberships for an hour to minimize
+    AUTH_LDAP_CACHE_TIMEOUT = (
+        3600
+    )  # Cache distinguished names and group memberships for an hour to minimize

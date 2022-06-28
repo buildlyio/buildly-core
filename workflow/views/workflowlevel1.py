@@ -34,6 +34,7 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     create:
     Create a new workflow instance.
     """
+
     # Remove CSRF request verification for posts to this API
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
@@ -60,8 +61,9 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)  # inherited from CreateModelMixin
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED,
-                        headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def perform_create(self, serializer):
         organization = self.request.user.organization
@@ -76,7 +78,10 @@ class WorkflowLevel1ViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name',)
     ordering = ('name',)
     filterset_fields = ('name', 'level1_uuid')
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.OrderingFilter)
+    filter_backends = (
+        django_filters.rest_framework.DjangoFilterBackend,
+        filters.OrderingFilter,
+    )
 
     queryset = WorkflowLevel1.objects.all()
     serializer_class = WorkflowLevel1Serializer
