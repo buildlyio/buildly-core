@@ -1,10 +1,14 @@
+import datetime
 import jwt
+import json
 import secrets
+import stripe
 from urllib.parse import urljoin
 
 from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
@@ -16,7 +20,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -61,7 +65,6 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
-
     permissions = PermissionsField(required=False)
     organization = UUIDPrimaryKeyRelatedField(required=False,
                                               queryset=Organization.objects.all(),
@@ -98,7 +101,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
                   'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token')
+                  'invitation_token', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
@@ -110,20 +113,23 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
+    product = serializers.CharField(required=False)
+    card = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name')
+        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name', 'product', 'card')
         read_only_fields = CoreUserSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
         # get or create organization
         organization = validated_data.pop('organization')
-
         org_name = organization['name']
         organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
 
         core_groups = validated_data.pop('core_groups', [])
+        product = validated_data.pop('product', None)
+        card = validated_data.pop('card', None)
         invitation_token = validated_data.pop('invitation_token', None)
 
         # create core user
@@ -131,7 +137,6 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             validated_data['is_active'] = True
         else:
             validated_data['is_active'] = is_new_org or bool(invitation_token)
-
         coreuser = CoreUser.objects.create(
             organization=organization,
             **validated_data
@@ -159,6 +164,19 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         # add org admin role to the user if org is new
         if is_new_org:
+            if (settings.STRIPE_SECRET and product and card):
+                stripe.api_key = settings.STRIPE_SECRET
+                customer = stripe.Customer.create(email=coreuser.email, name=str(organization.name).capitalize())
+                stripe.PaymentMethod.attach(card, customer=customer.id)
+                organization.stripe_subscription_details = json.dumps({
+                    "customer_stripe_id": customer.id,
+                    "product": product,
+                    "trial_start_date": timezone.now().isoformat(),
+                    "trial_end_date": (timezone.now() + datetime.timedelta(days=30)).isoformat(),
+                    "subscription_start_date": (timezone.now() + datetime.timedelta(days=31)).isoformat()
+                })
+                organization.save()
+
             group_org_admin = CoreGroup.objects.get(organization=organization,
                                                     is_org_level=True,
                                                     permissions=PERMISSIONS_ORG_ADMIN)
@@ -181,14 +199,16 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
+    user_type = serializers.CharField(required=False)
+    survey_status = serializers.BooleanField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name')
+        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name', 'user_type', 'survey_status')
 
     def update(self, instance, validated_data):
 
-        organization_name = validated_data.pop('organization_name', None).lower()
+        organization_name = validated_data.pop('organization_name', None)
 
         name = Organization.objects.filter(name=organization_name).first()
         if name is not None:
@@ -199,6 +219,8 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
+        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
@@ -281,7 +303,6 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
     new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, attrs):
-
         attrs = super().validate(attrs)
 
         password1 = attrs.get('new_password1')
@@ -346,16 +367,22 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     organization = OrganizationSerializer(read_only=True)
+    product = serializers.CharField(required=False)
+    card = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups')
-
+                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
+                  'user_type', 'survey_status', 'product', 'card')
     def update(self, instance, validated_data):
 
         organization_name = str(validated_data.pop('organization_name')).lower()
+        product = validated_data.pop('product', None)
+        card = validated_data.pop('card', None)
         instance.email = validated_data.get('email', instance.email)
+        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
 
         if instance.email is not None:
             instance.save()
@@ -406,6 +433,19 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
         elif not is_new_org.exists():
             # first update the org name for that user
             organization = Organization.objects.create(name=organization_name)
+            if (settings.STRIPE_SECRET and product and card):
+                stripe.api_key = settings.STRIPE_SECRET
+                customer = stripe.Customer.create(email=instance.email, name=str(organization.name).capitalize())
+                stripe.PaymentMethod.attach(card, customer=customer.id)
+                organization.stripe_subscription_details = json.dumps({
+                    "customer_stripe_id": customer.id,
+                    "product": product,
+                    "trial_start_date": timezone.now().isoformat(),
+                    "trial_end_date": (timezone.now() + datetime.timedelta(days=30)).isoformat(),
+                    "subscription_start_date": (timezone.now() + datetime.timedelta(days=31)).isoformat()
+                })
+                organization.save()
+
             instance.organization = organization
             instance.save()
             # now attach the user role as ADMIN
@@ -423,3 +463,11 @@ class CoreUserEmailNotificationSerializer(serializers.Serializer):
     """
     organization_uuid = serializers.UUIDField()
     notification_messages = serializers.CharField()
+    
+
+class PartnerSerializer(serializers.ModelSerializer):
+    partner_uuid = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Partner
+        fields = '__all__'

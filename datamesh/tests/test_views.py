@@ -314,6 +314,7 @@ class TestRelationshipView:
             'origin_model',
             'related_model',
             'key',
+            'fk_field_name'
         }
 
     def test_list_relationships(self, request_factory, relationship, relationship2):

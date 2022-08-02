@@ -436,7 +436,7 @@ class TestResetPassword(object):
 class TestCoreUserRead(object):
 
     keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-            'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups'}
+            'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups', 'user_type', 'survey_status'}
 
     def test_coreuser_list(self, request_factory, org_member):
         factories.CoreUser.create(organization=org_member.organization, username='another_user')  # 2nd user of the org

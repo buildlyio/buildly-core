@@ -52,14 +52,12 @@ class DataMesh:
                     is_forward_lookup, relationship, join_records[0])
 
                 for join_record in join_records:
-
                     params = {
-                            'pk': (str(getattr(join_record, related_record_field))),
-                            'model': related_model.endpoint.strip('/'),
-                            'service': related_model.logic_module_endpoint_name,
-                            'pk_name': related_model.lookup_field_name,
-                        }
-
+                        'pk': (str(getattr(join_record, related_record_field))),
+                        'model': related_model.endpoint.strip('/'),
+                        'service': related_model.logic_module_endpoint_name,
+                        'pk_name': related_model.lookup_field_name,
+                    }
                     yield relationship, params
 
     def extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]) -> None:
@@ -127,13 +125,44 @@ class DataMesh:
             if hasattr(client, 'request') and callable(client.request):
                 content = client.request(**params)
                 if isinstance(content, tuple):  # assume that response body is the first returned value
-                    content = content[0]
+                    if content[1] == 200:
+                        content = content[0]
+                    else:
+                        content = []
                 if isinstance(content, dict):
                     data_item[relationship.key].append(dict(content))
                 else:
                     logger.error(f'No response data for join record (request params: {params})')
             else:
                 raise DatameshConfigurationError(f'DataMesh Error: Client should have request method')
+
+    def fetch_datamesh_relationship(self):
+        relationship_list = []
+        request_param = {}
+
+        for relationship, is_forward_lookup in self._relationships:
+
+            if is_forward_lookup:
+                related_model = relationship.related_model
+            else:
+                related_model = relationship.origin_model
+
+            relationship_list.append(relationship.key)
+
+            params = {
+                'pk': None,
+                'model': related_model.endpoint.strip('/'),
+                'service': related_model.logic_module_endpoint_name,
+                'related_model_pk_name': relationship.related_model.lookup_field_name,
+                'origin_model_pk_name': relationship.origin_model.lookup_field_name,
+
+                'fk_field_name': relationship.fk_field_name,
+                'is_forward_lookup': is_forward_lookup,
+                'is_local': relationship.related_model.is_local
+            }
+
+            request_param[relationship.key] = params
+        return relationship_list, request_param
 
     async def async_extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]):
         """

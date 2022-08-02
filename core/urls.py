@@ -7,6 +7,7 @@ from rest_framework import routers
 from core import views
 from core.views.web import IndexView, oauth_complete
 
+
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
 
@@ -21,6 +22,8 @@ router.register(r'oauth/applications', views.ApplicationViewSet)
 router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
+router.register(r'partner', views.PartnerViewSet)
+router.register(r'stripe', views.StripeViewSet, basename='stripe') 
 
 
 urlpatterns = [

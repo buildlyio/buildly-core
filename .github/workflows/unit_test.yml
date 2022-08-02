@@ -1,0 +1,26 @@
+name: Buildly Core Unit Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  unit_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build the docker-compose stack
+      run: docker-compose build
+
+    - name: Setup docker containers
+      run: docker-compose up -d
+
+    - name: Check running containers
+      run: docker ps -a
+
+    - name: Run unit test case
+      run: docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
+
+    - name: Stop docker container
+      run: docker-compose down
