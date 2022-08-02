@@ -1,6 +1,5 @@
 import jwt
 import secrets
-
 from urllib.parse import urljoin
 
 from django.contrib.auth import password_validation
@@ -127,10 +126,14 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         organization, is_new_org = Organization.objects.get_or_create(**organization)
 
         core_groups = validated_data.pop('core_groups', [])
+        invitation_token = validated_data.pop('invitation_token', None)
 
         # create core user
-        invitation_token = validated_data.pop('invitation_token', None)
-        validated_data['is_active'] = is_new_org or bool(invitation_token)
+        if bool(settings.AUTO_APPROVE_USER):  # If auto-approval set to true
+            validated_data['is_active'] = True
+        else:
+            validated_data['is_active'] = is_new_org or bool(invitation_token)
+
         coreuser = CoreUser.objects.create(
             organization=organization,
             **validated_data
@@ -347,6 +350,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         return super(ApplicationSerializer, self).create(validated_data)
 
 
+
 class CoreUserEmailAlertSerializer(serializers.Serializer):
     """
     Serializer for email alert of shipment
@@ -369,3 +373,83 @@ class ConsortiumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consortium
         fields = '__all__'
+
+class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
+    """ Let's user update his  organization_name,and email from the one time pop-up screen.
+     Also this assigns permissions to users """
+
+    email = serializers.CharField(required=False)
+    organization_name = serializers.CharField(required=False)
+    core_groups = CoreGroupSerializer(read_only=True, many=True)
+    organization = OrganizationSerializer(read_only=True)
+
+    class Meta:
+        model = CoreUser
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
+                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups')
+
+    def update(self, instance, validated_data):
+
+        organization_name = str(validated_data.pop('organization_name')).lower()
+        instance.email = validated_data.get('email', instance.email)
+
+        if instance.email is not None:
+            instance.save()
+        is_new_org = Organization.objects.filter(name=organization_name)
+
+        # check whether org_name is "default"
+        if organization_name == 'default':
+            default_org = Organization.objects.filter(name=settings.DEFAULT_ORG).first()
+            instance.organization = default_org
+            instance.save()
+            # now attach the user role as USER to default organization
+            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
+                                                        is_org_level=True,
+                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            instance.core_groups.add(default_org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                default_org_groups = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
+                                                              is_org_level=True,
+                                                              permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in default_org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # check whether an old organization
+        elif is_new_org.exists():
+
+            organization = Organization.objects.get(name=organization_name)
+            instance.organization = organization
+            instance.is_active = False
+            instance.save()
+            # now attach the user role as USER
+            org_user = CoreGroup.objects.filter(organization__name=organization_name,
+                                                is_org_level=True,
+                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+
+            instance.core_groups.add(org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                org_groups = CoreGroup.objects.filter(organization__name=organization_name,
+                                                      is_org_level=True,
+                                                      permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # if the current user is the first user
+        elif not is_new_org.exists():
+            # first update the org name for that user
+            organization = Organization.objects.create(name=organization_name)
+            instance.organization = organization
+            instance.save()
+            # now attach the user role as ADMIN
+            org_admin = CoreGroup.objects.get(organization=organization,
+                                              is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN)
+            instance.core_groups.add(org_admin)
+
+        return instance
+
+

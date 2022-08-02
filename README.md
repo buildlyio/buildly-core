@@ -95,6 +95,7 @@ The following tables list the configurable parameters of buildly and their defau
 | `DEFAULT_ORG`                       | The first organization created in the database  | ``                           |
 | `SECRET_KEY`                        | Used to provide cryptographic signing, and should be set to a unique, unpredictable value | None |
 | `SUPER_USER_PASSWORD`               | Used to define the super user password when it's created for the first time | `admin` in Debug mode or None |
+| `AUTO_APPROVE_USER`                 | If approval process is set to auto-approve users can automatically login without admin apprvoal | False |
 
 #### Database Connection
 |             Parameter               |            Description             |                    Default                |

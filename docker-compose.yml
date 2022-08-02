@@ -38,6 +38,7 @@ services:
       DATABASE_HOST: "postgres_buildly"
       DATABASE_PORT: "5432"
       DEFAULT_ORG: "Default Organization"
+      AUTO_APPROVE_USER: "False"
       JWT_ISSUER: "buildly"
       JWT_PRIVATE_KEY_RSA_BUILDLY: |-
         -----BEGIN RSA PRIVATE KEY-----
@@ -54,7 +55,6 @@ services:
         MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
         qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
         -----END PUBLIC KEY-----
-      SOCIAL_AUTH_GITHUB_REDIRECT_URL: "https://localhost:8000/complete/github"
       SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URL: "https://localhost:8000/complete/google-oauth2"
       SOCIAL_AUTH_LOGIN_REDIRECT_URL: "http://localhost:8080/"
       SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "https://localhost:8000/complete/microsoft-graph"

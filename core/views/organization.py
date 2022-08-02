@@ -11,6 +11,7 @@ from core.permissions import AllowOnlyOrgAdmin, IsOrgMember
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,7 +58,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         Fetch Already existing Organizations in Buildly Core,
         Any logged in user can access this
-        """
+        """s
         # returns names of existing orgs in Buildly Core as a list
         queryset = Organization.objects.all()
         names = list()
@@ -101,3 +102,4 @@ class OrganizationTypeViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowOnlyOrgAdmin,)
     queryset = OrganizationType.objects.all()
     serializer_class = OrganizationTypeSerializer
+
