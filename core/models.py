@@ -124,6 +124,8 @@ class Organization(models.Model):
     allow_import_export = models.BooleanField('To allow import export functionality', default=False)
     radius = models.FloatField(max_length=20, blank=True, null=True, default = 0.0)
     organization_type = models.ForeignKey(OrganizationType,on_delete=models.CASCADE,null=True)
+    stripe_subscription_details = JSONField(blank=True, null=True)
+
 
     class Meta:
         ordering = ('name',)
@@ -200,6 +202,11 @@ class CoreUser(AbstractUser):
         ('ms', 'Ms.'),
     )
 
+    USER_TYPE_CHOICES = (
+        ('Developer', 'Developer'),
+        ('Product Team', 'Product Team'),
+    )
+
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
@@ -211,9 +218,11 @@ class CoreUser(AbstractUser):
     email_preferences = JSONField(blank=True, null=True)
     push_preferences = JSONField(blank=True, null=True)
     user_timezone = models.CharField(blank=True,null=True,max_length=255)
+    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
+    survey_status = models.BooleanField(default=False)
 
     REQUIRED_FIELDS = []
-
+    
     class Meta:
         ordering = ('first_name',)
 
@@ -262,7 +271,7 @@ class EmailTemplate(models.Model):
     template_html = models.TextField("Reset password e-mail template (HTML)", null=True, blank=True)
 
     class Meta:
-        unique_together = ('organization', 'type', )
+        unique_together = ('organization', 'type',)
         verbose_name = "Email Template"
         verbose_name_plural = "Email Templates"
 
@@ -319,3 +328,11 @@ class Consortium(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+
+class Partner(models.Model):
+    partner_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(blank=True, null=True, max_length=255)
+    create_date = models.DateTimeField(null=True, blank=True)
+    edit_date = models.DateTimeField(null=True, blank=True)
+

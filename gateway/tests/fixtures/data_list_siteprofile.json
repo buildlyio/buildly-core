@@ -4,7 +4,7 @@
     "previous": null,
     "results": [
         {
-            "uuid": "19a7f600-74a0-4123-9be5-dfa69aa172cc",
+           "siteprofiles_uuid": "19a7f600-74a0-4123-9be5-dfa69aa172cc",
             "country": "ES",
             "organization_uuid": "08edc823-cf3b-4bfb-aa92-ce33a8e2817d",
             "name": "",
@@ -29,7 +29,7 @@
             "profiletype": 50
         },
         {
-            "uuid": "64193f72-d7ba-42f7-87d2-feca15ac157d",
+           "siteprofiles_uuid": "64193f72-d7ba-42f7-87d2-feca15ac157d",
             "country": "ES",
             "organization_uuid": "08edc823-cf3b-4bfb-aa92-ce33a8e2817d",
             "name": "",
@@ -54,7 +54,7 @@
             "profiletype": 2
         },
         {
-            "uuid": "b6b5ce2d-2dd9-4953-893f-023536f1b634",
+           "siteprofiles_uuid": "b6b5ce2d-2dd9-4953-893f-023536f1b634",
             "country": "GB",
             "organization_uuid": "08edc823-cf3b-4bfb-aa92-ce33a8e2817d",
             "name": "",

@@ -14,4 +14,5 @@ API_GATEWAY_RESERVED_NAMES = [
     'organization',
     'consortium',
     'datamesh',
+    'stripe',
 ]

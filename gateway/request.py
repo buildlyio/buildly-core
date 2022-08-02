@@ -5,15 +5,20 @@ from urllib.error import URLError
 from typing import Any, Dict, Union
 
 import aiohttp
+
 from bravado_core.spec import Spec
+
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
+from datamesh.handle_request import RequestHandler
+from datamesh.utils import delete_join_record
 from gateway import exceptions
 from gateway import utils
 from core.models import LogicModule, Consortium
 from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
+
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +74,7 @@ class BaseGatewayRequest(object):
 
         # find out forwards relations through logic module from request as origin
         padding = self.request.path.index(f'/{logic_module.endpoint_name}')
-        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}')+padding:]
+        endpoint = self.request.path[len(f'/{logic_module.endpoint_name}') + padding:]
         endpoint = endpoint[:endpoint.index('/', 1) + 1]
         return DataMesh(logic_module_endpoint=logic_module.endpoint_name,
                         model_endpoint=endpoint,
@@ -97,10 +102,12 @@ class GatewayRequest(BaseGatewayRequest):
         # perform a service data request
         content, status_code, headers = client.request(**self.url_kwargs)
 
+        # calls to individual service as per relationship
+        # call to join record insertion method
         # aggregate/join with the JoinRecord-models
-        if 'join' in self.request.query_params and status_code == 200 and type(content) in [dict, list]:
+        if ("join" or "extend") in self.request.query_params and status_code in [200, 201] and type(content) in [dict, list]:
             try:
-                self._join_response_data(resp_data=content)
+                self._join_response_data(resp_data=content, query_params=self.request.query_params)
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
 
@@ -159,7 +166,7 @@ class GatewayRequest(BaseGatewayRequest):
 
         return self._specs[schema_url]
 
-    def _join_response_data(self, resp_data: Union[dict, list]) -> None:
+    def _join_response_data(self, resp_data: Union[dict, list], query_params: str) -> None:
         """
         Aggregates data from the requested service and from related services.
         Uses DataMesh relationship model for this.
@@ -173,10 +180,37 @@ class GatewayRequest(BaseGatewayRequest):
 
         datamesh = self.get_datamesh()
         client_map = {}
-        for service in datamesh.related_logic_modules:
-            spec = self._get_swagger_spec(service)
-            client_map[service] = SwaggerClient(spec, self.request)
-        datamesh.extend_data(resp_data, client_map)
+
+        # check the request method
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            # fetch datamesh logic module info for current request from datamesh
+            self.datamesh_relationship, self.request_param = datamesh.fetch_datamesh_relationship()
+            self.request_method = self.request.method
+
+            request_kwargs = {
+                'query_params': query_params,
+                'request_param': self.request_param,
+                'datamesh_relationship': self.datamesh_relationship,
+                'resp_data': resp_data,
+                'request_method': self.request.method,
+                'request': self.request
+            }
+
+            # handle datamesh requests
+            request_handler = RequestHandler()
+            response = request_handler.retrieve_relationship_data(request_kwargs=request_kwargs)
+
+            # clear and update datamesh get response
+            resp_data.clear()
+            resp_data.update(response)
+
+        else:
+
+            for service in datamesh.related_logic_modules:
+                spec = self._get_swagger_spec(service)
+                client_map[service] = SwaggerClient(spec, self.request)
+
+            datamesh.extend_data(resp_data, client_map)
 
 
 class AsyncGatewayRequest(BaseGatewayRequest):
@@ -239,8 +273,8 @@ class AsyncGatewayRequest(BaseGatewayRequest):
                             )
                     logic_module.api_specification = spec_dict
                     logic_module.save()
-                    swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
-                    self._specs[schema_url] = swagger_spec
+            swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
+            self._specs[schema_url] = swagger_spec
         return self._specs[schema_url]
 
     async def _join_response_data(self, resp_data: Union[dict, list]) -> None:

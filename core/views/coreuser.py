@@ -151,8 +151,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             return Response({'detail': 'Token has been used.'},
                             status.HTTP_401_UNAUTHORIZED)
 
-        organization = Organization.objects\
-            .values('organization_uuid', 'name')\
+        organization = Organization.objects \
+            .values('organization_uuid', 'name') \
             .get(organization_uuid=decoded['org_uuid']) \
             if decoded['org_uuid'] else None
 

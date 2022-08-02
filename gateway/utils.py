@@ -17,7 +17,6 @@ from . import exceptions
 from core.models import CoreUser, LogicModule, Organization, OrganizationType, Consortium
 from core.views import CoreUserViewSet, OrganizationViewSet, OrganizationTypeViewSet, ConsortiumViewSet
 
-
 SWAGGER_LOOKUP_FIELD = 'swagger'
 SWAGGER_LOOKUP_FORMAT = 'json'
 SWAGGER_LOOKUP_PATH = 'docs'
@@ -103,6 +102,7 @@ class ObjectAccessValidator:
     """
     Create an instance of this class to validate access to an object
     """
+
     def __init__(self, request: Request):
         self._request = request
 
@@ -114,6 +114,7 @@ class GatewayJSONEncoder(json.JSONEncoder):
     """
     JSON encoder for API Gateway
     """
+
     def default(self, obj):
         """
         JSON doesn't have a default datetime and UUID type, so this is why
