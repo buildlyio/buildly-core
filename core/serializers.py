@@ -375,7 +375,6 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
                   'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
                   'user_type', 'survey_status', 'product', 'card')
-
     def update(self, instance, validated_data):
 
         organization_name = str(validated_data.pop('organization_name')).lower()
@@ -464,7 +463,7 @@ class CoreUserEmailNotificationSerializer(serializers.Serializer):
     """
     organization_uuid = serializers.UUIDField()
     notification_messages = serializers.CharField()
-
+    
 
 class PartnerSerializer(serializers.ModelSerializer):
     partner_uuid = serializers.ReadOnlyField()
