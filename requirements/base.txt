@@ -13,6 +13,6 @@ pyswagger==0.8.39
 bravado-core==5.13.1
 drf-yasg==1.10.2
 requests==2.25.0
-aiohttp==3.5.4
+aiohttp==3.7.4
 django-auth-ldap==2.1.0
 stripe==2.75.0
