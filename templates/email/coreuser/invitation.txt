@@ -4,8 +4,13 @@ You have been invited to join {{ organization_name }}!
 Click the button below to create your user profile.
 {{ invitation_link }}
 
+
+
+If you have any questions about this invitation please contact {{ org_admin_name }} from {{ organization_name }}.
+
 Next steps
 Once you have registered, you will be within {{ organization_name }}'s portfolio. To see specific programs, you must request access.
 
 If you have any questions about this invitation please contact {{ org_admin_name }} from {{ organization_name }}.
+
 

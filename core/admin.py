@@ -52,15 +52,7 @@ class CoreGroupAdmin(admin.ModelAdmin):
 
 
 class CoreUserAdmin(UserAdmin):
-    list_display = (
-        'username',
-        'first_name',
-        'last_name',
-        'organization',
-        'title',
-        'is_active',
-        'user_timezone',
-    )
+    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status','user_timezone')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
     search_fields = (
@@ -72,37 +64,10 @@ class CoreUserAdmin(UserAdmin):
     )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (
-            _('Personal info'),
-            {
-                'fields': (
-                    'title',
-                    'first_name',
-                    'last_name',
-                    'email',
-                    'contact_info',
-                    'organization',
-                    'user_timezone',
-                )
-            },
-        ),
-        (
-            _('Permissions'),
-            {
-                'fields': (
-                    'is_active',
-                    'is_staff',
-                    'is_superuser',
-                    'core_groups',
-                    'user_permissions',
-                )
-            },
-        ),
+        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status','user_timezone')}),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
         (_('Preferences'), {'fields': ('email_preferences', 'push_preferences')}),
-        (
-            _('Important dates'),
-            {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')},
-        ),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
     )
     filter_horizontal = ('core_groups', 'user_permissions')
 
@@ -142,4 +107,5 @@ admin.site.register(EmailTemplate, EmailTemplateAdmin)
 admin.site.register(Industry)
 admin.site.register(Consortium)
 admin.site.register(Partner)
+
 

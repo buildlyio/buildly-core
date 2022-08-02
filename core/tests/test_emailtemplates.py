@@ -5,7 +5,6 @@ from django.db.utils import IntegrityError
 from core.models import EmailTemplate, TEMPLATE_RESET_PASSWORD
 from core.tests.fixtures import org
 
-
 @pytest.mark.django_db()
 class TestEmailTemplateModel:
     def test_create(self, org):

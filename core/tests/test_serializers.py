@@ -7,7 +7,6 @@ from core.serializers import (
 )
 from core.tests.fixtures import core_group, org, org_member
 
-
 @pytest.mark.django_db()
 def test_org_serializer(request_factory, org):
     request = request_factory.get('')
@@ -29,7 +28,11 @@ def test_org_serializer(request_factory, org):
         'allow_import_export',
         'radius',
         'organization_type',
+<<<<<<< HEAD
         'stripe_subscription_details',
+=======
+        'stripe_subscription_details'
+>>>>>>> 8e0bcae (Feat#113/upstream changes (#350))
     ]
     assert set(data.keys()) == set(keys)
 

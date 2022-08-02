@@ -139,7 +139,6 @@ class GatewayRequest(BaseGatewayRequest):
                 organization_list = consortium.organization_uuids
                 if related_organization:
                     import uuid
-
                     org_uuid = uuid.UUID(related_organization)
                     if org_uuid not in organization_list:
                         # To avoid repeated organization uuid adding in consortium organization uuid

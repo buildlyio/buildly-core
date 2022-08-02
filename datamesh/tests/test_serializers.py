@@ -3,7 +3,6 @@ import pytest
 from datamesh.serializers import JoinRecordSerializer
 from .fixtures import join_record
 
-
 @pytest.mark.django_db()
 def test_join_record_serializer_from_instance(request_factory, join_record):
     request = request_factory.get('')

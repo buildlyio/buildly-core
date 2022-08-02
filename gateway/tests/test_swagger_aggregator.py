@@ -5,7 +5,6 @@ from unittest.mock import Mock
 from gateway import utils
 from gateway.tests.fixtures import aggregator, logic_module
 
-
 @pytest.mark.django_db()
 class TestSwaggerAggregator:
     def test_get_aggregate_swagger_without_api_specification(

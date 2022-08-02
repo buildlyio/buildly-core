@@ -7,15 +7,8 @@ from factories.workflow_models import Organization
 from gateway.exceptions import ServiceDoesNotExist
 from gateway.permissions import AllowLogicModuleGroup
 from gateway.views import APIGatewayView
-from core.tests.fixtures import (
-    auth_api_client,
-    auth_superuser_api_client,
-    core_group,
-    logic_module,
-    org,
-    org_admin,
-    superuser,
-)
+from core.tests.fixtures import auth_api_client, auth_superuser_api_client, core_group, logic_module, org, org_admin,\
+    superuser
 
 
 @pytest.mark.django_db()

@@ -5,7 +5,6 @@ from rest_framework import viewsets
 from core.models import Consortium
 from core.serializers import ConsortiumSerializer
 from core.permissions import IsSuperUser, AllowAuthenticatedRead
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +35,6 @@ class ConsortiumViewSet(viewsets.ModelViewSet):
     delete:
     Delete a Consortium instance.
     """
-
     permission_classes_by_action = {'list': [AllowAuthenticatedRead]}
 
     def list(self, request):

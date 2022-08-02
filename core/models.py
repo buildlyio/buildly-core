@@ -80,6 +80,33 @@ class Industry(models.Model):
     def __str__(self):
         return self.name
 
+class OrganizationType(models.Model):
+    """
+    Allows organization to be of multiple types.
+    Supported types are:
+    1. Logistics Provider
+	2. Packer
+	3. Producer
+	4. Receiver
+	5. Shipper
+	6. Warehouse
+    """
+    name = models.CharField("Name", max_length=255, blank=True, help_text="Organization type")
+    create_date = models.DateTimeField(null=True, blank=True)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name_plural = "Organization Types"
+
+    def save(self, *args, **kwargs):
+        if self.create_date is None:
+            self.create_date = timezone.now()
+        self.edit_date = timezone.now()
+        super(OrganizationType, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.name)
 
 class OrganizationType(models.Model):
     """
@@ -158,14 +185,11 @@ class Organization(models.Model):
         "Date Format", max_length=50, blank=True, default="DD.MM.YYYY"
     )
     phone = models.CharField(max_length=20, blank=True, null=True)
-    allow_import_export = models.BooleanField(
-        'To allow import export functionality', default=False
-    )
-    radius = models.FloatField(max_length=20, blank=True, null=True, default=0.0)
-    organization_type = models.ForeignKey(
-        OrganizationType, on_delete=models.CASCADE, null=True
-    )
+    allow_import_export = models.BooleanField('To allow import export functionality', default=False)
+    radius = models.FloatField(max_length=20, blank=True, null=True, default = 0.0)
+    organization_type = models.ForeignKey(OrganizationType,on_delete=models.CASCADE,null=True)
     stripe_subscription_details = JSONField(blank=True, null=True)
+
 
     class Meta:
         ordering = ('name',)
@@ -282,12 +306,12 @@ class CoreUser(AbstractUser):
     edit_date = models.DateTimeField(null=True, blank=True)
     email_preferences = JSONField(blank=True, null=True)
     push_preferences = JSONField(blank=True, null=True)
-    user_timezone = models.CharField(blank=True, null=True, max_length=255)
-
-    REQUIRED_FIELDS = []
+    user_timezone = models.CharField(blank=True,null=True,max_length=255)
     user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
     survey_status = models.BooleanField(default=False)
 
+    REQUIRED_FIELDS = []
+    
     class Meta:
         ordering = ('first_name',)
 
@@ -406,21 +430,9 @@ class Consortium(models.Model):
     """
     The consortium instance. Allows sharing of data between 2 or more organizations
     """
-
-    consortium_uuid = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID'
-    )
-    name = models.CharField(
-        "Consortium Name",
-        max_length=255,
-        blank=True,
-        help_text="Multiple organizations form a consortium together",
-    )
-    organization_uuids = ArrayField(
-        models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True),
-        null=True,
-        blank=True,
-    )
+    consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
+    name = models.CharField("Consortium Name", max_length=255, blank=True, help_text="Multiple organizations form a consortium together")
+    organization_uuids = ArrayField(models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True), null=True, blank=True)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -436,8 +448,11 @@ class Consortium(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+
 class Partner(models.Model):
     partner_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(blank=True, null=True, max_length=255)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
+

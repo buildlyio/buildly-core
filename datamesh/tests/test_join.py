@@ -12,7 +12,6 @@ from datamesh.tests.fixtures import (
 )
 from core.tests.fixtures import auth_api_client, org
 
-
 @pytest.mark.django_db()
 @patch('gateway.request.GatewayRequest._get_swagger_spec')
 @patch('gateway.request.SwaggerClient.request')
