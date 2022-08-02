@@ -10,7 +10,7 @@ jobs:
     name: Build and Push to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: gcr.io/dev-buildly/transparent-path/buildly-core
+      IMAGE_NAME: gcr.io/dev-buildly/insights/dev/buildly-core
     steps:
     - uses: actions/checkout@v2
 
@@ -19,7 +19,7 @@ jobs:
       with:
         registry: gcr.io
         username: _json_key
-        password: ${{ secrets.DEV_GCR_JSON_KEY }}
+        password: ${{ secrets.GCR_JSON_KEY }}
 
     - name: Build docker image
       run: docker build -t $IMAGE_NAME:latest .

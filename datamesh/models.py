@@ -69,19 +69,11 @@ class LogicModuleModel(models.Model):
 
 
 class Relationship(models.Model):
-    key = models.SlugField(
-        max_length=64,
-        help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_siteprofile_relationship'.",
-    )
-    relationship_uuid = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
-    origin_model = models.ForeignKey(
-        LogicModuleModel, related_name='joins_origins', on_delete=models.CASCADE
-    )
-    related_model = models.ForeignKey(
-        LogicModuleModel, related_name='joins_relateds', on_delete=models.CASCADE
-    )
+    key = models.SlugField(max_length=64, help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_siteprofile_relationship'.")
+    relationship_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    origin_model = models.ForeignKey(LogicModuleModel, related_name='joins_origins', on_delete=models.CASCADE)
+    related_model = models.ForeignKey(LogicModuleModel, related_name='joins_relateds', on_delete=models.CASCADE)
+    fk_field_name = models.CharField(max_length=128, blank=True, null=True)
 
     def __str__(self):
         return f'{self.origin_model} -> {self.related_model}'

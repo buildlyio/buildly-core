@@ -359,7 +359,13 @@ class TestLogicModuleModelView:
 @pytest.mark.django_db()
 class TestRelationshipView:
 
-    expected_keys = {'relationship_uuid', 'origin_model', 'related_model', 'key'}
+    expected_keys = {
+            'relationship_uuid',
+            'origin_model',
+            'related_model',
+            'key',
+            'fk_field_name'
+        }
 
     def test_list_relationships(self, request_factory, relationship, relationship2):
         request = request_factory.get(reverse('relationship-list'))

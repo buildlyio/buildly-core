@@ -504,6 +504,7 @@ class TestCoreUserRead(object):
         'email_preferences',
         'push_preferences',
         'user_timezone',
+        'survey_status',
     }
 
     def test_coreuser_list(self, request_factory, org_member):

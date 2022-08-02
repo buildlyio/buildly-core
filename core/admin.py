@@ -12,6 +12,7 @@ from core.models import (
     Organization,
     OrganizationType,
     Consortium,
+    Partner
 )
 
 
@@ -140,3 +141,5 @@ admin.site.register(CoreSites, CoreSitesAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 admin.site.register(Industry)
 admin.site.register(Consortium)
+admin.site.register(Partner)
+

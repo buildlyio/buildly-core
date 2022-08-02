@@ -29,6 +29,7 @@ def test_org_serializer(request_factory, org):
         'allow_import_export',
         'radius',
         'organization_type',
+        'stripe_subscription_details',
     ]
     assert set(data.keys()) == set(keys)
 
@@ -74,6 +75,8 @@ def test_core_user_serializer(request_factory, org_member):
         'email_preferences',
         'push_preferences',
         'user_timezone',
+        'user_type',
+        'survey_status'
     ]
     assert set(data.keys()) == set(keys)
     assert isinstance(data['organization'], dict)

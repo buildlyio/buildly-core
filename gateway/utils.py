@@ -28,7 +28,6 @@ from core.views import (
     ConsortiumViewSet,
 )
 
-
 SWAGGER_LOOKUP_FIELD = 'swagger'
 SWAGGER_LOOKUP_FORMAT = 'json'
 SWAGGER_LOOKUP_PATH = 'docs'

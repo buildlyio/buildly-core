@@ -165,6 +165,7 @@ class Organization(models.Model):
     organization_type = models.ForeignKey(
         OrganizationType, on_delete=models.CASCADE, null=True
     )
+    stripe_subscription_details = JSONField(blank=True, null=True)
 
     class Meta:
         ordering = ('name',)
@@ -254,6 +255,12 @@ class CoreUser(AbstractUser):
     core_user_uuid = models.CharField(
         max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True
     )
+    USER_TYPE_CHOICES = (
+        ('Developer', 'Developer'),
+        ('Product Team', 'Product Team'),
+    )
+
+    core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
     organization = models.ForeignKey(
@@ -278,6 +285,8 @@ class CoreUser(AbstractUser):
     user_timezone = models.CharField(blank=True, null=True, max_length=255)
 
     REQUIRED_FIELDS = []
+    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
+    survey_status = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('first_name',)
@@ -427,3 +436,8 @@ class Consortium(models.Model):
 
     def __str__(self):
         return str(self.name)
+class Partner(models.Model):
+    partner_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(blank=True, null=True, max_length=255)
+    create_date = models.DateTimeField(null=True, blank=True)
+    edit_date = models.DateTimeField(null=True, blank=True)
