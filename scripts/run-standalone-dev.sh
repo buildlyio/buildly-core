@@ -15,4 +15,4 @@ echo $(date -u) "- Load Initial Data"
 python manage.py loadinitialdata
 
 echo $(date -u) "- Running the server"
-gunicorn -b 0.0.0.0:8080 --reload buildly.wsgi -w 2 --timeout 300
+gunicorn -b 0.0.0.0:8080 --reload buildly.wsgi -w 2 --timeout 120 --config buildly/gunicorn_conf.py

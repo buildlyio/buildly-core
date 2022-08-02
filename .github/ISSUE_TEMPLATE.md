@@ -3,6 +3,9 @@ Describe a feature request proposal explaining the benefits of having such featu
 
 ## Proposal
 
+## Estimate
+(Complexity ranked 1 to 10)
+
 # Bug report
 Describe the current behavior and what is the expected behavior. Include logs and screenshots if possible.
 

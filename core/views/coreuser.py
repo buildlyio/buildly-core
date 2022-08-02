@@ -9,20 +9,27 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-                              CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer,
-                              CoreUserEmailNotificationSerializer, CoreUserProfileSerializer)
+                              CoreUserResetPasswordConfirmSerializer, CoreUserEmailAlertSerializer,
+                              CoreUserProfileSerializer)
+
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
+import logging
+# from datetime import datetime
+# from dateutil import tz
+# from twilio.rest import Client
+logger = logging.getLogger(__name__)
 
 
 class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -57,12 +64,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'update': CoreUserWritableSerializer,
         'update_profile': CoreUserProfileSerializer,
         'partial_update': CoreUserWritableSerializer,
+        'update_profile': CoreUserProfileSerializer,
         'invite': CoreUserInvitationSerializer,
         'reset_password': CoreUserResetPasswordSerializer,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
+        'alert': CoreUserEmailAlertSerializer,
         'update_org': CoreUserUpdateOrganizationSerializer,
         'notification': CoreUserEmailNotificationSerializer,
+
     }
 
     def list(self, request, *args, **kwargs):
@@ -200,6 +210,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         This endpoint is used to request password resetting.
         It requests the Email field
         """
+        logger.warning('EMAIL EVENT!')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         count = serializer.save()
@@ -259,6 +270,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
             if self.action in ['update', 'partial_update', 'invite']:
                 return [AllowOnlyOrgAdmin(), IsOrgMember()]
+            if self.action in ['invite']:
+                return [AllowOnlyOrgAdmin(), IsOrgMember()]
 
         return super(CoreUserViewSet, self).get_permissions()
 
@@ -266,6 +279,72 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
+    @swagger_auto_schema(methods=['post'],
+                         request_body=CoreUserEmailAlertSerializer,
+                         responses=SUCCESS_RESPONSE)
+    @action(methods=['POST'], detail=False)
+    def alert(self, request, *args, **kwargs):
+        """
+        a)Request alert message and uuid of organization
+        b)Access user uuids for that respective organization
+        c)Check if opted for email alert service
+        d)Send Email to the user's email with alert message
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        org_uuid = request.data['organization_uuid']
+        messages = request.data['messages']
+        try:
+            for message in messages:
+                # try:
+                #     time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S%z")
+                # except ValueError:
+                #     time_tuple = datetime.strptime(message['date_time'], "%Y-%m-%dT%H:%M:%S.%f%z")
+                # message['date_time'] = time_tuple.replace(tzinfo=tz.gettz('UTC'))
+                subject = '{} Alert'.format(message['parameter'].capitalize())
+                if message.get('shipment_id'):
+                    message['shipment_url'] = urljoin(settings.FRONTEND_URL,
+                                                  '/app/shipment/edit/:'+str(message['shipment_id']))
+                else:
+                    message['shipment_url'] = None
+                message['color'] = color_codes.get(message['severity'])
+                context = {
+                    'message': message,
+                }
+                template_name = 'email/coreuser/shipment_alert.txt'
+                html_template_name = 'email/coreuser/shipment_alert.html'
+                # TODO send email via preferences
+                core_users = CoreUser.objects.filter(organization__organization_uuid=org_uuid)
+                for user in core_users:
+                    email_address = user.email
+                    preferences = user.email_preferences
+                    if preferences and (preferences.get('environmental', None) or preferences.get('geofence', None)):
+                        # user_timezone = user.user_timezone
+                        # if user_timezone:
+                        #     local_zone = tz.gettz(user_timezone)
+                        #     message['date_time'] = message['date_time'].astimezone(local_zone)
+                        # else:
+                        #     message['date_time'] = time_tuple.strftime("%B %d, %Y, %I:%M %p")+" (UTC)"
+                        send_email(email_address, subject, context, template_name, html_template_name)
+        except Exception as ex:
+            print('Exception: ', ex)
+        return Response(
+            {
+                'detail': 'The alert messages were sent successfully on email.',
+            }, status=status.HTTP_200_OK)
+        # This code is commented out as in future, It will need to impliment message service.
+        # for phone in phones:
+        #     phone_number = phone
+        #     account_sid = os.environ['TWILIO_ACCOUNT_SID']
+        #     auth_token = os.environ['TWILIO_AUTH_TOKEN']
+        #     client = Client(account_sid, auth_token)
+        #     message = client.messages.create(
+        #                     body=alert_message,
+        #                     from_='+15082068927',
+        #                     to=phone_number
+        #                 )
+        #     print(message.sid)
 
     @action(detail=True, methods=['patch'], name='Update Profile')
     def update_profile(self, request, pk=None, *args, **kwargs):
@@ -278,6 +357,13 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+color_codes = {
+    'error': '#cc3300',
+    'info': '#2196F3',
+    'success': '#339900'
+}
 
     @action(detail=False, methods=['patch'], name='Update Organization', url_path='update_org/(?P<pk>\d+)')
     def update_info(self, request, pk=None, *args, **kwargs):

@@ -9,10 +9,10 @@ python manage.py makemigrations
 python manage.py migrate
 
 echo $(date -u) "- Load Initial Data"
-python manage.py loadinitialdata
+# python manage.py loadinitialdata
 
 echo $(date -u) "- Collect Static"
 python manage.py collectstatic --no-input
 
 echo $(date -u) "- Running the server"
-gunicorn -b 0.0.0.0:8080 buildly.wsgi
+gunicorn -b 0.0.0.0:8080 buildly.wsgi --config buildly/gunicorn_conf.py

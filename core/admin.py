@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Partner
+from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, \
+    Industry, LogicModule, Organization, OrganizationType, Consortium
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -17,8 +18,13 @@ class CoreSitesAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class OrganizationTypeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    display = 'Organization Type'
+
+
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'create_date', 'edit_date')
+    list_display = ('name', 'organization_type', 'create_date', 'edit_date')
     display = 'Organization'
 
 
@@ -29,14 +35,15 @@ class CoreGroupAdmin(admin.ModelAdmin):
 
 
 class CoreUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status')
+    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status','user_timezone')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
     search_fields = ('first_name', 'last_name', 'username', 'title', 'organization__name', )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status')}),
+        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status','user_timezone')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
+        (_('Preferences'), {'fields': ('email_preferences', 'push_preferences')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
     )
     filter_horizontal = ('core_groups', 'user_permissions', )
@@ -63,10 +70,13 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 admin.site.register(LogicModule, LogicModuleAdmin)
 admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(OrganizationType, OrganizationTypeAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(CoreSites, CoreSitesAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 admin.site.register(Industry)
+admin.site.register(Consortium)
 admin.site.register(Partner)
+
 

@@ -39,7 +39,7 @@
 											font-size: 40px;
 											font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
 										"
-										>Invitation from your Org <br />Admin!</span
+										>New Approval Request Admin!</span
 									></strong
 								></span
 							>
@@ -59,17 +59,15 @@
 									font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
 									color: #737581;
 								"
-								>You have been invited to join
+								>Approve newly registered user
 								<span
 									style="
 										font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
 										color: #151f56;
 									"
-									><strong>{{ organization_name }}</strong></span
+									><strong>{{ coreuser_name }} on {{ organization_name }}</strong></span
 								>
-								on Transparent Path spc!<br />Click the button below to create your user
-								profile</span
-							>
+							</span>
 						</p>
 					</td>
 				</tr>
@@ -90,7 +88,7 @@
 						"
 					>
 						<a
-							href="{{ invitation_link }}"
+							href="{{ approval_link }}"
 							target="_blank"
 							style="
 								font-weight: bold;
@@ -100,111 +98,8 @@
 								text-decoration: none;
 								color: #ffffff;
 							"
-							>My profile</a
+							>Approve</a
 						>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<table align="center" style="width: 719px">
-			<tbody>
-				<tr style="height: 35px">
-					<td style="width: 691px; height: 35px">
-						<p>
-							<span
-								style="
-									color: #737581;
-									font-size: 12pt;
-									font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-								"
-								><i>Next steps</i></span
-							>
-						</p>
-					</td>
-				</tr>
-				<tr style="height: 33px">
-					<td
-						style="
-							color: #737581;
-							font-size: 12pt;
-							font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-							width: 691px;
-							height: 33px;
-						"
-					>
-						Once you have registered you will be within
-						<span
-							style="
-								font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-								color: #151f56;
-							"
-							><strong>{{ organization_name }}</strong></span
-						>’s portfolio. To see specific programs you must request access.
-					</td>
-				</tr>
-				<tr>
-					<td
-						style="
-							color: #737581;
-							font-size: 12pt;
-							font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-							width: 691px;
-							height: 33px;
-						"
-					>
-						You can access the Transparent Path spc knowledgebase with training materials, FAQs
-						and other useful information at our Transparent Path spc
-					</td>
-				</tr>
-				<tr>
-					<td
-						style="
-							color: #737581;
-							font-size: 12pt;
-							font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-							width: 691px;
-							height: 33px;
-						"
-					>
-						Knowledgebase:
-						<a
-							href="https://help.Transparent Path spc.com"
-							target="_blank"
-							style="text-decoration: underline; color: #0abffc"
-							><span style="color: #0abffc"> https://help.Transparent Path spc.com</span></a
-						>
-					</td>
-				</tr>
-				<tr>
-					<td></td>
-				</tr>
-				<tr>
-					<td
-						style="
-							color: #737581;
-							font-size: 12pt;
-							font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-							width: 691px;
-							height: 33px;
-						"
-					>
-						If you have any questions about this invitation please contact
-						<span
-							style="
-								font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-								color: #151f56;
-							"
-							><strong>{{ org_admin_name }}</strong></span
-						><br />
-						from
-						<span
-							style="
-								font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
-								color: #151f56;
-							"
-						>
-							<strong>{{ organization_name }}</strong>
-						</span>
 					</td>
 				</tr>
 			</tbody>

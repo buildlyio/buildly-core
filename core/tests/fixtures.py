@@ -1,5 +1,5 @@
 import uuid
-
+from django.conf import settings
 import pytest
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
@@ -15,8 +15,9 @@ TEST_USER_DATA = {
     'email': 'test@example.com',
     'username': 'johnsnow',
     'password': '123qwe',
-    'organization_name': 'buidly',
     'organization_uuid': uuid.uuid4(),
+    # 'organization': settings.DEFAULT_ORG, # Tweaked this to support organization name from front end
+    'organization_name': settings.DEFAULT_ORG
 }
 
 

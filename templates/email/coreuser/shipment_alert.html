@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+	</head>
+	<body style="margin: 0px">
+		<div
+			style="
+				background-color: #f5f5f5;
+				padding: 30px 0px 30px 0px;
+				display: run-in;
+				text-align: center;
+			"
+		>
+			<img
+				align="center"
+				alt="Transparent Path spc"
+				src="https://app.tpath.io/ff52ab9d5b614f04101dcc68a3d253e7.png"
+				width="312.5"
+				style="
+					max-width: 625px;
+					padding-bottom: 0;
+					display: inline !important;
+					vertical-align: bottom;
+				"
+			/>
+		</div>
+		<p><br /><br /></p>
+		<table align="center" style="width: 719px">
+			<tbody>
+				<tr style="height: 104px">
+					<td style="width: 691px; height: 150px">
+						<h1 style="text-align: center">
+						<span style="color:{{message.color}}"
+								><strong
+									><span
+										style="
+											font-size: 40px;
+											font-family: roboto, helvetica neue, helvetica, arial, sans-serif;
+										"
+										>{{message.alert_message}}
+									</strong
+								></span
+							>
+						</h1>
+						<div>
+							{% if message.shipment_id != None %}
+								<h3 style="color: #000000">Shipment: {{ message.shipment_name }}</h3>
+							{% endif %}
+							<p style="color:{{ message.color }}">{{message.alert_message}}</p>
+							<p style="color:#000000">Alert for {{message.parameter}} : <span style="color:{{ message.color }}">{{message.recorded_value}}</span></p>
+							<p>
+								<!--<span style="color: #424242">Captured at: {{ message.date_time }}</span>-->
+								{% if message.shipment_id != None %}
+									<a
+										href="{{ message.shipment_url }}"
+										target="_blank"
+										style="
+											float: right;
+											font-weight: bold;
+											letter-spacing: normal;
+											padding: 0.5rem;
+											line-height: 100%;
+											text-align: center;
+											text-decoration: none;
+											color: #ebc645;
+											background-color: #424242;
+										"
+									>
+										Go to Shipment</a
+									>
+								{% endif %}
+							</p>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<p><br /><br /><br /><br /><br /></p>
+		<div style="background-color: #f5f5f5; padding: 1px 0px 1px 0px; text-align: center">
+			<p>
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>Transparent Path spc</span
+				><br />
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>1700 Westlake Avenue North Suite 200 Seattle, WA 98109</span
+				>
+			</p>
+			<p>
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>Have any questions or thoughts on Transparent Path spc?</span
+				><br />
+				<span
+					style="
+						color: #737581;
+						font-family: Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+						font-size: 14px;
+					"
+					>Reach out to us at anytime at
+					<a
+						href="mailto:support@tpath.io"
+						target="_blank"
+						style="text-decoration: underline; color: #0abffc"
+						><span style="color: #0abffc">support@tpath.io</span></a
+					></span
+				>
+			</p>
+		</div>
+	</body>
+</html>

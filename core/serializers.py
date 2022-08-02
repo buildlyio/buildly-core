@@ -20,7 +20,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner
+    TEMPLATE_RESET_PASSWORD, OrganizationType, Consortium, Partner
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -100,8 +100,9 @@ class CoreUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
-                  'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token', 'user_type', 'survey_status')
+                  'title', 'contact_info', 'privacy_disclaimer_accepted',
+                  'organization', 'core_groups', 'invitation_token', 'email_preferences',
+                  'push_preferences', 'user_timezone', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
@@ -123,9 +124,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
     def create(self, validated_data):
         # get or create organization
-        organization = validated_data.pop('organization')
-        org_name = organization['name']
-        organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
+        try:
+            organization = validated_data.pop('organization')
+        except (KeyError):
+            organization = {'name': settings.DEFAULT_ORG}
+        organization, is_new_org = Organization.objects.get_or_create(**organization)
 
         core_groups = validated_data.pop('core_groups', [])
         product = validated_data.pop('product', None)
@@ -145,22 +148,25 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         coreuser.set_password(validated_data['password'])
         coreuser.save()
 
-        # check whether org_name is "default"
-        if org_name in ['default']:
-            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                        is_org_level=True,
-                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
-            coreuser.core_groups.add(default_org_user)
-
-        # check whether an old organization
-        if not is_new_org:
-            coreuser.is_active = False
-            coreuser.save()
-
-            org_user = CoreGroup.objects.filter(organization__name=organization,
-                                                is_org_level=True,
-                                                permissions=PERMISSIONS_VIEW_ONLY).first()
-            coreuser.core_groups.add(org_user)
+        # Triggers an approval email for newly registered user
+        approval_link = urljoin(settings.FRONTEND_URL, '/app/profile/users/current-users')
+        subject = 'Approval Request'
+        template_name = 'email/coreuser/approval.txt'
+        html_template_name = 'email/coreuser/approval.html'
+        context = {
+                    'approval_link': approval_link,
+                    'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
+                    'organization_name': organization
+        }
+        if is_new_org:
+            admin = CoreUser.objects.filter(is_superuser=True)  # Global Admin
+        else:
+            org_admin_groups = CoreGroup.objects.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True)
+            admin = CoreUser.objects.filter(core_groups__in=org_admin_groups,
+                                            organization=organization)  # Organization Admin
+        if admin:
+            for users in admin:
+                send_email(users.email, subject, context, template_name, html_template_name)
 
         # add org admin role to the user if org is new
         if is_new_org:
@@ -199,8 +205,21 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
+
     user_type = serializers.CharField(required=False)
     survey_status = serializers.BooleanField(required=False)
+    email_preferences = serializers.JSONField(required=False)
+    push_preferences = serializers.JSONField(required=False)
+    user_timezone = serializers.CharField(required=False)
+
+    class Meta:
+        model = CoreUser
+        fields = ('first_name', 'last_name', 'password', 'title',
+                  'contact_info', 'organization_name', 'email_preferences', 'push_preferences', 'user_timezone', 'user_type', 'survey_status')
+
+    def update(self, instance, validated_data):
+        organization_name = validated_data.pop('organization_name')
+
 
     class Meta:
         model = CoreUser
@@ -219,6 +238,9 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
+        instance.email_preferences = validated_data.get('email_preferences', instance.email_preferences)
+        instance.push_preferences = validated_data.get('push_preferences', instance.push_preferences)
+        instance.user_timezone = validated_data.get('user_timezone', instance.user_timezone)
         instance.user_type = validated_data.get('user_type', instance.user_type)
         instance.survey_status = validated_data.get('survey_status', instance.survey_status)
         password = validated_data.get('password', None)
@@ -358,6 +380,30 @@ class ApplicationSerializer(serializers.ModelSerializer):
         validated_data['client_secret'] = secrets.token_urlsafe(190)
         return super(ApplicationSerializer, self).create(validated_data)
 
+
+
+class CoreUserEmailAlertSerializer(serializers.Serializer):
+    """
+    Serializer for email alert of shipment
+    """
+    organization_uuid = serializers.UUIDField()
+    messages = serializers.JSONField()
+
+
+class OrganizationTypeSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+
+    class Meta:
+        model = OrganizationType
+        fields = '__all__'
+
+
+class ConsortiumSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='consortium_uuid', read_only=True)
+
+    class Meta:
+        model = Consortium
+        fields = '__all__'
 
 class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
     """ Let's user update his  organization_name,and email from the one time pop-up screen.

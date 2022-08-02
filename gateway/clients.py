@@ -51,9 +51,14 @@ class BaseSwaggerClient:
             path = f'/{model}/{{{path_parameter_name}}}/'
 
         # Check that operation is valid according to spec
-        operation = spec.get_op_for_request(self._in_request.method, path)
+        request_method = self._in_request.method
+        operation = spec.get_op_for_request(request_method, path)
         if not operation:
-            raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
+            if request_method == 'OPTIONS':
+                operation = spec.get_op_for_request('GET', path)
+                operation.http_method = request_method
+            else:
+                raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
         method = operation.http_method.lower()
         path_name = operation.path_name
 
@@ -67,13 +72,14 @@ class BaseSwaggerClient:
     def get_request_data(self) -> dict:
         """
         Create the data structure to be used in Swagger request. GET and  DELETE
-        requests don't require body, so the data structure will have just
+        requests do not require body, so the data structure will have just
         query parameters if passed to swagger request.
         """
         if self._in_request.content_type == 'application/json':
             return json.dumps(self._in_request.data)
 
         method = self._in_request.META['REQUEST_METHOD'].lower()
+
         data = {}
         if method in ['post', 'put', 'patch']:
             data = self._in_request.query_params.dict()

@@ -9,7 +9,6 @@ from core.tests.fixtures import auth_api_client, logic_module
 from datamesh.models import LogicModuleModel
 from .fixtures import datamesh
 
-
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 

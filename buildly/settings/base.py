@@ -200,3 +200,8 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'gateway.urls.swagger_info',
 }
+
+ORGANIZATION_TYPES = [
+    'Custodian',
+    'Producer'
+]

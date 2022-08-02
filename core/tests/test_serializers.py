@@ -3,25 +3,29 @@ import pytest
 from core.serializers import OrganizationSerializer, CoreGroupSerializer, CoreUserSerializer
 from core.tests.fixtures import core_group, org, org_member
 
-
 @pytest.mark.django_db()
 def test_org_serializer(request_factory, org):
     request = request_factory.get('')
     serializer = OrganizationSerializer(org, context={'request': request})
     data = serializer.data
-    keys = ['id',
-            'organization_uuid',
-            'name',
-            'description',
-            'organization_url',
-            'create_date',
-            'edit_date',
-            'oauth_domains',
-            'date_format',
-            'phone',
-            'industries',
-            'stripe_subscription_details',
-            ]
+
+    keys = [
+        'id',
+        'organization_uuid',
+        'name',
+        'description',
+        'organization_url',
+        'create_date',
+        'edit_date',
+        'oauth_domains',
+        'date_format',
+        'phone',
+        'industries',
+        'allow_import_export',
+        'radius',
+        'organization_type',
+        'stripe_subscription_details'
+    ]
     assert set(data.keys()) == set(keys)
 
 
@@ -61,6 +65,7 @@ def test_core_user_serializer(request_factory, org_member):
             'privacy_disclaimer_accepted',
             'organization',
             'core_groups',
+            'email_preferences', 'push_preferences', 'user_timezone',
             'user_type',
             'survey_status'
             ]
