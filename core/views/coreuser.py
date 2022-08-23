@@ -14,7 +14,8 @@ from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
                               CoreUserResetPasswordConfirmSerializer, CoreUserEmailAlertSerializer,
-                              CoreUserProfileSerializer)
+                              CoreUserProfileSerializer, CoreUserUpdateOrganizationSerializer,
+                              CoreUserEmailNotificationSerializer)
 
 from django.http import Http404
 from rest_framework.views import APIView
@@ -358,12 +359,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.save()
         return Response(serializer.data)
 
-
-color_codes = {
-    'error': '#cc3300',
-    'info': '#2196F3',
-    'success': '#339900'
-}
 
     @action(detail=False, methods=['patch'], name='Update Organization', url_path='update_org/(?P<pk>\d+)')
     def update_info(self, request, pk=None, *args, **kwargs):

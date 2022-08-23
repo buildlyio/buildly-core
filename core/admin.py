@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, \
-    Industry, LogicModule, Organization, OrganizationType, Consortium
+    Industry, LogicModule, Organization, OrganizationType, Consortium, Partner
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
