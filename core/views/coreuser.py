@@ -281,6 +281,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
 
+    color_codes = {
+        'error': '#cc3300',
+        'info': '#2196F3',
+        'success': '#339900'
+    }
+
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserEmailAlertSerializer,
                          responses=SUCCESS_RESPONSE)
@@ -309,7 +315,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                                                   '/app/shipment/edit/:'+str(message['shipment_id']))
                 else:
                     message['shipment_url'] = None
-                message['color'] = color_codes.get(message['severity'])
+                message['color'] = self.color_codes.get(message['severity'])
                 context = {
                     'message': message,
                 }
@@ -358,12 +364,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-
-    color_codes = {
-        'error': '#cc3300',
-        'info': '#2196F3',
-        'success': '#339900'
-    }
 
     @action(detail=False, methods=['patch'], name='Update Organization', url_path='update_org/(?P<pk>\d+)')
     def update_info(self, request, pk=None, *args, **kwargs):
