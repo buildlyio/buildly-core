@@ -8,7 +8,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -182,6 +182,7 @@ REST_FRAMEWORK = {
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
 REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
 RESETPASS_CONFIRM_URL_PATH = os.getenv('RESETPASS_CONFIRM_URL_PATH', 'reset_password_confirm/')
+VERIFY_EMAIL_URL_PATH = os.getenv('VERIFY_EMAIL_URL_PATH', 'verify-email/')
 
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 
@@ -192,8 +193,7 @@ CORE_WEBSITE = "https://buildly.io"
 # User and Organization configuration
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
 DEFAULT_ORG = os.getenv('DEFAULT_ORG').lower() if os.getenv('DEFAULT_ORG') else None
-AUTO_APPROVE_USER = os.getenv('AUTO_APPROVE_USER', False)
-STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
+AUTO_APPROVE_USER = False if os.getenv('AUTO_APPROVE_USER') == 'False' else True
 
 # Swagger settings - for generate_swagger management command
 

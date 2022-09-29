@@ -23,7 +23,6 @@ router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
 router.register(r'partner', views.PartnerViewSet)
-router.register(r'stripe', views.StripeViewSet, basename='stripe') 
 
 
 urlpatterns = [

@@ -17,7 +17,8 @@ from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
                               CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
                               CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer,
-                              CoreUserEmailNotificationSerializer, CoreUserProfileSerializer)
+                              CoreUserEmailNotificationSerializer, CoreUserProfileSerializer,
+                              CoreUserVerifyEmailSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
                           DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
@@ -63,6 +64,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
         'update_org': CoreUserUpdateOrganizationSerializer,
         'notification': CoreUserEmailNotificationSerializer,
+        'verify_email': CoreUserVerifyEmailSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -321,3 +323,19 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             {
                 'detail': 'The notification were sent successfully on email.',
             }, status=status.HTTP_200_OK)
+
+
+    @swagger_auto_schema(methods=['post'],
+                         request_body=CoreUserVerifyEmailSerializer,
+                         responses=SUCCESS_RESPONSE)
+    @action(methods=['POST'], detail=False)
+    def verify_email(self, request, *args, **kwargs):
+        """
+        This endpoint is used to verify the email address.
+        """
+        serializer = self.get_serializer(data=request.data)
+        return Response(
+            {
+                'success': serializer.is_valid(),
+            },
+            status=status.HTTP_200_OK)
