@@ -76,7 +76,7 @@ services:
       # SOCIAL_AUTH_CLIENT_SECRET: "0aYDOHUNAxK4MjbnYOHhfrKx8Ezj3jd7aKq2C7yRDZ6FbAL4SgRFxY8N6GbB6IGyCgpT6pmQ5pEVJmH7mIEUJxyXKbta7ebxULLULjXwnJYGhUgT2hPyCfptkWFhsZVV"
       EMAIL_HOST: "smtp.sendgrid.net"
       EMAIL_HOST_USER: "apikey"
-      EMAIL_HOST_PASSWORD: "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"
+      EMAIL_HOST_PASSWORD: // put sendgrid key here
       EMAIL_PORT: "587"
       EMAIL_USE_TLS: "False"
       EMAIL_SUBJECT_PREFIX: "NO REPLY: Buildly - "
