@@ -194,6 +194,7 @@ CORE_WEBSITE = "https://buildly.io"
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
 DEFAULT_ORG = os.getenv('DEFAULT_ORG').lower() if os.getenv('DEFAULT_ORG') else None
 AUTO_APPROVE_USER = False if os.getenv('AUTO_APPROVE_USER') == 'False' else True
+FREE_COUPON_CODE = os.getenv('FREE_COUPON_CODE', '')
 
 # Swagger settings - for generate_swagger management command
 

@@ -20,6 +20,7 @@ def test_org_serializer(request_factory, org):
             'date_format',
             'phone',
             'industries',
+            'unlimited_free_plan',
             ]
     assert set(data.keys()) == set(keys)
 

@@ -1,0 +1,25 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="en">
+<head>
+{% autoescape off %}
+    <p>
+{% blocktrans %}You're receiving this email for verification of your user account.{% endblocktrans %}
+    </p>
+
+    <p>
+{% trans "Please click on the below link to verify your account and be able to login" %}
+    </p>
+
+    {{ verification_link }}
+    <p>
+    {% trans "Your username, in case you've forgotten:" %} {{ user.get_username }}
+    </p>
+
+{% trans "Thanks for using our site!" %}
+
+{% endautoescape %}
+</head>
+<body>
+
+</body>
+</html>

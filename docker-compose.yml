@@ -84,6 +84,7 @@ services:
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
       VERIFY_EMAIL_URL_PATH: "verify-email/"
+      FREE_COUPON_CODE: "Insights@2022"
 
 volumes:
   static-content:
