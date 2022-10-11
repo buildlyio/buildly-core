@@ -109,10 +109,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
+    coupon_code = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name')
+        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name', 'coupon_code')
         read_only_fields = CoreUserSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
@@ -123,6 +124,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         core_groups = validated_data.pop('core_groups', [])
         invitation_token = validated_data.pop('invitation_token', None)
+        coupon_code = validated_data.pop('coupon_code', None)
 
         # create core user
         if settings.AUTO_APPROVE_USER:  # If auto-approval set to true
@@ -157,6 +159,10 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         # add org admin role to the user if org is new
         if is_new_org:
+            if coupon_code and coupon_code == settings.FREE_COUPON_CODE:
+                organization.unlimited_free_plan = True
+                organization.save()
+
             group_org_admin = CoreGroup.objects.get(organization=organization,
                                                     is_org_level=True,
                                                     permissions=PERMISSIONS_ORG_ADMIN)
@@ -167,25 +173,23 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             coreuser.core_groups.add(group)
 
         # create or update an invitation
-        reg_location = urljoin(settings.FRONTEND_URL,
-                            settings.VERIFY_EMAIL_URL_PATH)
+        reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)
         reg_location = reg_location + '{}'
         token = urlsafe_base64_encode(force_bytes(coreuser.core_user_uuid))
 
         # build the invitation link
-        invitation_link = self.context['request'].build_absolute_uri(
+        verification_link = self.context['request'].build_absolute_uri(
             reg_location.format(token)
         )
 
         # create the user context for the E-mail templates
         context = {
-            'invitation_link': invitation_link,
-            'org_admin_name': coreuser.first_name,
-            'organization_name': coreuser.organization.name,
+            'verification_link': verification_link,
+            'user': coreuser,
         }
-        subject = 'Application Access'  # TODO we need to make this dynamic
-        template_name = 'email/coreuser/invitation.txt'
-        html_template_name = 'email/coreuser/invitation.html'
+        subject = 'Account verification required'  # TODO we need to make this dynamic
+        template_name = 'email/coreuser/email_verification.txt'
+        html_template_name = 'email/coreuser/email_verification.html'
         send_email(coreuser.email, subject, context, template_name, html_template_name)
 
         return coreuser
@@ -206,10 +210,10 @@ class CoreUserProfileSerializer(serializers.Serializer):
 
     class Meta:
         model = CoreUser
-        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name', 'user_type', 'survey_status')
+        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name',
+                  'user_type', 'survey_status')
 
     def update(self, instance, validated_data):
-
         organization_name = validated_data.pop('organization_name', None)
 
         name = Organization.objects.filter(name=organization_name).first()
@@ -375,8 +379,8 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
                   'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
                   'user_type', 'survey_status')
-    def update(self, instance, validated_data):
 
+    def update(self, instance, validated_data):
         organization_name = str(validated_data.pop('organization_name')).lower()
         instance.email = validated_data.get('email', instance.email)
         instance.user_type = validated_data.get('user_type', instance.user_type)
@@ -448,7 +452,7 @@ class CoreUserEmailNotificationSerializer(serializers.Serializer):
     """
     organization_uuid = serializers.UUIDField()
     notification_messages = serializers.CharField()
-    
+
 
 class PartnerSerializer(serializers.ModelSerializer):
     partner_uuid = serializers.ReadOnlyField()

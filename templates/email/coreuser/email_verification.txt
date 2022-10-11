@@ -1,0 +1,12 @@
+{% load i18n %}{% autoescape off %}
+{% blocktrans %}You're receiving this email for verification of your user account.{% endblocktrans %}
+
+{% trans "Please click on the below link to verify your account and be able to login" %}
+
+{{ verification_link }}
+
+{% trans "Your username, in case you've forgotten:" %} {{ user.get_username }}
+
+{% trans "Thanks for using our site!" %}
+
+{% endautoescape %}
