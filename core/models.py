@@ -438,7 +438,7 @@ class Consortium(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name_plural = "Consortiums"
+        verbose_name_plural = 'Consortiums'
 
     def save(self, *args, **kwargs):
         if self.create_date is None:
@@ -456,3 +456,8 @@ class Partner(models.Model):
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        verbose_name_plural = 'Partners'
+
+    def __str__(self):
+        return f'{self.name}' or f'{self.uuid}'
