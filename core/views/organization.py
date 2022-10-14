@@ -58,7 +58,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         """
         Fetch Already existing Organizations in Buildly Core,
         Any logged in user can access this
-        """s
+        """
         # returns names of existing orgs in Buildly Core as a list
         queryset = Organization.objects.all()
         names = list()
