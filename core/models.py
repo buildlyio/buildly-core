@@ -182,6 +182,7 @@ class CoreUser(AbstractUser):
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE, help_text='Related Org to associate with')
     core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
+    tos_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
     user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
