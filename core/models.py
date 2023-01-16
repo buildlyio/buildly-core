@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils import timezone
+from pyasn1.compat.octets import null
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -275,3 +276,34 @@ class Partner(models.Model):
     name = models.CharField(blank=True, null=True, max_length=255)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
+
+
+class Subscription(models.Model):
+    subscription_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    stripe_product = models.CharField(max_length=255)
+    stripe_id = models.CharField(max_length=255)
+    stripe_card_info = JSONField(null=True, blank=True)
+    trial_start_date = models.DateField(null=True, blank=True)
+    trial_end_date = models.DateField(null=True, blank=True)
+    subscription_start_date = models.DateField()
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(
+        'core.CoreUser',
+        on_delete=models.SET_NULL,
+        blank=null,
+        null=True,
+        related_name='user_subscription'
+    )
+    created_by = models.ForeignKey(
+        'core.CoreUser',
+        on_delete=models.SET_NULL,
+        blank=null,
+        null=True,
+        related_name='created_subscription'
+    )
+    organization = models.ForeignKey(
+        'core.Organization',
+        on_delete=models.CASCADE,
+        related_name='organization_subscription'
+    )

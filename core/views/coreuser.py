@@ -324,7 +324,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 'detail': 'The notification were sent successfully on email.',
             }, status=status.HTTP_200_OK)
 
-
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserVerifyEmailSerializer,
                          responses=SUCCESS_RESPONSE)
