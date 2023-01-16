@@ -12,6 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated)
 
 from core.models import Subscription
+from core.serializers import SubscriptionSerializer
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -26,11 +27,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
      """
     queryset = Subscription.objects.all()
-
+    serializer_class = SubscriptionSerializer
     permission_classes = (AllowAny, IsAuthenticated)
 
     def create(self, request, *args, **kwargs):
-
         if settings.STRIPE_SECRET:
             data = self.get_stripe_details()
             if data:
@@ -108,25 +108,29 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         """
         data = self.request.data.copy()
         product = data.get('product')
-        card = data.get('card')
+        card = data.pop('stripe_card_info', None)
 
         if not (product and card):
             return None
 
-        stripe.api_key = settings.STRIPE_SECRET
-        customer = stripe.Customer.create(
-            email=self.request.user.email,
-            name=str(self.request.user.organization.name).capitalize()
-        )
-        stripe.PaymentMethod.attach(card, customer=customer.id)
-        stripe_subscription_details = dict(
-            customer_stripe_id=customer.id,
-            product=product,
-            trial_start_date=timezone.now(),
-            trial_end_date=timezone.now() + relativedelta.relativedelta(months=1),
-            subscription_start_date=timezone.now() + relativedelta.relativedelta(months=1),
-        )
+        try:
+            stripe.api_key = settings.STRIPE_SECRET
+            customer = stripe.Customer.create(
+                email=self.request.user.email,
+                name=str(self.request.user.organization.name).capitalize()
+            )
+            stripe.PaymentMethod.attach(card, customer=customer.id)
+            stripe_subscription_details = dict(
+                customer_stripe_id=customer.id,
+                product=product,
+                stripe_card_info=card if data.get('save_card_details') else None,
+                trial_start_date=timezone.now(),
+                trial_end_date=timezone.now() + relativedelta.relativedelta(months=1),
+                subscription_start_date=timezone.now() + relativedelta.relativedelta(months=1),
+            )
 
-        data.update(stripe_subscription_details)
+            data.update(stripe_subscription_details)
+        except stripe.error.InvalidRequestError:
+            return None
 
         return data

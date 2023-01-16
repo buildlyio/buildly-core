@@ -96,7 +96,6 @@ class Organization(models.Model):
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
     unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
-    stripe_info = JSONField(blank=True, null=True)
 
     class Meta:
         ordering = ('name',)
@@ -282,7 +281,8 @@ class Partner(models.Model):
 class Subscription(models.Model):
     subscription_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     stripe_product = models.CharField(max_length=255)
-    card = models.CharField(max_length=255, null=True, blank=True)
+    stripe_id = models.CharField(max_length=255)
+    stripe_card_info = JSONField(null=True, blank=True)
     trial_start_date = models.DateField(null=True, blank=True)
     trial_end_date = models.DateField(null=True, blank=True)
     subscription_start_date = models.DateField()
@@ -293,13 +293,17 @@ class Subscription(models.Model):
         on_delete=models.SET_NULL,
         blank=null,
         null=True,
-        related_name='subscription_user'
+        related_name='user_subscription'
     )
     created_by = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
         blank=null,
         null=True,
-        related_name='subscription_creator'
+        related_name='created_subscription'
     )
-    organization = models.ForeignKey('core.Organization', on_delete=models.CASCADE)
+    organization = models.ForeignKey(
+        'core.Organization',
+        on_delete=models.CASCADE,
+        related_name='organization_subscription'
+    )
