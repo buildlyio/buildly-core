@@ -77,7 +77,6 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         serializer.save(
             user=self.request.user,
             created_by=self.request.user,
-            organization=self.request.user.organization
         )
 
     @action(
@@ -108,9 +107,9 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         """
         data = self.request.data.copy()
         product = data.get('product')
-        card = data.pop('stripe_card_info', None)
+        card_id = data.pop('card_id', None)
 
-        if not (product and card):
+        if not (product and card_id):
             return None
 
         try:
@@ -119,14 +118,15 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 email=self.request.user.email,
                 name=str(self.request.user.organization.name).capitalize()
             )
-            stripe.PaymentMethod.attach(card, customer=customer.id)
+            stripe.PaymentMethod.attach(card_id, customer=customer.id)
             stripe_subscription_details = dict(
                 customer_stripe_id=customer.id,
-                product=product,
-                stripe_card_info=card if data.get('save_card_details') else None,
-                trial_start_date=timezone.now(),
-                trial_end_date=timezone.now() + relativedelta.relativedelta(months=1),
-                subscription_start_date=timezone.now() + relativedelta.relativedelta(months=1),
+                stripe_product=product,
+                stripe_card_id=card_id,
+                trial_start_date=timezone.now().date(),
+                trial_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                subscription_start_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                organization=self.request.user.organization.id,
             )
 
             data.update(stripe_subscription_details)
