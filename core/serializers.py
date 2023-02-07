@@ -355,8 +355,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = '__all__'
 
-    def get_subscription(self):
-        return SubscriptionSerializer(self.organization_subscription.all()).data
+    def get_subscription(self, organization):
+        return SubscriptionSerializer(organization.organization_subscription.all()).data
 
 
 class OrganizationNestedSerializer(serializers.ModelSerializer):

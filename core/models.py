@@ -285,7 +285,8 @@ class Subscription(models.Model):
     stripe_card_id = models.CharField(max_length=255, null=True, blank=True)
     trial_start_date = models.DateField(null=True, blank=True)
     trial_end_date = models.DateField(null=True, blank=True)
-    subscription_start_date = models.DateField()
+    subscription_start_date = models.DateField(null=True, blank=True)
+    subscription_end_date = models.DateField(null=True, blank=True)
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(
