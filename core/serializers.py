@@ -369,7 +369,8 @@ class OrganizationNestedSerializer(serializers.ModelSerializer):
 
     def get_subscription(self, organization):
         return SubscriptionSerializer(
-            organization.organization_subscription.all()
+            organization.organization_subscription.all(),
+            many=True
         ).data
 
 class AccessTokenSerializer(serializers.ModelSerializer):
