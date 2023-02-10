@@ -16,7 +16,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -80,6 +80,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
+    subscriptions = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
         try:
@@ -95,11 +96,32 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreUser
-        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
-                  'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token', 'user_type', 'survey_status')
+        fields = (
+            'id',
+            'core_user_uuid',
+            'first_name',
+            'last_name',
+            'email',
+            'username',
+            'is_active',
+            'title',
+            'contact_info',
+            'privacy_disclaimer_accepted',
+            'organization',
+            'core_groups',
+            'invitation_token',
+            'user_type',
+            'survey_status',
+            'subscriptions'
+        )
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
+
+    def get_subscriptions(self, user):
+        return SubscriptionSerializer(
+            user.organization.organization_subscription.all(),
+            many=True
+        ).data
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
@@ -327,11 +349,29 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
 
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscription = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
         fields = '__all__'
 
+    def get_subscription(self, organization):
+        return SubscriptionSerializer(organization.organization_subscription.all()).data
+
+
+class OrganizationNestedSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscription = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = '__all__'
+
+    def get_subscription(self, organization):
+        return SubscriptionSerializer(
+            organization.organization_subscription.all(),
+            many=True
+        ).data
 
 class AccessTokenSerializer(serializers.ModelSerializer):
     user = CoreUserSerializer()
@@ -366,8 +406,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 
 class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
-    """ Let's user update his  organization_name,and email from the one time pop-up screen.
-     Also this assigns permissions to users """
+    """
+    Lets user update his  organization_name,and email from the one time pop-up screen.
+    Also, this assigns permissions to users
+    """
 
     email = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
@@ -376,9 +418,23 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreUser
-        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
-                  'user_type', 'survey_status')
+        fields = (
+            'id',
+            'core_user_uuid',
+            'first_name',
+            'last_name',
+            'email',
+            'username',
+            'is_active',
+            'title',
+            'contact_info',
+            'privacy_disclaimer_accepted',
+            'organization_name',
+            'organization',
+            'core_groups',
+            'user_type',
+            'survey_status'
+        )
 
     def update(self, instance, validated_data):
         organization_name = str(validated_data.pop('organization_name')).lower()
@@ -480,3 +536,10 @@ class CoreUserVerifyEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError({'token': ['Invalid value']})
 
         return attrs
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+        
