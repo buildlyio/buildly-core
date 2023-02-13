@@ -1,4 +1,4 @@
-name: Build and Push to Production
+name: Build and Push Docker Image to Prod
 
 on:
   push:
@@ -7,8 +7,10 @@ on:
 
 jobs:
   build:
-    name: Build and Push to AWS
+    name: Build and Push image to GCR
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: gcr.io/spry-bricolage-298920/transparent-path/prod/buildly-core
     steps:
     - uses: actions/checkout@v2
       with:
@@ -42,35 +44,28 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+    # Login to docker
+    - name: Docker login
+      uses: docker/login-action@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+        registry: gcr.io
+        username: _json_key
+        password: ${{ secrets.GCR_JSON_KEY }}
 
-    # Login to Amazon ECR
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+    # Build docker image
+    - name: Build docker image
+      run: docker build -t $IMAGE_NAME:latest .
 
-    # Build, tag and push docker image
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: transparent-path/buildly_core
-
-        IMAGE_TAG: latest
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    # Push docker image to GCR
+    - name: Push to Google Container Registry
+      run: docker push $IMAGE_NAME:latest
 
     # Send message on Slack
     - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_MESSAGE: 'Production Release for Transparent Path buildly-core created and Docker Image pushed to AWS ECR Successfully'
+        SLACK_MESSAGE: 'Production Docker Image of buildly core pushed to Google Container Registry Successfully'
         MSG_MINIMAL: true
 
     # Send email alert
@@ -84,6 +79,4 @@ jobs:
         subject: Github Actions Build and Push job alert
         to: ${{ secrets.RECIPIENT_EMAIL }}
         from: ${{ secrets.SENDER_EMAIL }}
-        body: Production Release for Transparent Path buildly-core created and Docker Image pushed to AWS ECR Successfully
-
-# Reference : https://towardsaws.com/build-push-docker-image-to-aws-ecr-using-github-actions-8396888a8f9e
+        body: Production Docker Image of buildly core pushed to Google Container Registry Successfully
