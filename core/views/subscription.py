@@ -126,10 +126,22 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 trial_start_date=timezone.now().date(),
                 trial_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
                 subscription_start_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=2),
                 organization=self.request.user.organization.organization_uuid,
             )
-
             data.update(stripe_subscription_details)
+
+            # get product details
+            stripe_product = stripe.Product.retrieve(product).data
+            data.update(
+                dict(
+                    stripe_product_info=dict(
+                        id=stripe_product.get('id'),
+                        name=stripe_product.get('name')
+                    )
+                )
+            )
+
         except stripe.error.InvalidRequestError:
             return None
 
