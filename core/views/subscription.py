@@ -132,12 +132,13 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             data.update(stripe_subscription_details)
 
             # get product details
-            stripe_product = stripe.Product.retrieve(product).data
+            stripe_product = stripe.Product.retrieve(product)
             data.update(
                 dict(
                     stripe_product_info=dict(
                         id=stripe_product.get('id'),
-                        name=stripe_product.get('name')
+                        name=stripe_product.get('name'),
+                        description=stripe_product.get('description', ''),
                     )
                 )
             )
@@ -146,3 +147,4 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             return None
 
         return data
+
