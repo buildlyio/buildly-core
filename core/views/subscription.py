@@ -63,9 +63,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
                 product_info = data.get('stripe_product_info', {})
                 # send the email
-                frontend_link = ''
                 context = {
-                    'frontend_link': frontend_link,
+                    'frontend_link': settings.FRONTEND_URL,
                     'product_name': product_info.get('name'),
                     'product_description': product_info.get('description')
                 }
