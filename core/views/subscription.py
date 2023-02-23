@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated)
 
+from core.email_utils import send_email
 from core.models import Subscription
 from core.serializers import SubscriptionSerializer
 
@@ -59,6 +60,25 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 serializer = self.get_serializer(instance, data=data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 self.perform_create(serializer)
+
+                product_info = data.get('stripe_product_info', {})
+                # send the email
+                frontend_link = ''
+                context = {
+                    'frontend_link': frontend_link,
+                    'product_name': product_info.get('name'),
+                    'product_description': product_info.get('description')
+                }
+                subject = 'Subscription Success'
+                template_name = 'email/coreuser/subscription.txt'
+                html_template_name = 'email/coreuser/subscription.html'
+                send_email(
+                    self.request.user.email,
+                    subject,
+                    context,
+                    template_name,
+                    html_template_name
+                )
 
                 return Response(
                     serializer.data,
