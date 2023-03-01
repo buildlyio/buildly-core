@@ -146,7 +146,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         core_groups = validated_data.pop('core_groups', [])
         invitation_token = validated_data.pop('invitation_token', None)
-        coupon_code = validated_data.pop('coupon_code', None)
+        coupon_code = validated_data.get('coupon_code', None)
 
         # create core user
         if settings.AUTO_APPROVE_USER:  # If auto-approval set to true
