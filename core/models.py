@@ -187,6 +187,7 @@ class CoreUser(AbstractUser):
     edit_date = models.DateTimeField(null=True, blank=True)
     user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
     survey_status = models.BooleanField(default=False)
+    coupon = models.CharField(max_length=48, blank=True, null=True)
 
     class Meta:
         ordering = ('first_name',)
