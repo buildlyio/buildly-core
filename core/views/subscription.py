@@ -148,11 +148,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 items=[
                     {"price": stripe_product.default_price},
                 ],
-                trial_start=datetime.strptime(timezone.now().date(), '%Y-%m-%d'),
-                trial_end_date=datetime.strptime(
-                    timezone.now().date() + relativedelta.relativedelta(months=1),
-                    '%Y-%m-%d'
-                )
+                trial_start=(timezone.now().date() - relativedelta.relativedelta(months=1)).timestamp(),
+                trial_end=timezone.now().date().timestamp(),
+                current_period_start=timezone.now().date().timestamp(),
+                current_period_end=(timezone.now().date() + relativedelta.relativedelta(months=1)).timestamp()
             )
 
             if stripe_subscription:
@@ -161,10 +160,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                     stripe_subscription_id=stripe_subscription.id,
                     stripe_product=product_id,
                     stripe_payment_method_id=payment_method_id,
-                    trial_start_date=timezone.now().date(),
-                    trial_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
-                    subscription_start_date=timezone.now().date() + relativedelta.relativedelta(months=1),
-                    subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=2),
+                    trial_start_date=timezone.now().date() - relativedelta.relativedelta(months=1),
+                    trial_end_date=timezone.now().date(),
+                    subscription_start_date=timezone.now().date(),
+                    subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
                     organization=self.request.user.organization.organization_uuid,
                 )
                 data.update(stripe_subscription_details)
