@@ -113,7 +113,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         products = []
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
-            stripe_products = stripe.Product.list()
+            stripe_products = stripe.Product.search(query="active:'true'",)
             products = stripe_products.data
 
         return Response(
