@@ -34,6 +34,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
+            stripe.api_version = '2022-11-15'
             data = self.get_stripe_details()
             if data:
                 serializer = self.get_serializer(data=data)
@@ -56,6 +57,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if settings.STRIPE_SECRET:
+            stripe.api_key = settings.STRIPE_SECRET
+            stripe.api_version = '2022-11-15'
             data = self.get_stripe_details()
             if data:
                 serializer = self.get_serializer(instance, data=data, partial=True)
@@ -113,6 +116,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         products = []
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
+            stripe.api_version = '2022-11-15'
             stripe_products = stripe.Product.search(query="active:'true'",)
             products = stripe_products.data
 
