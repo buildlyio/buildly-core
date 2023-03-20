@@ -152,10 +152,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 items=[
                     {"price": stripe_product.default_price},
                 ],
-                trial_start=(timezone.now().date() - relativedelta.relativedelta(months=1)).timestamp(),
-                trial_end=timezone.now().date().timestamp(),
-                current_period_start=timezone.now().date().timestamp(),
-                current_period_end=(timezone.now().date() + relativedelta.relativedelta(months=1)).timestamp()
+                trial_start=(timezone.now() - relativedelta.relativedelta(months=1)).timestamp(),
+                trial_end=timezone.now().timestamp(),
+                current_period_start=timezone.now().timestamp(),
+                current_period_end=(timezone.now() + relativedelta.relativedelta(months=1)).timestamp()
             )
 
             if stripe_subscription:
