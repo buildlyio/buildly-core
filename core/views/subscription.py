@@ -87,6 +87,13 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                     serializer.data,
                     status=status.HTTP_201_CREATED
                 )
+            return Response(
+                dict(
+                    code='stripe_api_error',
+                    message='There was an error creating subscription'
+                ),
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             dict(
@@ -142,9 +149,18 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         try:
             customer = stripe.Customer.create(
                 email=self.request.user.email,
-                name=str(self.request.user.organization.name).capitalize()
+                name=str(self.request.user.organization.name).capitalize(),
+
             )
             stripe.PaymentMethod.attach(payment_method_id, customer=customer.id)
+
+            # set default payment method
+            customer = stripe.Customer.modify(
+                customer.id,
+                invoice_settings={
+                    'default_payment_method': payment_method_id
+                }
+            )
 
             # create subscription:
             stripe_subscription = stripe.Subscription.create(
@@ -152,10 +168,6 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 items=[
                     {"price": stripe_product.default_price},
                 ],
-                trial_start=(timezone.now() - relativedelta.relativedelta(months=1)).timestamp(),
-                trial_end=timezone.now().timestamp(),
-                current_period_start=timezone.now().timestamp(),
-                current_period_end=(timezone.now() + relativedelta.relativedelta(months=1)).timestamp()
             )
 
             if stripe_subscription:
