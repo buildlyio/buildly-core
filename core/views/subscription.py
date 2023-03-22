@@ -33,16 +33,18 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if settings.STRIPE_SECRET:
+            stripe.api_key = settings.STRIPE_SECRET
+            stripe.api_version = '2022-11-15'
             data = self.get_stripe_details()
             if data:
                 serializer = self.get_serializer(data=data)
                 serializer.is_valid(raise_exception=True)
                 self.perform_create(serializer)
 
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
+            return Response(
+                data,
+                status=status.HTTP_201_CREATED
+            )
 
         return Response(
             dict(
@@ -55,6 +57,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if settings.STRIPE_SECRET:
+            stripe.api_key = settings.STRIPE_SECRET
+            stripe.api_version = '2022-11-15'
             data = self.get_stripe_details()
             if data:
                 serializer = self.get_serializer(instance, data=data, partial=True)
@@ -83,6 +87,13 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                     serializer.data,
                     status=status.HTTP_201_CREATED
                 )
+            return Response(
+                dict(
+                    code='stripe_api_error',
+                    message='There was an error creating subscription'
+                ),
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
             dict(
@@ -104,7 +115,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         permission_classes=[AllowAny],
         name='Fetch all existing products',
     )
-    def stripe_products(self, request, pk=None, *args, **kwargs):
+    def stripe_products(self, request, *args, **kwargs):
         """
         Fetch all existing Products in Stripe Platform
         """
@@ -112,7 +123,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         products = []
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
-            stripe_products = stripe.Product.list()
+            stripe.api_version = '2022-11-15'
+            stripe_products = stripe.Product.search(query="active:'true'",)
             products = stripe_products.data
 
         return Response(
@@ -125,45 +137,64 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         Get stripe details
         """
         data = self.request.data.copy()
-        product = data.get('product')
-        card_id = data.pop('card_id', None)
+        product_id = data.get('product')
+        payment_method_id = data.pop('card_id', None)
 
-        if not (product and card_id):
+        if not (product_id and payment_method_id):
             return None
 
+        # get stripe product
+        stripe_product = stripe.Product.retrieve(product_id)
+
         try:
-            stripe.api_key = settings.STRIPE_SECRET
             customer = stripe.Customer.create(
                 email=self.request.user.email,
-                name=str(self.request.user.organization.name).capitalize()
-            )
-            stripe.PaymentMethod.attach(card_id, customer=customer.id)
-            stripe_subscription_details = dict(
-                customer_stripe_id=customer.id,
-                stripe_product=product,
-                stripe_card_id=card_id,
-                trial_start_date=timezone.now().date(),
-                trial_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
-                subscription_start_date=timezone.now().date() + relativedelta.relativedelta(months=1),
-                subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=2),
-                organization=self.request.user.organization.organization_uuid,
-            )
-            data.update(stripe_subscription_details)
+                name=str(self.request.user.organization.name).capitalize(),
 
-            # get product details
-            stripe_product = stripe.Product.retrieve(product)
-            data.update(
-                dict(
-                    stripe_product_info=dict(
-                        id=stripe_product.get('id'),
-                        name=stripe_product.get('name'),
-                        description=stripe_product.get('description', ''),
+            )
+            stripe.PaymentMethod.attach(payment_method_id, customer=customer.id)
+
+            # set default payment method
+            customer = stripe.Customer.modify(
+                customer.id,
+                invoice_settings={
+                    'default_payment_method': payment_method_id
+                }
+            )
+
+            # create subscription:
+            stripe_subscription = stripe.Subscription.create(
+                customer=customer.id,
+                items=[
+                    {"price": stripe_product.default_price},
+                ],
+            )
+
+            if stripe_subscription:
+                stripe_subscription_details = dict(
+                    customer_stripe_id=customer.id,
+                    stripe_subscription_id=stripe_subscription.id,
+                    stripe_product=product_id,
+                    stripe_payment_method_id=payment_method_id,
+                    trial_start_date=timezone.now().date() - relativedelta.relativedelta(months=1),
+                    trial_end_date=timezone.now().date(),
+                    subscription_start_date=timezone.now().date(),
+                    subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                    organization=self.request.user.organization.organization_uuid,
+                )
+                data.update(stripe_subscription_details)
+
+                data.update(
+                    dict(
+                        stripe_product_info=dict(
+                            id=stripe_product.get('id'),
+                            name=stripe_product.get('name'),
+                            description=stripe_product.get('description', ''),
+                        )
                     )
                 )
-            )
 
         except stripe.error.InvalidRequestError:
             return None
 
         return data
-

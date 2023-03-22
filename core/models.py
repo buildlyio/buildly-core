@@ -281,10 +281,11 @@ class Partner(models.Model):
 
 class Subscription(models.Model):
     subscription_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    stripe_subscription_id = models.CharField(max_length=255, null=True)
     stripe_product = models.CharField(max_length=255)
     stripe_product_info = JSONField(blank=True, null=True)
-    customer_stripe_id = models.CharField(max_length=255)
-    stripe_card_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_customer_id = models.CharField(max_length=255, null=True)
+    stripe_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     trial_start_date = models.DateField(null=True, blank=True)
     trial_end_date = models.DateField(null=True, blank=True)
     subscription_start_date = models.DateField(null=True, blank=True)
