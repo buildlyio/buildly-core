@@ -9,9 +9,6 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
@@ -156,9 +153,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     @transaction.atomic
     def perform_invite(self, serializer):
 
-        reg_location = urljoin(settings.FRONTEND_URL,
-                               settings.REGISTRATION_URL_PATH)
-        reg_location = reg_location + '?token={}'
         email_addresses = serializer.validated_data.get('emails')
         user = self.request.user
 
@@ -173,9 +167,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 token = create_invitation_token(email_address, organization)
 
                 # build the invitation link
-                invitation_link = self.request.build_absolute_uri(
-                    reg_location.format(token)
-                )
+                invitation_link = f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?token={token}'
+
                 links.append(invitation_link)
 
                 # create the used context for the E-mail templates
