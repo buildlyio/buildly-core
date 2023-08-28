@@ -349,13 +349,13 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
 
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
-    subscription = serializers.SerializerMethodField()
+    subscriptions = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
         fields = '__all__'
 
-    def get_subscription(self, organization):
+    def get_subscriptions(self, organization):
         return SubscriptionSerializer(
             organization.organization_subscription.all(),
             many=True
