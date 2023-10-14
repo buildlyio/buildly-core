@@ -92,13 +92,23 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     @action(methods=['POST'], detail=False)
     def assignees(self, request, *args, **kwargs):
         user_uuids = request.data
-        users = (
-            self.get_queryset()
-            .filter(core_user_uuid__in=user_uuids)
-            .values('core_user_uuid', 'first_name', 'last_name', 'email')
-        )
+        final_data= dict()
+        if user_uuids:
+            users = (
+                self.get_queryset()
+                .in_bulk(user_uuids)
+            )
 
-        return Response(list(users), status=status.HTTP_200_OK)
+            final_data = {
+                key: dict(
+                    first_name=value.first_name,
+                    last_name=value.last_name,
+                )
+                for key, value in users.items()
+            }
+
+
+        return Response(final_data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserInvitationSerializer,
