@@ -89,6 +89,17 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         serializer = self.get_serializer(instance=user, context={'request': request})
         return Response(serializer.data)
 
+    @action(methods=['POST'], detail=False)
+    def assignees(self, request, *args, **kwargs):
+        user_uuids = request.data
+        users = (
+            self.get_queryset()
+            .filter(core_user_uuid__in=user_uuids)
+            .values('core_user_uuid', 'first_name', 'last_name', 'email')
+        )
+
+        return Response(list(users), status=status.HTTP_200_OK)
+
     @swagger_auto_schema(methods=['post'],
                          request_body=CoreUserInvitationSerializer,
                          responses=COREUSER_INVITE_RESPONSE)
