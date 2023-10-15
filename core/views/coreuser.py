@@ -96,15 +96,15 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         if user_uuids:
             users = (
                 self.get_queryset()
-                .in_bulk(user_uuids)
+                .filter(core_user_uuid__in=user_uuids)
             )
 
             final_data = {
-                key: dict(
-                    first_name=value.first_name,
-                    last_name=value.last_name,
+                item.core_user_uuid: dict(
+                    first_name=item.first_name,
+                    last_name=item.last_name,
                 )
-                for key, value in users.items()
+                for item in users.items()
             }
 
 
