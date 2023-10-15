@@ -104,7 +104,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                     first_name=item.first_name,
                     last_name=item.last_name,
                 )
-                for item in users.items()
+                for item in users
             }
 
 
