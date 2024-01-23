@@ -118,10 +118,13 @@ class CoreUserSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_subscriptions(self, user):
-        return SubscriptionSerializer(
-            user.organization.organization_subscription.all(),
-            many=True
-        ).data
+        if user.organization:
+            return SubscriptionSerializer(
+                user.organization.organization_subscription.all(),
+                many=True
+            ).data
+
+        return None
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
