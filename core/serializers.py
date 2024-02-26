@@ -379,6 +379,7 @@ class OrganizationNestedSerializer(serializers.ModelSerializer):
             many=True
         ).data
 
+
 class AccessTokenSerializer(serializers.ModelSerializer):
     user = CoreUserSerializer()
 
@@ -450,6 +451,7 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
 
         if instance.email is not None:
             instance.save()
+
         is_new_org = Organization.objects.filter(name=organization_name)
 
         # check whether org_name is "default"
@@ -458,16 +460,25 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             instance.organization = default_org
             instance.save()
             # now attach the user role as USER to default organization
-            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                        is_org_level=True,
-                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            default_org_user = (
+                CoreGroup
+                .objects
+                .filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_VIEW_ONLY
+                )
+                .first()
+            )
             instance.core_groups.add(default_org_user)
 
             # remove any other group permissions he is not added
             for single_group in instance.core_groups.all():
-                default_org_groups = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                              is_org_level=True,
-                                                              permissions=PERMISSIONS_VIEW_ONLY)
+                default_org_groups = CoreGroup.objects.filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_VIEW_ONLY
+                )
                 if single_group not in default_org_groups:
                     instance.core_groups.remove(single_group)
 
@@ -479,9 +490,16 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             instance.is_active = False
             instance.save()
             # now attach the user role as USER
-            org_user = CoreGroup.objects.filter(organization__name=organization_name,
-                                                is_org_level=True,
-                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+            org_user = (
+                CoreGroup
+                .objects
+                .filter(
+                    organization__name=organization_name,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_VIEW_ONLY
+                )
+                .first()
+            )
 
             instance.core_groups.add(org_user)
 
@@ -498,11 +516,23 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             # first update the org name for that user
             organization = Organization.objects.create(name=organization_name)
             instance.organization = organization
+
+            # activate user
+            instance.is_active = True
+
+            # save the user
             instance.save()
+
             # now attach the user role as ADMIN
-            org_admin = CoreGroup.objects.get(organization=organization,
-                                              is_org_level=True,
-                                              permissions=PERMISSIONS_ORG_ADMIN)
+            org_admin = (
+                CoreGroup
+                .objects
+                .get(
+                    organization=organization,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_ORG_ADMIN
+                )
+            )
             instance.core_groups.add(org_admin)
 
         return instance
@@ -530,7 +560,7 @@ class CoreUserVerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField()
 
     def validate(self, attrs):
-        # Decode the uidb64 to uid to get User object
+        # Decode the uuid64 to uid to get User object
         try:
             uid = force_text(urlsafe_base64_decode(attrs['token']))
             user = CoreUser.objects.filter(core_user_uuid=uid).first()
@@ -548,4 +578,3 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = '__all__'
-        
