@@ -17,7 +17,7 @@ jobs:
         fetch-depth: 0
 
     # auto generate tag from label defined in Dockerfile
-    - uses: butlerlogic/action-autotag@stable
+    - uses: butlerlogic/action-autotag@1.1.2
       id: tag_version
       env:
         GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
