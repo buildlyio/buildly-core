@@ -53,7 +53,7 @@ class InternationalizationCreateViewTest(TestCase):
 
         data = {
             'language': 'pt-BR',
-            'language_file': '{"name": "Nome", "gender": "Gênero"}'
+            'language_file': '{"name": "Nome", "gender": "Gênero"}',
         }
         request = self.factory.post('/internationalization/', data)
         request.user = self.core_user
@@ -69,7 +69,7 @@ class InternationalizationCreateViewTest(TestCase):
         """
         data = {
             'language': 'pt-BR',
-            'language_file': '{"name": "Nome", "gender": "Gênero"}'
+            'language_file': '{"name": "Nome", "gender": "Gênero"}',
         }
         request = self.factory.post('/internationalization/', data)
         request.user = self.core_user
@@ -100,8 +100,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
         self.core_user.save()
         inter = factories.Internationalization()
 
-        request = self.factory.get('/internationalization/{}'.format(
-            inter.id))
+        request = self.factory.get('/internationalization/{}'.format(inter.id))
         request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
         response = view(request, pk=inter.pk)
@@ -114,8 +113,7 @@ class InternationalizationRetrieveViewsTest(TestCase):
         """
         inter = factories.Internationalization()
 
-        request = self.factory.get('/internationalization/{}'.format(
-            inter.id))
+        request = self.factory.get('/internationalization/{}'.format(inter.id))
         request.user = self.core_user
         view = InternationalizationViewSet.as_view({'get': 'retrieve'})
         response = view(request, pk=inter.pk)
@@ -133,9 +131,7 @@ class InternationalizationUpdateViewTest(TestCase):
         self.core_user.is_superuser = True
         self.core_user.save()
 
-        data = {
-            'language': 'pt-BR',
-        }
+        data = {'language': 'pt-BR'}
         request = self.factory.post('/internationalization/', data)
         request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'update'})
@@ -154,7 +150,7 @@ class InternationalizationUpdateViewTest(TestCase):
 
         data = {
             'language': 'pt-BR',
-            'language_file': '{"name": "Nome", "gender": "Gênero"}'
+            'language_file': '{"name": "Nome", "gender": "Gênero"}',
         }
         request = self.factory.post('/internationalization/', data)
         request.user = self.core_user
@@ -170,9 +166,7 @@ class InternationalizationUpdateViewTest(TestCase):
         """
         inter = factories.Internationalization()
 
-        data = {
-            'language': 'pt-BR',
-        }
+        data = {'language': 'pt-BR'}
         request = self.factory.post('/internationalization/', data)
         request.user = self.core_user
         view = InternationalizationViewSet.as_view({'post': 'update'})
@@ -215,7 +209,9 @@ class InternationalizationDeleteViewTest(TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertRaises(
             Internationalization.DoesNotExist,
-            Internationalization.objects.get, pk=inter.pk)
+            Internationalization.objects.get,
+            pk=inter.pk,
+        )
 
     def test_delete_internationalization_normaluser(self):
         """

@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.10
+FROM --platform=linux/amd64 python:3.7-alpine3.10
 
 # Do not buffer log messages in memory; some messages can be lost otherwise
 ENV PYTHONUNBUFFERED 1
@@ -20,6 +20,9 @@ ADD . /code
 RUN ./scripts/collectstatic.sh
 
 RUN apk del .build-deps
+
+# Specify tag name to be created on github
+LABEL version="1.0.10"
 
 EXPOSE 8080
 ENTRYPOINT ["bash", "/code/scripts/docker-entrypoint.sh"]

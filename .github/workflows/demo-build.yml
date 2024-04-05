@@ -1,20 +1,15 @@
-name: Build and Push to Development
+name: Build and Push to Demo
 
 on:
   push:
     branches:
-<<<<<<< HEAD
-      - dev
-
-=======
-      - master
->>>>>>> master
+      - demo
 jobs:
   build:
     name: Build and Push to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: gcr.io/dev-buildly/insights/dev/buildly-core
+      IMAGE_NAME: gcr.io/spry-bricolage-298920/transparent-path/demo/buildly-core
     steps:
     - uses: actions/checkout@v2
 

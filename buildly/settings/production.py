@@ -5,13 +5,9 @@ from .email import *
 # CORS to allow external apps auth through OAuth 2
 # https://github.com/ottoyiu/django-cors-headers
 
-INSTALLED_APPS += (
-    'corsheaders',
-)
+INSTALLED_APPS += ('corsheaders',)
 
-MIDDLEWARE_CORS = [
-    'corsheaders.middleware.CorsMiddleware',
-]
+MIDDLEWARE_CORS = ['corsheaders.middleware.CorsMiddleware']
 
 MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
@@ -42,13 +38,13 @@ LOGGING = {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'class': 'logging.FileHandler',
             'filename': '/var/log/buildly.log',
-        },
+        }
     },
     'loggers': {
         'django': {
             'handlers': ['file'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': True,
-        },
+        }
     },
 }

@@ -4,7 +4,8 @@ from factory import DjangoModelFactory, Faker, SubFactory, post_generation
 from oauth2_provider.models import (
     Application as ApplicationM,
     AccessToken as AccessTokenM,
-    RefreshToken as RefreshTokenM)
+    RefreshToken as RefreshTokenM,
+)
 from .workflow_models import CoreUser
 
 

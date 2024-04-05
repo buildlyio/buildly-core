@@ -4,15 +4,18 @@ import uuid
 
 from factory import DjangoModelFactory, SubFactory, LazyAttribute
 
-from datamesh.models import (LogicModuleModel as LogicModulModelM,
-                             Relationship as RelationshipM,
-                             JoinRecord as JoinRecordM)
+from datamesh.models import (
+    LogicModuleModel as LogicModulModelM,
+    Relationship as RelationshipM,
+    JoinRecord as JoinRecordM,
+)
 from factories import Organization
 
 
 class LogicModuleModel(DjangoModelFactory):
     logic_module_endpoint_name = LazyAttribute(
-        lambda o: ''.join(random.choices(string.ascii_uppercase + string.digits, k=16)))
+        lambda o: ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+    )
     lookup_field_name = 'id'
 
     class Meta:

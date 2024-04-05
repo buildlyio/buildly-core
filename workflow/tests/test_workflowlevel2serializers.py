@@ -16,9 +16,6 @@ class WorkflowLevel2NameSerializerTest(TestCase):
 
         data = serializer.data
 
-        keys = [
-            'level2_uuid',
-            'name'
-        ]
+        keys = ['level2_uuid', 'name']
 
         self.assertEqual(set(data.keys()), set(keys))

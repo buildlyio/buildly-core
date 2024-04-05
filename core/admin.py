@@ -31,7 +31,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 class CoreGroupAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'organization', 'is_global', 'is_org_level', 'is_default', 'permissions')
     display = 'Core Group'
-    search_fields = ('name', 'organization__name', )
+    search_fields = ('name', 'organization__name')
 
 
 class CoreUserAdmin(UserAdmin):
@@ -46,7 +46,7 @@ class CoreUserAdmin(UserAdmin):
         (_('Preferences'), {'fields': ('email_preferences', 'push_preferences')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
     )
-    filter_horizontal = ('core_groups', 'user_permissions', )
+    filter_horizontal = ('core_groups', 'user_permissions')
 
     def get_fieldsets(self, request, obj=None):
 
@@ -58,7 +58,13 @@ class CoreUserAdmin(UserAdmin):
         if not request.user.is_superuser:
             fieldsets[2][1]['fields'] = ('is_active', 'is_staff')
         else:
-            fieldsets[2][1]['fields'] = ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')
+            fieldsets[2][1]['fields'] = (
+                'is_active',
+                'is_staff',
+                'is_superuser',
+                'core_groups',
+                'user_permissions',
+            )
 
         return fieldsets
 

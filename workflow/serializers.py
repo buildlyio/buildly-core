@@ -3,7 +3,6 @@ from workflow import models as wfm
 
 
 class WorkflowLevel1Serializer(serializers.ModelSerializer):
-
     class Meta:
         model = wfm.WorkflowLevel1
         fields = '__all__'
@@ -34,30 +33,26 @@ class WorkflowLevel2Serializer(serializers.ModelSerializer):
 
 
 class InternationalizationSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = wfm.Internationalization
         fields = '__all__'
 
 
 class WorkflowLevel2NameSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = wfm.WorkflowLevel2
         fields = ('level2_uuid', 'name')
-        read_only_fields = ('level2_uuid', )
+        read_only_fields = ('level2_uuid',)
 
 
 class WorkflowLevel2SortSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = wfm.WorkflowLevel2Sort
         fields = '__all__'
-        read_only_fields = ('level2_uuid', )
+        read_only_fields = ('level2_uuid',)
 
 
 class WorkflowTeamSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = wfm.WorkflowTeam
         fields = '__all__'

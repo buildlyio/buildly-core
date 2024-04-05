@@ -1,13 +1,22 @@
 from django.contrib import admin
 
-from .models import WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, WorkflowLevelStatus
+from .models import (
+    WorkflowLevel1,
+    WorkflowLevel2,
+    WorkflowLevel2Sort,
+    WorkflowTeam,
+    WorkflowLevelStatus,
+)
 
 
 class WorkflowTeamAdmin(admin.ModelAdmin):
     list_display = ('workflow_user', 'workflowlevel1')
     display = 'Workflow Team'
-    search_fields = ('workflow_user__username', 'workflowlevel1__name',
-                     'workflow_user__last_name')
+    search_fields = (
+        'workflow_user__username',
+        'workflowlevel1__name',
+        'workflow_user__last_name',
+    )
     list_filter = ('create_date',)
 
 

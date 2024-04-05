@@ -20,8 +20,7 @@ def generate_access_tokens(request: WSGIRequest, user: User):
     request.user = user
     request.grant_type = ''
     request.client = Application.objects.get(
-        client_id=settings.OAUTH_CLIENT_ID,
-        client_secret=settings.OAUTH_CLIENT_SECRET
+        client_id=settings.OAUTH_CLIENT_ID, client_secret=settings.OAUTH_CLIENT_SECRET
     )
     token = bearer_token.create_token(request, refresh_token=True)
     bearer_token.request_validator.save_bearer_token(token, request)

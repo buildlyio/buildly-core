@@ -11,7 +11,6 @@ def request_factory():
 
 @pytest.fixture(scope='session')
 def wsgi_request_factory():
-
     def _make_wsgi_request(data: dict = None):
         environ = {
             'REQUEST_METHOD': 'get',

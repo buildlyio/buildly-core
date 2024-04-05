@@ -32,6 +32,7 @@ def core_user(org):
 
 # ------------ Tests ------------------
 
+
 class IndexViewTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -54,7 +55,6 @@ class HealthCheckViewTest(TestCase):
 
 
 class TestOAuthComplete(object):
-
     def test_no_code_fail(self, client):
         oauth_url = reverse('oauth_complete', args=('github',))
         expected_data = {'detail': 'Authorization code has to be provided.'}
@@ -66,8 +66,9 @@ class TestOAuthComplete(object):
         assert data == expected_data
 
     @pytest.mark.django_db()
-    def test_is_authenticated_success(self, wsgi_request_factory, core_user, monkeypatch):
-
+    def test_is_authenticated_success(
+        self, wsgi_request_factory, core_user, monkeypatch
+    ):
         def mock_auth_complete(*args, **kwargs):
             return core_user
 
@@ -77,15 +78,14 @@ class TestOAuthComplete(object):
             'token_type': 'Bearer',
             'scope': 'read write',
             'refresh_token': 'UDJsQxZpjVxhuOgrCMLHnc79NI5ZpU',
-            'access_token_jwt': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9'
+            'access_token_jwt': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9',
         }
 
         # mock functions in order as in the code
         monkeypatch.setattr(web, 'user_is_authenticated', lambda x: True)
         monkeypatch.setattr(web, 'partial_pipeline_data', lambda x, y: None)
         monkeypatch.setattr(oauth.BaseOAuth2, 'auth_complete', mock_auth_complete)
-        monkeypatch.setattr(web, 'generate_access_tokens',
-                            lambda x, y: tokens)
+        monkeypatch.setattr(web, 'generate_access_tokens', lambda x, y: tokens)
 
         # mock request object
         request = wsgi_request_factory()
@@ -100,7 +100,6 @@ class TestOAuthComplete(object):
 
     @pytest.mark.django_db()
     def test_user_success(self, wsgi_request_factory, core_user, monkeypatch):
-
         def mock_auth_complete(*args, **kwargs):
             return core_user
 
@@ -110,7 +109,7 @@ class TestOAuthComplete(object):
             'token_type': 'Bearer',
             'scope': 'read write',
             'refresh_token': 'UDJsQxZpjVxhuOgrCMLHnc79NI5ZpU',
-            'access_token_jwt': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9'
+            'access_token_jwt': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9',
         }
 
         # mock functions in order as in the code
@@ -154,7 +153,6 @@ class TestOAuthComplete(object):
         assert response.url == settings.LOGIN_URL
 
     def test_no_auth_no_user(self, wsgi_request_factory, monkeypatch):
-
         def mock_auth_complete(*args, **kwargs):
             return None
 
@@ -199,7 +197,9 @@ class TestOAuthComplete(object):
         web.oauth_complete(request, 'github')
 
     @pytest.mark.xfail(raises=SocialAuthNotConfigured)
-    def test_no_social_auth_redirect_url_xfail(self, settings, wsgi_request_factory, monkeypatch):
+    def test_no_social_auth_redirect_url_xfail(
+        self, settings, wsgi_request_factory, monkeypatch
+    ):
         settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS['github'] = None
 
         # mock functions
@@ -215,7 +215,9 @@ class TestOAuthComplete(object):
         web.oauth_complete(request, 'github')
 
     @pytest.mark.xfail(raises=SocialAuthNotConfigured)
-    def test_no_support_social_auth_backend_xfail(self, settings, wsgi_request_factory, monkeypatch):
+    def test_no_support_social_auth_backend_xfail(
+        self, settings, wsgi_request_factory, monkeypatch
+    ):
         del settings.SOCIAL_AUTH_LOGIN_REDIRECT_URLS['github']
 
         # mock functions

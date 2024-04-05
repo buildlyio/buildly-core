@@ -11,7 +11,9 @@ from core.tests.fixtures import auth_api_client, auth_superuser_api_client, oaut
 class TestApplicationListView:
     ENDPOINT_BASE_URL = reverse('application-list')
 
-    def test_list_application_superuser(self, auth_superuser_api_client, oauth_application, superuser):
+    def test_list_application_superuser(
+        self, auth_superuser_api_client, oauth_application, superuser
+    ):
         """
         Superusers are able to list all the objects
         """
@@ -63,13 +65,17 @@ class TestApplicationCreateView:
 class TestApplicationRetrieveViews:
     ENDPOINT_BASE_URL = reverse('application-list')
 
-    def test_retrieve_unexisting_application(self, auth_superuser_api_client, superuser):
+    def test_retrieve_unexisting_application(
+        self, auth_superuser_api_client, superuser
+    ):
         url = f'{self.ENDPOINT_BASE_URL}1111/'
 
         response = auth_superuser_api_client.get(url)
         assert response.status_code == 404
 
-    def test_retrieve_application_superuser(self, auth_superuser_api_client, oauth_application, superuser):
+    def test_retrieve_application_superuser(
+        self, auth_superuser_api_client, oauth_application, superuser
+    ):
         """
         Superusers are able to retrieve any oauth application
         """
@@ -93,7 +99,9 @@ class TestApplicationRetrieveViews:
 class TestApplicationUpdateView:
     ENDPOINT_BASE_URL = reverse('application-list')
 
-    def test_update_application_superuser(self, auth_superuser_api_client, oauth_application, superuser):
+    def test_update_application_superuser(
+        self, auth_superuser_api_client, oauth_application, superuser
+    ):
         """
         Superuser is able to update oauth applications
         """
@@ -102,7 +110,7 @@ class TestApplicationUpdateView:
         data = {
             'client_type': Application.CLIENT_PUBLIC,
             'authorization_grant_type': Application.GRANT_PASSWORD,
-            'name': Faker('name').generate()
+            'name': Faker('name').generate(),
         }
         response = auth_superuser_api_client.put(url, data)
         assert response.status_code == 200
@@ -117,7 +125,7 @@ class TestApplicationUpdateView:
         data = {
             'client_type': Application.CLIENT_PUBLIC,
             'authorization_grant_type': Application.GRANT_PASSWORD,
-            'name': Faker('name').generate()
+            'name': Faker('name').generate(),
         }
         response = auth_api_client.put(url, data)
         assert response.status_code == 403
@@ -133,7 +141,9 @@ class TestApplicationDeleteView:
         response = auth_superuser_api_client.delete(url)
         assert response.status_code == 404
 
-    def test_delete_application_superuser(self, auth_superuser_api_client, oauth_application, superuser):
+    def test_delete_application_superuser(
+        self, auth_superuser_api_client, oauth_application, superuser
+    ):
         """
         Superusers are able to delete any oauth application
         """

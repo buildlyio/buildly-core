@@ -38,6 +38,7 @@ class PermissionsField(serializers.DictField):
     For example:
     9 -> '1001' (binary representation) -> `{'create': True, 'read': False, 'update': False, 'delete': True}`
     """
+
     _keys = ('create', 'read', 'update', 'delete')
 
     def __init__(self, *args, **kwargs):
@@ -52,35 +53,48 @@ class PermissionsField(serializers.DictField):
         data = super().to_internal_value(data)
         keys = data.keys()
         if not set(keys) == set(self._keys):
-            raise serializers.ValidationError("Permissions field: incorrect keys format")
+            raise serializers.ValidationError(
+                "Permissions field: incorrect keys format"
+            )
 
         permissions = ''.join([str(int(data[key])) for key in self._keys])
         return int(permissions, 2)
 
 
 class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
-
     def to_representation(self, value):
         return str(super().to_representation(value))
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
     permissions = PermissionsField(required=False)
-    organization = UUIDPrimaryKeyRelatedField(required=False,
-                                              queryset=Organization.objects.all(),
-                                              help_text="Related Org to associate with")
+    organization = UUIDPrimaryKeyRelatedField(
+        required=False,
+        queryset=Organization.objects.all(),
+        help_text="Related Org to associate with",
+    )
 
     class Meta:
         model = CoreGroup
         read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
-        fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
-                  'workflowlevel2s')
+        fields = (
+            'id',
+            'uuid',
+            'name',
+            'is_global',
+            'is_org_level',
+            'permissions',
+            'organization',
+            'workflowlevel1s',
+            'workflowlevel2s',
+        )
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
     """
     Default CoreUser serializer
     """
+
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
@@ -111,6 +125,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     """
     Override default CoreUser serializer for writable actions (create, update, partial_update)
     """
+
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
@@ -128,7 +143,9 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             organization = validated_data.pop('organization')
         except (KeyError):
             organization = {'name': settings.DEFAULT_ORG}
-        organization, is_new_org = Organization.objects.get_or_create(**organization)
+
+        org_name = organization['name']
+        organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
 
         core_groups = validated_data.pop('core_groups', [])
         product = validated_data.pop('product', None)
@@ -154,9 +171,9 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         template_name = 'email/coreuser/approval.txt'
         html_template_name = 'email/coreuser/approval.html'
         context = {
-                    'approval_link': approval_link,
-                    'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
-                    'organization_name': organization
+            'approval_link': approval_link,
+            'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
+            'organization_name': organization,
         }
         if is_new_org:
             admin = CoreUser.objects.filter(is_superuser=True)  # Global Admin
@@ -205,7 +222,6 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
-
     user_type = serializers.CharField(required=False)
     survey_status = serializers.BooleanField(required=False)
     email_preferences = serializers.JSONField(required=False)
@@ -252,17 +268,21 @@ class CoreUserProfileSerializer(serializers.Serializer):
 
 
 class CoreUserInvitationSerializer(serializers.Serializer):
-    emails = serializers.ListField(child=serializers.EmailField(),
-                                   min_length=1, max_length=10)
+    emails = serializers.ListField(
+        child=serializers.EmailField(), min_length=1, max_length=10
+    )
 
 
 class CoreUserResetPasswordSerializer(serializers.Serializer):
     """Serializer for reset password request data
     """
+
     email = serializers.EmailField()
 
     def save(self, **kwargs):
-        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = urljoin(
+            settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH
+        )
         resetpass_url = resetpass_url + '{uid}/{token}/'
 
         email = self.validated_data["email"]
@@ -277,14 +297,22 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             }
 
             # get specific subj and templates for user's organization
-            tpl = EmailTemplate.objects.filter(organization=user.organization, type=TEMPLATE_RESET_PASSWORD).first()
+            tpl = EmailTemplate.objects.filter(
+                organization=user.organization, type=TEMPLATE_RESET_PASSWORD
+            ).first()
             if not tpl:
-                tpl = EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                   type=TEMPLATE_RESET_PASSWORD).first()
+                tpl = EmailTemplate.objects.filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    type=TEMPLATE_RESET_PASSWORD,
+                ).first()
             if tpl and tpl.template:
                 context = Context(context)
                 text_content = Template(tpl.template).render(context)
-                html_content = Template(tpl.template_html).render(context) if tpl.template_html else None
+                html_content = (
+                    Template(tpl.template_html).render(context)
+                    if tpl.template_html
+                    else None
+                )
                 count += send_email_body(email, tpl.subject, text_content, html_content)
                 continue
 
@@ -292,7 +320,9 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             subject = 'Reset your password'
             template_name = 'email/coreuser/password_reset.txt'
             html_template_name = 'email/coreuser/password_reset.html'
-            count += send_email(email, subject, context, template_name, html_template_name)
+            count += send_email(
+                email, subject, context, template_name, html_template_name
+            )
 
         return count
 
@@ -300,6 +330,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
     """Serializer for checking token for resetting password
     """
+
     uid = serializers.CharField()
     token = serializers.CharField()
 
@@ -321,6 +352,7 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
 class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerializer):
     """Serializer for reset password data
     """
+
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
 
@@ -372,8 +404,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ('id', 'authorization_grant_type', 'client_id', 'client_secret', 'client_type', 'name',
-                  'redirect_uris')
+        fields = (
+            'id',
+            'authorization_grant_type',
+            'client_id',
+            'client_secret',
+            'client_type',
+            'name',
+            'redirect_uris',
+        )
 
     def create(self, validated_data):
         validated_data['client_id'] = secrets.token_urlsafe(75)

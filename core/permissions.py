@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 
 def merge_permissions(permissions1: str, permissions2: str) -> str:
     """ Merge two CRUD permissions string representations"""
-    return ''.join(map(str, [max(int(i), int(j)) for i, j in zip(permissions1, permissions2)]))
+    return ''.join(
+        map(str, [max(int(i), int(j)) for i, j in zip(permissions1, permissions2)])
+    )
 
 
 def has_permission(permissions_: str, method: str) -> bool:
@@ -24,7 +26,6 @@ def has_permission(permissions_: str, method: str) -> bool:
         'PATCH': 2,
         'DELETE': 3,
         'OPTIONS': 1,
-
         # CRUD actions
         'create': 0,
         'list': 1,
@@ -42,7 +43,6 @@ def has_permission(permissions_: str, method: str) -> bool:
 
 
 class IsSuperUserBrowseableAPI(permissions.BasePermission):
-
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             if view.__class__.__name__ == 'SchemaView':
@@ -95,7 +95,9 @@ class IsOrgMember(permissions.BasePermission):
             user_org = request.user.organization_id
 
             if 'organization' in request.data:
-                org_serializer = view.get_serializer_class()().get_fields()['organization']
+                org_serializer = view.get_serializer_class()().get_fields()[
+                    'organization'
+                ]
                 primitive_value = request.data.get('organization')
                 org = org_serializer.run_validation(primitive_value)
                 return org.pk == user_org

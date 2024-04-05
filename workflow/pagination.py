@@ -1,4 +1,8 @@
-from rest_framework.pagination import CursorPagination, PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import (
+    CursorPagination,
+    PageNumberPagination,
+    LimitOffsetPagination,
+)
 
 
 class StandardResultsSetPagination(PageNumberPagination):

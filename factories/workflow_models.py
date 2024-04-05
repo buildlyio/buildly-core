@@ -7,7 +7,8 @@ from workflow.models import (
     WorkflowLevel2Sort as WorkflowLevel2SortM,
     Internationalization as InternationalizationM,
     WorkflowLevelType as WorkflowLevelTypeM,
-    WorkflowLevelStatus as WorkflowLevelStatusM)
+    WorkflowLevelStatus as WorkflowLevelStatusM,
+)
 from .django_models import Group
 from .core_models import CoreUser, Organization
 

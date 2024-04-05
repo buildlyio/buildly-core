@@ -17,7 +17,7 @@ TEST_USER_DATA = {
     'password': '123qwe',
     'organization_uuid': uuid.uuid4(),
     # 'organization': settings.DEFAULT_ORG, # Tweaked this to support organization name from front end
-    'organization_name': settings.DEFAULT_ORG
+    'organization_name': settings.DEFAULT_ORG,
 }
 
 
@@ -46,8 +46,12 @@ def core_group(org):
 
 @pytest.fixture
 def org_admin(org):
-    group_org_admin = factories.CoreGroup(name='Org Admin', organization=org, is_org_level=True,
-                                          permissions=PERMISSIONS_ORG_ADMIN)
+    group_org_admin = factories.CoreGroup(
+        name='Org Admin',
+        organization=org,
+        is_org_level=True,
+        permissions=PERMISSIONS_ORG_ADMIN,
+    )
     coreuser = factories.CoreUser.create(organization=group_org_admin.organization)
     coreuser.core_groups.add(group_org_admin)
     return coreuser
@@ -91,20 +95,38 @@ def oauth_refresh_token():
 
 @pytest.fixture()
 def logic_module():
-    return factories.LogicModule.create(name='documents',
-                                        endpoint_name='documents',
-                                        endpoint='http://documentservice:8080')
+    return factories.LogicModule.create(
+        name='documents',
+        endpoint_name='documents',
+        endpoint='http://documentservice:8080',
+    )
 
 
 @pytest.fixture()
 def datamesh():
-    lm1 = factories.LogicModule.create(name='location', endpoint_name='location',
-                                       endpoint='http://locationservice:8080')
-    lm2 = factories.LogicModule.create(name='documents', endpoint_name='documents',
-                                       endpoint='http://documentservice:8080')
-    lmm1 = factories.LogicModuleModel(logic_module_endpoint_name=lm1.endpoint_name, model='SiteProfile',
-                                      endpoint='/siteprofiles/', lookup_field_name='uuid')
-    lmm2 = factories.LogicModuleModel(logic_module_endpoint_name=lm2.endpoint_name, model='Document',
-                                      endpoint='/documents/', lookup_field_name='id')
-    relationship = factories.Relationship(origin_model=lmm1, related_model=lmm2, key='documents')
+    lm1 = factories.LogicModule.create(
+        name='location',
+        endpoint_name='location',
+        endpoint='http://locationservice:8080',
+    )
+    lm2 = factories.LogicModule.create(
+        name='documents',
+        endpoint_name='documents',
+        endpoint='http://documentservice:8080',
+    )
+    lmm1 = factories.LogicModuleModel(
+        logic_module_endpoint_name=lm1.endpoint_name,
+        model='SiteProfile',
+        endpoint='/siteprofiles/',
+        lookup_field_name='uuid',
+    )
+    lmm2 = factories.LogicModuleModel(
+        logic_module_endpoint_name=lm2.endpoint_name,
+        model='Document',
+        endpoint='/documents/',
+        lookup_field_name='id',
+    )
+    relationship = factories.Relationship(
+        origin_model=lmm1, related_model=lmm2, key='documents'
+    )
     return lm1, lm2, relationship

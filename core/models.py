@@ -61,7 +61,9 @@ class CoreSites(models.Model):
 
 class Industry(models.Model):
     name = models.CharField("Industry Name", max_length=255, blank=True, default="Tech")
-    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
+    description = models.TextField(
+        "Description/Notes", max_length=765, null=True, blank=True
+    )
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -106,20 +108,82 @@ class OrganizationType(models.Model):
     def __str__(self):
         return str(self.name)
 
+class OrganizationType(models.Model):
+    """
+    Allows organization to be of multiple types.
+    Supported types are:
+    1. Logistics Provider
+	2. Packer
+	3. Producer
+	4. Receiver
+	5. Shipper
+	6. Warehouse
+    """
+
+    name = models.CharField(
+        "Name", max_length=255, blank=True, help_text="Organization type"
+    )
+    create_date = models.DateTimeField(null=True, blank=True)
+    edit_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name_plural = "Organization Types"
+
+    def save(self, *args, **kwargs):
+        if self.create_date is None:
+            self.create_date = timezone.now()
+        self.edit_date = timezone.now()
+        super(OrganizationType, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.name)
+
+
 class Organization(models.Model):
     """
     The organization instance. There could be multiple organizations inside one application.
     When organization is created two CoreGroups are created automatically: Admins group and default Users group.
     """
-    organization_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
-    name = models.CharField("Organization Name", max_length=255, blank=True, help_text="Each end user must be grouped into an organization")
-    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Description of organization")
-    organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")
-    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations', help_text="Type of Industry the organization belongs to if any")
+
+    organization_uuid = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID'
+    )
+    name = models.CharField(
+        "Organization Name",
+        max_length=255,
+        blank=True,
+        help_text="Each end user must be grouped into an organization",
+    )
+    description = models.TextField(
+        "Description/Notes",
+        max_length=765,
+        null=True,
+        blank=True,
+        help_text="Description of organization",
+    )
+    organization_url = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        help_text="Link to organizations external web site",
+    )
+    industries = models.ManyToManyField(
+        Industry,
+        blank=True,
+        related_name='organizations',
+        help_text="Type of Industry the organization belongs to if any",
+    )
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
-    date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
+    oauth_domains = ArrayField(
+        models.CharField("OAuth Domains", max_length=255, null=True, blank=True),
+        null=True,
+        blank=True,
+    )
+    date_format = models.CharField(
+        "Date Format", max_length=50, blank=True, default="DD.MM.YYYY"
+    )
     phone = models.CharField(max_length=20, blank=True, null=True)
     allow_import_export = models.BooleanField('To allow import export functionality', default=False)
     radius = models.FloatField(max_length=20, blank=True, null=True, default = 0.0)
@@ -148,7 +212,7 @@ class Organization(models.Model):
             organization=self,
             is_org_level=True,
             name='Admins',
-            permissions=PERMISSIONS_ORG_ADMIN
+            permissions=PERMISSIONS_ORG_ADMIN,
         )
 
         CoreGroup.objects.create(
@@ -156,7 +220,7 @@ class Organization(models.Model):
             is_org_level=True,
             is_default=True,
             name='Users',
-            permissions=PERMISSIONS_VIEW_ONLY
+            permissions=PERMISSIONS_VIEW_ONLY,
         )
 
 
@@ -167,13 +231,26 @@ class CoreGroup(models.Model):
     Permissions field is the decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions
     for CRUD. For example: 12 -> 1100 -> CR__ (allowed to Create and Read).
     """
-    uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
+
+    uuid = models.CharField(
+        'CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True
+    )
     name = models.CharField('Name of the role', max_length=80)
-    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE, help_text='Related Org to associate with')
+    organization = models.ForeignKey(
+        Organization,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        help_text='Related Org to associate with',
+    )
     is_global = models.BooleanField('Is global group', default=False)
     is_org_level = models.BooleanField('Is organization level group', default=False)
     is_default = models.BooleanField('Is organization default group', default=False)
-    permissions = models.PositiveSmallIntegerField('Permissions', default=PERMISSIONS_VIEW_ONLY, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    permissions = models.PositiveSmallIntegerField(
+        'Permissions',
+        default=PERMISSIONS_VIEW_ONLY,
+        help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD',
+    )
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -196,10 +273,15 @@ class CoreUser(AbstractUser):
     """
     CoreUser is the registered user who belongs to some organization and can manage its projects.
     """
-    TITLE_CHOICES = (
-        ('mr', 'Mr.'),
-        ('mrs', 'Mrs.'),
-        ('ms', 'Ms.'),
+
+    TITLE_CHOICES = (('mr', 'Mr.'), ('mrs', 'Mrs.'), ('ms', 'Ms.'))
+
+    core_user_uuid = models.CharField(
+        max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True
+    )
+    USER_TYPE_CHOICES = (
+        ('Developer', 'Developer'),
+        ('Product Team', 'Product Team'),
     )
 
     USER_TYPE_CHOICES = (
@@ -210,8 +292,20 @@ class CoreUser(AbstractUser):
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
-    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE, help_text='Related Org to associate with')
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
+    organization = models.ForeignKey(
+        Organization,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        help_text='Related Org to associate with',
+    )
+    core_groups = models.ManyToManyField(
+        CoreGroup,
+        verbose_name='User groups',
+        blank=True,
+        related_name='user_set',
+        related_query_name='user',
+    )
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
@@ -237,7 +331,11 @@ class CoreUser(AbstractUser):
         super(CoreUser, self).save()
         if is_new:
             # Add default groups
-            self.core_groups.add(*CoreGroup.objects.filter(organization=self.organization, is_default=True))
+            self.core_groups.add(
+                *CoreGroup.objects.filter(
+                    organization=self.organization, is_default=True
+                )
+            )
 
     @property
     def is_org_admin(self) -> bool:
@@ -245,7 +343,9 @@ class CoreUser(AbstractUser):
         Check if user has organization level admin permissions
         """
         if not hasattr(self, '_is_org_admin'):
-            self._is_org_admin = self.core_groups.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True).exists()
+            self._is_org_admin = self.core_groups.filter(
+                permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True
+            ).exists()
         return self._is_org_admin
 
     @property
@@ -256,7 +356,9 @@ class CoreUser(AbstractUser):
         if self.is_superuser:
             return True
         if not hasattr(self, '_is_global_admin'):
-            self._is_global_admin = self.core_groups.filter(permissions=PERMISSIONS_ADMIN, is_global=True).exists()
+            self._is_global_admin = self.core_groups.filter(
+                permissions=PERMISSIONS_ADMIN, is_global=True
+            ).exists()
         return self._is_global_admin
 
 
@@ -264,11 +366,21 @@ class EmailTemplate(models.Model):
     """
     Stores e-mail templates specific to organization
     """
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name='Organization', help_text='Related Org to associate with')
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        verbose_name='Organization',
+        help_text='Related Org to associate with',
+    )
     subject = models.CharField('Subject', max_length=255)
     type = models.PositiveSmallIntegerField('Type of template', choices=TEMPLATE_TYPES)
-    template = models.TextField("Reset password e-mail template (text)", null=True, blank=True)
-    template_html = models.TextField("Reset password e-mail template (HTML)", null=True, blank=True)
+    template = models.TextField(
+        "Reset password e-mail template (text)", null=True, blank=True
+    )
+    template_html = models.TextField(
+        "Reset password e-mail template (HTML)", null=True, blank=True
+    )
 
     class Meta:
         unique_together = ('organization', 'type',)
@@ -280,14 +392,27 @@ class EmailTemplate(models.Model):
 
 
 class LogicModule(models.Model):
-    module_uuid = models.CharField(max_length=255, verbose_name='Logic Module UUID', default=uuid.uuid4, unique=True)
+    module_uuid = models.CharField(
+        max_length=255,
+        verbose_name='Logic Module UUID',
+        default=uuid.uuid4,
+        unique=True,
+    )
     name = models.CharField("Logic Module Name", max_length=255, blank=True)
-    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True)
+    description = models.TextField(
+        "Description/Notes", max_length=765, null=True, blank=True
+    )
     endpoint = models.CharField(blank=True, null=True, max_length=255)
     endpoint_name = models.CharField(blank=True, null=True, max_length=255)
     docs_endpoint = models.CharField(blank=True, null=True, max_length=255)
     api_specification = JSONField(blank=True, null=True)
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Logic Module groups', blank=True, related_name='logic_module_set', related_query_name='logic_module')
+    core_groups = models.ManyToManyField(
+        CoreGroup,
+        verbose_name='Logic Module groups',
+        blank=True,
+        related_name='logic_module_set',
+        related_query_name='logic_module',
+    )
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 

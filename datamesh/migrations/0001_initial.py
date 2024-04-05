@@ -9,41 +9,113 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='JoinRecord',
             fields=[
-                ('join_record_uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                (
+                    'join_record_uuid',
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
                 ('record_id', models.PositiveIntegerField(blank=True, null=True)),
                 ('record_uuid', models.UUIDField(blank=True, null=True)),
-                ('related_record_id', models.PositiveIntegerField(blank=True, null=True)),
+                (
+                    'related_record_id',
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
                 ('related_record_uuid', models.UUIDField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
             name='LogicModuleModel',
             fields=[
-                ('logic_module_model_uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('logic_module_endpoint_name', models.CharField(help_text='Without leading and trailing slashes', max_length=255)),
+                (
+                    'logic_module_model_uuid',
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    'logic_module_endpoint_name',
+                    models.CharField(
+                        help_text='Without leading and trailing slashes', max_length=255
+                    ),
+                ),
                 ('model', models.CharField(max_length=128)),
-                ('endpoint', models.CharField(help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'", max_length=255)),
-                ('lookup_field_name', models.SlugField(default='id', help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'", max_length=64)),
-                ('is_local', models.BooleanField(default=False, help_text='Local model is taken from Buildly')),
+                (
+                    'endpoint',
+                    models.CharField(
+                        help_text="Endpoint of the model with leading and trailing slashs, p.e.: '/siteprofiles/'",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    'lookup_field_name',
+                    models.SlugField(
+                        default='id',
+                        help_text="Name of the field in the model for detail methods, p.e.: 'id' or 'uuid'",
+                        max_length=64,
+                    ),
+                ),
+                (
+                    'is_local',
+                    models.BooleanField(
+                        default=False, help_text='Local model is taken from Buildly'
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('logic_module_endpoint_name', 'model'), ('logic_module_endpoint_name', 'endpoint')},
+                'unique_together': {
+                    ('logic_module_endpoint_name', 'model'),
+                    ('logic_module_endpoint_name', 'endpoint'),
+                }
             },
         ),
         migrations.CreateModel(
             name='Relationship',
             fields=[
-                ('key', models.SlugField(help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_siteprofile_relationship'.", max_length=64)),
-                ('relationship_uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('origin_model', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='joins_origins', to='datamesh.LogicModuleModel')),
-                ('related_model', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='joins_relateds', to='datamesh.LogicModuleModel')),
+                (
+                    'key',
+                    models.SlugField(
+                        help_text="The key in the response body, where the related object data will be saved into, p.e.: 'contact_siteprofile_relationship'.",
+                        max_length=64,
+                    ),
+                ),
+                (
+                    'relationship_uuid',
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    'origin_model',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='joins_origins',
+                        to='datamesh.LogicModuleModel',
+                    ),
+                ),
+                (
+                    'related_model',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='joins_relateds',
+                        to='datamesh.LogicModuleModel',
+                    ),
+                ),
             ],
         ),
     ]
