@@ -34,8 +34,4 @@ class OrganizationListViewTest(TestCase):
 
         view = OrganizationViewSet.as_view({'get': 'list'})
         response = view(self.request)
-<<<<<<< HEAD
         self.assertEqual(response.status_code, 200)
-=======
-        self.assertEqual(response.status_code, 200)
->>>>>>> master

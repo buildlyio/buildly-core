@@ -14,17 +14,7 @@ import factories
 from core.models import CoreUser, EmailTemplate, TEMPLATE_RESET_PASSWORD
 from core.views import CoreUserViewSet
 from core.jwt_utils import create_invitation_token
-<<<<<<< HEAD
-from core.tests.fixtures import (
-    TEST_USER_DATA,
-    org_admin,
-    org_member,
-    org,
-    reset_password_request,
-)
-=======
 from core.tests.fixtures import TEST_USER_DATA, org_admin, org_member, org, reset_password_request
->>>>>>> master
 
 
 @pytest.mark.django_db()

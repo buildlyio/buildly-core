@@ -28,15 +28,7 @@ def test_org_serializer(request_factory, org):
         'allow_import_export',
         'radius',
         'organization_type',
-<<<<<<< HEAD
-<<<<<<< HEAD
         'stripe_subscription_details',
-=======
-        'stripe_subscription_details'
->>>>>>> 8e0bcae (Feat#113/upstream changes (#350))
-=======
-        'stripe_subscription_details'
->>>>>>> master
     ]
     assert set(data.keys()) == set(keys)
 
@@ -66,7 +58,6 @@ def test_core_user_serializer(request_factory, org_member):
     request = request_factory.get('')
     serializer = CoreUserSerializer(org_member, context={'request': request})
     data = serializer.data
-<<<<<<< HEAD
     keys = [
         'id',
         'core_user_uuid',
@@ -86,23 +77,5 @@ def test_core_user_serializer(request_factory, org_member):
         'user_type',
         'survey_status'
     ]
-=======
-    keys = ['id',
-            'core_user_uuid',
-            'first_name',
-            'last_name',
-            'email',
-            'username',
-            'is_active',
-            'title',
-            'contact_info',
-            'privacy_disclaimer_accepted',
-            'organization',
-            'core_groups',
-            'email_preferences', 'push_preferences', 'user_timezone',
-            'user_type',
-            'survey_status'
-            ]
->>>>>>> master
     assert set(data.keys()) == set(keys)
     assert isinstance(data['organization'], dict)

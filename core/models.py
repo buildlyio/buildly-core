@@ -107,7 +107,6 @@ class OrganizationType(models.Model):
 
     def __str__(self):
         return str(self.name)
-<<<<<<< HEAD
 
 class OrganizationType(models.Model):
     """
@@ -140,8 +139,6 @@ class OrganizationType(models.Model):
     def __str__(self):
         return str(self.name)
 
-=======
->>>>>>> master
 
 class Organization(models.Model):
     """
@@ -386,11 +383,7 @@ class EmailTemplate(models.Model):
     )
 
     class Meta:
-<<<<<<< HEAD
-        unique_together = ('organization', 'type')
-=======
         unique_together = ('organization', 'type',)
->>>>>>> master
         verbose_name = "Email Template"
         verbose_name_plural = "Email Templates"
 

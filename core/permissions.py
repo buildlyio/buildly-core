@@ -26,10 +26,6 @@ def has_permission(permissions_: str, method: str) -> bool:
         'PATCH': 2,
         'DELETE': 3,
         'OPTIONS': 1,
-<<<<<<< HEAD
-=======
-
->>>>>>> master
         # CRUD actions
         'create': 0,
         'list': 1,

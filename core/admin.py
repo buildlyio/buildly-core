@@ -29,18 +29,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
-<<<<<<< HEAD
-    list_display = (
-        'name',
-        'organization',
-        'is_global',
-        'is_org_level',
-        'is_default',
-        'permissions',
-    )
-=======
     list_display = ('id', 'name', 'organization', 'is_global', 'is_org_level', 'is_default', 'permissions')
->>>>>>> master
     display = 'Core Group'
     search_fields = ('name', 'organization__name')
 
@@ -49,17 +38,7 @@ class CoreUserAdmin(UserAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status','user_timezone')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
-<<<<<<< HEAD
-    search_fields = (
-        'first_name',
-        'first_name',
-        'username',
-        'title',
-        'organization__name',
-    )
-=======
     search_fields = ('first_name', 'last_name', 'username', 'title', 'organization__name', )
->>>>>>> master
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status','user_timezone')}),
