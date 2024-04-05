@@ -77,7 +77,7 @@ services:
       EMAIL_BACKEND: "SMTP"
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
-      STRIPE_SECRET: "sk_test_ddLjeqLRWcj8znVAhMaNPu7J00evbJrikA"
+      STRIPE_SECRET: ""
 
 volumes:
   static-content:
