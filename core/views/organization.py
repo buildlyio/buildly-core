@@ -10,6 +10,10 @@ from core.serializers import OrganizationSerializer, OrganizationTypeSerializer
 from core.permissions import AllowOnlyOrgAdmin, IsOrgMember
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +55,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     serializer_class = OrganizationSerializer
 
     @csrf_exempt
+<<<<<<< HEAD
     @action(
         detail=False,
         methods=['get'],
@@ -58,6 +63,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         name='Fetch Already existing Organization',
         url_path='fetch_orgs',
     )
+=======
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny],
+            name='Fetch Already existing Organization', url_path='fetch_orgs')
+>>>>>>> master
     def fetch_existing_orgs(self, request, pk=None, *args, **kwargs):
         """
         Fetch Already existing Organizations in Buildly Core,
@@ -106,3 +115,7 @@ class OrganizationTypeViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowOnlyOrgAdmin,)
     queryset = OrganizationType.objects.all()
     serializer_class = OrganizationTypeSerializer
+<<<<<<< HEAD
+=======
+
+>>>>>>> master

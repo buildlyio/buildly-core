@@ -83,7 +83,11 @@ class CoreUserViewSet(
         'alert': CoreUserEmailAlertSerializer,
         'update_org': CoreUserUpdateOrganizationSerializer,
         'notification': CoreUserEmailNotificationSerializer,
+<<<<<<< HEAD
         'alert': CoreUserEmailAlertSerializer,
+=======
+
+>>>>>>> master
     }
 
     def list(self, request, *args, **kwargs):
@@ -168,6 +172,7 @@ class CoreUserViewSet(
                 {'detail': 'Token has been used.'}, status.HTTP_401_UNAUTHORIZED
             )
 
+<<<<<<< HEAD
         organization = (
             Organization.objects.values('organization_uuid', 'name').get(
                 organization_uuid=decoded['org_uuid']
@@ -175,6 +180,12 @@ class CoreUserViewSet(
             if decoded['org_uuid']
             else None
         )
+=======
+        organization = Organization.objects \
+            .values('organization_uuid', 'name') \
+            .get(organization_uuid=decoded['org_uuid']) \
+            if decoded['org_uuid'] else None
+>>>>>>> master
 
         return Response(
             {'email': decoded['email'], 'organization': organization},
@@ -283,6 +294,7 @@ class CoreUserViewSet(
     def get_permissions(self):
         if hasattr(self, 'action'):
             # different permissions when creating a new user or resetting password
+<<<<<<< HEAD
             if self.action in [
                 'create',
                 'reset_password',
@@ -291,6 +303,14 @@ class CoreUserViewSet(
                 'invite_check',
                 'update_profile',
             ]:
+=======
+            if self.action in ['create',
+                               'reset_password',
+                               'reset_password_check',
+                               'reset_password_confirm',
+                               'invite_check',
+                               'update_profile']:
+>>>>>>> master
                 return [permissions.AllowAny()]
 
             if self.action in ['update', 'partial_update', 'invite']:
@@ -431,6 +451,7 @@ class CoreUserViewSet(
         return Response(
             {
                 'detail': 'The notification were sent successfully on email.',
+<<<<<<< HEAD
             }, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -526,3 +547,8 @@ class CoreUserViewSet(
 
 
 color_codes = {'error': '#cc3300', 'info': '#2196F3', 'success': '#339900'}
+=======
+            }, status=status.HTTP_200_OK
+        )
+
+>>>>>>> master

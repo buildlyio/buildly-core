@@ -17,7 +17,11 @@ TEST_USER_DATA = {
     'password': '123qwe',
     'organization_uuid': uuid.uuid4(),
     # 'organization': settings.DEFAULT_ORG, # Tweaked this to support organization name from front end
+<<<<<<< HEAD
     'organization_name': settings.DEFAULT_ORG,
+=======
+    'organization_name': settings.DEFAULT_ORG
+>>>>>>> master
 }
 
 

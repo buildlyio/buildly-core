@@ -2,6 +2,7 @@ import pytest
 from rest_framework.reverse import reverse
 
 import factories
+<<<<<<< HEAD
 from core.tests.fixtures import (
     org,
     org_admin,
@@ -9,6 +10,9 @@ from core.tests.fixtures import (
     reset_password_request,
     TEST_USER_DATA,
 )
+=======
+from core.tests.fixtures import org, org_admin, org_member, reset_password_request, TEST_USER_DATA
+>>>>>>> master
 from core.models import CoreGroup
 from core.views import CoreGroupViewSet
 

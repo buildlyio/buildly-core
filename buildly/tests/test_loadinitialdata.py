@@ -54,6 +54,10 @@ class LoadInitialDataTest(TransactionTestCase):
         assert Organization.objects.all().count() == 0
         assert CoreUser.objects.filter(is_superuser=True).count() == 1
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
     @override_settings(DEBUG=True)
     def test_create_user_debug_no_password(self):
         args = []
@@ -82,4 +86,8 @@ class LoadInitialDataTest(TransactionTestCase):
             == 1
         )
         assert Organization.objects.filter(name=settings.DEFAULT_ORG).count() == 1
+<<<<<<< HEAD
         assert CoreUser.objects.filter(is_superuser=True).count() == 0
+=======
+        assert CoreUser.objects.filter(is_superuser=True).count() == 0
+>>>>>>> master

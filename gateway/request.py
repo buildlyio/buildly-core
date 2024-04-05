@@ -118,6 +118,7 @@ class GatewayRequest(BaseGatewayRequest):
                 logger.error(e.content)
 
         path_url = self.request.path  # Get request path
+<<<<<<< HEAD
         list_string_path = path_url.split(
             "/"
         )  # Split the request path to check if custody include in it
@@ -128,6 +129,11 @@ class GatewayRequest(BaseGatewayRequest):
             and type(content) in [dict, list]
             and self.request.method == 'POST'
         ):
+=======
+        list_string_path = path_url.split("/")  # Split the request path to check if custody include in it
+        if ('join' not in self.request.query_params and 'custody' in list_string_path and
+                status_code == 201 and type(content) in [dict, list] and self.request.method == 'POST'):
+>>>>>>> master
             # This functionality will execute only when request include custody with post request,
             # It will not execute if its join request
             related_organization = content.get('organization_uuid')
@@ -147,9 +153,13 @@ class GatewayRequest(BaseGatewayRequest):
                         consortium.save()
             else:
                 # If consortium does not exists for shipment name, then create consortium
+<<<<<<< HEAD
                 Consortium.objects.create(
                     name=shipment_name, organization_uuids=[related_organization]
                 )
+=======
+                Consortium.objects.create(name=shipment_name, organization_uuids=[related_organization])
+>>>>>>> master
 
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)

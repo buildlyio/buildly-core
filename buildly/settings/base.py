@@ -180,6 +180,17 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 
 # Swagger settings - for generate_swagger management command
 
+<<<<<<< HEAD
 SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
 
 ORGANIZATION_TYPES = ['Custodian', 'Producer']
+=======
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'gateway.urls.swagger_info',
+}
+
+ORGANIZATION_TYPES = [
+    'Custodian',
+    'Producer'
+]
+>>>>>>> master

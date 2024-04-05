@@ -107,6 +107,7 @@ class OrganizationType(models.Model):
 
     def __str__(self):
         return str(self.name)
+<<<<<<< HEAD
 
 class OrganizationType(models.Model):
     """
@@ -139,6 +140,8 @@ class OrganizationType(models.Model):
     def __str__(self):
         return str(self.name)
 
+=======
+>>>>>>> master
 
 class Organization(models.Model):
     """
@@ -284,6 +287,11 @@ class CoreUser(AbstractUser):
         ('Product Team', 'Product Team'),
     )
 
+    USER_TYPE_CHOICES = (
+        ('Developer', 'Developer'),
+        ('Product Team', 'Product Team'),
+    )
+
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
@@ -378,7 +386,11 @@ class EmailTemplate(models.Model):
     )
 
     class Meta:
+<<<<<<< HEAD
         unique_together = ('organization', 'type')
+=======
+        unique_together = ('organization', 'type',)
+>>>>>>> master
         verbose_name = "Email Template"
         verbose_name_plural = "Email Templates"
 

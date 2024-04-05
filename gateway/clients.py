@@ -61,9 +61,13 @@ class BaseSwaggerClient:
                 operation = spec.get_op_for_request('GET', path)
                 operation.http_method = request_method
             else:
+<<<<<<< HEAD
                 raise exceptions.EndpointNotFound(
                     f'Endpoint not found: {self._in_request.method} {path}'
                 )
+=======
+                raise exceptions.EndpointNotFound(f'Endpoint not found: {self._in_request.method} {path}')
+>>>>>>> master
         method = operation.http_method.lower()
         path_name = operation.path_name
 
@@ -92,6 +96,7 @@ class BaseSwaggerClient:
             data.pop('aggregate', None)
             data.pop('join', None)
 
+<<<<<<< HEAD
             query_dict_body = (
                 self._in_request.data if hasattr(self._in_request, 'data') else dict()
             )
@@ -100,6 +105,10 @@ class BaseSwaggerClient:
                 if isinstance(query_dict_body, QueryDict)
                 else query_dict_body
             )
+=======
+            query_dict_body = self._in_request.data if hasattr(self._in_request, 'data') else dict()
+            body = query_dict_body.dict() if isinstance(query_dict_body, QueryDict) else query_dict_body
+>>>>>>> master
             data.update(body)
 
             # handle uploaded files

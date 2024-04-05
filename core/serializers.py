@@ -143,9 +143,13 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             organization = validated_data.pop('organization')
         except (KeyError):
             organization = {'name': settings.DEFAULT_ORG}
+<<<<<<< HEAD
 
         org_name = organization['name']
         organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
+=======
+        organization, is_new_org = Organization.objects.get_or_create(**organization)
+>>>>>>> master
 
         core_groups = validated_data.pop('core_groups', [])
         product = validated_data.pop('product', None)
@@ -171,9 +175,15 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         template_name = 'email/coreuser/approval.txt'
         html_template_name = 'email/coreuser/approval.html'
         context = {
+<<<<<<< HEAD
             'approval_link': approval_link,
             'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
             'organization_name': organization,
+=======
+                    'approval_link': approval_link,
+                    'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
+                    'organization_name': organization
+>>>>>>> master
         }
         if is_new_org:
             admin = CoreUser.objects.filter(is_superuser=True)  # Global Admin
@@ -222,6 +232,10 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
     user_type = serializers.CharField(required=False)
     survey_status = serializers.BooleanField(required=False)
     email_preferences = serializers.JSONField(required=False)

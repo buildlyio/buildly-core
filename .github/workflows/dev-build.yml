@@ -3,8 +3,12 @@ name: Build and Push to Development
 on:
   push:
     branches:
+<<<<<<< HEAD
       - dev
 
+=======
+      - master
+>>>>>>> master
 jobs:
   build:
     name: Build and Push to GCR

@@ -14,6 +14,7 @@ import factories
 from core.models import CoreUser, EmailTemplate, TEMPLATE_RESET_PASSWORD
 from core.views import CoreUserViewSet
 from core.jwt_utils import create_invitation_token
+<<<<<<< HEAD
 from core.tests.fixtures import (
     TEST_USER_DATA,
     org_admin,
@@ -21,6 +22,9 @@ from core.tests.fixtures import (
     org,
     reset_password_request,
 )
+=======
+from core.tests.fixtures import TEST_USER_DATA, org_admin, org_member, org, reset_password_request
+>>>>>>> master
 
 
 @pytest.mark.django_db()
@@ -295,9 +299,13 @@ class TestResetPassword(object):
         email = org_member.email
         assert list(org_member.organization.emailtemplate_set.all()) == []
         # assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == [] -- Removed this assertion to support organization name here
+<<<<<<< HEAD
         request = request_factory.post(
             reverse('coreuser-reset-password'), {'email': email}
         )
+=======
+        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
+>>>>>>> master
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
         assert response.data['count'] == 1
@@ -488,6 +496,7 @@ class TestResetPassword(object):
 @pytest.mark.django_db()
 class TestCoreUserRead(object):
 
+<<<<<<< HEAD
     keys = {
         'id',
         'core_user_uuid',
@@ -507,6 +516,10 @@ class TestCoreUserRead(object):
         'survey_status',
     }
 
+=======
+    keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
+            'contact_info','privacy_disclaimer_accepted', 'organization', 'core_groups', 'email_preferences', 'push_preferences', 'user_timezone','user_type', 'survey_status'}
+>>>>>>> master
     def test_coreuser_list(self, request_factory, org_member):
         factories.CoreUser.create(
             organization=org_member.organization, username='another_user'

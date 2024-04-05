@@ -4,6 +4,7 @@ import secrets
 
 from oauth2_provider.models import AccessToken
 from rest_framework.reverse import reverse
+<<<<<<< HEAD
 from core.tests.fixtures import (
     auth_api_client,
     auth_superuser_api_client,
@@ -11,6 +12,10 @@ from core.tests.fixtures import (
     oauth_access_token,
     superuser,
 )
+=======
+from core.tests.fixtures import auth_api_client, auth_superuser_api_client, oauth_application, oauth_access_token, \
+    superuser
+>>>>>>> master
 
 
 @pytest.mark.django_db()
