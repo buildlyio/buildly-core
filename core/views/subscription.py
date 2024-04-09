@@ -54,54 +54,54 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if settings.STRIPE_SECRET:
-            stripe.api_key = settings.STRIPE_SECRET
-            stripe.api_version = '2022-11-15'
-            data = self.get_stripe_details()
-            if data:
-                serializer = self.get_serializer(instance, data=data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                self.perform_create(serializer)
+    # def update(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     if settings.STRIPE_SECRET:
+    #         stripe.api_key = settings.STRIPE_SECRET
+    #         stripe.api_version = '2022-11-15'
+    #         data = self.get_stripe_details()
+    #         if data:
+    #             serializer = self.get_serializer(instance, data=data, partial=True)
+    #             serializer.is_valid(raise_exception=True)
+    #             self.perform_create(serializer)
 
-                product_info = data.get('stripe_product_info', {})
-                # send the email
-                context = {
-                    'frontend_link': settings.FRONTEND_URL,
-                    'product_name': product_info.get('name'),
-                    'product_description': product_info.get('description')
-                }
-                subject = 'Subscription Success'
-                template_name = 'email/coreuser/subscription.txt'
-                html_template_name = 'email/coreuser/subscription.html'
-                send_email(
-                    self.request.user.email,
-                    subject,
-                    context,
-                    template_name,
-                    html_template_name
-                )
+    #             product_info = data.get('stripe_product_info', {})
+    #             # send the email
+    #             context = {
+    #                 'frontend_link': settings.FRONTEND_URL,
+    #                 'product_name': product_info.get('name'),
+    #                 'product_description': product_info.get('description')
+    #             }
+    #             subject = 'Subscription Success'
+    #             template_name = 'email/coreuser/subscription.txt'
+    #             html_template_name = 'email/coreuser/subscription.html'
+    #             send_email(
+    #                 self.request.user.email,
+    #                 subject,
+    #                 context,
+    #                 template_name,
+    #                 html_template_name
+    #             )
 
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            return Response(
-                dict(
-                    code='stripe_api_error',
-                    message='There was an error creating subscription'
-                ),
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    #             return Response(
+    #                 serializer.data,
+    #                 status=status.HTTP_201_CREATED
+    #             )
+    #         return Response(
+    #             dict(
+    #                 code='stripe_api_error',
+    #                 message='There was an error creating subscription'
+    #             ),
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
 
-        return Response(
-            dict(
-                code='missing_stripe_details',
-                message='Please pass valid product/card or stripe secret'
-            ),
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    #     return Response(
+    #         dict(
+    #             code='missing_stripe_details',
+    #             message='Please pass valid product/card or stripe secret'
+    #         ),
+    #         status=status.HTTP_400_BAD_REQUEST
+    #     )
 
     def perform_create(self, serializer):
         serializer.save(
@@ -172,7 +172,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
             if stripe_subscription:
                 stripe_subscription_details = dict(
-                    customer_stripe_id=customer.id,
+                    stripe_customer_id=customer.id,
                     stripe_subscription_id=stripe_subscription.id,
                     stripe_product=product_id,
                     stripe_payment_method_id=payment_method_id,
