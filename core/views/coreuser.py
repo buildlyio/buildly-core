@@ -96,7 +96,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             stripe.api_key = settings.STRIPE_SECRET
             stripe.api_version = '2022-11-15'
 
-            existing_subscriptions = Subscription.objects.filter(user=user).first()
+            existing_subscriptions = Subscription.objects.filter(user=user).order_by('-subscription_end_date').first()
             if existing_subscriptions:
                 stripe_subscription = stripe.Subscription.retrieve(existing_subscriptions.stripe_subscription_id)
                 if stripe_subscription:
