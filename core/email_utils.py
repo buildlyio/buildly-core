@@ -5,8 +5,8 @@ from django.conf import settings
 
 def send_email(email_address: str, subject: str, context: dict, template_name: str,
                html_template_name: str = None) -> int:
-    text_content = loader.render_to_string(template_name, context, using=None)
-    html_content = loader.render_to_string(html_template_name, context, using=None) if html_template_name else None
+    text_content = loader.render_to_string(template_name, context)
+    html_content = loader.render_to_string(html_template_name, context) if html_template_name else None
     return send_email_body(email_address, subject, text_content, html_content)
 
 
