@@ -7,7 +7,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["http://localhost:8000",]
 
 
 # Application definition
@@ -41,7 +41,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'social_django',
     # OAuth2
     'oauth2_provider',
-    'oauth2_provider_jwt',
     # swagger
     'drf_yasg',
     # health check
@@ -89,7 +88,7 @@ TEMPLATES = [
                 'social_django.context_processors.login_redirect',
             ],
             'builtins': [  # TODO to delete?
-                'django.contrib.staticfiles.templatetags.staticfiles'
+                'django.templatetags.static'
             ],
         },
     }
@@ -151,6 +150,7 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # TODO check if disable, and also delete CSRF
         'rest_framework.authentication.TokenAuthentication',
     ],

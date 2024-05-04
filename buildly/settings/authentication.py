@@ -23,16 +23,11 @@ AUTHENTICATION_BACKENDS = [
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.microsoft.MicrosoftOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'oauth2_provider.backends.OAuth2Backend',
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
 ]
 
 AUTHENTICATION_BACKENDS = AUTHENTICATION_LDAP_BACKEND + AUTHENTICATION_BACKENDS
 
-# Rest Framework OAuth2 and JWT
-REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] += [
-    'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    'oauth2_provider_jwt.authentication.JWTAuthentication',
-]
 
 # Auth Application
 OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
@@ -116,14 +111,7 @@ SOCIAL_AUTH_MICROSOFT_GRAPH_SECRET = os.getenv('SOCIAL_AUTH_MICROSOFT_GRAPH_SECR
 # i.e. ['example.com', 'buildly.io','treeaid.org']
 if os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS'):
     SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = os.getenv(
-<<<<<<< HEAD
-        'SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS'
-    ).split(',')
         'SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS').split(',')
-
-=======
-        'SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS').split(',')
->>>>>>> master
 if os.getenv('SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'):
     SOCIAL_AUTH_GOOGLE_MICROSOFT_DOMAINS = os.getenv(
         'SOCIAL_AUTH_MICROSOFT_WHITELISTED_DOMAINS'

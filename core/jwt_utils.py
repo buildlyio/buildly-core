@@ -3,7 +3,6 @@ import datetime
 
 import jwt
 from django.conf import settings
-from oauth2_provider.models import RefreshToken
 
 from core.models import CoreUser, Organization
 from gateway.exceptions import PermissionDenied
@@ -25,19 +24,6 @@ def payload_enricher(request):
             'core_user_uuid': user['core_user_uuid'],
             'organization_uuid': str(user['organization__organization_uuid']),
         }
-    elif request.POST.get('refresh_token'):
-        try:
-            refresh_token = RefreshToken.objects.get(
-                token=request.POST.get('refresh_token')
-            )
-            user = refresh_token.user
-            return {
-                'core_user_uuid': user.core_user_uuid,
-                'organization_uuid': str(user.organization.organization_uuid),
-                'username': user.username,
-            }
-        except RefreshToken.DoesNotExist:
-            logger.warning('RefreshToken not found.')
     return {}
 
 

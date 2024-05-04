@@ -114,13 +114,7 @@ class DataMesh:
                 ):
                     self._access_validator.validate(obj)
                 else:
-<<<<<<< HEAD
-                    raise DatameshConfigurationError(
-                        f'{"DataMesh Error:Access Validator should have validate method"}'
-                    )
-=======
                     raise DatameshConfigurationError(f'{"DataMesh Error:Access Validator should have validate method"}')
->>>>>>> master
             obj_dict = model_to_dict(obj)
             data_item[relationship.key].append(obj_dict)
             self._cache[cache_key] = obj_dict
@@ -160,13 +154,7 @@ class DataMesh:
                         f'No response data for join record (request params: {params})'
                     )
             else:
-<<<<<<< HEAD
-                raise DatameshConfigurationError(
-                    f'{"DataMesh Error: Client should have request method"}'
-                )
-=======
                 raise DatameshConfigurationError(f'{"DataMesh Error: Client should have request method"}')
->>>>>>> master
 
     def fetch_datamesh_relationship(self):
         relationship_list = []

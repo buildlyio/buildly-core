@@ -30,7 +30,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: "buildly.settings.production"
       ALLOWED_HOSTS: "*"
-      CORS_ORIGIN_WHITELIST: "*"
+      CORS_ORIGIN_WHITELIST: "http://localhost:8000"
       DATABASE_ENGINE: "postgresql"
       DATABASE_NAME: "buildly"
       DATABASE_USER: "root"

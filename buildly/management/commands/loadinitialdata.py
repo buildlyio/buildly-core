@@ -5,21 +5,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-<<<<<<< HEAD
-from core.models import (
-    ROLE_VIEW_ONLY,
-    ROLE_ORGANIZATION_ADMIN,
-    ROLE_WORKFLOW_ADMIN,
-    ROLE_WORKFLOW_TEAM,
-    Organization,
-    CoreUser,
-    CoreGroup,
-    OrganizationType,
-)
-=======
 from core.models import ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, \
     Organization, CoreUser, CoreGroup, OrganizationType
->>>>>>> master
 
 logger = logging.getLogger(__name__)
 
@@ -75,15 +62,7 @@ class Command(BaseCommand):
             logger.info("Creating Super User")
             user_password = None
             if settings.DEBUG:
-<<<<<<< HEAD
-                user_password = (
-                    settings.SUPER_USER_PASSWORD
-                    if settings.SUPER_USER_PASSWORD
-                    else 'zGtkgLvmNiKm'
-                )
-=======
                 user_password = settings.SUPER_USER_PASSWORD if settings.SUPER_USER_PASSWORD else 'zGtkgLvmNiKm'
->>>>>>> master
             elif settings.SUPER_USER_PASSWORD:
                 user_password = settings.SUPER_USER_PASSWORD
             else:
