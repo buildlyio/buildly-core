@@ -9,6 +9,9 @@ from rest_framework.response import Response
 import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from core.models import CoreUser, Organization
 from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
@@ -283,6 +286,7 @@ class CoreUserViewSet(
     def get_permissions(self):
         if hasattr(self, 'action'):
             # different permissions when creating a new user or resetting password
+
             if self.action in [
                 'create',
                 'reset_password',
@@ -291,6 +295,7 @@ class CoreUserViewSet(
                 'invite_check',
                 'update_profile',
             ]:
+
                 return [permissions.AllowAny()]
 
             if self.action in ['update', 'partial_update', 'invite']:
@@ -304,6 +309,7 @@ class CoreUserViewSet(
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     queryset = CoreUser.objects.all()
     permission_classes = (AllowAuthenticatedRead,)
+
 
     color_codes = {
         'error': '#cc3300',
@@ -432,6 +438,7 @@ class CoreUserViewSet(
             {
                 'detail': 'The notification were sent successfully on email.',
             }, status=status.HTTP_200_OK)
+
 
     @swagger_auto_schema(
         methods=['post'],

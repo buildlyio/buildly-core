@@ -98,6 +98,7 @@ class BaseSwaggerClient:
                 if isinstance(query_dict_body, QueryDict)
                 else query_dict_body
             )
+
             data.update(body)
 
             # handle uploaded files

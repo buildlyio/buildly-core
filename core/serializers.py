@@ -2,6 +2,7 @@ import datetime
 import jwt
 import json
 import secrets
+
 import stripe
 # TODO: remove this import and make stipe a configuration
 from urllib.parse import urljoin
@@ -18,8 +19,10 @@ from rest_framework import serializers
 
 from core.email_utils import send_email, send_email_body
 
+# TODO: consortium is an artifact from TransparentPath need to test that it works here
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, OrganizationType, Consortium, Partner
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, OrganizationType, Consortium, Partner
+
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -142,7 +145,6 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             organization = validated_data.pop('organization')
         except (KeyError):
             organization = {'name': settings.DEFAULT_ORG}
-
         org_name = organization['name']
         organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
 
@@ -155,6 +157,8 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         if bool(settings.AUTO_APPROVE_USER):  # If auto-approval set to true
             validated_data['is_active'] = True
         else:
+            invitation_token = validated_data.pop('invitation_token', None)
+
             validated_data['is_active'] = is_new_org or bool(invitation_token)
         coreuser = CoreUser.objects.create(
             organization=organization,
@@ -508,6 +512,97 @@ class CoreUserEmailNotificationSerializer(serializers.Serializer):
     organization_uuid = serializers.UUIDField()
     notification_messages = serializers.CharField()
     
+    def create(self, validated_data):
+        validated_data['client_id'] = secrets.token_urlsafe(75)
+        validated_data['client_secret'] = secrets.token_urlsafe(190)
+        return super(ApplicationSerializer, self).create(validated_data)
+
+
+class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
+    """ Let's user update his  organization_name,and email from the one time pop-up screen.
+     Also this assigns permissions to users """
+
+    email = serializers.CharField(required=False)
+    organization_name = serializers.CharField(required=False)
+    core_groups = CoreGroupSerializer(read_only=True, many=True)
+    organization = OrganizationSerializer(read_only=True)
+
+    class Meta:
+        model = CoreUser
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
+                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups')
+
+    def update(self, instance, validated_data):
+
+        organization_name = str(validated_data.pop('organization_name')).lower()
+        instance.email = validated_data.get('email', instance.email)
+
+        if instance.email is not None:
+            instance.save()
+        is_new_org = Organization.objects.filter(name=organization_name)
+
+        # check whether org_name is "default"
+        if organization_name == 'default':
+            default_org = Organization.objects.filter(name='default organization').first()
+            instance.organization = default_org
+            instance.save()
+            # now attach the user role as USER to default organization
+            default_org_user = CoreGroup.objects.filter(organization__name='default organization',
+                                                        is_org_level=True,
+                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            instance.core_groups.add(default_org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                default_org_groups = CoreGroup.objects.filter(organization__name='default organization',
+                                                              is_org_level=True,
+                                                              permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in default_org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # check whether an old organization
+        elif is_new_org.exists():
+
+            organization = Organization.objects.get(name=organization_name)
+            instance.organization = organization
+            instance.is_active = False
+            instance.save()
+            # now attach the user role as USER
+            org_user = CoreGroup.objects.filter(organization__name=organization_name,
+                                                is_org_level=True,
+                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+
+            instance.core_groups.add(org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                org_groups = CoreGroup.objects.filter(organization__name=organization_name,
+                                                      is_org_level=True,
+                                                      permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # if the current user is the first user
+        elif not is_new_org.exists():
+            # first update the org name for that user
+            organization = Organization.objects.create(name=organization_name)
+            instance.organization = organization
+            instance.save()
+            # now attach the user role as ADMIN
+            org_admin = CoreGroup.objects.get(organization=organization,
+                                              is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN)
+            instance.core_groups.add(org_admin)
+
+        return instance
+
+
+class CoreUserEmailNotificationSerializer(serializers.Serializer):
+    """
+    Serializer for email Notification
+    """
+    organization_uuid = serializers.UUIDField()
+    notification_messages = serializers.CharField()
 
 class PartnerSerializer(serializers.ModelSerializer):
     partner_uuid = serializers.ReadOnlyField()
@@ -515,3 +610,4 @@ class PartnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Partner
         fields = '__all__'
+

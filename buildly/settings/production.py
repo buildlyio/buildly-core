@@ -11,7 +11,6 @@ MIDDLEWARE_CORS = ['corsheaders.middleware.CorsMiddleware']
 
 MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
-
 CORS_ORIGIN_ALLOW_ALL = bool(os.getenv('CORS_ORIGIN_ALLOW_ALL', False))
 
 CORS_ORIGIN_WHITELIST = os.environ['CORS_ORIGIN_WHITELIST'].split(',')
