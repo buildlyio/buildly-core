@@ -12,39 +12,127 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='Internationalization',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('language', models.CharField(blank=True, max_length=100, null=True, verbose_name='Language')),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'language',
+                    models.CharField(
+                        blank=True, max_length=100, null=True, verbose_name='Language'
+                    ),
+                ),
                 ('language_file', django.contrib.postgres.fields.jsonb.JSONField()),
                 ('create_date', models.DateTimeField(blank=True, null=True)),
                 ('edit_date', models.DateTimeField(blank=True, null=True)),
             ],
-            options={
-                'ordering': ('language',),
-            },
+            options={'ordering': ('language',)},
         ),
         migrations.CreateModel(
             name='WorkflowLevel1',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('level1_uuid', models.CharField(default=uuid.uuid4, editable=False, max_length=255, unique=True, verbose_name='WorkflowLevel1 UUID')),
-                ('unique_id', models.CharField(blank=True, help_text='User facing unique ID field if needed', max_length=255, null=True, verbose_name='ID')),
-                ('name', models.CharField(blank=True, help_text="Top level workflow can have child workflowleves, name it according to it's grouping of children", max_length=255, verbose_name='Name')),
-                ('description', models.TextField(blank=True, help_text='Describe how this collection of related workflows are used', max_length=765, null=True, verbose_name='Description')),
-                ('start_date', models.DateTimeField(blank=True, help_text='If required a time span can be associated with workflow level', null=True)),
-                ('end_date', models.DateTimeField(blank=True, help_text='If required a time span can be associated with workflow level', null=True)),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'level1_uuid',
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=255,
+                        unique=True,
+                        verbose_name='WorkflowLevel1 UUID',
+                    ),
+                ),
+                (
+                    'unique_id',
+                    models.CharField(
+                        blank=True,
+                        help_text='User facing unique ID field if needed',
+                        max_length=255,
+                        null=True,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(
+                        blank=True,
+                        help_text="Top level workflow can have child workflowleves, name it according to it's grouping of children",
+                        max_length=255,
+                        verbose_name='Name',
+                    ),
+                ),
+                (
+                    'description',
+                    models.TextField(
+                        blank=True,
+                        help_text='Describe how this collection of related workflows are used',
+                        max_length=765,
+                        null=True,
+                        verbose_name='Description',
+                    ),
+                ),
+                (
+                    'start_date',
+                    models.DateTimeField(
+                        blank=True,
+                        help_text='If required a time span can be associated with workflow level',
+                        null=True,
+                    ),
+                ),
+                (
+                    'end_date',
+                    models.DateTimeField(
+                        blank=True,
+                        help_text='If required a time span can be associated with workflow level',
+                        null=True,
+                    ),
+                ),
                 ('create_date', models.DateTimeField(blank=True, null=True)),
                 ('edit_date', models.DateTimeField(blank=True, null=True)),
                 ('sort', models.IntegerField(default=0)),
-                ('core_groups', models.ManyToManyField(blank=True, related_name='workflowlevel1s', related_query_name='workflowlevel1s', to='core.CoreGroup', verbose_name='Core groups')),
-                ('organization', models.ForeignKey(blank=True, help_text='Related Org to associate with', null=True, on_delete=django.db.models.deletion.CASCADE, to='core.Organization')),
-                ('user_access', models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL)),
+                (
+                    'core_groups',
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name='workflowlevel1s',
+                        related_query_name='workflowlevel1s',
+                        to='core.CoreGroup',
+                        verbose_name='Core groups',
+                    ),
+                ),
+                (
+                    'organization',
+                    models.ForeignKey(
+                        blank=True,
+                        help_text='Related Org to associate with',
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='core.Organization',
+                    ),
+                ),
+                (
+                    'user_access',
+                    models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL),
+                ),
             ],
             options={
                 'verbose_name': 'Workflow Level 1',
@@ -55,18 +143,97 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='WorkflowLevel2',
             fields=[
-                ('level2_uuid', models.UUIDField(default=uuid.uuid4, help_text='Unique ID', primary_key=True, serialize=False, verbose_name='WorkflowLevel2 UUID')),
-                ('description', models.TextField(blank=True, help_text='Description of the workflow level use', null=True, verbose_name='Description')),
-                ('name', models.CharField(help_text='Name of workflow level as it relates to workflow level 1', max_length=255, verbose_name='Name')),
+                (
+                    'level2_uuid',
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        help_text='Unique ID',
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='WorkflowLevel2 UUID',
+                    ),
+                ),
+                (
+                    'description',
+                    models.TextField(
+                        blank=True,
+                        help_text='Description of the workflow level use',
+                        null=True,
+                        verbose_name='Description',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(
+                        help_text='Name of workflow level as it relates to workflow level 1',
+                        max_length=255,
+                        verbose_name='Name',
+                    ),
+                ),
                 ('notes', models.TextField(blank=True, null=True)),
-                ('parent_workflowlevel2', models.IntegerField(blank=True, default=0, help_text='Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships', verbose_name='Parent')),
-                ('short_name', models.CharField(blank=True, help_text='Shortened name autogenerated', max_length=20, null=True, verbose_name='Code')),
-                ('create_date', models.DateTimeField(blank=True, null=True, verbose_name='Date Created')),
-                ('edit_date', models.DateTimeField(blank=True, null=True, verbose_name='Last Edit Date')),
-                ('start_date', models.DateTimeField(blank=True, null=True, verbose_name='Start Date')),
-                ('end_date', models.DateTimeField(blank=True, null=True, verbose_name='End Date')),
-                ('core_groups', models.ManyToManyField(blank=True, related_name='workflowlevel2s', related_query_name='workflowlevel2s', to='core.CoreGroup', verbose_name='Core groups')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='workflowlevel2', to=settings.AUTH_USER_MODEL)),
+                (
+                    'parent_workflowlevel2',
+                    models.IntegerField(
+                        blank=True,
+                        default=0,
+                        help_text='Workflow level 2 can relate to another workflow level 2 creating multiple levels of relationships',
+                        verbose_name='Parent',
+                    ),
+                ),
+                (
+                    'short_name',
+                    models.CharField(
+                        blank=True,
+                        help_text='Shortened name autogenerated',
+                        max_length=20,
+                        null=True,
+                        verbose_name='Code',
+                    ),
+                ),
+                (
+                    'create_date',
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name='Date Created'
+                    ),
+                ),
+                (
+                    'edit_date',
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name='Last Edit Date'
+                    ),
+                ),
+                (
+                    'start_date',
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name='Start Date'
+                    ),
+                ),
+                (
+                    'end_date',
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name='End Date'
+                    ),
+                ),
+                (
+                    'core_groups',
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name='workflowlevel2s',
+                        related_query_name='workflowlevel2s',
+                        to='core.CoreGroup',
+                        verbose_name='Core groups',
+                    ),
+                ),
+                (
+                    'created_by',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name='workflowlevel2',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Workflow Level 2',
@@ -77,11 +244,26 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='WorkflowLevelStatus',
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                (
+                    'uuid',
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
                 ('order', models.PositiveSmallIntegerField(default=0)),
-                ('name', models.CharField(help_text='Name of WorkflowLevelStatus', max_length=255, verbose_name='Name')),
+                (
+                    'name',
+                    models.CharField(
+                        help_text='Name of WorkflowLevelStatus',
+                        max_length=255,
+                        verbose_name='Name',
+                    ),
+                ),
                 ('short_name', models.SlugField(max_length=63, unique=True)),
-                ('create_date', models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    'create_date',
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
                 ('edit_date', models.DateTimeField(auto_now=True)),
             ],
             options={
@@ -93,28 +275,108 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='WorkflowLevelType',
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('name', models.CharField(help_text='Name of workflow2 type', max_length=255, verbose_name='Name')),
-                ('create_date', models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    'uuid',
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(
+                        help_text='Name of workflow2 type',
+                        max_length=255,
+                        verbose_name='Name',
+                    ),
+                ),
+                (
+                    'create_date',
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
                 ('edit_date', models.DateTimeField(auto_now=True)),
             ],
-            options={
-                'ordering': ('create_date',),
-            },
+            options={'ordering': ('create_date',)},
         ),
         migrations.CreateModel(
             name='WorkflowTeam',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('team_uuid', models.CharField(default=uuid.uuid4, editable=False, max_length=255, unique=True, verbose_name='WorkflowLevel1 UUID')),
-                ('start_date', models.DateTimeField(blank=True, help_text='If required a time span can be associated with workflow level access', null=True)),
-                ('end_date', models.DateTimeField(blank=True, help_text='If required a time span can be associated with workflow level access expiration', null=True)),
-                ('status', models.CharField(blank=True, help_text='Active status of access', max_length=255, null=True)),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'team_uuid',
+                    models.CharField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        max_length=255,
+                        unique=True,
+                        verbose_name='WorkflowLevel1 UUID',
+                    ),
+                ),
+                (
+                    'start_date',
+                    models.DateTimeField(
+                        blank=True,
+                        help_text='If required a time span can be associated with workflow level access',
+                        null=True,
+                    ),
+                ),
+                (
+                    'end_date',
+                    models.DateTimeField(
+                        blank=True,
+                        help_text='If required a time span can be associated with workflow level access expiration',
+                        null=True,
+                    ),
+                ),
+                (
+                    'status',
+                    models.CharField(
+                        blank=True,
+                        help_text='Active status of access',
+                        max_length=255,
+                        null=True,
+                    ),
+                ),
                 ('create_date', models.DateTimeField(blank=True, null=True)),
                 ('edit_date', models.DateTimeField(blank=True, null=True)),
-                ('role', models.ForeignKey(blank=True, help_text='Type of access via related group', null=True, on_delete=django.db.models.deletion.CASCADE, to='auth.Group')),
-                ('workflow_user', models.ForeignKey(blank=True, help_text='User with access/permissions to related workflowlevels', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='auth_approving', to=settings.AUTH_USER_MODEL)),
-                ('workflowlevel1', models.ForeignKey(blank=True, help_text='Related workflowlevel 1', null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.WorkflowLevel1')),
+                (
+                    'role',
+                    models.ForeignKey(
+                        blank=True,
+                        help_text='Type of access via related group',
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='auth.Group',
+                    ),
+                ),
+                (
+                    'workflow_user',
+                    models.ForeignKey(
+                        blank=True,
+                        help_text='User with access/permissions to related workflowlevels',
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='auth_approving',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    'workflowlevel1',
+                    models.ForeignKey(
+                        blank=True,
+                        help_text='Related workflowlevel 1',
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='workflow.WorkflowLevel1',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Workflow Team',
@@ -125,13 +387,50 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='WorkflowLevel2Sort',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('workflowlevel2_pk', models.UUIDField(default='00000000-0000-4000-8000-000000000000', verbose_name='UUID to be Sorted')),
-                ('sort_array', django.contrib.postgres.fields.jsonb.JSONField(blank=True, help_text='Sorted JSON array of workflow levels', null=True)),
+                (
+                    'id',
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'workflowlevel2_pk',
+                    models.UUIDField(
+                        default='00000000-0000-4000-8000-000000000000',
+                        verbose_name='UUID to be Sorted',
+                    ),
+                ),
+                (
+                    'sort_array',
+                    django.contrib.postgres.fields.jsonb.JSONField(
+                        blank=True,
+                        help_text='Sorted JSON array of workflow levels',
+                        null=True,
+                    ),
+                ),
                 ('create_date', models.DateTimeField(blank=True, null=True)),
                 ('edit_date', models.DateTimeField(blank=True, null=True)),
-                ('workflowlevel1', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.WorkflowLevel1')),
-                ('workflowlevel2_parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='workflow.WorkflowLevel2')),
+                (
+                    'workflowlevel1',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='workflow.WorkflowLevel1',
+                    ),
+                ),
+                (
+                    'workflowlevel2_parent',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to='workflow.WorkflowLevel2',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Workflow Level Sort',
@@ -142,16 +441,34 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='workflowlevel2',
             name='status',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='workflowlevel2s', to='workflow.WorkflowLevelStatus'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='workflowlevel2s',
+                to='workflow.WorkflowLevelStatus',
+            ),
         ),
         migrations.AddField(
             model_name='workflowlevel2',
             name='type',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='workflowlevel2s', to='workflow.WorkflowLevelType'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='workflowlevel2s',
+                to='workflow.WorkflowLevelType',
+            ),
         ),
         migrations.AddField(
             model_name='workflowlevel2',
             name='workflowlevel1',
-            field=models.ForeignKey(help_text='Primary or parent Workflow', on_delete=django.db.models.deletion.CASCADE, related_name='workflowlevel2', to='workflow.WorkflowLevel1', verbose_name='Workflow Level 1'),
+            field=models.ForeignKey(
+                help_text='Primary or parent Workflow',
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='workflowlevel2',
+                to='workflow.WorkflowLevel1',
+                verbose_name='Workflow Level 1',
+            ),
         ),
     ]

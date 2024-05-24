@@ -43,8 +43,9 @@ class WorkflowLevelTypeViewSet(viewsets.ModelViewSet):
 
     Delete the workflowleveltype instance.
     """
+
     queryset = WorkflowLevelType.objects.all()
-    ordering = ('create_date', )
-    filter_backends = (filters.OrderingFilter, )
+    ordering = ('create_date',)
+    filter_backends = (filters.OrderingFilter,)
     serializer_class = WorkflowLevelTypeSerializer
     pagination_class = DefaultCursorPagination

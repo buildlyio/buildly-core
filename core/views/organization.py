@@ -1,14 +1,15 @@
 import logging
+from django_filters.rest_framework import DjangoFilterBackend
 
 import django_filters
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from core.models import Organization
-from core.serializers import OrganizationSerializer
-from core.permissions import IsOrgMember
+from core.models import Organization, OrganizationType
+from core.serializers import OrganizationSerializer, OrganizationTypeSerializer
+from core.permissions import AllowOnlyOrgAdmin, IsOrgMember
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,18 +50,62 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
 
-    # /organization/names/
-    # send only the names
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny], name='Fetch Already existing Organization', url_path='names')
+
+    @csrf_exempt
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[AllowAny],
+        name='Fetch Already existing Organization',
+        url_path='fetch_orgs',
+    )
+
     def fetch_existing_orgs(self, request, pk=None, *args, **kwargs):
         """
         Fetch Already existing Organizations in Buildly Core,
         Any logged in user can access this
         """
-        # all orgs in Buildly Core
+
+        # returns names of existing orgs in Buildly Core as a list
         queryset = Organization.objects.all()
         names = list()
         for record in queryset:
             names.append(record.name)
 
         return Response(names)
+
+
+class OrganizationTypeViewSet(viewsets.ModelViewSet):
+    """
+    Organization type  is associated with an organization which defines type of organization.
+
+    title:
+    Organization Type
+
+    description:
+    An organization type are custodian and producer
+
+    They are associated with an organization.
+    Only admin has access to organization type.
+
+    retrieve:
+    Return the  Organization Type.
+
+    list:
+    Return a list of all the existing  Organization Types.
+
+    create:
+    Create a new Organization Type instance.
+
+    update:
+    Update a Organization Type instance.
+
+    delete:
+    Delete a Organization Type instance.
+    """
+
+    filter_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    permission_classes = (AllowOnlyOrgAdmin,)
+    queryset = OrganizationType.objects.all()
+    serializer_class = OrganizationTypeSerializer

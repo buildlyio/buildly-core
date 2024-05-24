@@ -1,9 +1,24 @@
-# buildly
+# Buildly Open Source Core Gateway
 [![Docker Pulls](https://img.shields.io/docker/pulls/buildly/buildly.svg)](https://hub.docker.com/r/buildly/buildly/) [![Build Status](https://travis-ci.org/buildlyio/buildly-core.svg?branch=master)](https://travis-ci.org/buildlyio/buildly-core) [![Documentation Status](https://readthedocs.org/projects/buildly-core/badge/?version=latest)](https://buildly-core.readthedocs.io/en/latest/?badge=latest) [![Gitter](https://badges.gitter.im/Buildlyio/community.svg)](https://gitter.im/Buildlyio/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 A gateway and service discovery system for “micro” services. A light weight Gateway that connects all of your data services, API’s and endpoints to a single easy-to-use URL.
 
-Public Roadmap - https://docs.google.com/spreadsheets/d/1tnmAy-tiQOVWSAigJIQ5HhdatbE3WTC00tzdwtOe2Hk
+# Buildly-Core Project Goals and Vision
+
+## Project Vision
+
+Buildly-Core is designed to be a cornerstone component for cloud-native architectures, providing a versatile gateway and service discovery system for microservices. Our vision is to simplify the integration of data services, APIs, and endpoints, offering a lightweight and easy-to-use solution that connects them all through a single, accessible URL.
+
+## Key Objectives
+
+- Simplified Integration: Streamline the integration of diverse data services, APIs, and endpoints into a unified gateway, making it easier for developers to work with microservices.
+- Lightweight and High Performance: Prioritize performance optimization to ensure that Buildy-Core remains lightweight and responsive even in high-traffic environments.
+- Service Discovery: Implement robust service discovery mechanisms to enable dynamic service registration and discovery for microservices within the architecture.
+- Security and Access Control: Implement security measures to protect against unauthorized access and ensure data and services are secure.
+- Flexibility and Scalability: Design Buildly-Core to be flexible and scalable, accommodating future growth and evolving architectural needs.
+- Documentation and Ease of Use: Provide comprehensive documentation and resources to make it easy for developers to understand and work with Buildy-Core.
+- Community Support: Foster a supportive community where developers can collaborate, seek help, and share insights and best practices.
+
 
 ## Getting Started
 

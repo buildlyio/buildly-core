@@ -15,6 +15,7 @@ class OAuthTest(TestCase):
     """
     Test cases for OAuth Provider interface
     """
+
     # Fake classes for testing
     class BackendTest(object):
         def __init__(self):
@@ -32,7 +33,7 @@ class OAuthTest(TestCase):
         logging.disable(logging.WARNING)
         self.core_user = factories.CoreUser()
         self.org = factories.Organization(organization_uuid='12345')
-        self.app = factories.Application(user=self.core_user, )
+        self.app = factories.Application(user=self.core_user)
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -48,10 +49,12 @@ class OAuthTest(TestCase):
         self.core_user.save()
 
         # Get Authorization token
-        basic_token = base64.b64encode(f'{self.app.client_id}:{self.app.client_secret}'.encode('utf-8')).decode('utf-8')
+        basic_token = base64.b64encode(
+            f'{self.app.client_id}:{self.app.client_secret}'.encode('utf-8')
+        ).decode('utf-8')
         headers = {
             'HTTP_USER_AGENT': 'Test/1.0',
-            'HTTP_AUTHORIZATION': f'Basic {basic_token}'
+            'HTTP_AUTHORIZATION': f'Basic {basic_token}',
         }
 
         c = APIClient()
@@ -61,7 +64,12 @@ class OAuthTest(TestCase):
 
         data = f'username={self.core_user.username}&password=1234&grant_type=password'
 
-        response = c.post(authorize_url, data=data, content_type='application/x-www-form-urlencoded', headers=headers)
+        response = c.post(
+            authorize_url,
+            data=data,
+            content_type='application/x-www-form-urlencoded',
+            headers=headers,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn('access_token', response.json())
         self.assertIn('access_token_jwt', response.json())
@@ -71,9 +79,13 @@ class OAuthTest(TestCase):
 
     def test_create_organization_new_default_org(self):
         Organization.objects.filter(name=settings.DEFAULT_ORG).delete()
-        coreuser = factories.CoreUser(first_name='John', last_name='Lennon', organization=None)
+        coreuser = factories.CoreUser(
+            first_name='John', last_name='Lennon', organization=None
+        )
 
-        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
+        response = auth_pipeline.create_organization(
+            core_user=coreuser, is_new_core_user=True
+        )
 
         self.assertIn('is_new_org', response)
         self.assertTrue(response['is_new_org'])
@@ -88,7 +100,9 @@ class OAuthTest(TestCase):
     def test_create_organization_new_username_org(self):
         coreuser = factories.CoreUser(first_name='John', last_name='Lennon')
 
-        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
+        response = auth_pipeline.create_organization(
+            core_user=coreuser, is_new_core_user=True
+        )
 
         self.assertIn('is_new_org', response)
         self.assertTrue(response['is_new_org'])
@@ -106,7 +120,9 @@ class OAuthTest(TestCase):
         coreuser.organization = org
         coreuser.save()
 
-        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=True)
+        response = auth_pipeline.create_organization(
+            core_user=coreuser, is_new_core_user=True
+        )
 
         self.assertIn('is_new_org', response)
         self.assertFalse(response['is_new_org'])
@@ -120,11 +136,15 @@ class OAuthTest(TestCase):
     def test_create_organization_no_new_coreuser(self):
         coreuser = factories.CoreUser(first_name='John', last_name='Lennon')
 
-        response = auth_pipeline.create_organization(core_user=coreuser, is_new_core_user=False)
+        response = auth_pipeline.create_organization(
+            core_user=coreuser, is_new_core_user=False
+        )
         self.assertIsNone(response)
 
     def test_create_organization_no_coreuser(self):
-        response = auth_pipeline.create_organization(core_user=None, is_new_core_user=True)
+        response = auth_pipeline.create_organization(
+            core_user=None, is_new_core_user=True
+        )
         self.assertIsNone(response)
 
     def test_create_organization_no_is_new_core_user(self):
@@ -139,10 +159,13 @@ class OAuthTest(TestCase):
         details = {'email': self.core_user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn(b"You don't appear to have permissions to access "
-                      b"the system.", template_content)
-        self.assertIn(b"Please check with your organization to have access.",
-                      template_content)
+        self.assertIn(
+            b"You don't appear to have permissions to access " b"the system.",
+            template_content,
+        )
+        self.assertIn(
+            b"Please check with your organization to have access.", template_content
+        )
 
     def test_auth_allowed_in_whitelisted_domains_conf(self):
         factories.Organization(name=settings.DEFAULT_ORG)
@@ -157,27 +180,32 @@ class OAuthTest(TestCase):
     def test_auth_allowed_multi_oauth_domain(self):
         self.org.oauth_domains = ['testenv.com']
         self.org.save()
-        factories.Organization(name='Another Org',
-                               oauth_domains=['testenv.com'])
+        factories.Organization(name='Another Org', oauth_domains=['testenv.com'])
 
         backend = self.BackendTest()
         details = {'email': self.core_user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn(b"You don't appear to have permissions to access "
-                      b"the system.", template_content)
-        self.assertIn(b"Please check with your organization to have access.",
-                      template_content)
+        self.assertIn(
+            b"You don't appear to have permissions to access " b"the system.",
+            template_content,
+        )
+        self.assertIn(
+            b"Please check with your organization to have access.", template_content
+        )
 
     def test_auth_allowed_no_whitelist_oauth_domain(self):
         backend = self.BackendTest()
         details = {'email': self.core_user.email}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn(b"You don't appear to have permissions to access "
-                      b"the system.", template_content)
-        self.assertIn(b"Please check with your organization to have access.",
-                      template_content)
+        self.assertIn(
+            b"You don't appear to have permissions to access " b"the system.",
+            template_content,
+        )
+        self.assertIn(
+            b"Please check with your organization to have access.", template_content
+        )
 
     def test_auth_allowed_no_email(self):
         factories.Organization(name=settings.DEFAULT_ORG)
@@ -185,10 +213,13 @@ class OAuthTest(TestCase):
         details = {}
         response = auth_pipeline.auth_allowed(backend, details, None)
         template_content = response.content
-        self.assertIn(b"You don't appear to have permissions to access "
-                      b"the system.", template_content)
-        self.assertIn(b"Please check with your organization to have access.",
-                      template_content)
+        self.assertIn(
+            b"You don't appear to have permissions to access " b"the system.",
+            template_content,
+        )
+        self.assertIn(
+            b"Please check with your organization to have access.", template_content
+        )
 
     def test_create_organization(self):
         pass

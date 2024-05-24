@@ -54,9 +54,7 @@ class LogicModuleViewSet(viewsets.ModelViewSet):
 
         response = utils.get_swagger_from_url(schema_url)
         spec_dict = response.json()
-        data = {
-            'api_specification': spec_dict
-        }
+        data = {'api_specification': spec_dict}
 
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)

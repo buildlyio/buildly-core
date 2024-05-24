@@ -8,7 +8,7 @@ from core.models import CoreUser
 class AdminViewTest(TestCase):
     def test_admin_user_auth_page_with_superuser(self):
         """Super user should see superuser status field on django admin"""
-        admin = CoreUser.objects.create_superuser('admin', 'admin@example.com', 'Password123')
+        CoreUser.objects.create_superuser('admin', 'admin@example.com', 'Password123')
         another_user = factories.CoreUser(username='another_user')
 
         self.client.login(username='admin', password='Password123')
@@ -19,9 +19,9 @@ class AdminViewTest(TestCase):
 
     def test_admin_user_auth_page_with_staff_user(self):
         """Staff user shouldn't see superuser status field on django admin"""
-        staff_user = CoreUser.objects.create_user('staff_user',
-                                              'staffuser@example.com',
-                                              'Password123')
+        staff_user = CoreUser.objects.create_user(
+            'staff_user', 'staffuser@example.com', 'Password123'
+        )
         permission = Permission.objects.get(name='Can change core user')
         staff_user.user_permissions.add(permission)
         staff_user.is_staff = True
@@ -50,7 +50,9 @@ class AdminViewTest(TestCase):
 
     def test_admin_user_permissions_section_with_staff_user(self):
         """Staff user shouldn't see user permissions section field on django admin"""
-        staff_user = CoreUser.objects.create_user('staff_user', 'staffuser@example.com', 'Password123')
+        staff_user = CoreUser.objects.create_user(
+            'staff_user', 'staffuser@example.com', 'Password123'
+        )
         permission = Permission.objects.get(name='Can change core user')
         staff_user.user_permissions.add(permission)
         staff_user.is_staff = True

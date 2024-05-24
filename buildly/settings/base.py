@@ -1,14 +1,13 @@
 import os
 
 # Base dir path
-BASE_DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["http://localhost:8000",]
 
 
 # Application definition
@@ -20,9 +19,7 @@ STATIC_ROOT = '/static/'
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 
 INSTALLED_APPS_DJANGO = [
@@ -40,31 +37,22 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
-
     # Social auth
     'social_django',
-
     # OAuth2
     'oauth2_provider',
-    'oauth2_provider_jwt',
-
     # swagger
     'drf_yasg',
-
     # health check
-    'health_check',                             # required
-    'health_check.db',                          # stock Django health checkers
+    'health_check',  # required
+    'health_check.db',  # stock Django health checkers
 ]
 
-INSTALLED_APPS_LOCAL = [
-    'buildly',
-    'gateway',
-    'core',
-    'workflow',
-    'datamesh',
-]
+INSTALLED_APPS_LOCAL = ['buildly', 'gateway', 'core', 'workflow', 'datamesh']
 
-INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
+INSTALLED_APPS = (
+    INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
+)
 
 MIDDLEWARE_DJANGO = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,13 +64,9 @@ MIDDLEWARE_DJANGO = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-MIDDLEWARE_CSRF = [
-    'core.middleware.DisableCsrfCheck',
-]
+MIDDLEWARE_CSRF = ['core.middleware.DisableCsrfCheck']
 
-EXCEPTION_MIDDLEWARE = [
-    'core.middleware.ExceptionMiddleware'
-]
+EXCEPTION_MIDDLEWARE = ['core.middleware.ExceptionMiddleware']
 
 MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_CSRF + EXCEPTION_MIDDLEWARE
 
@@ -91,9 +75,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            'templates',
-        ],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -106,10 +88,10 @@ TEMPLATES = [
                 'social_django.context_processors.login_redirect',
             ],
             'builtins': [  # TODO to delete?
-                'django.contrib.staticfiles.templatetags.staticfiles',
+                'django.templatetags.static'
             ],
         },
-    },
+    }
 ]
 
 WSGI_APPLICATION = 'buildly.wsgi.application'
@@ -168,12 +150,11 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # TODO check if disable, and also delete CSRF
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': (
-        'core.permissions.IsSuperUserBrowseableAPI',
-    )
+    'DEFAULT_PERMISSION_CLASSES': ('core.permissions.IsSuperUserBrowseableAPI',)
     # ToDo: Think about `DEFAULT_PAGINATION_CLASS as env variable and
     #       customizable values with reasonable defaults
 }
@@ -181,7 +162,9 @@ REST_FRAMEWORK = {
 # Front-end application URL
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://www.example.com/')
 REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
-RESETPASS_CONFIRM_URL_PATH = os.getenv('RESETPASS_CONFIRM_URL_PATH', 'reset_password_confirm/')
+RESETPASS_CONFIRM_URL_PATH = os.getenv(
+    'RESETPASS_CONFIRM_URL_PATH', 'reset_password_confirm/'
+)
 
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 
@@ -191,11 +174,12 @@ CORE_WEBSITE = "https://buildly.io"
 
 # User and Organization configuration
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
-DEFAULT_ORG = os.getenv('DEFAULT_ORG')
+DEFAULT_ORG = os.getenv('DEFAULT_ORG').lower() if os.getenv('DEFAULT_ORG') else None
 AUTO_APPROVE_USER = os.getenv('AUTO_APPROVE_USER', False)
+STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 
 # Swagger settings - for generate_swagger management command
 
-SWAGGER_SETTINGS = {
-    'DEFAULT_INFO': 'gateway.urls.swagger_info',
-}
+SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
+
+ORGANIZATION_TYPES = ['Custodian', 'Producer']

@@ -28,18 +28,22 @@ class WorkflowTeamViewSet(viewsets.ModelViewSet):
     create:
     Create a new workflow team instance.
     """
+
     def list(self, request, *args, **kwargs):
         # Use this queryset or the django-filters lib will not work
         queryset = self.filter_queryset(self.get_queryset())
         if not request.user.is_superuser:
             if ROLE_ORGANIZATION_ADMIN in request.user.groups.values_list(
-                    'name', flat=True):
+                'name', flat=True
+            ):
                 organization_id = request.user.organization_id
                 queryset = queryset.filter(
-                    workflow_user__organization_id=organization_id)
+                    workflow_user__organization_id=organization_id
+                )
             else:
                 wflvl1_ids = WorkflowTeam.objects.filter(
-                    workflow_user=request.user).values_list('workflowlevel1__id', flat=True)
+                    workflow_user=request.user
+                ).values_list('workflowlevel1__id', flat=True)
                 queryset = queryset.filter(workflowlevel1__in=wflvl1_ids)
 
         nested = request.GET.get('nested_models')

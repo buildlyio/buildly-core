@@ -5,7 +5,7 @@ from core.models import (
     CoreUser as CoreUserM,
     CoreGroup as CoreGroupM,
     LogicModule as LogicModuleM,
-    Organization as OrganizationM
+    Organization as OrganizationM,
 )
 
 

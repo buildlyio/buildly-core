@@ -1,22 +1,28 @@
+import datetime
 import jwt
+import json
 import secrets
+
+import stripe
+# TODO: remove this import and make stipe a configuration
 from urllib.parse import urljoin
 
 from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
 from rest_framework import serializers
 
-from oauth2_provider.models import AccessToken, Application, RefreshToken
-
 from core.email_utils import send_email, send_email_body
 
+# TODO: consortium is an artifact from TransparentPath need to test that it works here
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, OrganizationType, Consortium, Partner
+
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -34,6 +40,7 @@ class PermissionsField(serializers.DictField):
     For example:
     9 -> '1001' (binary representation) -> `{'create': True, 'read': False, 'update': False, 'delete': True}`
     """
+
     _keys = ('create', 'read', 'update', 'delete')
 
     def __init__(self, *args, **kwargs):
@@ -48,36 +55,48 @@ class PermissionsField(serializers.DictField):
         data = super().to_internal_value(data)
         keys = data.keys()
         if not set(keys) == set(self._keys):
-            raise serializers.ValidationError("Permissions field: incorrect keys format")
+            raise serializers.ValidationError(
+                "Permissions field: incorrect keys format"
+            )
 
         permissions = ''.join([str(int(data[key])) for key in self._keys])
         return int(permissions, 2)
 
 
 class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
-
     def to_representation(self, value):
         return str(super().to_representation(value))
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
-
     permissions = PermissionsField(required=False)
-    organization = UUIDPrimaryKeyRelatedField(required=False,
-                                              queryset=Organization.objects.all(),
-                                              help_text="Related Org to associate with")
+    organization = UUIDPrimaryKeyRelatedField(
+        required=False,
+        queryset=Organization.objects.all(),
+        help_text="Related Org to associate with",
+    )
 
     class Meta:
         model = CoreGroup
         read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
-        fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
-                  'workflowlevel2s')
+        fields = (
+            'id',
+            'uuid',
+            'name',
+            'is_global',
+            'is_org_level',
+            'permissions',
+            'organization',
+            'workflowlevel1s',
+            'workflowlevel2s',
+        )
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
     """
     Default CoreUser serializer
     """
+
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
@@ -97,8 +116,9 @@ class CoreUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
-                  'title', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token')
+                  'title', 'contact_info', 'privacy_disclaimer_accepted',
+                  'organization', 'core_groups', 'invitation_token', 'email_preferences',
+                  'push_preferences', 'user_timezone', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
@@ -107,28 +127,38 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     """
     Override default CoreUser serializer for writable actions (create, update, partial_update)
     """
+
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
+    product = serializers.CharField(required=False)
+    card = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name')
+        fields = CoreUserSerializer.Meta.fields + ('password', 'organization_name', 'product', 'card')
         read_only_fields = CoreUserSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
         # get or create organization
-        organization = validated_data.pop('organization')
+        try:
+            organization = validated_data.pop('organization')
+        except (KeyError):
+            organization = {'name': settings.DEFAULT_ORG}
         org_name = organization['name']
         organization, is_new_org = Organization.objects.get_or_create(name=str(org_name).lower())
 
         core_groups = validated_data.pop('core_groups', [])
+        product = validated_data.pop('product', None)
+        card = validated_data.pop('card', None)
+        invitation_token = validated_data.pop('invitation_token', None)
 
         # create core user
         if bool(settings.AUTO_APPROVE_USER):  # If auto-approval set to true
             validated_data['is_active'] = True
         else:
             invitation_token = validated_data.pop('invitation_token', None)
+
             validated_data['is_active'] = is_new_org or bool(invitation_token)
         coreuser = CoreUser.objects.create(
             organization=organization,
@@ -138,25 +168,41 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         coreuser.set_password(validated_data['password'])
         coreuser.save()
 
-        # check whether org_name is "default"
-        if org_name in ['default']:
-            default_org_user = CoreGroup.objects.filter(organization__name='default organization',
-                                                        is_org_level=True,
-                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
-            coreuser.core_groups.add(default_org_user)
-
-        # check whether an old organization
-        if not is_new_org:
-            coreuser.is_active = False
-            coreuser.save()
-
-            org_user = CoreGroup.objects.filter(organization__name=organization,
-                                                is_org_level=True,
-                                                permissions=PERMISSIONS_VIEW_ONLY).first()
-            coreuser.core_groups.add(org_user)
+        # Triggers an approval email for newly registered user
+        approval_link = urljoin(settings.FRONTEND_URL, '/app/profile/users/current-users')
+        subject = 'Approval Request'
+        template_name = 'email/coreuser/approval.txt'
+        html_template_name = 'email/coreuser/approval.html'
+        context = {
+            'approval_link': approval_link,
+            'coreuser_name': coreuser.first_name + ' ' + coreuser.last_name,
+            'organization_name': organization,
+        }
+        if is_new_org:
+            admin = CoreUser.objects.filter(is_superuser=True)  # Global Admin
+        else:
+            org_admin_groups = CoreGroup.objects.filter(permissions=PERMISSIONS_ORG_ADMIN, is_org_level=True)
+            admin = CoreUser.objects.filter(core_groups__in=org_admin_groups,
+                                            organization=organization)  # Organization Admin
+        if admin:
+            for users in admin:
+                send_email(users.email, subject, context, template_name, html_template_name)
 
         # add org admin role to the user if org is new
         if is_new_org:
+            if (settings.STRIPE_SECRET and product and card):
+                stripe.api_key = settings.STRIPE_SECRET
+                customer = stripe.Customer.create(email=coreuser.email, name=str(organization.name).capitalize())
+                stripe.PaymentMethod.attach(card, customer=customer.id)
+                organization.stripe_subscription_details = json.dumps({
+                    "customer_stripe_id": customer.id,
+                    "product": product,
+                    "trial_start_date": timezone.now().isoformat(),
+                    "trial_end_date": (timezone.now() + datetime.timedelta(days=30)).isoformat(),
+                    "subscription_start_date": (timezone.now() + datetime.timedelta(days=31)).isoformat()
+                })
+                organization.save()
+
             group_org_admin = CoreGroup.objects.get(organization=organization,
                                                     is_org_level=True,
                                                     permissions=PERMISSIONS_ORG_ADMIN)
@@ -179,10 +225,24 @@ class CoreUserProfileSerializer(serializers.Serializer):
     contact_info = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
+    user_type = serializers.CharField(required=False)
+    survey_status = serializers.BooleanField(required=False)
+    email_preferences = serializers.JSONField(required=False)
+    push_preferences = serializers.JSONField(required=False)
+    user_timezone = serializers.CharField(required=False)
 
     class Meta:
         model = CoreUser
-        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name')
+        fields = ('first_name', 'last_name', 'password', 'title',
+                  'contact_info', 'organization_name', 'email_preferences', 'push_preferences', 'user_timezone', 'user_type', 'survey_status')
+
+    def update(self, instance, validated_data):
+        organization_name = validated_data.pop('organization_name')
+
+
+    class Meta:
+        model = CoreUser
+        fields = ('first_name', 'last_name', 'password', 'title', 'contact_info', 'organization_name', 'user_type', 'survey_status')
 
     def update(self, instance, validated_data):
 
@@ -197,6 +257,11 @@ class CoreUserProfileSerializer(serializers.Serializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.title = validated_data.get('title', instance.title)
         instance.contact_info = validated_data.get('contact_info', instance.contact_info)
+        instance.email_preferences = validated_data.get('email_preferences', instance.email_preferences)
+        instance.push_preferences = validated_data.get('push_preferences', instance.push_preferences)
+        instance.user_timezone = validated_data.get('user_timezone', instance.user_timezone)
+        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
         password = validated_data.get('password', None)
         if password is not None:
             instance.set_password(password)
@@ -206,17 +271,21 @@ class CoreUserProfileSerializer(serializers.Serializer):
 
 
 class CoreUserInvitationSerializer(serializers.Serializer):
-    emails = serializers.ListField(child=serializers.EmailField(),
-                                   min_length=1, max_length=10)
+    emails = serializers.ListField(
+        child=serializers.EmailField(), min_length=1, max_length=10
+    )
 
 
 class CoreUserResetPasswordSerializer(serializers.Serializer):
     """Serializer for reset password request data
     """
+
     email = serializers.EmailField()
 
     def save(self, **kwargs):
-        resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
+        resetpass_url = urljoin(
+            settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH
+        )
         resetpass_url = resetpass_url + '{uid}/{token}/'
 
         email = self.validated_data["email"]
@@ -231,14 +300,22 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             }
 
             # get specific subj and templates for user's organization
-            tpl = EmailTemplate.objects.filter(organization=user.organization, type=TEMPLATE_RESET_PASSWORD).first()
+            tpl = EmailTemplate.objects.filter(
+                organization=user.organization, type=TEMPLATE_RESET_PASSWORD
+            ).first()
             if not tpl:
-                tpl = EmailTemplate.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                   type=TEMPLATE_RESET_PASSWORD).first()
+                tpl = EmailTemplate.objects.filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    type=TEMPLATE_RESET_PASSWORD,
+                ).first()
             if tpl and tpl.template:
                 context = Context(context)
                 text_content = Template(tpl.template).render(context)
-                html_content = Template(tpl.template_html).render(context) if tpl.template_html else None
+                html_content = (
+                    Template(tpl.template_html).render(context)
+                    if tpl.template_html
+                    else None
+                )
                 count += send_email_body(email, tpl.subject, text_content, html_content)
                 continue
 
@@ -246,7 +323,9 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             subject = 'Reset your password'
             template_name = 'email/coreuser/password_reset.txt'
             html_template_name = 'email/coreuser/password_reset.html'
-            count += send_email(email, subject, context, template_name, html_template_name)
+            count += send_email(
+                email, subject, context, template_name, html_template_name
+            )
 
         return count
 
@@ -254,6 +333,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
     """Serializer for checking token for resetting password
     """
+
     uid = serializers.CharField()
     token = serializers.CharField()
 
@@ -275,11 +355,11 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
 class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerializer):
     """Serializer for reset password data
     """
+
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, attrs):
-
         attrs = super().validate(attrs)
 
         password1 = attrs.get('new_password1')
@@ -304,32 +384,134 @@ class OrganizationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AccessTokenSerializer(serializers.ModelSerializer):
-    user = CoreUserSerializer()
+class CoreUserEmailAlertSerializer(serializers.Serializer):
+    """
+    Serializer for email alert of shipment
+    """
+    organization_uuid = serializers.UUIDField()
+    messages = serializers.JSONField()
+
+
+class OrganizationTypeSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
 
     class Meta:
-        model = AccessToken
-        fields = ('id', 'user', 'token', 'expires')
+        model = OrganizationType
+        fields = '__all__'
 
 
-class RefreshTokenSerializer(serializers.ModelSerializer):
-    access_token = AccessTokenSerializer()
-    user = CoreUserSerializer()
-
-    class Meta:
-        model = RefreshToken
-        fields = ('id', 'user', 'token', 'access_token', 'revoked')
-
-
-class ApplicationSerializer(serializers.ModelSerializer):
-    client_id = serializers.CharField(read_only=True, max_length=100)
-    client_secret = serializers.CharField(read_only=True, max_length=255)
+class ConsortiumSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='consortium_uuid', read_only=True)
 
     class Meta:
-        model = Application
-        fields = ('id', 'authorization_grant_type', 'client_id', 'client_secret', 'client_type', 'name',
-                  'redirect_uris')
+        model = Consortium
+        fields = '__all__'
 
+class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
+    """ Let's user update his  organization_name,and email from the one time pop-up screen.
+     Also this assigns permissions to users """
+
+    email = serializers.CharField(required=False)
+    organization_name = serializers.CharField(required=False)
+    core_groups = CoreGroupSerializer(read_only=True, many=True)
+    organization = OrganizationSerializer(read_only=True)
+    product = serializers.CharField(required=False)
+    card = serializers.CharField(required=False)
+
+    class Meta:
+        model = CoreUser
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
+                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
+                  'user_type', 'survey_status', 'product', 'card')
+    def update(self, instance, validated_data):
+
+        organization_name = str(validated_data.pop('organization_name')).lower()
+        product = validated_data.pop('product', None)
+        card = validated_data.pop('card', None)
+        instance.email = validated_data.get('email', instance.email)
+        instance.user_type = validated_data.get('user_type', instance.user_type)
+        instance.survey_status = validated_data.get('survey_status', instance.survey_status)
+
+        if instance.email is not None:
+            instance.save()
+        is_new_org = Organization.objects.filter(name=organization_name)
+
+        # check whether org_name is "default"
+        if organization_name == 'default':
+            default_org = Organization.objects.filter(name=settings.DEFAULT_ORG).first()
+            instance.organization = default_org
+            instance.save()
+            # now attach the user role as USER to default organization
+            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
+                                                        is_org_level=True,
+                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            instance.core_groups.add(default_org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                default_org_groups = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
+                                                              is_org_level=True,
+                                                              permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in default_org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # check whether an old organization
+        elif is_new_org.exists():
+
+            organization = Organization.objects.get(name=organization_name)
+            instance.organization = organization
+            instance.is_active = False
+            instance.save()
+            # now attach the user role as USER
+            org_user = CoreGroup.objects.filter(organization__name=organization_name,
+                                                is_org_level=True,
+                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+
+            instance.core_groups.add(org_user)
+
+            # remove any other group permissions he is not added
+            for single_group in instance.core_groups.all():
+                org_groups = CoreGroup.objects.filter(organization__name=organization_name,
+                                                      is_org_level=True,
+                                                      permissions=PERMISSIONS_VIEW_ONLY)
+                if single_group not in org_groups:
+                    instance.core_groups.remove(single_group)
+
+        # if the current user is the first user
+        elif not is_new_org.exists():
+            # first update the org name for that user
+            organization = Organization.objects.create(name=organization_name)
+            if (settings.STRIPE_SECRET and product and card):
+                stripe.api_key = settings.STRIPE_SECRET
+                customer = stripe.Customer.create(email=instance.email, name=str(organization.name).capitalize())
+                stripe.PaymentMethod.attach(card, customer=customer.id)
+                organization.stripe_subscription_details = json.dumps({
+                    "customer_stripe_id": customer.id,
+                    "product": product,
+                    "trial_start_date": timezone.now().isoformat(),
+                    "trial_end_date": (timezone.now() + datetime.timedelta(days=30)).isoformat(),
+                    "subscription_start_date": (timezone.now() + datetime.timedelta(days=31)).isoformat()
+                })
+                organization.save()
+
+            instance.organization = organization
+            instance.save()
+            # now attach the user role as ADMIN
+            org_admin = CoreGroup.objects.get(organization=organization,
+                                              is_org_level=True,
+                                              permissions=PERMISSIONS_ORG_ADMIN)
+            instance.core_groups.add(org_admin)
+
+        return instance
+
+
+class CoreUserEmailNotificationSerializer(serializers.Serializer):
+    """
+    Serializer for email Notification
+    """
+    organization_uuid = serializers.UUIDField()
+    notification_messages = serializers.CharField()
+    
     def create(self, validated_data):
         validated_data['client_id'] = secrets.token_urlsafe(75)
         validated_data['client_secret'] = secrets.token_urlsafe(190)
@@ -421,3 +603,11 @@ class CoreUserEmailNotificationSerializer(serializers.Serializer):
     """
     organization_uuid = serializers.UUIDField()
     notification_messages = serializers.CharField()
+
+class PartnerSerializer(serializers.ModelSerializer):
+    partner_uuid = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Partner
+        fields = '__all__'
+

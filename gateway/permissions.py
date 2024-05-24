@@ -15,7 +15,9 @@ class AllowLogicModuleGroup(permissions.BasePermission):
     @staticmethod
     def _get_logic_module(service_name: str) -> LogicModule:
         try:
-            return LogicModule.objects.prefetch_related('core_groups').get(endpoint_name=service_name)
+            return LogicModule.objects.prefetch_related('core_groups').get(
+                endpoint_name=service_name
+            )
         except LogicModule.DoesNotExist:
             raise ServiceDoesNotExist(f'Service "{service_name}" not found.')
 
@@ -28,19 +30,31 @@ class AllowLogicModuleGroup(permissions.BasePermission):
 
         service_name = view.kwargs['service']
         logic_module = self._get_logic_module(service_name=service_name)
-        logic_module_group = logic_module.core_groups.filter(Q(is_global=True) |
-                                                             Q(organization=request.user.organization,
-                                                               is_global=False, is_org_level=True))
+        logic_module_group = logic_module.core_groups.filter(
+            Q(is_global=True)
+            | Q(
+                organization=request.user.organization,
+                is_global=False,
+                is_org_level=True,
+            )
+        )
 
         if logic_module_group:
             # default permission is no access '0000'
             viewonly_display_permissions = '{0:04b}'.format(PERMISSIONS_NO_ACCESS)
-            global_permissions, org_permissions = viewonly_display_permissions, viewonly_display_permissions
+            global_permissions, org_permissions = (
+                viewonly_display_permissions,
+                viewonly_display_permissions,
+            )
             for group in logic_module_group:
                 if group.is_global:
-                    global_permissions = merge_permissions(global_permissions, group.display_permissions)
+                    global_permissions = merge_permissions(
+                        global_permissions, group.display_permissions
+                    )
                 elif group.is_org_level:
-                    org_permissions = merge_permissions(org_permissions, group.display_permissions)
+                    org_permissions = merge_permissions(
+                        org_permissions, group.display_permissions
+                    )
 
             method = request.META['REQUEST_METHOD']
             if has_permission(global_permissions, method):

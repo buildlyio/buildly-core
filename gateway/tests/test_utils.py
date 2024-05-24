@@ -14,7 +14,13 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 import factories
 from gateway.exceptions import GatewayError
-from gateway.utils import GatewayJSONEncoder, validate_object_access, get_swagger_url_by_logic_module, get_swagger_urls, get_swagger_from_url
+from gateway.utils import (
+    GatewayJSONEncoder,
+    validate_object_access,
+    get_swagger_url_by_logic_module,
+    get_swagger_urls,
+    get_swagger_from_url,
+)
 from gateway.views import APIGatewayView
 
 
@@ -37,8 +43,7 @@ class UtilsValidateBuildlyObjectAccessTest(TestCase):
         self.core_user.save()
 
         request = self.get_mock_request('/', APIGatewayView, self.core_user)
-        wflvl1 = factories.WorkflowLevel1(
-            organization=self.core_user.organization)
+        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
         validate_object_access(request, wflvl1)
 
     def test_validate_buildly_wfl1_no_permission(self):
@@ -65,7 +70,9 @@ class UtilsValidateBuildlyObjectAccessTest(TestCase):
             validate_object_access(request, lm)
 
     def test_validate_core_user_access(self):
-        request = self.get_mock_request('/a-jedis-path/', APIGatewayView, self.core_user)
+        request = self.get_mock_request(
+            '/a-jedis-path/', APIGatewayView, self.core_user
+        )
         request.resolver_match = Mock(url_name='obi-wan-kenobi')
         core_user = factories.CoreUser()
         ret = validate_object_access(request, core_user)
@@ -76,33 +83,32 @@ def test_json_dump():
     obj = {
         "string": "test1234",
         "integer": 123,
-        "array": ['1', 2, ],
+        "array": ['1', 2],
         "uuid": uuid.UUID('50096bc6-848a-456f-ad36-3ac04607ff67'),
         "datetime": datetime.datetime(2019, 2, 5, 12, 36, 0, 147972),
     }
 
     response = json.dumps(obj, cls=GatewayJSONEncoder)
-    expected_response = '{"string": "test1234",' \
-                        ' "integer": 123,' \
-                        ' "array": ["1", 2],' \
-                        ' "uuid": "50096bc6-848a-456f-ad36-3ac04607ff67",' \
-                        ' "datetime": "2019-02-05T12:36:00.147972"}'
+    expected_response = (
+        '{"string": "test1234",'
+        ' "integer": 123,'
+        ' "array": ["1", 2],'
+        ' "uuid": "50096bc6-848a-456f-ad36-3ac04607ff67",'
+        ' "datetime": "2019-02-05T12:36:00.147972"}'
+    )
     assert response == expected_response
 
 
 @pytest.mark.django_db()
 def test_json_dump_w_core_user():
     core_user = factories.CoreUser(pk=5)
-    obj = {
-        "model_instance": core_user,
-    }
+    obj = {"model_instance": core_user}
     result = json.dumps(obj, cls=GatewayJSONEncoder)
     expected_result = '{"model_instance": 5}'
     assert result == expected_result
 
 
 def test_json_dump_exception():
-
     class TestObj(object):
         pass
 
@@ -117,12 +123,11 @@ def test_json_dump_exception():
 
 @pytest.mark.django_db()
 class TestGettingSwaggerURLs:
-
     def test_get_swagger_url_by_logic_module(self):
         module = factories.LogicModule.create()
         url = get_swagger_url_by_logic_module(module)
         assert url.startswith(module.endpoint)
-    
+
     def test_get_swagger_url_by_logic_module_specified_docs(self):
         module = factories.LogicModule.create(docs_endpoint="api-docs")
         url = get_swagger_url_by_logic_module(module)
@@ -135,7 +140,7 @@ class TestGettingSwaggerURLs:
         for module in modules:
             assert module.endpoint_name in urls
             assert urls[module.endpoint_name] == get_swagger_url_by_logic_module(module)
-    
+
     @patch('requests.get')
     def test_unavailable_logic_module_timeout_exception(self, mock_request_get):
         mock_request_get.side_effect = TimeoutError
