@@ -27,7 +27,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
      All the subscriptions related actions
 
      """
-    queryset = Subscription.objects.all()
+    queryset = Subscription.objects.filter(cancelled=False).order_by('-create_date')
     serializer_class = SubscriptionSerializer
     permission_classes = (AllowAny, IsAuthenticated)
 
@@ -54,60 +54,38 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # def update(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     if settings.STRIPE_SECRET:
-    #         stripe.api_key = settings.STRIPE_SECRET
-    #         stripe.api_version = '2022-11-15'
-    #         data = self.get_stripe_details()
-    #         if data:
-    #             serializer = self.get_serializer(instance, data=data, partial=True)
-    #             serializer.is_valid(raise_exception=True)
-    #             self.perform_create(serializer)
-
-    #             product_info = data.get('stripe_product_info', {})
-    #             # send the email
-    #             context = {
-    #                 'frontend_link': settings.FRONTEND_URL,
-    #                 'product_name': product_info.get('name'),
-    #                 'product_description': product_info.get('description')
-    #             }
-    #             subject = 'Subscription Success'
-    #             template_name = 'email/coreuser/subscription.txt'
-    #             html_template_name = 'email/coreuser/subscription.html'
-    #             send_email(
-    #                 self.request.user.email,
-    #                 subject,
-    #                 context,
-    #                 template_name,
-    #                 html_template_name
-    #             )
-
-    #             return Response(
-    #                 serializer.data,
-    #                 status=status.HTTP_201_CREATED
-    #             )
-    #         return Response(
-    #             dict(
-    #                 code='stripe_api_error',
-    #                 message='There was an error creating subscription'
-    #             ),
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-
-    #     return Response(
-    #         dict(
-    #             code='missing_stripe_details',
-    #             message='Please pass valid product/card or stripe secret'
-    #         ),
-    #         status=status.HTTP_400_BAD_REQUEST
-    #     )
-
     def perform_create(self, serializer):
         serializer.save(
             user=self.request.user,
             created_by=self.request.user,
         )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        cancelled = self.perform_destroy(instance)
+        if not cancelled:
+            return Response(
+                dict(
+                    code='stripe_api_error',
+                    message='There was an error cancelling subscription',
+                ),
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            dict(code='subscription_cancelled'),
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+    def perform_destroy(self, instance):
+        # delete the subscription on stripe
+        cancelled = self.cancel_subscription_on_stripe(instance)
+
+        if cancelled:
+            # delete the subscription
+            instance.cancelled = True
+            instance.cancelled_date = timezone.now()
+            instance.save()
+        return cancelled
 
     @action(
         detail=False,
@@ -124,7 +102,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
             stripe.api_version = '2022-11-15'
-            stripe_products = stripe.Product.search(query="active:'true'",)
+            stripe_products = stripe.Product.search(query="active:'true'", )
             products = stripe_products.data
 
         return Response(
@@ -198,3 +176,21 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             return None
 
         return data
+
+    @staticmethod
+    def cancel_subscription_on_stripe(instance):
+        """
+        Cancel a subscription
+        """
+        if settings.STRIPE_SECRET:
+            stripe.api_key = settings.STRIPE_SECRET
+            # stripe.api_version = '2022-11-15'
+            try:
+                # stripe.Subscription.cancel(instance.stripe_subscription_id)
+                subscription = stripe.Subscription.retrieve(instance.stripe_subscription_id)
+                subscription.delete()
+                return True
+
+            except Exception as e:
+                pass
+        return False

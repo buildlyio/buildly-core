@@ -311,3 +311,5 @@ class Subscription(models.Model):
         on_delete=models.CASCADE,
         related_name='organization_subscription'
     )
+    cancelled = models.BooleanField(default=False)
+    cancelled_date = models.DateTimeField(null=True, blank=True)
