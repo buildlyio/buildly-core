@@ -27,9 +27,23 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
      All the subscriptions related actions
 
      """
-    queryset = Subscription.objects.filter(cancelled=False).order_by('-create_date')
+    queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
     permission_classes = (AllowAny, IsAuthenticated)
+
+    def get_queryset(self):
+        queryset = (
+            super(SubscriptionViewSet, self)
+            .get_queryset()
+            .filter(organization=self.request.user.organization)
+        )
+
+        if int(self.request.query_params.get('cancelled', '0')):
+            queryset = queryset.filter(cancelled=True)
+        else:
+            queryset = queryset.filter(cancelled=False)
+
+        return queryset.order_by('-create_date')
 
     def create(self, request, *args, **kwargs):
         if settings.STRIPE_SECRET:
