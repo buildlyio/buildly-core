@@ -1,6 +1,6 @@
 Subscription successful!
 
-You have successfully subscribed to Insights on Buildly.
+You have successfully subscribed to Labs on Buildly.
 
 Go to {{ frontend_link }} to access the app.
 
