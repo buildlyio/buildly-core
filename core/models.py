@@ -1,3 +1,5 @@
+import random
+import string
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -86,13 +88,18 @@ class Organization(models.Model):
     When organization is created two CoreGroups are created automatically: Admins group and default Users group.
     """
     organization_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
-    name = models.CharField("Organization Name", max_length=255, blank=True, help_text="Each end user must be grouped into an organization")
-    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Description of organization")
-    organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")
-    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations', help_text="Type of Industry the organization belongs to if any")
+    name = models.CharField("Organization Name", max_length=255, blank=True,
+                            help_text="Each end user must be grouped into an organization")
+    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True,
+                                   help_text="Description of organization")
+    organization_url = models.CharField(blank=True, null=True, max_length=255,
+                                        help_text="Link to organizations external web site")
+    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations',
+                                        help_text="Type of Industry the organization belongs to if any")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
+    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True,
+                               blank=True)
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
     unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
@@ -139,11 +146,13 @@ class CoreGroup(models.Model):
     """
     uuid = models.CharField('CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True)
     name = models.CharField('Name of the role', max_length=80)
-    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE, help_text='Related Org to associate with')
+    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE,
+                                     help_text='Related Org to associate with')
     is_global = models.BooleanField('Is global group', default=False)
     is_org_level = models.BooleanField('Is organization level group', default=False)
     is_default = models.BooleanField('Is organization default group', default=False)
-    permissions = models.PositiveSmallIntegerField('Permissions', default=PERMISSIONS_VIEW_ONLY, help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
+    permissions = models.PositiveSmallIntegerField('Permissions', default=PERMISSIONS_VIEW_ONLY,
+                                                   help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -180,12 +189,15 @@ class CoreUser(AbstractUser):
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
-    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE, help_text='Related Org to associate with')
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
+    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE,
+                                     help_text='Related Org to associate with')
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set',
+                                         related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
-    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
+    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES,
+                                 default='Product Team')
     survey_status = models.BooleanField(default=False)
     coupon_code = models.CharField(max_length=48, blank=True, null=True)
 
@@ -230,7 +242,8 @@ class EmailTemplate(models.Model):
     """
     Stores e-mail templates specific to organization
     """
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name='Organization', help_text='Related Org to associate with')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name='Organization',
+                                     help_text='Related Org to associate with')
     subject = models.CharField('Subject', max_length=255)
     type = models.PositiveSmallIntegerField('Type of template', choices=TEMPLATE_TYPES)
     template = models.TextField("Reset password e-mail template (text)", null=True, blank=True)
@@ -253,7 +266,8 @@ class LogicModule(models.Model):
     endpoint_name = models.CharField(blank=True, null=True, max_length=255)
     docs_endpoint = models.CharField(blank=True, null=True, max_length=255)
     api_specification = JSONField(blank=True, null=True)
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Logic Module groups', blank=True, related_name='logic_module_set', related_query_name='logic_module')
+    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Logic Module groups', blank=True,
+                                         related_name='logic_module_set', related_query_name='logic_module')
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -277,6 +291,45 @@ class Partner(models.Model):
     name = models.CharField(blank=True, null=True, max_length=255)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
+
+
+class Coupon(models.Model):
+    FOREVER = 'forever'
+    ONCE = 'once'
+    REPEATING = 'repeating'
+
+    DurationChoices = (
+        (FOREVER, 'Forever'),
+        (ONCE, 'Once'),
+        (REPEATING, 'Repeating'),
+    )
+
+    coupon_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=64)
+    code = models.CharField(max_length=24, unique=True, blank=True, null=True)
+    duration = models.CharField(choices=DurationChoices, max_length=16, default=ONCE)
+    duration_in_months = models.IntegerField(null=True, blank=True)
+    active = models.BooleanField(default=True) # maps to valid field on stripe
+    max_redemptions = models.IntegerField(default=1)
+    percent_off = models.FloatField(default=0)
+    amount_off = models.FloatField(default=0)
+    discount_amount = models.FloatField(default=0)
+    currency = models.CharField(max_length=3, default='usd')
+    create_date = models.DateTimeField(auto_now_add=True)
+    edit_date = models.DateTimeField(auto_now=True)
+    stripe_coupon_id = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Coupon"
+        verbose_name_plural = "Coupons"
+
+    def __str__(self):
+        return f'{self.code}-{self.name}'
+
+    def generate_code(self):
+        # generate code (First  letters INSIGHTS + 6 random digits (letters and numbers)
+        self.code = f"INSIGHTS-{''.join(random.choices(string.ascii_uppercase + string.digits, k=6))}"
+        self.save()
 
 
 class Subscription(models.Model):
@@ -313,3 +366,18 @@ class Subscription(models.Model):
     )
     cancelled = models.BooleanField(default=False)
     cancelled_date = models.DateTimeField(null=True, blank=True)
+    coupon = models.ForeignKey(
+        'core.Coupon',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='coupon_subscription'
+    )
+
+    def __str__(self):
+        return self.stripe_subscription_id
+
+    class Meta:
+        verbose_name = "Subscription"
+        verbose_name_plural = "Subscriptions"
+        ordering = ['-create_date']

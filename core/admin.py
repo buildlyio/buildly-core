@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Partner
+from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Partner, \
+    Coupon
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -59,6 +60,12 @@ class CoreUserAdmin(UserAdmin):
 class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('organization', 'type')
     display = 'Email Template'
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'percent_off', 'duration', 'max_redemptions', 'active')
+    list_filter = ('active', 'duration')
+    search_fields = ('code', 'name')
 
 
 admin.site.register(LogicModule, LogicModuleAdmin)
