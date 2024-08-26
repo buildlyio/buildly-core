@@ -184,18 +184,16 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         # add org admin role to the user if org is new
         if is_new_org:
-            if coupon_code and coupon_code == settings.FREE_COUPON_CODE:
-                organization.unlimited_free_plan = True
-                organization.save()
+            organization.unlimited_free_plan = True
+            organization.save(update_fields=['unlimited_free_plan'])
 
-            group_org_admin = CoreGroup.objects.get(organization=organization,
-                                                    is_org_level=True,
-                                                    permissions=PERMISSIONS_ORG_ADMIN)
+            group_org_admin = CoreGroup.objects.get(
+                organization=organization, is_org_level=True, permissions=PERMISSIONS_ORG_ADMIN
+            )
             coreuser.core_groups.add(group_org_admin)
 
         # add requested groups to the user
-        for group in core_groups:
-            coreuser.core_groups.add(group)
+        coreuser.core_groups.add(*core_groups)
 
         # create or update an invitation
         reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)

@@ -88,18 +88,13 @@ class Organization(models.Model):
     When organization is created two CoreGroups are created automatically: Admins group and default Users group.
     """
     organization_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
-    name = models.CharField("Organization Name", max_length=255, blank=True,
-                            help_text="Each end user must be grouped into an organization")
-    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True,
-                                   help_text="Description of organization")
-    organization_url = models.CharField(blank=True, null=True, max_length=255,
-                                        help_text="Link to organizations external web site")
-    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations',
-                                        help_text="Type of Industry the organization belongs to if any")
+    name = models.CharField("Organization Name", max_length=255, blank=True, help_text="Each end user must be grouped into an organization")
+    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Description of organization")
+    organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")
+    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations', help_text="Type of Industry the organization belongs to if any")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True,
-                               blank=True)
+    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
     unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
