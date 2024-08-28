@@ -16,7 +16,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon, Referral
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon, Referral, ROLE_ORGANIZATION_ADMIN
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -81,6 +81,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
     subscriptions = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
         try:
@@ -118,13 +119,17 @@ class CoreUserSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_subscriptions(self, user):
-        if user.organization:
+        core_groups = user.core_groups.values_list('name', flat=True)
+        if user.organization and ROLE_ORGANIZATION_ADMIN in core_groups:
             return SubscriptionSerializer(
                 user.organization.organization_subscription.all(),
                 many=True
             ).data
 
         return None
+
+    def get_subscription_active(self, user):
+        return user.organization.organization_subscription.filter(is_active=True).exists()
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
@@ -260,6 +265,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         return Coupon.objects.filter(code=code, active=True).exists()
 
+
 class CoreUserProfileSerializer(serializers.Serializer):
     """ Let's user update his first_name,last_name,title,contact_info,
     password and organization_name """
@@ -393,16 +399,24 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
     subscriptions = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
         fields = '__all__'
 
     def get_subscriptions(self, organization):
-        return SubscriptionSerializer(
-            organization.organization_subscription.all(),
-            many=True
-        ).data
+        # check if user is OrgAdmin
+        user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
+        if ROLE_ORGANIZATION_ADMIN in user_groups:
+            return SubscriptionSerializer(
+                organization.organization_subscription.all(),
+                many=True
+            ).data
+        return []
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(is_active=True).exists()
 
 
 class OrganizationNestedSerializer(serializers.ModelSerializer):

@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated)
 
-from core.email_utils import send_email
 from core.models import Subscription, Coupon
 from core.serializers import SubscriptionSerializer, CouponCodeSerializer
 
