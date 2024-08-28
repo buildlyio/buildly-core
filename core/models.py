@@ -2,6 +2,7 @@ import random
 import string
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
@@ -143,7 +144,8 @@ class Referral(models.Model):
     referral_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='organization_referrals')
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, unique=True)
+    code = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    link= models.TextField(unique=True, null=True, blank=True)
     usage_count = models.IntegerField(default=0)
     max_usage = models.IntegerField(null=True, blank=True)
     active = models.BooleanField(default=True)
@@ -158,6 +160,7 @@ class Referral(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.code = f"INSIGHTS-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
+            self.link = f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?referral_code={self.code}'
         super(Referral, self).save(*args, **kwargs)
 
     def __str__(self):
