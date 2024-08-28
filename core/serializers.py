@@ -16,7 +16,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon, Referral
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -167,9 +167,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         # check whether org_name is "default"
         if org_name in ['default']:
-            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                        is_org_level=True,
-                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            default_org_user = (
+                CoreGroup.objects
+                .filter(organization__name=settings.DEFAULT_ORG, is_org_level=True, permissions=PERMISSIONS_VIEW_ONLY)
+                .first()
+            )
             coreuser.core_groups.add(default_org_user)
 
         # check whether an old organization
@@ -177,9 +179,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             coreuser.is_active = False
             coreuser.save()
 
-            org_user = CoreGroup.objects.filter(organization__name=organization,
-                                                is_org_level=True,
-                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+            org_user = (
+                CoreGroup.objects
+                .filter(organization__name=organization, is_org_level=True, permissions=PERMISSIONS_VIEW_ONLY)
+                .first()
+            )
             coreuser.core_groups.add(org_user)
 
         # add org admin role to the user if org is new
@@ -191,6 +195,15 @@ class CoreUserWritableSerializer(CoreUserSerializer):
                 organization=organization, is_org_level=True, permissions=PERMISSIONS_ORG_ADMIN
             )
             coreuser.core_groups.add(group_org_admin)
+
+            # check if referral link or coupon is used
+            coupon_code = validated_data.pop('coupon_code', None)
+            referral_code = validated_data.pop('referral_code', None)
+            if coupon_code or referral_code:
+                coupon = self.handle_coupon(coupon_code or referral_code, is_referral=bool(referral_code))
+                if coupon:
+                    organization.coupon = coupon
+                    organization.save(update_fields=['coupon'])
 
         # add requested groups to the user
         coreuser.core_groups.add(*core_groups)
@@ -216,6 +229,20 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         send_email(coreuser.email, subject, context, template_name, html_template_name)
 
         return coreuser
+
+    @staticmethod
+    def handle_coupon(code, is_referral=False):
+        # check if referral link was used
+        if is_referral:
+            referral: Referral = Referral.objects.filter(code=code).first()
+            coupon = referral.coupon
+            referral.usage_count += 1
+            referral.save(update_fields=['usage_count'])
+        # check if coupon code was used
+        else:
+            coupon = Coupon.objects.filter(code=code).first()
+
+        return coupon
 
 
 class CoreUserProfileSerializer(serializers.Serializer):

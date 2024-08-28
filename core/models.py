@@ -103,6 +103,8 @@ class Organization(models.Model):
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
     unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
+    coupon = models.ForeignKey('core.Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+
 
     class Meta:
         ordering = ('name',)
