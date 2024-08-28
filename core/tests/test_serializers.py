@@ -25,7 +25,6 @@ def test_org_serializer(request_factory, org):
             'subscriptions',
             'subscription_active',
             ]
-    print(data.keys(), flush=True)
     assert set(data.keys()) == set(keys)
 
 

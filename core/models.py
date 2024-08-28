@@ -158,8 +158,8 @@ class Referral(models.Model):
         verbose_name_plural = "Referrals"
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            self.code = f"INSIGHTS-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
+        if self._state.adding:
+            self.code = f"INSIGHTS-REF-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
             self.link = f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?referral_code={self.code}'
         super(Referral, self).save(*args, **kwargs)
 
