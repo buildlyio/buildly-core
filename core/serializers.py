@@ -113,7 +113,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
             'invitation_token',
             'user_type',
             'survey_status',
-            'subscriptions'
+            'subscriptions',
+            'subscription_active',
         )
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
