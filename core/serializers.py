@@ -142,6 +142,15 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         read_only_fields = CoreUserSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
+        # validate coupon code or referral code if used
+        coupon_code = validated_data.pop('coupon_code', None)
+        referral_code = validated_data.pop('referral_code', None)
+        if coupon_code or referral_code:
+            if not self.is_coupon_valid(coupon_code or referral_code, is_referral=bool(referral_code)):
+                raise serializers.ValidationError(
+                    'Invalid coupon code or referral code', code='invalid_code'
+                )
+
         # get or create organization
         organization = validated_data.pop('organization')
         org_name = organization['name']
@@ -196,9 +205,6 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             )
             coreuser.core_groups.add(group_org_admin)
 
-            # check if referral link or coupon is used
-            coupon_code = validated_data.pop('coupon_code', None)
-            referral_code = validated_data.pop('referral_code', None)
             if coupon_code or referral_code:
                 coupon = self.handle_coupon(coupon_code or referral_code, is_referral=bool(referral_code))
                 if coupon:
@@ -244,6 +250,15 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         return coupon
 
+    @staticmethod
+    def is_coupon_valid(code, is_referral=False):
+        """
+        Validate coupon code or referral code
+        """
+        if is_referral:
+            return Referral.objects.filter(code=code, active=True).exists()
+
+        return Coupon.objects.filter(code=code, active=True).exists()
 
 class CoreUserProfileSerializer(serializers.Serializer):
     """ Let's user update his first_name,last_name,title,contact_info,
