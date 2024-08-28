@@ -411,12 +411,13 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def get_subscriptions(self, organization):
         # check if user is OrgAdmin
-        user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
-        if ROLE_ORGANIZATION_ADMIN in user_groups:
-            return SubscriptionSerializer(
-                organization.organization_subscription.all(),
-                many=True
-            ).data
+        if self.context.get('request') and hasattr(self.context.get('request'), 'user'):
+            user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
+            if ROLE_ORGANIZATION_ADMIN in user_groups:
+                return SubscriptionSerializer(
+                    organization.organization_subscription.all(),
+                    many=True
+                ).data
         return []
 
     def get_subscription_active(self, organization):
@@ -428,6 +429,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 class OrganizationNestedSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
     subscription = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
@@ -438,6 +440,11 @@ class OrganizationNestedSerializer(serializers.ModelSerializer):
             organization.organization_subscription.all(),
             many=True
         ).data
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
 
 
 class AccessTokenSerializer(serializers.ModelSerializer):

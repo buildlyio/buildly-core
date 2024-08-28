@@ -21,9 +21,11 @@ def test_org_serializer(request_factory, org):
             'phone',
             'industries',
             'unlimited_free_plan',
+            'coupon',
             'subscriptions',
             'subscription_active',
             ]
+    print(data.keys(), flush=True)
     assert set(data.keys()) == set(keys)
 
 
