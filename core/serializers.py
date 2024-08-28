@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
@@ -130,7 +131,9 @@ class CoreUserSerializer(serializers.ModelSerializer):
         return None
 
     def get_subscription_active(self, user):
-        return user.organization.organization_subscription.filter(is_active=True).exists()
+        return user.organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date(),
+        ).exists()
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
@@ -417,7 +420,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
         return []
 
     def get_subscription_active(self, organization):
-        return organization.organization_subscription.filter(is_active=True).exists()
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
 
 
 class OrganizationNestedSerializer(serializers.ModelSerializer):
