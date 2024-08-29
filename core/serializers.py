@@ -404,6 +404,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
     subscriptions = serializers.SerializerMethodField()
     subscription_active = serializers.SerializerMethodField()
+    referral_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
@@ -424,6 +425,11 @@ class OrganizationSerializer(serializers.ModelSerializer):
         return organization.organization_subscription.filter(
             subscription_end_date__gte=timezone.now().date()
         ).exists()
+
+    def get_referral_link(self, organization):
+        if organization.organization_referrals.exists():
+            return organization.organization_referrals.first().get('link')
+        return None
 
 
 class OrganizationNestedSerializer(serializers.ModelSerializer):

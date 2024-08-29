@@ -24,6 +24,7 @@ def test_org_serializer(request_factory, org):
             'coupon',
             'subscriptions',
             'subscription_active',
+            'referral_link',
             ]
     assert set(data.keys()) == set(keys)
 
