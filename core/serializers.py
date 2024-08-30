@@ -73,6 +73,7 @@ class CoreGroupSerializer(serializers.ModelSerializer):
         fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
                   'workflowlevel2s')
 
+
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
     subscriptions = serializers.SerializerMethodField()
@@ -96,11 +97,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
     subscriptions = serializers.SerializerMethodField()
-<<<<<<< HEAD
     organization = OrganizationSerializer()
-=======
     subscription_active = serializers.SerializerMethodField()
->>>>>>> 1b3653b2c98c15d6368f6183aa5fc432cc66ca5d
 
     def validate_invitation_token(self, value):
         try:
@@ -138,8 +136,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
-<<<<<<< HEAD
-=======
     def get_subscriptions(self, user):
         core_groups = user.core_groups.values_list('name', flat=True)
         if user.organization and ROLE_ORGANIZATION_ADMIN in core_groups:
@@ -149,7 +145,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
             ).data
 
         return None
->>>>>>> 1b3653b2c98c15d6368f6183aa5fc432cc66ca5d
 
     def get_subscription_active(self, user):
         return user.organization.organization_subscription.filter(
