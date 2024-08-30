@@ -2,6 +2,7 @@ import random
 import string
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
@@ -88,21 +89,18 @@ class Organization(models.Model):
     When organization is created two CoreGroups are created automatically: Admins group and default Users group.
     """
     organization_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Organization UUID')
-    name = models.CharField("Organization Name", max_length=255, blank=True,
-                            help_text="Each end user must be grouped into an organization")
-    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True,
-                                   help_text="Description of organization")
-    organization_url = models.CharField(blank=True, null=True, max_length=255,
-                                        help_text="Link to organizations external web site")
-    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations',
-                                        help_text="Type of Industry the organization belongs to if any")
+    name = models.CharField("Organization Name", max_length=255, blank=True, help_text="Each end user must be grouped into an organization")
+    description = models.TextField("Description/Notes", max_length=765, null=True, blank=True, help_text="Description of organization")
+    organization_url = models.CharField(blank=True, null=True, max_length=255, help_text="Link to organizations external web site")
+    industries = models.ManyToManyField(Industry, blank=True, related_name='organizations', help_text="Type of Industry the organization belongs to if any")
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True,
-                               blank=True)
+    oauth_domains = ArrayField(models.CharField("OAuth Domains", max_length=255, null=True, blank=True), null=True, blank=True)
     date_format = models.CharField("Date Format", max_length=50, blank=True, default="DD.MM.YYYY")
     phone = models.CharField(max_length=20, blank=True, null=True)
     unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
+    coupon = models.ForeignKey('core.Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+
 
     class Meta:
         ordering = ('name',)
@@ -135,6 +133,33 @@ class Organization(models.Model):
             name='Users',
             permissions=PERMISSIONS_VIEW_ONLY
         )
+
+
+class Referral(models.Model):
+    referral_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.SET_NULL, related_name='organization_referrals')
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    link= models.TextField(unique=True, null=True, blank=True)
+    usage_count = models.IntegerField(default=0)
+    max_usage = models.IntegerField(null=True, blank=True)
+    active = models.BooleanField(default=True)
+    coupon = models.ForeignKey('core.Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+    edit_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Referral"
+        verbose_name_plural = "Referrals"
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.code = f"INSIGHTS-REF-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
+            self.link = f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?referral_code={self.code}'
+        super(Referral, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.code}-{self.name}'
 
 
 class CoreGroup(models.Model):
@@ -309,7 +334,7 @@ class Coupon(models.Model):
     code = models.CharField(max_length=24, unique=True, blank=True, null=True)
     duration = models.CharField(choices=DurationChoices, max_length=16, default=ONCE)
     duration_in_months = models.IntegerField(null=True, blank=True)
-    active = models.BooleanField(default=True) # maps to valid field on stripe
+    active = models.BooleanField(default=True)  # maps to valid field on stripe
     max_redemptions = models.IntegerField(default=1)
     percent_off = models.FloatField(default=0)
     amount_off = models.FloatField(default=0)

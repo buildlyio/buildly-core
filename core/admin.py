@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
 from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Partner, \
-    Coupon
+    Coupon, Referral
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -66,6 +66,12 @@ class CouponAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'percent_off', 'duration', 'max_redemptions', 'active')
     list_filter = ('active', 'duration')
     search_fields = ('code', 'name')
+
+@admin.register(Referral)
+class ReferralAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'organization', 'coupon', 'active')
+    list_filter = ('active', 'organization', 'coupon')
+    search_fields = ('code', 'name', 'organization__name', 'coupon__name')
 
 
 admin.site.register(LogicModule, LogicModuleAdmin)

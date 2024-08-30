@@ -437,7 +437,7 @@ class TestCoreUserRead(object):
     keys = {
         'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
         'subscriptions', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
-        'user_type', 'survey_status'
+        'user_type', 'survey_status', 'subscription_active',
     }
 
     def test_coreuser_list(self, request_factory, org_member):

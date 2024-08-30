@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated)
 
-from core.email_utils import send_email
 from core.models import Subscription, Coupon
 from core.serializers import SubscriptionSerializer, CouponCodeSerializer
 
@@ -44,20 +43,16 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-create_date')
 
     def create(self, request, *args, **kwargs):
-        # validate coupon code
-        if 'coupon' in request.data and not self.is_coupon_valid():
-            return Response(
-                dict(
-                    code='invalid_coupon',
-                    message='Invalid coupon code'
-                ),
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # check if organization has a coupon
+        try:
+            coupon = self.request.user.organization.coupon
+        except KeyError:
+            coupon = None
 
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
             stripe.api_version = '2022-11-15'
-            data = self.get_stripe_details()
+            data = self.get_stripe_details(coupon)
             if data:
                 serializer = self.get_serializer(data=data)
                 serializer.is_valid(raise_exception=True)
@@ -144,7 +139,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    def get_stripe_details(self):
+    def get_stripe_details(self, coupon=None):
         """
         Get stripe details
         """
@@ -159,19 +154,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         stripe_product = stripe.Product.retrieve(product_id)
 
         try:
-            # apply the coupon code to the customer
-            coupon = None
-            if 'coupon' in data:
-                try:
-                    coupon = Coupon.objects.get(code=data.pop('coupon')).stripe_coupon_id
-                except Coupon.DoesNotExist:
-                    pass
-
             customer = stripe.Customer.create(
                 email=self.request.user.email,
                 name=str(self.request.user.organization.name).capitalize(),
-                coupon=coupon,
-
+                coupon=coupon.stripe_coupon_id if coupon else None,
             )
             stripe.PaymentMethod.attach(payment_method_id, customer=customer.id)
 
@@ -237,12 +223,6 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 pass
         return False
-
-    def is_coupon_valid(self):
-        """
-        Validate coupon code
-        """
-        return Coupon.objects.filter(code=self.request.data.get('coupon')).exists()
 
 
 class CouponCodeViewSet(viewsets.ModelViewSet):
