@@ -72,6 +72,20 @@ class CoreGroupSerializer(serializers.ModelSerializer):
         fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
                   'workflowlevel2s')
 
+class OrganizationSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscriptions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = '__all__'
+
+    def get_subscriptions(self, organization):
+        return SubscriptionSerializer(
+            organization.organization_subscription.all(),
+            many=True
+        ).data
+
 
 class CoreUserSerializer(serializers.ModelSerializer):
     """
@@ -81,6 +95,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
     subscriptions = serializers.SerializerMethodField()
+    organization = OrganizationSerializer()
 
     def validate_invitation_token(self, value):
         try:
@@ -117,14 +132,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
 
-    def get_subscriptions(self, user):
-        if user.organization:
-            return SubscriptionSerializer(
-                user.organization.organization_subscription.all(),
-                many=True
-            ).data
-
-        return None
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
