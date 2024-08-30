@@ -41,7 +41,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         if not request.user.is_global_admin:
             organization_id = request.user.organization_id
             queryset = queryset.filter(pk=organization_id)
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
