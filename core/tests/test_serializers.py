@@ -68,7 +68,6 @@ def test_core_user_serializer(request_factory, org_member):
             'user_type',
             'survey_status'
             'survey_status',
-            'subscriptions',
             'subscription_active',
             ]
     assert set(data.keys()) == set(keys)

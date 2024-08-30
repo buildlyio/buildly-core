@@ -74,21 +74,6 @@ class CoreGroupSerializer(serializers.ModelSerializer):
                   'workflowlevel2s')
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(source='organization_uuid', read_only=True)
-    subscriptions = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Organization
-        fields = '__all__'
-
-    def get_subscriptions(self, organization):
-        return SubscriptionSerializer(
-            organization.organization_subscription.all(),
-            many=True
-        ).data
-
-
 class CoreUserSerializer(serializers.ModelSerializer):
     """
     Default CoreUser serializer
@@ -97,7 +82,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
     subscriptions = serializers.SerializerMethodField()
-    organization = OrganizationSerializer()
     subscription_active = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
@@ -130,21 +114,10 @@ class CoreUserSerializer(serializers.ModelSerializer):
             'invitation_token',
             'user_type',
             'survey_status',
-            'subscriptions',
             'subscription_active',
         )
         read_only_fields = ('core_user_uuid', 'organization',)
         depth = 1
-
-    def get_subscriptions(self, user):
-        core_groups = user.core_groups.values_list('name', flat=True)
-        if user.organization and ROLE_ORGANIZATION_ADMIN in core_groups:
-            return SubscriptionSerializer(
-                user.organization.organization_subscription.all(),
-                many=True
-            ).data
-
-        return None
 
     def get_subscription_active(self, user):
         return user.organization.organization_subscription.filter(
