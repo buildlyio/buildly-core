@@ -132,7 +132,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
-    coupon_code = serializers.CharField(required=False)
+    coupon_code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = CoreUser
