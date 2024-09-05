@@ -70,8 +70,16 @@ class CoreGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoreGroup
         read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
-        fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
-                  'workflowlevel2s')
+        fields = (
+            'id', 'uuid',
+            'name',
+            'is_global',
+            'is_org_level',
+            'permissions',
+            'organization',
+            'workflowlevel1s',
+            'workflowlevel2s'
+        )
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
@@ -81,7 +89,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
-    subscriptions = serializers.SerializerMethodField()
     subscription_active = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
