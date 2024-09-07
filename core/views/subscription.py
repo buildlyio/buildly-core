@@ -183,10 +183,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                     stripe_subscription_id=stripe_subscription.id,
                     stripe_product=product_id,
                     stripe_payment_method_id=payment_method_id,
-                    trial_start_date=timezone.now().date() - relativedelta.relativedelta(months=1),
-                    trial_end_date=timezone.now().date(),
-                    subscription_start_date=timezone.now().date(),
-                    subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                    trial_start_date=timezone.now().date(),
+                    trial_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                    subscription_start_date=timezone.now().date() + relativedelta.relativedelta(months=1),
+                    subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=2),
                     organization=self.request.user.organization.organization_uuid,
                 )
                 data.update(stripe_subscription_details)
