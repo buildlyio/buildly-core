@@ -61,6 +61,38 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return str(super().to_representation(value))
 
 
+class OrganizationSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscriptions = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
+    referral_link = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = '__all__'
+
+    def get_subscriptions(self, organization):
+        # check if user is OrgAdmin
+        if self.context.get('request') and hasattr(self.context.get('request'), 'user'):
+            user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
+            if ROLE_ORGANIZATION_ADMIN in user_groups:
+                return SubscriptionSerializer(
+                    organization.organization_subscription.all(),
+                    many=True
+                ).data
+        return []
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
+
+    def get_referral_link(self, organization):
+        if organization.organization_referrals.exists():
+            return organization.organization_referrals.first().get('link')
+        return None
+
+
 class CoreGroupSerializer(serializers.ModelSerializer):
     permissions = PermissionsField(required=False)
     organization = UUIDPrimaryKeyRelatedField(required=False,
@@ -89,6 +121,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
+    organization = OrganizationSerializer(read_only=True)
     subscription_active = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
@@ -124,7 +157,6 @@ class CoreUserSerializer(serializers.ModelSerializer):
             'subscription_active',
         )
         read_only_fields = ('core_user_uuid', 'organization',)
-        depth = 1
 
     def get_subscription_active(self, user):
         return user.organization.organization_subscription.filter(
@@ -392,38 +424,6 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
         self.user.set_password(self.validated_data["new_password1"])
         self.user.save()
         return self.user
-
-
-class OrganizationSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(source='organization_uuid', read_only=True)
-    subscriptions = serializers.SerializerMethodField()
-    subscription_active = serializers.SerializerMethodField()
-    referral_link = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Organization
-        fields = '__all__'
-
-    def get_subscriptions(self, organization):
-        # check if user is OrgAdmin
-        if self.context.get('request') and hasattr(self.context.get('request'), 'user'):
-            user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
-            if ROLE_ORGANIZATION_ADMIN in user_groups:
-                return SubscriptionSerializer(
-                    organization.organization_subscription.all(),
-                    many=True
-                ).data
-        return []
-
-    def get_subscription_active(self, organization):
-        return organization.organization_subscription.filter(
-            subscription_end_date__gte=timezone.now().date()
-        ).exists()
-
-    def get_referral_link(self, organization):
-        if organization.organization_referrals.exists():
-            return organization.organization_referrals.first().get('link')
-        return None
 
 
 class OrganizationNestedSerializer(serializers.ModelSerializer):
