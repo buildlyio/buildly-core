@@ -26,3 +26,4 @@ ENTRYPOINT ["bash", "/code/scripts/docker-entrypoint.sh"]
 
 # Specify tag name to be created on github
 LABEL version="0.9.2"
+
