@@ -78,7 +78,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
                 user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
             except AttributeError:
                 user_groups = []
-            if ROLE_ORGANIZATION_ADMIN in user_groups:
+            if 'Admins' in user_groups:
                 return SubscriptionSerializer(
                     organization.organization_subscription.all(),
                     many=True

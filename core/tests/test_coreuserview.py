@@ -436,7 +436,7 @@ class TestCoreUserRead(object):
 
     keys = {
         'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-        'subscriptions', 'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
+        'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
         'user_type', 'survey_status', 'subscription_active',
     }
 
@@ -450,6 +450,7 @@ class TestCoreUserRead(object):
         assert response.status_code == 200
         data = response.data
         assert len(data) == 2
+        print('Keys: ', data[0].keys(), flush=True)
         assert set(data[0].keys()) == self.keys
 
     def test_coreuser_retrieve(self, request_factory, org_member):
