@@ -89,15 +89,17 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def get_referral_link(self, organization):
         if organization.organization_referrals.exists():
-            return organization.organization_referrals.first().get('link')
+            return organization.organization_referrals.first().link
         return None
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
     permissions = PermissionsField(required=False)
-    organization = UUIDPrimaryKeyRelatedField(required=False,
-                                              queryset=Organization.objects.all(),
-                                              help_text="Related Org to associate with")
+    organization = UUIDPrimaryKeyRelatedField(
+        required=False,
+        queryset=Organization.objects.all(),
+        help_text="Related Org to associate with"
+    )
 
     class Meta:
         model = CoreGroup
