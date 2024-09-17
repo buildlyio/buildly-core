@@ -130,3 +130,5 @@ dmypy.json
 
 .idea
 .coverage
+
+.DS_store
