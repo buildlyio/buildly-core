@@ -132,3 +132,5 @@ dmypy.json
 .coverage
 
 .DS_store
+
+settings/dev.py

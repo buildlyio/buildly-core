@@ -5,6 +5,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils import timezone
+import requests
+from django.conf import settings
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -203,6 +205,28 @@ class CoreUser(AbstractUser):
         if is_new:
             # Add default groups
             self.core_groups.add(*CoreGroup.objects.filter(organization=self.organization, is_default=True))
+            # Send user details to HubSpot
+            self.send_to_hubspot()
+
+    def send_to_hubspot(self):
+        url = "https://api.hubapi.com/contacts/v1/contact"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.HUBSPOT_API_KEY}"
+        }
+        data = {
+            "properties": [
+                {"property": "email", "value": self.email},
+                {"property": "firstname", "value": self.first_name},
+                {"property": "lastname", "value": self.last_name},
+                {"property": "phone", "value": self.phone},
+                {"property": "company", "value": self.organization.name if self.organization else ""},
+                {"property": "jobtitle", "value": self.title},
+                {"property": "user_type", "value": self.user_type},
+            ]
+        }
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
 
     @property
     def is_org_admin(self) -> bool:
