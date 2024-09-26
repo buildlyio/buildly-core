@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
@@ -16,7 +17,7 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon, Referral, ROLE_ORGANIZATION_ADMIN
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -60,17 +61,62 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return str(super().to_representation(value))
 
 
+class OrganizationSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscriptions = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
+    referral_link = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Organization
+        fields = '__all__'
+
+    def get_subscriptions(self, organization):
+        # check if user is OrgAdmin
+        if self.context.get('request') and hasattr(self.context.get('request'), 'user'):
+            try:
+                user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
+            except AttributeError:
+                user_groups = []
+            if 'Admins' in user_groups:
+                return SubscriptionSerializer(
+                    organization.organization_subscription.all(),
+                    many=True
+                ).data
+        return []
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
+
+    def get_referral_link(self, organization):
+        if organization.organization_referrals.exists():
+            return organization.organization_referrals.first().link
+        return None
+
+
 class CoreGroupSerializer(serializers.ModelSerializer):
     permissions = PermissionsField(required=False)
-    organization = UUIDPrimaryKeyRelatedField(required=False,
-                                              queryset=Organization.objects.all(),
-                                              help_text="Related Org to associate with")
+    organization = UUIDPrimaryKeyRelatedField(
+        required=False,
+        queryset=Organization.objects.all(),
+        help_text="Related Org to associate with"
+    )
 
     class Meta:
         model = CoreGroup
         read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
-        fields = ('id', 'uuid', 'name', 'is_global', 'is_org_level', 'permissions', 'organization', 'workflowlevel1s',
-                  'workflowlevel2s')
+        fields = (
+            'id', 'uuid',
+            'name',
+            'is_global',
+            'is_org_level',
+            'permissions',
+            'organization',
+            'workflowlevel1s',
+            'workflowlevel2s'
+        )
 
 
 class CoreUserSerializer(serializers.ModelSerializer):
@@ -80,6 +126,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(required=False)
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
+    organization = OrganizationSerializer(read_only=True)
+    subscription_active = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
         try:
@@ -99,7 +147,11 @@ class CoreUserSerializer(serializers.ModelSerializer):
                   'title', 'contact_info', 'privacy_disclaimer_accepted','tos_disclaimer_accepted', 'organization', 'core_groups',
                   'invitation_token', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
-        depth = 1
+
+    def get_subscription_active(self, user):
+        return user.organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date(),
+        ).exists()
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
@@ -109,7 +161,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
     password = serializers.CharField(write_only=True)
     organization_name = serializers.CharField(source='organization.name')
     core_groups = serializers.PrimaryKeyRelatedField(many=True, queryset=CoreGroup.objects.all(), required=False)
-    coupon_code = serializers.CharField(required=False)
+    coupon_code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = CoreUser
@@ -117,6 +169,15 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         read_only_fields = CoreUserSerializer.Meta.read_only_fields
 
     def create(self, validated_data):
+        # validate coupon code or referral code if used
+        coupon_code = validated_data.pop('coupon_code', None)
+        referral_code = validated_data.pop('referral_code', None)
+        if coupon_code or referral_code:
+            if not self.is_coupon_valid(coupon_code or referral_code, is_referral=bool(referral_code)):
+                raise serializers.ValidationError(
+                    'Invalid coupon code or referral code', code='invalid_code'
+                )
+
         # get or create organization
         organization = validated_data.pop('organization')
         org_name = organization['name']
@@ -124,8 +185,6 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         core_groups = validated_data.pop('core_groups', [])
         invitation_token = validated_data.pop('invitation_token', None)
-        coupon_code = validated_data.pop('coupon_code', None)
-
         # create core user
         if settings.AUTO_APPROVE_USER:  # If auto-approval set to true
             validated_data['is_active'] = True
@@ -142,9 +201,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
 
         # check whether org_name is "default"
         if org_name in ['default']:
-            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                        is_org_level=True,
-                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            default_org_user = (
+                CoreGroup.objects
+                .filter(organization__name=settings.DEFAULT_ORG, is_org_level=True, permissions=PERMISSIONS_VIEW_ONLY)
+                .first()
+            )
             coreuser.core_groups.add(default_org_user)
 
         # check whether an old organization
@@ -152,25 +213,31 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             coreuser.is_active = False
             coreuser.save()
 
-            org_user = CoreGroup.objects.filter(organization__name=organization,
-                                                is_org_level=True,
-                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+            org_user = (
+                CoreGroup.objects
+                .filter(organization__name=organization, is_org_level=True, permissions=PERMISSIONS_VIEW_ONLY)
+                .first()
+            )
             coreuser.core_groups.add(org_user)
 
         # add org admin role to the user if org is new
         if is_new_org:
-            if coupon_code and coupon_code == settings.FREE_COUPON_CODE:
-                organization.unlimited_free_plan = True
-                organization.save()
+            organization.unlimited_free_plan = True
+            organization.save(update_fields=['unlimited_free_plan'])
 
-            group_org_admin = CoreGroup.objects.get(organization=organization,
-                                                    is_org_level=True,
-                                                    permissions=PERMISSIONS_ORG_ADMIN)
+            group_org_admin = CoreGroup.objects.get(
+                organization=organization, is_org_level=True, permissions=PERMISSIONS_ORG_ADMIN
+            )
             coreuser.core_groups.add(group_org_admin)
 
+            if coupon_code or referral_code:
+                coupon = self.handle_coupon(coupon_code or referral_code, is_referral=bool(referral_code))
+                if coupon:
+                    organization.coupon = coupon
+                    organization.save(update_fields=['coupon'])
+
         # add requested groups to the user
-        for group in core_groups:
-            coreuser.core_groups.add(group)
+        coreuser.core_groups.add(*core_groups)
 
         # create or update an invitation
         reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)
@@ -193,6 +260,30 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         send_email(coreuser.email, subject, context, template_name, html_template_name)
 
         return coreuser
+
+    @staticmethod
+    def handle_coupon(code, is_referral=False):
+        # check if referral link was used
+        if is_referral:
+            referral: Referral = Referral.objects.filter(code=code).first()
+            coupon = referral.coupon
+            referral.usage_count += 1
+            referral.save(update_fields=['usage_count'])
+        # check if coupon code was used
+        else:
+            coupon = Coupon.objects.filter(code=code).first()
+
+        return coupon
+
+    @staticmethod
+    def is_coupon_valid(code, is_referral=False):
+        """
+        Validate coupon code or referral code
+        """
+        if is_referral:
+            return Referral.objects.filter(code=code, active=True).exists()
+
+        return Coupon.objects.filter(code=code, active=True).exists()
 
 
 class CoreUserProfileSerializer(serializers.Serializer):
@@ -325,12 +416,25 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
         return self.user
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
+class OrganizationNestedSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscription = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
         fields = '__all__'
+
+    def get_subscription(self, organization):
+        return SubscriptionSerializer(
+            organization.organization_subscription.all(),
+            many=True
+        ).data
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
 
 
 class AccessTokenSerializer(serializers.ModelSerializer):
@@ -366,8 +470,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 
 class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
-    """ Let's user update his  organization_name,and email from the one time pop-up screen.
-     Also this assigns permissions to users """
+    """
+    Lets user update his  organization_name,and email from the one time pop-up screen.
+    Also, this assigns permissions to users
+    """
 
     email = serializers.CharField(required=False)
     organization_name = serializers.CharField(required=False)
@@ -376,9 +482,23 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreUser
-        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-                  'contact_info', 'privacy_disclaimer_accepted', 'organization_name', 'organization', 'core_groups',
-                  'user_type', 'survey_status')
+        fields = (
+            'id',
+            'core_user_uuid',
+            'first_name',
+            'last_name',
+            'email',
+            'username',
+            'is_active',
+            'title',
+            'contact_info',
+            'privacy_disclaimer_accepted',
+            'organization_name',
+            'organization',
+            'core_groups',
+            'user_type',
+            'survey_status'
+        )
 
     def update(self, instance, validated_data):
         organization_name = str(validated_data.pop('organization_name')).lower()
@@ -388,6 +508,7 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
 
         if instance.email is not None:
             instance.save()
+
         is_new_org = Organization.objects.filter(name=organization_name)
 
         # check whether org_name is "default"
@@ -396,16 +517,25 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             instance.organization = default_org
             instance.save()
             # now attach the user role as USER to default organization
-            default_org_user = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                        is_org_level=True,
-                                                        permissions=PERMISSIONS_VIEW_ONLY).first()
+            default_org_user = (
+                CoreGroup
+                .objects
+                .filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_VIEW_ONLY
+                )
+                .first()
+            )
             instance.core_groups.add(default_org_user)
 
             # remove any other group permissions he is not added
             for single_group in instance.core_groups.all():
-                default_org_groups = CoreGroup.objects.filter(organization__name=settings.DEFAULT_ORG,
-                                                              is_org_level=True,
-                                                              permissions=PERMISSIONS_VIEW_ONLY)
+                default_org_groups = CoreGroup.objects.filter(
+                    organization__name=settings.DEFAULT_ORG,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_VIEW_ONLY
+                )
                 if single_group not in default_org_groups:
                     instance.core_groups.remove(single_group)
 
@@ -417,9 +547,16 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             instance.is_active = False
             instance.save()
             # now attach the user role as USER
-            org_user = CoreGroup.objects.filter(organization__name=organization_name,
-                                                is_org_level=True,
-                                                permissions=PERMISSIONS_VIEW_ONLY).first()
+            org_user = (
+                CoreGroup
+                .objects
+                .filter(
+                    organization__name=organization_name,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_VIEW_ONLY
+                )
+                .first()
+            )
 
             instance.core_groups.add(org_user)
 
@@ -436,11 +573,23 @@ class CoreUserUpdateOrganizationSerializer(serializers.ModelSerializer):
             # first update the org name for that user
             organization = Organization.objects.create(name=organization_name)
             instance.organization = organization
+
+            # activate user
+            instance.is_active = True
+
+            # save the user
             instance.save()
+
             # now attach the user role as ADMIN
-            org_admin = CoreGroup.objects.get(organization=organization,
-                                              is_org_level=True,
-                                              permissions=PERMISSIONS_ORG_ADMIN)
+            org_admin = (
+                CoreGroup
+                .objects
+                .get(
+                    organization=organization,
+                    is_org_level=True,
+                    permissions=PERMISSIONS_ORG_ADMIN
+                )
+            )
             instance.core_groups.add(org_admin)
 
         return instance
@@ -468,7 +617,7 @@ class CoreUserVerifyEmailSerializer(serializers.Serializer):
     token = serializers.CharField()
 
     def validate(self, attrs):
-        # Decode the uidb64 to uid to get User object
+        # Decode the uuid64 to uid to get User object
         try:
             uid = force_text(urlsafe_base64_decode(attrs['token']))
             user = CoreUser.objects.filter(core_user_uuid=uid).first()
@@ -480,3 +629,15 @@ class CoreUserVerifyEmailSerializer(serializers.Serializer):
             raise serializers.ValidationError({'token': ['Invalid value']})
 
         return attrs
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+
+
+class CouponCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = '__all__'
+        model = Coupon

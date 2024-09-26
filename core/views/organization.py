@@ -1,7 +1,7 @@
 import logging
 
 import django_filters
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from core.models import Organization
@@ -41,7 +41,7 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         if not request.user.is_global_admin:
             organization_id = request.user.organization_id
             queryset = queryset.filter(pk=organization_id)
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -51,16 +51,20 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 
     # /organization/names/
     # send only the names
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny], name='Fetch Already existing Organization', url_path='names')
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[AllowAny],
+        name='Fetch Already existing Organization',
+        url_path='names'
+    )
     def fetch_existing_orgs(self, request, pk=None, *args, **kwargs):
         """
-        Fetch Already existing Organizations in Buildly Core,
+        Fetch the names of already existing Organizations in Buildly Core,
         Any logged in user can access this
         """
         # all orgs in Buildly Core
-        queryset = Organization.objects.all()
-        names = list()
-        for record in queryset:
-            names.append(record.name)
-
-        return Response(names)
+        return Response(
+            list(Organization.objects.values_list('name', flat=True)),
+            status=status.HTTP_200_OK
+        )

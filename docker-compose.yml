@@ -85,6 +85,7 @@ services:
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
       VERIFY_EMAIL_URL_PATH: "verify-email/"
       FREE_COUPON_CODE: "Insights@2022"
+      STRIPE_SECRET: "sk_test_ddLjeqLRWcj8znVAhMaNPu7J00evbJrikA"
 
 volumes:
   static-content:

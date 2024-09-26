@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from core.models import Subscription
 from .models import WorkflowLevel1, WorkflowLevel2, WorkflowLevel2Sort, WorkflowTeam, WorkflowLevelStatus
 
 
@@ -27,6 +28,27 @@ class WorkflowLevel2Admin(admin.ModelAdmin):
     display = 'Workflow Level1'
     list_filter = ('name', 'status')
     search_fields = ('name',)
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = (
+        'organization',
+        'user',
+        'stripe_product',
+        'trial_start_date',
+        'trial_end_date',
+        'subscription_start_date'
+    )
+    search_fields = ('organization', 'stripe_product', 'user',)
+    list_filter = (
+        'organization',
+        'user',
+        'stripe_product',
+        'trial_start_date',
+        'trial_end_date',
+        'subscription_start_date'
+    )
 
 
 admin.site.register(WorkflowLevel2, WorkflowLevel2Admin)

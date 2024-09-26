@@ -4,24 +4,37 @@ on:
   push:
     branches:
       - master
+
+env:
+  PROJECT_ID: dev-buildly
+  REGION: us
+  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/dev/buildly-core
+
 jobs:
   build:
     name: Build and Push to GCR
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: gcr.io/dev-buildly/insights/dev/buildly-core
     steps:
-    - uses: actions/checkout@v2
+    - name: "Checkout"
+      uses: actions/checkout@v3
 
-    - name: Docker login
-      uses: docker/login-action@v1
+    - id: "auth"
+      uses: "google-github-actions/auth@v1"
       with:
-        registry: gcr.io
-        username: _json_key
-        password: ${{ secrets.GCR_JSON_KEY }}
+        credentials_json: "${{ secrets.GCR_JSON_KEY }}"
+
+    - name: "Set up Cloud SDK"
+      uses: "google-github-actions/setup-gcloud@v1"
+
+    - name: "Use gcloud CLI"
+      run: "gcloud info"
+
+    - name: "Docker auth"
+      run: |-
+        gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
     - name: Build docker image
       run: docker build -t $IMAGE_NAME:latest .
 
-    - name: Push to Google Container Registry
+    - name: Push to Google Artifact Registry
       run: docker push $IMAGE_NAME:latest
