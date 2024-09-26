@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 import requests
 from django.conf import settings
+import logging
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -206,7 +207,12 @@ class CoreUser(AbstractUser):
             # Add default groups
             self.core_groups.add(*CoreGroup.objects.filter(organization=self.organization, is_default=True))
             # Send user details to HubSpot
-            self.send_to_hubspot()
+            try:
+                self.send_to_hubspot()
+            except requests.RequestException as e:
+                # Log the error
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send user details to HubSpot: {e}")
 
     def send_to_hubspot(self):
         url = "https://api.hubapi.com/contacts/v1/contact"
