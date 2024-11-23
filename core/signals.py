@@ -10,7 +10,8 @@ def create_coupon_on_stripe(sender, instance, created, **kwargs):
     # only run this if the instance is created
     if created:
         # generate code
-        instance.generate_code()
+        if not instance.save:
+            instance.generate_code()
 
         # create the coupon on stripe
         stripe_helper = StripeHelper()
