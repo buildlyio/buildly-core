@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: dev-buildly
   REGION: us
-  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/dev/buildly-core
+  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/labs-dev-buildly-core
 
 jobs:
   build:
@@ -38,3 +38,13 @@ jobs:
 
     - name: Push to Google Artifact Registry
       run: docker push $IMAGE_NAME:latest
+
+    - name: Deploy on Kapstan
+      id: Kapstan
+      uses: kapstan-io/deployment-action@latest
+      with: 
+        application_name: buildly-core
+        image_repository_name: ${{ env.IMAGE_NAME }}
+        image_tag: latest
+        kapstan_api_key: ${{ secrets.KAPSTAN_KEY }}
+        wait_for_deployment: false
