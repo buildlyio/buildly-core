@@ -43,8 +43,8 @@ JWT_PAYLOAD_ENRICHER = 'core.jwt_utils.payload_enricher'
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_ALLOWED_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_AUTH_DISABLED = False
-JWT_PRIVATE_KEY_RSA_BUILDLY = os.getenv('JWT_PRIVATE_KEY_RSA_BUILDLY')
-JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY')
+JWT_PRIVATE_KEY_RSA_BUILDLY = os.getenv('JWT_PRIVATE_KEY_RSA_BUILDLY', '').replace('\\n', '\n')
+JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY', '').replace('\\n', '\n')
 
 # Password Validators
 AUTH_PASSWORD_VALIDATORS = []
