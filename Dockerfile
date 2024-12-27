@@ -5,14 +5,16 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apk update
 
+# Install the project requirements.
+COPY requirements.txt /
+RUN pip install --upgrade pip
+RUN pip install -r /requirements.txt
+
 WORKDIR /code
 
 RUN apk add --no-cache postgresql-libs bash openldap-dev &&\
     apk add --no-cache --virtual .build-deps git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
 
-COPY ./requirements/base.txt requirements/base.txt
-COPY ./requirements/production.txt requirements/production.txt
-RUN pip install --upgrade pip && pip install -r requirements/production.txt --no-cache-dir
 
 ADD . /code
 
