@@ -1,9 +1,7 @@
-FROM --platform=linux/amd64 python:3.7-alpine3.10
+FROM python:3.6
 
 # Do not buffer log messages in memory; some messages can be lost otherwise
 ENV PYTHONUNBUFFERED 1
-
-RUN apk update
 
 # Install the project requirements.
 COPY requirements.txt /
