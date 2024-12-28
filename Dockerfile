@@ -10,16 +10,10 @@ RUN pip install -r /requirements.txt
 
 WORKDIR /code
 
-RUN apk add --no-cache postgresql-libs bash openldap-dev &&\
-    apk add --no-cache --virtual .build-deps git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
-
-
 ADD . /code
 
 # Collecting static files
 RUN ./scripts/collectstatic.sh
-
-RUN apk del .build-deps
 
 # Specify tag name to be created on github
 LABEL version="1.0.10"
