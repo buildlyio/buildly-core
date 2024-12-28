@@ -1,7 +1,4 @@
-import ldap
-
 from .base import *
-from django_auth_ldap.config import LDAPSearch
 
 MIDDLEWARE_AUTHENTICATION = [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
@@ -13,11 +10,6 @@ MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_AUTHENTICATION
 # Authentication backends
 # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
 
-AUTHENTICATION_LDAP_BACKEND = []
-AUTH_LDAP_ENABLE = True if os.getenv('LDAP_ENABLE') == 'True' else False
-if AUTH_LDAP_ENABLE:
-    AUTHENTICATION_LDAP_BACKEND.append('django_auth_ldap.backend.LDAPBackend')
-
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.github.GithubOAuth2',
     'social_core.backends.google.GoogleOAuth2',
@@ -25,9 +17,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'rest_framework_simplejwt.authentication.JWTAuthentication',
 ]
-
-AUTHENTICATION_BACKENDS = AUTHENTICATION_LDAP_BACKEND + AUTHENTICATION_BACKENDS
-
 
 # Auth Application
 OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
@@ -131,30 +120,3 @@ DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')
 CREATE_DEFAULT_PROGRAM = (
     True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
 )
-
-# LDAP configuration
-# https://django-auth-ldap.readthedocs.io/en/latest/reference.html#settings
-
-if AUTH_LDAP_ENABLE:
-    AUTH_LDAP_SERVER_URI = os.environ.get('LDAP_HOST')
-    AUTH_LDAP_BIND_DN = os.environ.get('LDAP_USERNAME')  # Bind Distinguished Name(DN)
-    AUTH_LDAP_BIND_PASSWORD = os.environ.get('LDAP_PASSWORD')
-    AUTH_LDAP_BASE_DN = os.environ.get('LDAP_BASE_DN')
-    AUTH_LDAP_USERNAME_FIELD_SEARCH = os.environ.get('LDAP_USERNAME_FIELD_SEARCH')
-
-    AUTH_LDAP_USER_SEARCH = LDAPSearch(
-        AUTH_LDAP_BASE_DN,
-        ldap.SCOPE_SUBTREE,
-        f'{AUTH_LDAP_USERNAME_FIELD_SEARCH}=%(user)s',
-    )
-
-    AUTH_LDAP_USER_ATTR_MAP = {
-        'username': AUTH_LDAP_USERNAME_FIELD_SEARCH,
-        'first_name': 'givenName',
-        'last_name': 'sn',
-        'email': 'mail',
-    }
-    AUTH_LDAP_ALWAYS_UPDATE_USER = True
-    AUTH_LDAP_CACHE_TIMEOUT = (
-        3600
-    )  # Cache distinguished names and group memberships for an hour to minimize

@@ -141,15 +141,6 @@ The following tables list the configurable parameters of buildly and their defau
 | `SOCIAL_AUTH_LOGIN_REDIRECT_URL`    | Redirect the user once the auth process ended successfully | None                              |
 | `SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL` | The redirect URL for Microsoft graph Social auth | None                 |
 
-#### LDAP & Active Directory Server
-|             Parameter               |            Description             |                    Default                |
-|-------------------------------------|------------------------------------|-------------------------------------------|
-| `LDAP_ENABLE`                       | If true, enable LDAP authentication  | False |
-| `LDAP_HOST`                         | The host to use when connecting to the LDAP server | `` |
-| `LDAP_USERNAME`                     | The username to use when connecting to the LDAP server  | `` |
-| `LDAP_PASSWORD`                     | The password to use when connecting to the LDAP server | `` |
-| `LDAP_BASE_DN`                      | The base domain name for search | `` |
-| `LDAP_USERNAME_FIELD_SEARCH`        | The username field used by the LDAP server for search | `` |
 
 #### Email Server
 |             Parameter               |            Description             |                    Default                |
