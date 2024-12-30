@@ -25,7 +25,6 @@ urlpatterns = [
     path('health_check/', include('health_check.urls')),
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
-    path('', include('workflow.urls')),
 ]
 
 urlpatterns += router.urls

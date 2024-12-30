@@ -46,8 +46,6 @@ def test_core_groups_serializer(request_factory, core_group):
         'is_org_level',
         'permissions',
         'organization',
-        'workflowlevel1s',
-        'workflowlevel2s',
     ]
     assert set(data.keys()) == set(keys)
     assert isinstance(data['organization'], str)

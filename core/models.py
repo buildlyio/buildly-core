@@ -226,10 +226,7 @@ class Organization(models.Model):
 
 class CoreGroup(models.Model):
     """
-    CoreGroup model defines the groups of the users with specific permissions for the set of workflowlevel1's
-    and workflowlevel2's (it has many-to-many relationship to WorkFlowLevel1 and WorkFlowLevel2 models).
-    Permissions field is the decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions
-    for CRUD. For example: 12 -> 1100 -> CR__ (allowed to Create and Read).
+    CoreGroup model defines the groups of the users with specific permissions 
     """
 
     uuid = models.CharField(

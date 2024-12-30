@@ -8,7 +8,6 @@ API_GATEWAY_RESERVED_NAMES = [
     'complete',
     'disconnect',
     'static',
-    'workflow',
     'core',
     'logicmodule',
     'organization',

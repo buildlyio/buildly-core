@@ -9,19 +9,16 @@ from .serializers import (
     LogicModuleModelSerializer,
     RelationshipSerializer,
 )
-from workflow.permissions import IsSuperUserOrReadOnly
 
 
 class LogicModuleModelViewSet(viewsets.ModelViewSet):
     queryset = LogicModuleModel.objects.all()
     serializer_class = LogicModuleModelSerializer
-    permission_classes = (IsSuperUserOrReadOnly,)
 
 
 class RelationshiplViewSet(viewsets.ModelViewSet):
     queryset = Relationship.objects.all()
     serializer_class = RelationshipSerializer
-    permission_classes = (IsSuperUserOrReadOnly,)
 
 
 class JoinRecordViewSet(OrganizationQuerySetMixin, viewsets.ModelViewSet):

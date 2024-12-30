@@ -78,7 +78,7 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreGroup
-        read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
+        read_only_fields = ('uuid')
         fields = (
             'id',
             'uuid',
@@ -87,8 +87,6 @@ class CoreGroupSerializer(serializers.ModelSerializer):
             'is_org_level',
             'permissions',
             'organization',
-            'workflowlevel1s',
-            'workflowlevel2s',
         )
 
 

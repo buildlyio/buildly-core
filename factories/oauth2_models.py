@@ -6,7 +6,7 @@ from oauth2_provider.models import (
     AccessToken as AccessTokenM,
     RefreshToken as RefreshTokenM,
 )
-from .workflow_models import CoreUser
+from core.models import CoreUser
 
 
 class Application(DjangoModelFactory):

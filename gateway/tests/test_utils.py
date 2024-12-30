@@ -37,31 +37,6 @@ class UtilsValidateBuildlyObjectAccessTest(TestCase):
         request = view().initialize_request(request)
         return request
 
-    def test_validate_buildly_wfl1_access_superuser(self):
-        self.core_user.is_staff = True
-        self.core_user.is_superuser = True
-        self.core_user.save()
-
-        request = self.get_mock_request('/', APIGatewayView, self.core_user)
-        wflvl1 = factories.WorkflowLevel1(organization=self.core_user.organization)
-        validate_object_access(request, wflvl1)
-
-    def test_validate_buildly_wfl1_no_permission(self):
-        request = self.get_mock_request('/', APIGatewayView, self.core_user)
-        wflvl1 = factories.WorkflowLevel1()
-
-        error_message = 'You do not have permission to perform this action.'
-        with self.assertRaisesMessage(PermissionDenied, error_message):
-            validate_object_access(request, wflvl1)
-
-    def test_validate_buildly_wfl1_not_authenticated_user(self):
-        request = self.get_mock_request('/', APIGatewayView)
-        wflvl1 = factories.WorkflowLevel1()
-
-        error_message = 'Authentication credentials were not provided.'
-        with self.assertRaisesMessage(NotAuthenticated, error_message):
-            validate_object_access(request, wflvl1)
-
     def test_validate_buildly_logic_module_no_viewset(self):
         request = self.get_mock_request('/', APIGatewayView, self.core_user)
         lm = factories.LogicModule()

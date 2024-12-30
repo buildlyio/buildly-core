@@ -51,17 +51,15 @@ class CoreUserViewSet(
 ):
     """
     A core user is an extension of the default User object.  A core user is also the primary relationship for identity
-    and access to a logged in user. They are associated with an organization, Group (for permission though WorkflowTeam)
-    and WorkflowLevel 1 (again through WorkflowTeam)
+    and access to a logged in user. They are associated with an organization, Group 
+ 
 
     title:
     A core user is an extension of the default User object.
 
     description:
     A core user is also the primary relationship for identity and access to a logged in user.
-    They are associated with an organization, Group (for permission though WorkflowTeam)
-    and WorkflowLevel 1 (again through WorkflowTeam)
-
+    They are associated with an organization, Group 
     retrieve:
     Return the given core user.
 

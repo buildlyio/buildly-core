@@ -48,7 +48,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'health_check.db',  # stock Django health checkers
 ]
 
-INSTALLED_APPS_LOCAL = ['buildly', 'gateway', 'core', 'workflow', 'datamesh']
+INSTALLED_APPS_LOCAL = ['buildly', 'gateway', 'core', 'datamesh']
 
 INSTALLED_APPS = (
     INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
