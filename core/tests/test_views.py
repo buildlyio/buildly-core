@@ -7,9 +7,6 @@ from django.test import Client, RequestFactory, TestCase
 
 from rest_framework.reverse import reverse
 
-from social_core.backends import oauth
-from social_core.exceptions import AuthFailed
-
 from unittest.mock import Mock
 
 import factories

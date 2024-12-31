@@ -37,8 +37,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
-    # Social auth
-    'social_django',
     # OAuth2
     'oauth2_provider',
     # swagger
@@ -84,8 +82,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
             'builtins': [  # TODO to delete?
                 'django.templatetags.static'

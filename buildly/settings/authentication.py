@@ -2,7 +2,6 @@ from .base import *
 
 MIDDLEWARE_AUTHENTICATION = [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_AUTHENTICATION
@@ -11,9 +10,6 @@ MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_AUTHENTICATION
 # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
 
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.github.GithubOAuth2',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.microsoft.MicrosoftOAuth2',
     'django.contrib.auth.backends.ModelBackend',
     'rest_framework_simplejwt.authentication.JWTAuthentication',
 ]
@@ -72,14 +68,7 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URLS = {
 }
 
 SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.create_user',
     'core.auth_pipeline.create_organization',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
 )
 
 # Github social auth
