@@ -1,3 +1,4 @@
+from .base import *
 from .authentication import *
 from .email import *
 
@@ -15,29 +16,24 @@ MIDDLEWARE_CORS = [
 MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
 
-CORS_ORIGIN_ALLOW_ALL = False if os.getenv('CORS_ORIGIN_ALLOW_ALL') == 'False' else True
+CORS_ORIGIN_ALLOW_ALL = True
 
-CORS_ORIGIN_WHITELIST = os.environ['CORS_ORIGIN_WHITELIST'].split(',')
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+CORS_ORIGIN_WHITELIST = "*"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.{}'.format(os.environ['DATABASE_ENGINE']),
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.environ['DATABASE_PORT'],
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
 # Security
 # https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 
-ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
+ALLOWED_HOSTS = "*"
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
@@ -66,6 +62,7 @@ LOGGING = {
     },
 }
 
-HUBSPOT_API_KEY = os.environ['HUBSPOT_API_KEY']
 
-SECRET_KEY = os.environ['SECRET_KEY']
+HUBSPOT_API_KEY = ""
+
+SECRET_KEY = "asdfe32fasdf343fasdff32234@##$%fwa45tfgsdfg343"
