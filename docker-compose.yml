@@ -85,6 +85,7 @@ services:
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
       STRIPE_SECRET: ""
+      HUBSPOT_API_KEY: "// put hubspot key here"
 
 
 volumes:
