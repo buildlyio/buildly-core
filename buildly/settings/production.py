@@ -69,3 +69,10 @@ LOGGING = {
 HUBSPOT_API_KEY = os.environ['HUBSPOT_API_KEY']
 
 SECRET_KEY = os.environ['SECRET_KEY']
+
+# NGINX and HTTPS
+# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-USE_X_FORWARDED_HOST
+
+USE_X_FORWARDED_HOST = True if os.getenv('USE_X_FORWARDED_HOST') == 'True' else False
+
+INSTALLED_APPS += ('django.contrib.postgres',)

@@ -1,7 +1,8 @@
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.db.models import JSONField
+
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils import timezone
@@ -176,11 +177,8 @@ class Organization(models.Model):
     )
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    oauth_domains = ArrayField(
-        models.CharField("OAuth Domains", max_length=255, null=True, blank=True),
-        null=True,
-        blank=True,
-    )
+    oauth_domains = models.CharField("OAuth Domains", max_length=255, null=True, blank=True)
+    
     date_format = models.CharField(
         "Date Format", max_length=50, blank=True, default="DD.MM.YYYY"
     )
@@ -434,7 +432,7 @@ class Consortium(models.Model):
     """
     consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
     name = models.CharField("Consortium Name", max_length=255, blank=True, help_text="Multiple organizations form a consortium together")
-    organization_uuids = ArrayField(models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True), null=True, blank=True)
+    organization_uuids = models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 

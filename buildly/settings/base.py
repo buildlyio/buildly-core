@@ -3,8 +3,6 @@ import os
 # Base dir path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-SECRET_KEY = os.environ['SECRET_KEY']
-
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
 ALLOWED_HOSTS = ["http://localhost:8000",]
@@ -29,7 +27,6 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    'django.contrib.postgres',
     'django.contrib.staticfiles',
 ]
 
@@ -92,22 +89,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'buildly.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.{}'.format(os.environ['DATABASE_ENGINE']),
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.environ['DATABASE_PORT'],
-    }
-}
-
-
 AUTH_USER_MODEL = 'core.CoreUser'
 
 # Internationalization
@@ -129,11 +110,6 @@ USE_TZ = True
 
 SITE_ID = 1
 
-
-# NGINX and HTTPS
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-USE_X_FORWARDED_HOST
-
-USE_X_FORWARDED_HOST = True if os.getenv('USE_X_FORWARDED_HOST') == 'True' else False
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 

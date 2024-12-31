@@ -18,7 +18,6 @@ MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-CORS_ORIGIN_WHITELIST = "*"
 
 DATABASES = {
     'default': {
@@ -50,7 +49,7 @@ LOGGING = {
         'file': {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'class': 'logging.FileHandler',
-            'filename': '/var/log/buildly.log',
+            'filename': 'buildly.log',
         },
     },
     'loggers': {
@@ -65,4 +64,4 @@ LOGGING = {
 
 HUBSPOT_API_KEY = ""
 
-SECRET_KEY = "asdfe32fasdf343fasdff32234@##$%fwa45tfgsdfg343"
+SECRET_KEY = "asdfe32fasdf343fasdff32234@##wa45tfgsdfg343"
