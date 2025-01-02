@@ -1,6 +1,9 @@
 from django.urls import include, path, re_path
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 from rest_framework import routers
+
 from core import views
 from core.views.homepage import index
 
@@ -27,4 +30,4 @@ urlpatterns = [
     path('', include('gateway.urls')),
 ]
 
-urlpatterns += router.urls
+urlpatterns += staticfiles_urlpatterns() + router.urls
