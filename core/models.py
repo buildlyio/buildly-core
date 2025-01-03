@@ -84,13 +84,6 @@ class Industry(models.Model):
 class OrganizationType(models.Model):
     """
     Allows organization to be of multiple types.
-    Supported types are:
-    1. Logistics Provider
-	2. Packer
-	3. Producer
-	4. Receiver
-	5. Shipper
-	6. Warehouse
     """
     name = models.CharField("Name", max_length=255, blank=True, help_text="Organization type")
     create_date = models.DateTimeField(null=True, blank=True)
@@ -108,38 +101,6 @@ class OrganizationType(models.Model):
 
     def __str__(self):
         return str(self.name)
-
-class OrganizationType(models.Model):
-    """
-    Allows organization to be of multiple types.
-    Supported types are:
-    1. Logistics Provider
-	2. Packer
-	3. Producer
-	4. Receiver
-	5. Shipper
-	6. Warehouse
-    """
-
-    name = models.CharField(
-        "Name", max_length=255, blank=True, help_text="Organization type"
-    )
-    create_date = models.DateTimeField(null=True, blank=True)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ('name',)
-        verbose_name_plural = "Organization Types"
-
-    def save(self, *args, **kwargs):
-        if self.create_date is None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-        super(OrganizationType, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return str(self.name)
-
 
 class Organization(models.Model):
     """
