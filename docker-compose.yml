@@ -4,7 +4,7 @@ services:
 
   postgres_buildly:
     container_name: postgres_buildly
-    image: postgres:9.6
+    image: postgres:15
     environment:
       POSTGRES_DB: buildly
       POSTGRES_USER: root
@@ -29,8 +29,9 @@ services:
       - postgres_buildly
     environment:
       DJANGO_SETTINGS_MODULE: "buildly.settings.production"
-      ALLOWED_HOSTS: "*"
-      CORS_ORIGIN_WHITELIST: "http://localhost:8000"
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      CORS_ORIGIN_ALLOW_ALL: "True"
+      CORS_ORIGIN_WHITELIST: http://localhost,http://127.0.0.1,http://0.0.0.0,https://localhost,https://127.0.0.1,https://0.0.0.0
       DATABASE_ENGINE: "postgresql"
       DATABASE_NAME: "buildly"
       DATABASE_USER: "root"
@@ -84,7 +85,7 @@ services:
       EMAIL_BACKEND: "SMTP"
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
-      STRIPE_SECRET: ""
+      STRIPE_SECRET: "// put stripe secret here"
       HUBSPOT_API_KEY: "// put hubspot key here"
 
 
