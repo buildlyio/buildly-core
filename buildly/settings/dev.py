@@ -32,7 +32,6 @@ DEBUG = True
 # Security
 # https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 
-ALLOWED_HOSTS = "*"
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 

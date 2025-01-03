@@ -13,11 +13,6 @@ router.register(r'coregroups', views.CoreGroupViewSet)
 router.register(r'coreuser', views.CoreUserViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
-router.register(r'consortium', views.ConsortiumViewSet)
-router.register(r'organization_type', views.OrganizationTypeViewSet)
-router.register(r'partner', views.PartnerViewSet)
-router.register(r'stripe', views.StripeViewSet, basename='stripe') 
-
 
 urlpatterns = [
     path('', index),
