@@ -4,7 +4,7 @@ services:
 
   postgres_buildly:
     container_name: postgres_buildly
-    image: postgres:15
+    image: postgres:18
     environment:
       POSTGRES_DB: buildly
       POSTGRES_USER: root
@@ -25,8 +25,6 @@ services:
       - static-content:/static
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres_buildly
     environment:
       DJANGO_SETTINGS_MODULE: "buildly.settings.production"
       ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
