@@ -17,7 +17,7 @@ MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
 CORS_ORIGIN_ALLOW_ALL = False if os.getenv('CORS_ORIGIN_ALLOW_ALL') == 'False' else True
 
-CORS_ORIGIN_WHITELIST = os.environ['CORS_ORIGIN_WHITELIST'].split(',')
+CORS_ORIGIN_WHITELIST = os.getenv('CORS_ORIGIN_WHITELIST', '').split(',')
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
