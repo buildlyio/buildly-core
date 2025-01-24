@@ -1,9 +1,9 @@
-Django==3.2.24
+Django~=4.2.5
 django-filter==2.4.0
 jsonschema==3.2.0
-django-health-check==3.6.1
+django-health-check~=3.18.3
 djangorestframework-simplejwt[crypto]
-djangorestframework==3.11.2
+djangorestframework~=3.15.0
 social-auth-app-django==3.1.0
 futures==3.1.1
 django-cors-headers==3.10.1
@@ -14,4 +14,5 @@ requests==2.27.1
 aiohttp==3.10.11
 stripe~=11.0.0
 gunicorn==21.2.0
-django-oauth-toolkit~=2.3.0
+django-oauth-toolkit~=3.0.0
+coreapi~=2.3.3

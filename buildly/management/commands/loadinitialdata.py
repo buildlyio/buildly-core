@@ -87,8 +87,6 @@ class Command(BaseCommand):
                 client_id=settings.OAUTH_CLIENT_ID,
                 client_secret=settings.OAUTH_CLIENT_SECRET,
                 defaults=dict(
-                    client_id=settings.OAUTH_CLIENT_ID,
-                    client_secret=settings.OAUTH_CLIENT_SECRET,
                     name='buildly oauth2',
                     client_type=Application.CLIENT_PUBLIC,
                     authorization_grant_type=Application.GRANT_PASSWORD,

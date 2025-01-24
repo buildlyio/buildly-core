@@ -65,6 +65,8 @@ db.sqlite3-journal
 # Flask stuff:
 instance/
 .webassets-cache
+a = !a
+if (!a)
 
 # Scrapy stuff:
 .scrapy

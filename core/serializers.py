@@ -11,7 +11,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils import timezone
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
@@ -338,7 +338,7 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
     def validate(self, attrs):
         # Decode the uidb64 to uid to get User object
         try:
-            uid = force_text(urlsafe_base64_decode(attrs['uid']))
+            uid = force_str(urlsafe_base64_decode(attrs['uid']))
             self.user = CoreUser.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, CoreUser.DoesNotExist):
             raise serializers.ValidationError({'uid': ['Invalid value']})
