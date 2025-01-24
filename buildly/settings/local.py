@@ -1,5 +1,0 @@
-# governcrm_core_db
-ALLOWED_HOSTS = ['*']
-
-OAUTH_CLIENT_ID = "wkXLlC9h3k0jxIx7oLllxpFVU89Dxgi7O8FYZyfX"
-OAUTH_CLIENT_SECRET = "KiKRft8MajLabQId7pjSsa3OfvJAXN9NENi0tVRTX3Vbthr6iClEDZZtbyGuD9M8UbKpK2E8R4xJYUolZxg1nVa1iZwhQPi5ionOKdpIs4de2bmUaZ0qWi4MdBmdwDvF"
