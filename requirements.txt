@@ -25,13 +25,7 @@ bandit==1.7.8
 coverage==7.4.4
 flake8==7.0.0
 factory_boy==3.3.0
-<<<<<<< HEAD
 django-oauth-toolkit==4.3.4
 django-import-export==3.3.7
 
 git+https://github.com/buildlyio/django-oauth-toolkit-jwt@v0.5.2#egg=django-oauth-toolkit-jwt
-=======
-django-oauth-toolkit~=3.0.0
-django-import-export==3.3.7
-
->>>>>>> b8ddb89c6ef384382ecea8cfaa82f25e9db0db22
