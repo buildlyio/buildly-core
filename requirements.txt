@@ -27,5 +27,3 @@ flake8==7.0.0
 factory_boy==3.3.0
 django-oauth-toolkit==4.3.4
 django-import-export==3.3.7
-
-git+https://github.com/buildlyio/django-oauth-toolkit-jwt@v0.5.2#egg=django-oauth-toolkit-jwt

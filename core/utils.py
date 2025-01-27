@@ -7,7 +7,20 @@ from django.utils.module_loading import import_string
 from oauthlib.oauth2 import BearerToken
 from oauth2_provider.models import Application
 from oauth2_provider.oauth2_validators import OAuth2Validator
-from oauth2_provider_jwt.utils import encode_jwt, generate_payload
+import jwt
+from datetime import datetime, timedelta
+
+def encode_jwt(payload, secret=settings.SECRET_KEY, algorithm='HS256'):
+    return jwt.encode(payload, secret, algorithm=algorithm)
+
+def generate_payload(issuer, expires_in, **extra_data):
+    payload = {
+        'iss': issuer,
+        'exp': datetime.utcnow() + timedelta(seconds=expires_in),
+        'iat': datetime.utcnow(),
+    }
+    payload.update(extra_data)
+    return payload
 
 
 def generate_access_tokens(request: WSGIRequest, user: User):
