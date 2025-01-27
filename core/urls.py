@@ -5,7 +5,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from rest_framework import routers
 
 from core import views
-from core.views.homepage import index
+from core.views.homepage import index, oauth_complete
 
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
@@ -16,6 +16,9 @@ router.register(r'coregroups', views.CoreGroupViewSet)
 router.register(r'coreuser', views.CoreUserViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
+router.register(r'oauth/accesstokens', views.AccessTokenViewSet)
+router.register(r'oauth/applications', views.ApplicationViewSet)
+router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 
 urlpatterns = [
     path('', index),
