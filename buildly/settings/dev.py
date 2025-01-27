@@ -15,9 +15,7 @@ MIDDLEWARE_CORS = [
 
 MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
-
 CORS_ORIGIN_ALLOW_ALL = True
-
 
 DATABASES = {
     'default': {
@@ -36,7 +34,6 @@ DEBUG = True
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # Logging
 # https://docs.djangoproject.com/en/1.11/topics/logging/#configuring-logging
@@ -60,7 +57,11 @@ LOGGING = {
     },
 }
 
-
 HUBSPOT_API_KEY = ""
 
 SECRET_KEY = "asdfe32fasdf343fasdff32234@##wa45tfgsdfg343"
+
+try:
+    from .local import *
+except (ModuleNotFoundError, ImportError):
+    pass
