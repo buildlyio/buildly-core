@@ -7,7 +7,7 @@ DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
 ALLOWED_HOSTS = ["http://localhost:8000","127.0.0.1"]
 
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Application definition
 
 # Static files (CSS, JavaScript, Images)
@@ -122,8 +122,8 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',  # TODO check if disable, and also delete CSRF
+        'core.helpers.oauth.CustomJWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': ('core.permissions.IsSuperUserBrowseableAPI',)
@@ -155,3 +155,8 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
 
 ORGANIZATION_TYPES = ['Custodian', 'Producer']
+
+try:
+    from .local import *
+except (ImportError, ModuleNotFoundError):
+    pass

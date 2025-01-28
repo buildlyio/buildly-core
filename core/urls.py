@@ -3,9 +3,10 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from rest_framework import routers
+from oauth2_provider import urls as oauth2_urls
 
 from core import views
-from core.views.homepage import index, oauth_complete
+from core.views.homepage import index
 
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
@@ -26,6 +27,7 @@ urlpatterns = [
     path('health_check/', include('health_check.urls')),
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
+    path('oauth/login/', views.LoginView.as_view()),
 ]
 
 urlpatterns += staticfiles_urlpatterns() + router.urls

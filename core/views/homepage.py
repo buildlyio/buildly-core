@@ -1,5 +1,7 @@
-
+from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.template import RequestContext
 from social_core.exceptions import AuthFailed
 from social_core.utils import (partial_pipeline_data, setting_url,
                                user_is_active, user_is_authenticated)
@@ -16,6 +18,7 @@ def index(request):
 
     # Render the HTML template index.html with the data in the context variable
     return render(request, 'index.html')
+
 
 @never_cache
 @csrf_exempt
@@ -84,6 +87,6 @@ ERROR TEMPLATES and views
 def handler404(request, exception):
     context = RequestContext(request)
     err_code = f'404: {exception}'
-    response = render_to_response('404.html', {"code": err_code}, context)
+    response = render('404.html', {"code": err_code}, context)
     response.status_code = 404
     return response

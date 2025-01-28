@@ -81,6 +81,7 @@ class Industry(models.Model):
     def __str__(self):
         return self.name
 
+
 class OrganizationType(models.Model):
     """
     Allows organization to be of multiple types.
@@ -101,6 +102,7 @@ class OrganizationType(models.Model):
 
     def __str__(self):
         return str(self.name)
+
 
 class Organization(models.Model):
     """
@@ -139,16 +141,15 @@ class Organization(models.Model):
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
     oauth_domains = models.CharField("OAuth Domains", max_length=255, null=True, blank=True)
-    
+
     date_format = models.CharField(
         "Date Format", max_length=50, blank=True, default="DD.MM.YYYY"
     )
     phone = models.CharField(max_length=20, blank=True, null=True)
     allow_import_export = models.BooleanField('To allow import export functionality', default=False)
-    radius = models.FloatField(max_length=20, blank=True, null=True, default = 0.0)
-    organization_type = models.ForeignKey(OrganizationType,on_delete=models.CASCADE,null=True)
+    radius = models.FloatField(max_length=20, blank=True, null=True, default=0.0)
+    organization_type = models.ForeignKey(OrganizationType, on_delete=models.CASCADE, null=True)
     stripe_subscription_details = JSONField(blank=True, null=True)
-
 
     class Meta:
         ordering = ('name',)
@@ -267,12 +268,13 @@ class CoreUser(AbstractUser):
     edit_date = models.DateTimeField(null=True, blank=True)
     email_preferences = JSONField(blank=True, null=True)
     push_preferences = JSONField(blank=True, null=True)
-    user_timezone = models.CharField(blank=True,null=True,max_length=255)
-    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
+    user_timezone = models.CharField(blank=True, null=True, max_length=255)
+    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES,
+                                 default='Product Team')
     survey_status = models.BooleanField(default=False)
 
     REQUIRED_FIELDS = []
-    
+
     class Meta:
         ordering = ('first_name',)
 
@@ -392,7 +394,8 @@ class Consortium(models.Model):
     The consortium instance. Allows sharing of data between 2 or more organizations
     """
     consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
-    name = models.CharField("Consortium Name", max_length=255, blank=True, help_text="Multiple organizations form a consortium together")
+    name = models.CharField("Consortium Name", max_length=255, blank=True,
+                            help_text="Multiple organizations form a consortium together")
     organization_uuids = models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
