@@ -118,4 +118,4 @@ class Command(BaseCommand):
         self._create_organization_types()
         self._create_default_organization()
         self._create_user()
-        self._create_oauth_application()
+        # self._create_oauth_application()
