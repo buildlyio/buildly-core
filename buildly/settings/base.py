@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
-ALLOWED_HOSTS = ["http://localhost:8000","127.0.0.1"]
+ALLOWED_HOSTS = ["http://localhost:8000", "127.0.0.1"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Application definition
@@ -18,7 +18,6 @@ STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-
 
 INSTALLED_APPS_DJANGO = [
     'django.contrib.admin',
@@ -46,7 +45,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
 INSTALLED_APPS_LOCAL = ['buildly', 'gateway', 'core', 'datamesh']
 
 INSTALLED_APPS = (
-    INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
+        INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
 )
 
 MIDDLEWARE_DJANGO = [
@@ -104,18 +103,15 @@ USE_L10N = False
 
 USE_TZ = True
 
-
 # Sites
 # https://docs.djangoproject.com/en/1.11/ref/contrib/sites/
 
 SITE_ID = 1
 
-
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 if os.getenv('USE_HTTPS') == 'True':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # Rest Framework
 REST_FRAMEWORK = {
@@ -137,7 +133,7 @@ REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
 RESETPASS_CONFIRM_URL_PATH = os.getenv(
     'RESETPASS_CONFIRM_URL_PATH', 'reset_password_confirm/'
 )
-
+VERIFY_EMAIL_URL_PATH = os.getenv('VERIFY_EMAIL_URL_PATH', 'verify-email/')
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 
 INVITATION_EXPIRE_HOURS = 24
