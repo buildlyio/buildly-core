@@ -11,7 +11,7 @@ import jwt
 from datetime import datetime, timedelta
 
 
-def encode_jwt(payload, secret=settings.SECRET_KEY, algorithm='HS256'):
+def encode_jwt(payload, secret=settings.TOKEN_SECRET_KEY, algorithm='HS256'):
     return jwt.encode(payload, secret, algorithm=algorithm)
 
 

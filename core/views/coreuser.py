@@ -155,7 +155,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             return Response({'detail': 'No token is provided.'},
                             status.HTTP_401_UNAUTHORIZED)
         try:
-            decoded = jwt.decode(token, settings.SECRET_KEY,
+            decoded = jwt.decode(token, settings.TOKEN_SECRET_KEY,
                                  algorithms='HS256')
         except jwt.DecodeError:
             return Response({'detail': 'Token is not valid.'},
