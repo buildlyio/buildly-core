@@ -59,6 +59,7 @@ services:
       SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "https://localhost:8000/complete/microsoft-graph"
       ACCESS_TOKEN_EXPIRE_SECONDS: "86400"
       SECRET_KEY: "ek*)b=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wv#_k"
+      TOKEN_SECRET_KEY: "ek*)b=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wv#_k"
       OAUTH_CLIENT_ID: "wkXLlC9h3k0jxIx7oLllxpFVU89Dxgi7O8FYZyfX"
       OAUTH_CLIENT_SECRET: "KiKRft8MajLabQId7pjSsa3OfvJAXN9NENi0tVRTX3Vbthr6iClEDZZtbyGuD9M8UbKpK2E8R4xJYUolZxg1nVa1iZwhQPi5ionOKdpIs4de2bmUaZ0qWi4MdBmdwDvF"
       USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR: "True"
