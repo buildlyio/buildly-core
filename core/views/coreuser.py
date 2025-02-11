@@ -430,7 +430,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         if user:
             # send email verification link
-            EmailVerificationToken().send_verification_email(user)
+            EmailVerificationToken().send_verification_email(request, user)
             return Response(
                 {'success': True, 'message': 'Verification email sent successfully'},
                 status=status.HTTP_200_OK
