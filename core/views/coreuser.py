@@ -356,8 +356,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         """
         This endpoint is used to verify the email address.
         """
-        token = request.queryparams.get('token')
-
+        token = request.data.get('token')
         # decode token
         user_uuid = EmailVerificationToken().extract_user_id_from_token(token)
         if user_uuid:

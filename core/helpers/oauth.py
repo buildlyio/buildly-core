@@ -102,7 +102,7 @@ class EmailVerificationToken:
         # create or update an invitation
         reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)
         token = self.generate_email_verification_token(core_user)
-        reg_location = f'{reg_location}{token}'
+        reg_location = f'{reg_location}?token={token}'
 
         # build the invitation link
         verification_link = request.build_absolute_uri(reg_location)
