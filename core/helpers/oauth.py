@@ -96,7 +96,10 @@ class EmailVerificationToken:
             return None
 
         # Try loading token with expiration enforcement
-        return self.token_serializer.loads(token, max_age=None)
+        try:
+            return self.token_serializer.loads(token, max_age=None)
+        except itsdangerous.BadSignature:
+            raise self.InvalidTokenException()
 
     def send_verification_email(self, request, core_user: CoreUser):
         # create or update an invitation

@@ -335,7 +335,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             for user in core_users:
                 email_address = user.email
                 send_email(email_address, subject, context, template_name, html_template_name)
-        except Exception as e: # noqa
+        except Exception as e:  # noqa
             pass
 
         return Response(
@@ -347,7 +347,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         methods=['post'],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            properties={'token': openapi.Schema(type=openapi.TYPE_STRING),}
+            properties={'token': openapi.Schema(type=openapi.TYPE_STRING), }
         ),
         responses=SUCCESS_RESPONSE
     )
@@ -358,7 +358,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         """
         token = request.data.get('token')
         # decode token
-        user_uuid = EmailVerificationToken().extract_user_id_from_token(token)
+        try:
+            user_uuid = EmailVerificationToken().extract_user_id_from_token(token)
+        except EmailVerificationToken.InvalidTokenException:
+            user_uuid = None
+
         if user_uuid:
             user = CoreUser.objects.get(core_user_uuid=user_uuid)
 
@@ -391,10 +395,10 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             except EmailVerificationToken.InvalidTokenException as e:
                 pass
 
-            return Response(
-                {'success': False, 'code': 'invalid_token', 'message': 'Invalid token'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            {'success': False, 'code': 'invalid_token', 'message': 'Invalid token'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @swagger_auto_schema(
         methods=['post'],
@@ -413,16 +417,18 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         """
         # get token from the request
         email = request.data.get('email')
-
-        user_uuid = EmailVerificationToken().extract_user_id_from_token(request.data.get('token'))
         user = None
+
         try:
+            user_uuid = EmailVerificationToken().extract_user_id_from_token(request.data.get('token'))
             if user_uuid:
                 user = CoreUser.objects.get(core_user_uuid=user_uuid)
             elif email:
                 user = CoreUser.objects.get(email=email)
 
         except CoreUser.DoesNotExist:
+            pass
+        except EmailVerificationToken.InvalidTokenException:
             pass
 
         if user:
