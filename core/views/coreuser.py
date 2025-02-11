@@ -358,7 +358,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         token = request.data.get('token')
 
         # decode token
-        user_uuid = EmailVerificationToken.extract_user_id_from_token(token)
+        user_uuid = EmailVerificationToken().extract_user_id_from_token(token)
+        print('User UUID: ', user_uuid)
         if user_uuid:
             user = CoreUser.objects.get(core_user_uuid=user_uuid)
 
@@ -376,6 +377,11 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 # activate the user
                 user.is_active = True
                 user.save()
+
+                return Response(
+                    {'success': True, 'message': 'Email verified successfully'},
+                    status=status.HTTP_200_OK
+                )
 
             except EmailVerificationToken.TokenExpiredException as e:
                 print(e)

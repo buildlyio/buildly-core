@@ -62,7 +62,7 @@ class EmailVerificationToken:
     # Create a serializer for signing the token
     token_serializer = itsdangerous.URLSafeTimedSerializer(settings.SECRET_KEY)
 
-    EMAIL_VERIFICATION_EXPIRATION = timedelta(hours=settings.EMAIL_VERIFICATION_EXPIRATION)  # Change this as needed
+    EMAIL_VERIFICATION_EXPIRATION = timedelta(hours=settings.EMAIL_VERIFICATION_EXPIRATION)
     MAX_AGE_SECONDS = int(EMAIL_VERIFICATION_EXPIRATION.total_seconds())
 
     def generate_email_verification_token(self, user: CoreUser):
