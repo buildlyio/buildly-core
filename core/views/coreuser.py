@@ -335,8 +335,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             for user in core_users:
                 email_address = user.email
                 send_email(email_address, subject, context, template_name, html_template_name)
-        except Exception as ex:
-            print('Exception: ', ex)
+        except Exception as e: # noqa
+            pass
+
         return Response(
             {
                 'detail': 'The notification were sent successfully on email.',
@@ -359,7 +360,6 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         # decode token
         user_uuid = EmailVerificationToken().extract_user_id_from_token(token)
-        print('User UUID: ', user_uuid)
         if user_uuid:
             user = CoreUser.objects.get(core_user_uuid=user_uuid)
 
@@ -384,14 +384,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 )
 
             except EmailVerificationToken.TokenExpiredException as e:
-                print(e)
                 return Response(
                     {'success': False, 'code': e.code, 'message': e.message},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
             except EmailVerificationToken.InvalidTokenException as e:
-                print(e)
                 pass
 
             return Response(
