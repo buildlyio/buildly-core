@@ -33,13 +33,13 @@ These instructions will get you a copy of the project up and running on your loc
 Build first the image:
 
 ```bash
-docker-compose build # --no-cache to force dependencies installation
+docker compose build # --no-cache to force dependencies installation
 ```
 
 To run the webserver (go to 127.0.0.1:8080):
 
 ```bash
-docker-compose up # -d for detached
+docker compose up # -d for detached
 ```
 
 User: `admin`
@@ -48,7 +48,7 @@ Password: `admin`.
 To run the webserver with pdb support:
 
 ```bash
-docker-compose run --rm --service-ports buildly
+docker compose run --rm --service-ports buildly
 ```
 
 ## Running the tests
@@ -56,13 +56,13 @@ docker-compose run --rm --service-ports buildly
 To run the tests without flake8:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
+docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
 ```
 
 To run the tests like if it was CI with flake8:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
+docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
 ```
 
 See `pytest --help` for more options.

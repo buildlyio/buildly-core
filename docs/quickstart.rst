@@ -24,13 +24,13 @@ Make sure you have docker up and running then build the image:
 
 .. code-block:: bash
    
-   docker-compose build # --no-cache to force dependencies installation
+   docker compose build # --no-cache to force dependencies installation
 
 Next run the web server: 
 
 .. code-block:: bash
    
-   docker-compose up # -d for detached
+   docker compose up # -d for detached
 
 Access the web server at http://127.0.0.1:8080
 
@@ -41,7 +41,7 @@ To run the web server with Python debugger support:
 
 .. code-block:: bash
    
-   docker-compose run --rm --service-ports buildly
+   docker compose run --rm --service-ports buildly
 
 Configuring the API authentication
 --------------------------------
@@ -70,13 +70,13 @@ To run the tests (without flake8) and have Python debugger open on error:
 
 .. code-block:: bash
    
-   docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb 
+   docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
 
 To run the tests with flake8:
 
 .. code-block:: bash
    
-   docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
+   docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
 
 For more tesing options enter:
 
