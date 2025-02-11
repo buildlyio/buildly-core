@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 import itsdangerous
@@ -62,6 +62,9 @@ class EmailVerificationToken:
     # Create a serializer for signing the token
     token_serializer = itsdangerous.URLSafeTimedSerializer(settings.SECRET_KEY)
 
+    EMAIL_VERIFICATION_EXPIRATION = timedelta(hours=settings.EMAIL_VERIFICATION_EXPIRATION)  # Change this as needed
+    MAX_AGE_SECONDS = int(EMAIL_VERIFICATION_EXPIRATION.total_seconds())
+
     def generate_email_verification_token(self, user: CoreUser):
         """
         Generates a secure, time-limited token containing the user's ID.
@@ -75,7 +78,7 @@ class EmailVerificationToken:
         try:
             user_id = self.token_serializer.loads(
                 token,
-                max_age=int(settings.EMAIL_VERIFICATION_TOKEN_EXPIRATION)
+                max_age=self.MAX_AGE_SECONDS
             )
             return user_id
 
