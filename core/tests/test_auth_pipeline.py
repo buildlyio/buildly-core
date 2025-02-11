@@ -32,7 +32,8 @@ class OAuthTest(TestCase):
     def setUp(self):
         logging.disable(logging.WARNING)
         self.core_user = factories.CoreUser()
-        self.org = factories.Organization(organization_uuid='12345')
+        self.core_user.save()
+        self.org = factories.Organization(organization_uuid='653d3ea7-fc43-465d-8f36-be1678c8b7f8')
         self.app = factories.Application(user=self.core_user)
 
     def tearDown(self):

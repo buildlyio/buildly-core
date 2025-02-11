@@ -1,5 +1,6 @@
 import datetime
-from factory import DjangoModelFactory, Faker, SubFactory, post_generation
+from factory.django import DjangoModelFactory
+from factory import SubFactory, Faker, post_generation
 
 from oauth2_provider.models import (
     Application as ApplicationM,

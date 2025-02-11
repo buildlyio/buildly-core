@@ -289,13 +289,9 @@ class TestResetPassword(object):
         email = org_member.email
         assert list(org_member.organization.emailtemplate_set.all()) == []
         # assert list(Organization.objects.filter(name=settings.DEFAULT_ORG)) == [] -- Removed this assertion to support organization name here
-<<<<<<< HEAD
         request = request_factory.post(
             reverse('coreuser-reset-password'), {'email': email}
         )
-=======
-        request = request_factory.post(reverse('coreuser-reset-password'), {'email': email})
->>>>>>> master
         response = CoreUserViewSet.as_view({'post': 'reset_password'})(request)
         assert response.status_code == 200
         assert response.data['count'] == 1

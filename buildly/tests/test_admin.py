@@ -46,6 +46,7 @@ class AdminViewTest(TestCase):
 
         url = '/admin/core/coreuser/{}/change/'.format(another_user.pk)
         response = self.client.get(url)
+        print('Resp::: ', response)
         self.assertContains(response, 'User permissions')
 
     def test_admin_user_permissions_section_with_staff_user(self):

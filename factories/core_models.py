@@ -1,5 +1,6 @@
 from django.template.defaultfilters import slugify
-from factory import DjangoModelFactory, SubFactory, Faker, lazy_attribute
+from factory.django import DjangoModelFactory
+from factory import SubFactory, lazy_attribute, Faker
 
 from core.models import (
     CoreUser as CoreUserM,

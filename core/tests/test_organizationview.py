@@ -22,6 +22,7 @@ class OrganizationListViewTest(TestCase):
 
     def test_list_organization_normaluser_one_result(self):
         self.request.user = factories.CoreUser()
+        self.request.user.save()
         view = OrganizationViewSet.as_view({'get': 'list'})
         response = view(self.request)
         self.assertEqual(response.status_code, 200)

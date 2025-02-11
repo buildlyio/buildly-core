@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.conf import settings
 
 from core.models import CoreSites, Organization
@@ -86,6 +86,7 @@ def auth_allowed(backend, details, response, *args, **kwargs):
                 )
 
     if not allowed:
-        return render_to_response(
-            'unauthorized.html', context={'STATIC_URL': static_url}
+        return render(
+            'unauthorized.html',
+            context={'STATIC_URL': static_url}
         )

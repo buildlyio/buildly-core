@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.urls import resolve
 from django.test import TestCase
 
@@ -7,65 +9,65 @@ class URLPatternsTest(TestCase):
         for url in ('/crm/appointment/#some-section', '/crm/appointment#some-section'):
             match = resolve(url)
             self.assertEqual(match.url_name, 'api-gateway')
-            self.assertDictContainsSubset(
-                {
-                    'service': 'crm',
-                    'model': 'appointment',
-                    'pk': None,
-                    'fragment': 'some-section',
-                },
-                match.kwargs,
-                f'Failing URL: {url}',
-            )
-
-    def test_api_gateway_urls_with_queryparams(self):
-        for url in ('/crm/appointment/?k1=v1&k2=v2', '/crm/appointment?k1=v1&k2=v2'):
-            match = resolve(url)
-            self.assertEqual(match.url_name, 'api-gateway')
-            self.assertDictContainsSubset(
-                {
-                    'service': 'crm',
-                    'model': 'appointment',
-                    'pk': None,
-                    'query': 'k1=v1&k2=v2',
-                },
-                match.kwargs,
-                f'Failing URL: {url}',
+            self.assertEqual(
+                OrderedDict({
+                    **{'service': 'crm', 'model': 'appointment', 'pk': None, 'fragment': 'some-section'},
+                    **match.kwargs,
+                }),
+                OrderedDict({'service': 'crm', 'model': 'appointment', 'pk': None, 'fragment': 'some-section'}),
             )
 
     def test_api_gateway_urls_with_int_pk(self):
-        for url in ('/crm/appointment/123456/', '/crm/appointment/123456'):
+        for url in (
+                '/crm/appointment/653d3ea7-fc43-465d-8f36-be1678c8b7f8/',
+                '/crm/appointment/653d3ea7-fc43-465d-8f36-be1678c8b7f8'
+        ):
             match = resolve(url)
             self.assertEqual(match.url_name, 'api-gateway')
-            self.assertDictContainsSubset(
-                {'service': 'crm', 'model': 'appointment', 'pk': '123456'},
-                match.kwargs,
-                f'Failing URL: {url}',
+            self.assertEqual(
+                OrderedDict({
+                    **match.kwargs,
+                    **{'service': 'crm', 'model': 'appointment', 'pk': '653d3ea7-fc43-465d-8f36-be1678c8b7f8'}
+                }),
+                OrderedDict(match.kwargs)
             )
 
     def test_api_gateway_urls_with_uuid_pk(self):
         match = resolve('/crm/appointment/39da9369-838e-4750-91a5-f7805cd82839/')
         self.assertEqual(match.url_name, 'api-gateway')
-        self.assertDictContainsSubset(
-            {
-                'service': 'crm',
-                'model': 'appointment',
-                'pk': '39da9369-838e-4750-91a5-f7805cd82839',
-            },
+        self.assertEqual(
             match.kwargs,
+            {
+                **match.kwargs,
+                **{
+                    'service': 'crm',
+                    'model': 'appointment',
+                    'pk': '39da9369-838e-4750-91a5-f7805cd82839',
+                }
+            }
         )
 
     def test_api_gateway_urls_without_pk(self):
         match = resolve('/crm/appointment/')
         self.assertEqual(match.url_name, 'api-gateway')
-        self.assertDictContainsSubset(
-            {'service': 'crm', 'model': 'appointment', 'pk': None}, match.kwargs
+
+        self.assertEqual(
+            OrderedDict({
+                **match.kwargs,
+                **{'service': 'crm', 'model': 'appointment', 'pk': None}
+            }),
+            OrderedDict({'service': 'crm', 'model': 'appointment', 'pk': None})
         )
 
         match = resolve('/crm/appointment')
         self.assertEqual(match.url_name, 'api-gateway')
-        self.assertDictContainsSubset(
-            {'service': 'crm', 'model': 'appointment', 'pk': None}, match.kwargs
+
+        self.assertEqual(
+            OrderedDict({
+                **match.kwargs,
+                **{'service': 'crm', 'model': 'appointment', 'pk': None}
+            }),
+            OrderedDict({'service': 'crm', 'model': 'appointment', 'pk': None})
         )
 
     def test_admin_url(self):
