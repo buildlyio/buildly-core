@@ -151,6 +151,7 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
 
 ORGANIZATION_TYPES = ['Custodian', 'Producer']
+EMAIL_VERIFICATION_EXPIRATION = os.getenv('EMAIL_VERIFICATION_EXPIRATION', 12)
 
 try:
     from .local import *

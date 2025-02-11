@@ -14,6 +14,7 @@ from rest_framework import serializers
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 
 from core.email_utils import send_email, send_email_body
+from core.helpers.oauth import EmailVerificationToken
 
 from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
     TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, OrganizationType, Consortium
@@ -208,34 +209,11 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             )
             coreuser.core_groups.add(group_org_admin)
 
-            if coupon_code or referral_code:
-                coupon = self.handle_coupon(coupon_code or referral_code, is_referral=bool(referral_code))
-                if coupon:
-                    organization.coupon = coupon
-                    organization.save(update_fields=['coupon'])
-
         # add requested groups to the user
         coreuser.core_groups.add(*core_groups)
 
         # create or update an invitation
-        reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)
-        reg_location = reg_location + '{}'
-        token = urlsafe_base64_encode(force_bytes(coreuser.core_user_uuid))
-
-        # build the invitation link
-        verification_link = self.context['request'].build_absolute_uri(
-            reg_location.format(token)
-        )
-
-        # create the user context for the E-mail templates
-        context = {
-            'verification_link': verification_link,
-            'user': coreuser,
-        }
-        subject = 'Account verification required'  # TODO we need to make this dynamic
-        template_name = 'email/coreuser/email_verification.txt'
-        html_template_name = 'email/coreuser/email_verification.html'
-        send_email(coreuser.email, subject, context, template_name, html_template_name)
+        EmailVerificationToken().send_verification_email(self.context['request'], coreuser)
 
         return coreuser
 
@@ -550,26 +528,6 @@ class PartnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Partner
         fields = '__all__'
-
-
-class CoreUserVerifyEmailSerializer(serializers.Serializer):
-    """Serializer for checking token for resetting password
-    """
-    token = serializers.CharField()
-
-    def validate(self, attrs):
-        # Decode the uuid64 to uid to get User object
-        try:
-            uid = force_str(urlsafe_base64_decode(attrs['token']))
-            user = CoreUser.objects.filter(core_user_uuid=uid).first()
-            if user:
-                user.is_active = True
-                user.save()
-
-        except (TypeError, ValueError, OverflowError, CoreUser.DoesNotExist):
-            raise serializers.ValidationError({'token': ['Invalid value']})
-
-        return attrs
 
 
 class OrganizationTypeSerializer(serializers.ModelSerializer):

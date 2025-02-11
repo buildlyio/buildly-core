@@ -60,6 +60,7 @@ LOGGING = {
 HUBSPOT_API_KEY = ""
 
 SECRET_KEY = "asdfe32fasdf343fasdff32234@##wa45tfgsdfg343"
+TOKEN_SECRET_KEY = os.getenv("TOKEN_SECRET_KEY")
 
 try:
     from .local import *
