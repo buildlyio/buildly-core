@@ -62,7 +62,6 @@ done
 
 set -o xtrace  # shows what's being executed
 
-apk add git
 pip install -r requirements/test.txt
 
 if [ "$ci" = true ] ; then
