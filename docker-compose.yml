@@ -1,10 +1,10 @@
-version: "3.1"
+version: "3.8"
 
 services:
 
   postgres_buildly:
     container_name: postgres_buildly
-    image: postgres:18
+    image: postgres:13
     environment:
       POSTGRES_DB: buildly
       POSTGRES_USER: root
