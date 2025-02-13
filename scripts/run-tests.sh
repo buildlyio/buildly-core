@@ -84,11 +84,7 @@ if [ "$ci" = true ] ; then
     fi
     coverage report -m
 else
-    if [ "$keepdb" = true ] ; then
-        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb --reuse-db
-    else
-        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb
-    fi
+    pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb
     if [ $? -eq 1 ] && [ "$bash_on_finish" = true ]; then
         bash_on_failure
     fi
