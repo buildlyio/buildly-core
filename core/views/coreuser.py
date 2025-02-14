@@ -211,10 +211,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         return links
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordSerializer,
-                         responses=COREUSER_RESETPASS_RESPONSE)
-    @action(methods=['POST'], detail=False)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordSerializer,
+        responses=COREUSER_RESETPASS_RESPONSE
+    )
+    @action(methods=['POST'], detail=False, url_path='reset-password')
     def reset_password(self, request, *args, **kwargs):
         """
         This endpoint is used to request password resetting.
@@ -230,10 +232,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordCheckSerializer,
-                         responses=SUCCESS_RESPONSE)
-    @action(methods=['POST'], detail=False)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordCheckSerializer,
+        responses=SUCCESS_RESPONSE
+    )
+    @action(methods=['POST'], detail=False, url_path='reset-password-check')
     def reset_password_check(self, request, *args, **kwargs):
         """
         This endpoint is used to check that token is valid.
@@ -245,10 +249,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordConfirmSerializer,
-                         responses=DETAIL_RESPONSE)
-    @action(methods=['POST'], detail=False)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordConfirmSerializer,
+        responses=DETAIL_RESPONSE
+    )
+    @action(methods=['POST'], detail=False, url_path='reset-password-confirm')
     def reset_password_confirm(self, request, *args, **kwargs):
         """
         This endpoint is used to change password if the token is valid

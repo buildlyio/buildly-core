@@ -270,7 +270,6 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        resetpass_url = resetpass_url + '{uid}/{token}/'
 
         email = self.validated_data["email"]
 
@@ -279,7 +278,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             context = {
-                'password_reset_link': resetpass_url.format(uid=uid, token=token),
+                'password_reset_link': f'{resetpass_url}{uid}/{token}/',
                 'user': user,
             }
 
