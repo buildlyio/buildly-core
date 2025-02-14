@@ -62,8 +62,7 @@ done
 
 set -o xtrace  # shows what's being executed
 
-apk add git
-pip install -r requirements/test.txt
+pip install -r requirements-dev.txt
 
 if [ "$ci" = true ] ; then
     flake8 .
@@ -85,11 +84,7 @@ if [ "$ci" = true ] ; then
     fi
     coverage report -m
 else
-    if [ "$keepdb" = true ] ; then
-        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb --reuse-db
-    else
-        pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb
-    fi
+    pytest --log-level=2 --pdb --pdbcls=IPython.terminal.debugger:Pdb
     if [ $? -eq 1 ] && [ "$bash_on_finish" = true ]; then
         bash_on_failure
     fi
