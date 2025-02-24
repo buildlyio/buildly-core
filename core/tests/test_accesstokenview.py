@@ -1,3 +1,6 @@
+import django
+django.setup()
+
 import datetime
 import pytest
 import secrets
