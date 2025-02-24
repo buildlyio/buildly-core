@@ -482,30 +482,8 @@ class TestResetPassword(object):
 @pytest.mark.django_db()
 class TestCoreUserRead(object):
 
-<<<<<<< HEAD
-    keys = {
-        'id',
-        'core_user_uuid',
-        'first_name',
-        'last_name',
-        'email',
-        'username',
-        'is_active',
-        'title',
-        'contact_info',
-        'privacy_disclaimer_accepted',
-        'organization',
-        'core_groups',
-        'email_preferences',
-        'push_preferences',
-        'user_timezone',
-        'survey_status',
-    }
-
-=======
     keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
             'contact_info','privacy_disclaimer_accepted', 'organization', 'core_groups', 'email_preferences', 'push_preferences', 'user_timezone','user_type', 'survey_status'}
->>>>>>> master
     def test_coreuser_list(self, request_factory, org_member):
         factories.CoreUser.create(
             organization=org_member.organization, username='another_user'
