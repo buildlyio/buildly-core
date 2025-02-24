@@ -5,7 +5,7 @@ django-health-check~=3.18.3
 djangorestframework-simplejwt~=5.4.0
 djangorestframework~=3.15.0
 psycopg==3.2.4
-social-auth-app-django>=5.4.1
+social-auth-app-django
 futures==3.1.1
 pyswagger==0.8.39
 bravado-core==5.13.1
