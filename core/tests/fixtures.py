@@ -68,13 +68,13 @@ def reset_password_request(org_member):
 @pytest.fixture
 def auth_api_client():
     api_client = APIClient()
-    api_client.force_authenticate(user=factories.CoreUser.create())
+    api_client.force_authenticate(user=factories.CoreUser())
     return api_client
 
 @pytest.fixture
 def auth_superuser_api_client():
     api_client = APIClient()
-    api_client.force_authenticate(user=factories.CoreSuperUser.create())
+    api_client.force_authenticate(user=factories.CoreSuperUser())
     return api_client
 
 
