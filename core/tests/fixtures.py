@@ -23,6 +23,11 @@ TEST_USER_DATA = {
 
 
 @pytest.fixture
+def superuser():
+    return factories.CoreUser.asave(is_superuser=True)
+
+
+@pytest.fixture
 def org():
     return factories.Organization(
         name=TEST_USER_DATA['organization_name'],
