@@ -17,14 +17,13 @@ TEST_USER_DATA = {
     'password': '123qwe',
     'organization_name': 'buidly',
     'organization_uuid': uuid.uuid4(),
-    # 'organization': settings.DEFAULT_ORG, # Tweaked this to support organization name from front end
     'organization_name': settings.DEFAULT_ORG,
 }
 
 
 @pytest.fixture
 def superuser():
-    return factories.CoreUser.create(is_superuser=True)
+    return factories.CoreUser(is_superuser=True)
 
 
 @pytest.fixture
@@ -37,7 +36,7 @@ def org():
 
 @pytest.fixture
 def org_member(org):
-    return factories.CoreUser.create(organization=org)
+    return factories.CoreUser(organization=org)
 
 
 @pytest.fixture
@@ -68,14 +67,13 @@ def reset_password_request(org_member):
 @pytest.fixture
 def auth_api_client():
     api_client = APIClient()
-    api_client.force_authenticate(user=factories.CoreUser.create())
+    api_client.force_authenticate(user=factories.CoreUser())
     return api_client
 
-
 @pytest.fixture
-def auth_superuser_api_client(superuser):
+def auth_superuser_api_client():
     api_client = APIClient()
-    api_client.force_authenticate(user=superuser)
+    api_client.force_authenticate(user=factories.CoreSuperUser())
     return api_client
 
 

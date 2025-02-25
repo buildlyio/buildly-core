@@ -23,7 +23,10 @@ Application = get_application_model()
 class JWTUtilsTest(TestCase):
     def setUp(self) -> None:
         self.rf = RequestFactory()
+        self.organization = factories.Organization.create()
         self.core_user = factories.CoreUser()
+        self.core_user.organization = self.organization
+        self.core_user.save()
 
         # for testing refresh token
         application = Application(

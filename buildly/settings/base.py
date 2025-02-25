@@ -3,13 +3,11 @@ import os
 # Base dir path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-SECRET_KEY = os.environ['SECRET_KEY']
-
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
-ALLOWED_HOSTS = ["http://localhost:8000",]
+ALLOWED_HOSTS = ["http://localhost:8000", "127.0.0.1"]
 
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Application definition
 
 # Static files (CSS, JavaScript, Images)
@@ -21,7 +19,6 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-
 INSTALLED_APPS_DJANGO = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -29,7 +26,6 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    'django.contrib.postgres',
     'django.contrib.staticfiles',
 ]
 
@@ -37,8 +33,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
-    # Social auth
-    'social_django',
     # OAuth2
     'oauth2_provider',
     # swagger
@@ -48,10 +42,10 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'health_check.db',  # stock Django health checkers
 ]
 
-INSTALLED_APPS_LOCAL = ['buildly', 'gateway', 'core', 'workflow', 'datamesh']
+INSTALLED_APPS_LOCAL = ['buildly', 'gateway', 'core', 'datamesh']
 
 INSTALLED_APPS = (
-    INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
+        INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + INSTALLED_APPS_LOCAL
 )
 
 MIDDLEWARE_DJANGO = [
@@ -84,8 +78,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
             'builtins': [  # TODO to delete?
                 'django.templatetags.static'
@@ -95,22 +87,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'buildly.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.{}'.format(os.environ['DATABASE_ENGINE']),
-        'NAME': os.environ['DATABASE_NAME'],
-        'USER': os.environ['DATABASE_USER'],
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.environ['DATABASE_PORT'],
-    }
-}
-
 
 AUTH_USER_MODEL = 'core.CoreUser'
 
@@ -127,31 +103,23 @@ USE_L10N = False
 
 USE_TZ = True
 
-
 # Sites
 # https://docs.djangoproject.com/en/1.11/ref/contrib/sites/
 
 SITE_ID = 1
-
-
-# NGINX and HTTPS
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-USE_X_FORWARDED_HOST
-
-USE_X_FORWARDED_HOST = True if os.getenv('USE_X_FORWARDED_HOST') == 'True' else False
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 if os.getenv('USE_HTTPS') == 'True':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-
 # Rest Framework
 REST_FRAMEWORK = {
     'PAGINATE_BY': 10,
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',  # TODO check if disable, and also delete CSRF
+        'core.helpers.oauth.CustomJWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': ('core.permissions.IsSuperUserBrowseableAPI',)
@@ -165,7 +133,7 @@ REGISTRATION_URL_PATH = os.getenv('REGISTRATION_URL_PATH', 'register/')
 RESETPASS_CONFIRM_URL_PATH = os.getenv(
     'RESETPASS_CONFIRM_URL_PATH', 'reset_password_confirm/'
 )
-
+VERIFY_EMAIL_URL_PATH = os.getenv('VERIFY_EMAIL_URL_PATH', 'verify-email/')
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 
 INVITATION_EXPIRE_HOURS = 24
@@ -183,3 +151,10 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
 
 ORGANIZATION_TYPES = ['Custodian', 'Producer']
+
+EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 12))
+
+try:
+    from .local import *
+except (ImportError, ModuleNotFoundError):
+    pass

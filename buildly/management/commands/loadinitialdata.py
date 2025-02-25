@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import Group
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -7,6 +8,8 @@ from django.db import transaction
 
 from core.models import ROLE_VIEW_ONLY, ROLE_ORGANIZATION_ADMIN, ROLE_WORKFLOW_ADMIN, ROLE_WORKFLOW_TEAM, \
     Organization, CoreUser, CoreGroup, OrganizationType
+
+from oauth2_provider.models import Application
 
 logger = logging.getLogger(__name__)
 
@@ -79,9 +82,40 @@ class Command(BaseCommand):
                 )
                 su.core_groups.add(self._su_group)
 
+    def _create_oauth_application(self):
+        updated = False
+        if settings.OAUTH_CLIENT_ID and settings.OAUTH_CLIENT_SECRET:
+            try:
+                app = Application.objects.get(client_id=settings.OAUTH_CLIENT_ID)
+
+                if app.hash_client_secret:
+                    # verify that the client secret is the same
+                    if not check_password(app.hash_client_secret, settings.OAUTH_CLIENT_SECRET):
+                        app.client_secret = settings.OAUTH_CLIENT_SECRET
+                        app.save()
+                        updated = True
+                else:
+                    # check if the client secret is the same
+                    if app.client_secret != settings.OAUTH_CLIENT_SECRET:
+                        app.client_secret = settings.OAUTH_CLIENT_SECRET
+                        app.save()
+                        updated = True
+            except Application.DoesNotExist:
+                app = None
+
+            if not app or updated:
+                _, _ = Application.objects.update_or_create(
+                    client_id=settings.OAUTH_CLIENT_ID,
+                    client_secret=settings.OAUTH_CLIENT_SECRET,
+                    name='buildly oauth2',
+                    client_type=Application.CLIENT_PUBLIC,
+                    authorization_grant_type=Application.GRANT_PASSWORD,
+                )
+
     @transaction.atomic
     def handle(self, *args, **options):
         self._create_groups()
         self._create_organization_types()
         self._create_default_organization()
         self._create_user()
+        # self._create_oauth_application()

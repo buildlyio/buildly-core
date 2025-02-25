@@ -11,10 +11,4 @@
     "organization_uuid": null,
     "user_uuid": null,
     "contact_uuid": "063632ab-d23f-463d-be92-3f5439313cdb",
-    "workflowlevel1_uuids": [
-        "5e105337-e445-4c37-91c1-9f7d96c8aa90"
-    ],
-    "workflowlevel2_uuids": [
-        "4fca75ec-ac90-49af-95f2-90b149e6d57a"
-    ]
 }

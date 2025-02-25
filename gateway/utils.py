@@ -10,8 +10,7 @@ import logging
 from django.db import models
 from rest_framework.request import Request
 
-from workflow import views as wfv
-from workflow import models as wfm
+
 
 from . import exceptions
 from core.models import CoreUser, LogicModule, Organization, OrganizationType, Consortium
@@ -21,14 +20,10 @@ SWAGGER_LOOKUP_FIELD = 'swagger'
 SWAGGER_LOOKUP_FORMAT = 'json'
 SWAGGER_LOOKUP_PATH = 'docs'
 MODEL_VIEWSETS_DICT = {
-    wfm.WorkflowTeam: wfv.WorkflowTeamViewSet,
-    wfm.WorkflowLevel2: wfv.WorkflowLevel2ViewSet,
-    wfm.WorkflowLevel1: wfv.WorkflowLevel1ViewSet,
     CoreUser: CoreUserViewSet,
     Organization: OrganizationViewSet,
     OrganizationType: OrganizationTypeViewSet,
     Consortium: ConsortiumViewSet,
-    wfm.WorkflowLevel2Sort: wfv.WorkflowLevel2SortViewSet,
 }
 
 

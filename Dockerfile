@@ -1,28 +1,30 @@
-FROM --platform=linux/amd64 python:3.7-alpine3.10
+FROM --platform=linux/amd64 python:3.11-slim
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Do not buffer log messages in memory; some messages can be lost otherwise
+ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN apk update
+COPY /requirements.txt /requirements.txt
 
 WORKDIR /code
 
-RUN apk add --no-cache postgresql-libs bash openldap-dev &&\
-    apk add --no-cache --virtual .build-deps git python-dev gcc musl-dev postgresql-dev libffi-dev libressl-dev
+RUN apt update \
+    && apt -y upgrade \
+    && apt install -y python3 python3-pip poppler-utils libsm6 libxext6 libxrender-dev postgresql netcat-traditional
 
-COPY ./requirements/base.txt requirements/base.txt
-COPY ./requirements/production.txt requirements/production.txt
-RUN pip install --upgrade pip && pip install -r requirements/production.txt --no-cache-dir
+# Install the project requirements.
+RUN pip install --upgrade pip
+RUN pip install -r /requirements.txt --no-cache-dir
 
 ADD . /code
 
 # Collecting static files
 RUN ./scripts/collectstatic.sh
 
-RUN apk del .build-deps
-
-# Specify tag name to be created on github
-LABEL version="1.0.10"
-
 EXPOSE 8080
 ENTRYPOINT ["bash", "/code/scripts/docker-entrypoint.sh"]
+
+# Specify tag name to be created on github
+LABEL version="1.0.0"

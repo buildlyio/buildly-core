@@ -1,6 +1,10 @@
 from django.urls import include, path, re_path
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 from rest_framework import routers
+from oauth2_provider import urls as oauth2_urls
+
 from core import views
 from core.views.homepage import index
 
@@ -13,11 +17,10 @@ router.register(r'coregroups', views.CoreGroupViewSet)
 router.register(r'coreuser', views.CoreUserViewSet)
 router.register(r'organization', views.OrganizationViewSet)
 router.register(r'logicmodule', views.LogicModuleViewSet)
-router.register(r'consortium', views.ConsortiumViewSet)
-router.register(r'organization_type', views.OrganizationTypeViewSet)
+router.register(r'oauth/accesstokens', views.AccessTokenViewSet)
+router.register(r'oauth/applications', views.ApplicationViewSet)
+router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'partner', views.PartnerViewSet)
-router.register(r'stripe', views.StripeViewSet, basename='stripe') 
-
 
 urlpatterns = [
     path('', index),
@@ -25,7 +28,7 @@ urlpatterns = [
     path('health_check/', include('health_check.urls')),
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
-    path('', include('workflow.urls')),
+    path('oauth/login/', views.LoginView.as_view()),
 ]
 
-urlpatterns += router.urls
+urlpatterns += staticfiles_urlpatterns() + router.urls

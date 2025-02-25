@@ -32,16 +32,13 @@ class AiohttpResponseMock:
         stream.feed_eof()
         return stream
 
-    @asyncio.coroutine
-    def read(self):
+    async def read(self):
         return self.content.read()
 
-    @asyncio.coroutine
-    def text(self, encoding='utf-8'):
+    async def text(self, encoding='utf-8'):
         return self.body.decode(encoding)
 
-    @asyncio.coroutine
-    def json(self, encoding='utf-8'):
+    async def json(self, encoding='utf-8'):
         if not getattr(self.body, "decode", False):
             raise ContentTypeError(
                 request_info=RequestInfo(self.url, self.method, self.headers),
@@ -49,8 +46,7 @@ class AiohttpResponseMock:
             )
         return json.loads(self.body.decode(encoding))
 
-    @asyncio.coroutine
-    def release(self):
+    async def release(self):
         pass
 
 

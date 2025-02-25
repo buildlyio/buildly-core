@@ -1,10 +1,10 @@
-version: "3.1"
+version: "3.8"
 
 services:
 
   postgres_buildly:
     container_name: postgres_buildly
-    image: postgres:9.6
+    image: postgres:13
     environment:
       POSTGRES_DB: buildly
       POSTGRES_USER: root
@@ -25,12 +25,11 @@ services:
       - static-content:/static
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres_buildly
     environment:
       DJANGO_SETTINGS_MODULE: "buildly.settings.production"
-      ALLOWED_HOSTS: "*"
-      CORS_ORIGIN_WHITELIST: "http://localhost:8000"
+      ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      CORS_ORIGIN_ALLOW_ALL: "True"
+      CORS_ORIGIN_WHITELIST: http://localhost,http://127.0.0.1,http://0.0.0.0,https://localhost,https://127.0.0.1,https://0.0.0.0
       DATABASE_ENGINE: "postgresql"
       DATABASE_NAME: "buildly"
       DATABASE_USER: "root"
@@ -60,6 +59,7 @@ services:
       SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL: "https://localhost:8000/complete/microsoft-graph"
       ACCESS_TOKEN_EXPIRE_SECONDS: "86400"
       SECRET_KEY: "ek*)b=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wv#_k"
+      TOKEN_SECRET_KEY: "ek*)b=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wv#_k"
       OAUTH_CLIENT_ID: "wkXLlC9h3k0jxIx7oLllxpFVU89Dxgi7O8FYZyfX"
       OAUTH_CLIENT_SECRET: "KiKRft8MajLabQId7pjSsa3OfvJAXN9NENi0tVRTX3Vbthr6iClEDZZtbyGuD9M8UbKpK2E8R4xJYUolZxg1nVa1iZwhQPi5ionOKdpIs4de2bmUaZ0qWi4MdBmdwDvF"
       USE_PASSWORD_USER_ATTRIBUTE_SIMILARITY_VALIDATOR: "True"
@@ -84,7 +84,8 @@ services:
       EMAIL_BACKEND: "SMTP"
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
-      STRIPE_SECRET: ""
+      STRIPE_SECRET: "// put stripe secret here"
+      HUBSPOT_API_KEY: "// put hubspot key here"
 
 
 volumes:

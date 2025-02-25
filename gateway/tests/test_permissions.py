@@ -2,8 +2,6 @@ import pytest
 
 from django.core.handlers.wsgi import WSGIRequest
 
-from factories.workflow_models import Organization
-
 from gateway.exceptions import ServiceDoesNotExist
 from gateway.permissions import AllowLogicModuleGroup
 from gateway.views import APIGatewayView
@@ -115,7 +113,7 @@ class TestAllowLogicModuleGroup:
         """
         core_group.is_global = False
         core_group.is_org_level = True
-        core_group.organization = Organization.create()
+        core_group.organization = org
         core_group.save()
         logic_module.core_groups.add(core_group)
 

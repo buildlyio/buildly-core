@@ -10,14 +10,14 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Build the docker-compose stack
-      run: docker-compose build
+    - name: Build the docker compose stack
+      run: docker compose build
 
     - name: Setup docker containers
-      run: docker-compose up -d
+      run: docker compose up -d
 
     - name: Check running containers
       run: docker ps -a
 
     - name: Stop docker container
-      run: docker-compose down
+      run: docker compose down

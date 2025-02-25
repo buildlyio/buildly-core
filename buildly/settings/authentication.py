@@ -1,11 +1,7 @@
-import ldap
-
 from .base import *
-from django_auth_ldap.config import LDAPSearch
 
 MIDDLEWARE_AUTHENTICATION = [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_AUTHENTICATION
@@ -13,21 +9,10 @@ MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_AUTHENTICATION
 # Authentication backends
 # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-AUTHENTICATION_BACKENDS
 
-AUTHENTICATION_LDAP_BACKEND = []
-AUTH_LDAP_ENABLE = True if os.getenv('LDAP_ENABLE') == 'True' else False
-if AUTH_LDAP_ENABLE:
-    AUTHENTICATION_LDAP_BACKEND.append('django_auth_ldap.backend.LDAPBackend')
-
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.github.GithubOAuth2',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.microsoft.MicrosoftOAuth2',
     'django.contrib.auth.backends.ModelBackend',
     'rest_framework_simplejwt.authentication.JWTAuthentication',
 ]
-
-AUTHENTICATION_BACKENDS = AUTHENTICATION_LDAP_BACKEND + AUTHENTICATION_BACKENDS
-
 
 # Auth Application
 OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID', None)
@@ -38,8 +23,8 @@ JWT_PAYLOAD_ENRICHER = 'core.jwt_utils.payload_enricher'
 JWT_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_ALLOWED_ISSUER = os.getenv('JWT_ISSUER', '')
 JWT_AUTH_DISABLED = False
-JWT_PRIVATE_KEY_RSA_BUILDLY = os.getenv('JWT_PRIVATE_KEY_RSA_BUILDLY')
-JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY')
+JWT_PRIVATE_KEY_RSA_BUILDLY = os.getenv('JWT_PRIVATE_KEY_RSA_BUILDLY', '').replace('\\n', '\n')
+JWT_PUBLIC_KEY_RSA_BUILDLY = os.getenv('JWT_PUBLIC_KEY_RSA_BUILDLY', '').replace('\\n', '\n')
 
 # Password Validators
 AUTH_PASSWORD_VALIDATORS = []
@@ -83,14 +68,7 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URLS = {
 }
 
 SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.create_user',
     'core.auth_pipeline.create_organization',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
 )
 
 # Github social auth
@@ -131,30 +109,3 @@ DEFAULT_OAUTH_DOMAINS = os.getenv('DEFAULT_OAUTH_DOMAINS', '')
 CREATE_DEFAULT_PROGRAM = (
     True if os.getenv('CREATE_DEFAULT_PROGRAM') == 'True' else False
 )
-
-# LDAP configuration
-# https://django-auth-ldap.readthedocs.io/en/latest/reference.html#settings
-
-if AUTH_LDAP_ENABLE:
-    AUTH_LDAP_SERVER_URI = os.environ.get('LDAP_HOST')
-    AUTH_LDAP_BIND_DN = os.environ.get('LDAP_USERNAME')  # Bind Distinguished Name(DN)
-    AUTH_LDAP_BIND_PASSWORD = os.environ.get('LDAP_PASSWORD')
-    AUTH_LDAP_BASE_DN = os.environ.get('LDAP_BASE_DN')
-    AUTH_LDAP_USERNAME_FIELD_SEARCH = os.environ.get('LDAP_USERNAME_FIELD_SEARCH')
-
-    AUTH_LDAP_USER_SEARCH = LDAPSearch(
-        AUTH_LDAP_BASE_DN,
-        ldap.SCOPE_SUBTREE,
-        f'{AUTH_LDAP_USERNAME_FIELD_SEARCH}=%(user)s',
-    )
-
-    AUTH_LDAP_USER_ATTR_MAP = {
-        'username': AUTH_LDAP_USERNAME_FIELD_SEARCH,
-        'first_name': 'givenName',
-        'last_name': 'sn',
-        'email': 'mail',
-    }
-    AUTH_LDAP_ALWAYS_UPDATE_USER = True
-    AUTH_LDAP_CACHE_TIMEOUT = (
-        3600
-    )  # Cache distinguished names and group memberships for an hour to minimize

@@ -2,7 +2,8 @@ import random
 import string
 import uuid
 
-from factory import DjangoModelFactory, SubFactory, LazyAttribute
+from factory.django import DjangoModelFactory
+from factory import SubFactory, LazyAttribute
 
 from datamesh.models import (
     LogicModuleModel as LogicModulModelM,

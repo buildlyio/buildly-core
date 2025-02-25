@@ -1,7 +1,8 @@
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.db.models import JSONField
+
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils import timezone
@@ -80,49 +81,12 @@ class Industry(models.Model):
     def __str__(self):
         return self.name
 
+
 class OrganizationType(models.Model):
     """
     Allows organization to be of multiple types.
-    Supported types are:
-    1. Logistics Provider
-	2. Packer
-	3. Producer
-	4. Receiver
-	5. Shipper
-	6. Warehouse
     """
     name = models.CharField("Name", max_length=255, blank=True, help_text="Organization type")
-    create_date = models.DateTimeField(null=True, blank=True)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ('name',)
-        verbose_name_plural = "Organization Types"
-
-    def save(self, *args, **kwargs):
-        if self.create_date is None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-        super(OrganizationType, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return str(self.name)
-
-class OrganizationType(models.Model):
-    """
-    Allows organization to be of multiple types.
-    Supported types are:
-    1. Logistics Provider
-	2. Packer
-	3. Producer
-	4. Receiver
-	5. Shipper
-	6. Warehouse
-    """
-
-    name = models.CharField(
-        "Name", max_length=255, blank=True, help_text="Organization type"
-    )
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -176,20 +140,16 @@ class Organization(models.Model):
     )
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
-    oauth_domains = ArrayField(
-        models.CharField("OAuth Domains", max_length=255, null=True, blank=True),
-        null=True,
-        blank=True,
-    )
+    oauth_domains = models.CharField("OAuth Domains", max_length=255, null=True, blank=True)
+
     date_format = models.CharField(
         "Date Format", max_length=50, blank=True, default="DD.MM.YYYY"
     )
     phone = models.CharField(max_length=20, blank=True, null=True)
     allow_import_export = models.BooleanField('To allow import export functionality', default=False)
-    radius = models.FloatField(max_length=20, blank=True, null=True, default = 0.0)
-    organization_type = models.ForeignKey(OrganizationType,on_delete=models.CASCADE,null=True)
+    radius = models.FloatField(max_length=20, blank=True, null=True, default=0.0)
+    organization_type = models.ForeignKey(OrganizationType, on_delete=models.CASCADE, null=True)
     stripe_subscription_details = JSONField(blank=True, null=True)
-
 
     class Meta:
         ordering = ('name',)
@@ -226,10 +186,7 @@ class Organization(models.Model):
 
 class CoreGroup(models.Model):
     """
-    CoreGroup model defines the groups of the users with specific permissions for the set of workflowlevel1's
-    and workflowlevel2's (it has many-to-many relationship to WorkFlowLevel1 and WorkFlowLevel2 models).
-    Permissions field is the decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions
-    for CRUD. For example: 12 -> 1100 -> CR__ (allowed to Create and Read).
+    CoreGroup model defines the groups of the users with specific permissions 
     """
 
     uuid = models.CharField(
@@ -311,12 +268,13 @@ class CoreUser(AbstractUser):
     edit_date = models.DateTimeField(null=True, blank=True)
     email_preferences = JSONField(blank=True, null=True)
     push_preferences = JSONField(blank=True, null=True)
-    user_timezone = models.CharField(blank=True,null=True,max_length=255)
-    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
+    user_timezone = models.CharField(blank=True, null=True, max_length=255)
+    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES,
+                                 default='Product Team')
     survey_status = models.BooleanField(default=False)
 
     REQUIRED_FIELDS = []
-    
+
     class Meta:
         ordering = ('first_name',)
 
@@ -436,8 +394,9 @@ class Consortium(models.Model):
     The consortium instance. Allows sharing of data between 2 or more organizations
     """
     consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
-    name = models.CharField("Consortium Name", max_length=255, blank=True, help_text="Multiple organizations form a consortium together")
-    organization_uuids = ArrayField(models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True), null=True, blank=True)
+    name = models.CharField("Consortium Name", max_length=255, blank=True,
+                            help_text="Multiple organizations form a consortium together")
+    organization_uuids = models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 

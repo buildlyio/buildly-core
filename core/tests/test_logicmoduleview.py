@@ -21,7 +21,6 @@ class LogicModuleViewsPermissionTest(TestCase):
         self.client.force_authenticate(user=self.core_user)
         self.response_data = {
             'id': 1,
-            'workflowlevel2_uuid': 1,
             'name': 'test',
             'contact_uuid': 1,
         }
