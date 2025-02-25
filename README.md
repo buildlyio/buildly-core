@@ -157,7 +157,8 @@ The following tables list the configurable parameters of buildly and their defau
 
 ## Built With
 
-* [Travis CI](https://travis-ci.org/) - Recommended CI/CD
+* GitHub Actions - Recommended CI/CD
+* [Travis CI](https://travis-ci.org/)
 
 ## Contributing
 
