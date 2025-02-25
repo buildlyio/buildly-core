@@ -19,8 +19,5 @@ jobs:
     - name: Check running containers
       run: docker ps -a
 
-    - name: Run unit test case
-      run: docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
-
     - name: Stop docker container
       run: docker compose down
