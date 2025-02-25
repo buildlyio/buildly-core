@@ -19,3 +19,4 @@ coreapi~=2.3.3
 pytest
 pytest-cov
 ipython
+httpretty
