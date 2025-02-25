@@ -24,7 +24,7 @@ TEST_USER_DATA = {
 
 @pytest.fixture
 def superuser():
-    return factories.CoreUser.asave(is_superuser=True)
+    return factories.CoreUser(is_superuser=True)
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def org():
 
 @pytest.fixture
 def org_member(org):
-    return factories.CoreUser.asave(organization=org)
+    return factories.CoreUser(organization=org)
 
 
 @pytest.fixture
