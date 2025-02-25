@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: dev-buildly
   REGION: us
-  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/governcrm-dev-buildly-core
+  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/drunr-dev-buildly-core
 
 jobs:
   build:
