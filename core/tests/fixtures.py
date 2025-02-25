@@ -23,11 +23,6 @@ TEST_USER_DATA = {
 
 
 @pytest.fixture
-def superuser():
-    return factories.CoreUser.asave(is_superuser=True)
-
-
-@pytest.fixture
 def org():
     return factories.Organization(
         name=TEST_USER_DATA['organization_name'],
@@ -69,13 +64,6 @@ def reset_password_request(org_member):
 def auth_api_client():
     api_client = APIClient()
     api_client.force_authenticate(user=factories.CoreUser.create())
-    return api_client
-
-
-@pytest.fixture
-def auth_superuser_api_client(superuser):
-    api_client = APIClient()
-    api_client.force_authenticate(user=superuser)
     return api_client
 
 
