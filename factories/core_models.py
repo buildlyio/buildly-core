@@ -34,6 +34,19 @@ class CoreUser(DjangoModelFactory):
     organization = SubFactory(Organization)
     first_name = Faker('name')
     last_name = Faker('name')
+    is_superuser = False
+    username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
+    email = lazy_attribute(lambda o: o.username + "@example.com")
+
+
+class CoreSuperUser(DjangoModelFactory):
+    class Meta:
+        model = CoreUserM
+        django_get_or_create = ('username',)
+
+    organization = SubFactory(Organization)
+    first_name = Faker('name')
+    last_name = Faker('name')
     is_superuser = True
     username = lazy_attribute(lambda o: slugify(o.first_name + '.' + o.last_name))
     email = lazy_attribute(lambda o: o.username + "@example.com")

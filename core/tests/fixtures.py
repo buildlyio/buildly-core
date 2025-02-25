@@ -71,6 +71,12 @@ def auth_api_client():
     api_client.force_authenticate(user=factories.CoreUser.create())
     return api_client
 
+@pytest.fixture
+def auth_superuser_api_client():
+    api_client = APIClient()
+    api_client.force_authenticate(user=factories.CoreSuperUser.create())
+    return api_client
+
 
 @pytest.fixture
 def oauth_application():
