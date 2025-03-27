@@ -30,7 +30,7 @@ class CoreGroupAdmin(admin.ModelAdmin):
 
 
 class CoreUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status')
+    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status','start_date')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
     search_fields = ('first_name', 'last_name', 'username', 'title', 'organization__name', )

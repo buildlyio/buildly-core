@@ -86,6 +86,7 @@ services:
       VERIFY_EMAIL_URL_PATH: "verify-email/"
       FREE_COUPON_CODE: "Insights@2022"
       STRIPE_SECRET: "sk_test_ddLjeqLRWcj8znVAhMaNPu7J00evbJrikA"
+      HUBSPOT_API_KEY: "// put hubspot key here"
 
 volumes:
   static-content:

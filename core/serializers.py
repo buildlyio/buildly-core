@@ -143,24 +143,9 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreUser
-        fields = (
-            'id',
-            'core_user_uuid',
-            'first_name',
-            'last_name',
-            'email',
-            'username',
-            'is_active',
-            'title',
-            'contact_info',
-            'privacy_disclaimer_accepted',
-            'organization',
-            'core_groups',
-            'invitation_token',
-            'user_type',
-            'survey_status',
-            'subscription_active',
-        )
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
+                  'title', 'contact_info', 'privacy_disclaimer_accepted','tos_disclaimer_accepted', 'organization', 'core_groups',
+                  'invitation_token', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
 
     def get_subscription_active(self, user):

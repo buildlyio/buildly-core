@@ -8,7 +8,12 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils import timezone
+
+import requests
+import logging
+
 from pyasn1.compat.octets import null
+
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -217,6 +222,7 @@ class CoreUser(AbstractUser):
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE, help_text='Related Org to associate with')
     core_groups = models.ManyToManyField(CoreGroup, verbose_name='User groups', blank=True, related_name='user_set', related_query_name='user')
     privacy_disclaimer_accepted = models.BooleanField(default=False)
+    tos_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
     user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
@@ -238,6 +244,33 @@ class CoreUser(AbstractUser):
         if is_new:
             # Add default groups
             self.core_groups.add(*CoreGroup.objects.filter(organization=self.organization, is_default=True))
+            # Send user details to HubSpot
+            try:
+                self.send_to_hubspot()
+            except requests.RequestException as e:
+                # Log the error
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send user details to HubSpot: {e}")
+
+    def send_to_hubspot(self):
+        url = "https://api.hubapi.com/contacts/v1/contact"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.HUBSPOT_API_KEY}"
+        }
+        data = {
+            "properties": [
+                {"property": "email", "value": self.email},
+                {"property": "firstname", "value": self.first_name},
+                {"property": "lastname", "value": self.last_name},
+                {"property": "phone", "value": self.phone},
+                {"property": "company", "value": self.organization.name if self.organization else ""},
+                {"property": "jobtitle", "value": self.title},
+                {"property": "user_type", "value": self.user_type},
+            ]
+        }
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
 
     @property
     def is_org_admin(self) -> bool:
