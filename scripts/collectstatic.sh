@@ -3,6 +3,7 @@
 # All this environment variables need to be defined to run collectstatic
 export ALLOWED_HOSTS=nothing
 export CORS_ORIGIN_WHITELIST=nothing
+export HUBSPOT_API_KEY=nothing
 export DATABASE_ENGINE=postgresql
 export DATABASE_NAME=nothing
 export DATABASE_USER=nothing
