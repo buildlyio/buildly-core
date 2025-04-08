@@ -34,4 +34,4 @@ def create_invitation_token(email_address: str, organization: Organization):
         'org_uuid': str(organization.organization_uuid) if organization else None,
         'exp': datetime.datetime.utcnow() + exp_hours,
     }
-    return jwt.encode(payload, settings.TOKEN_SECRET_KEY, algorithm='HS256').decode('utf-8')
+    return jwt.encode(payload, settings.TOKEN_SECRET_KEY, algorithm='HS256')

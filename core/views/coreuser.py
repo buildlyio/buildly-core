@@ -192,8 +192,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 token = create_invitation_token(email_address, organization)
 
                 # build the invitation link
-                invitation_link = f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?token={token}'
-
+                invitation_link = self.request.build_absolute_uri(f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?token={token}')
                 links.append(invitation_link)
 
                 # create the used context for the E-mail templates
