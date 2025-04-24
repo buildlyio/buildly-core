@@ -61,8 +61,17 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return str(super().to_representation(value))
 
 
+class OrganizationTypeSerializer(serializers.ModelSerializer):  
+    id = serializers.UUIDField(source='organization_type_uuid', read_only=True)
+
+    class Meta:
+        model = OrganizationType
+        fields = '__all__'
+        
+
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    organization_type = OrganizationTypeSerializer(read_only=True)
 
     class Meta:
         model = Organization
