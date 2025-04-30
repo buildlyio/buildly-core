@@ -7,6 +7,6 @@ router = routers.SimpleRouter()
 
 router.register('joinrecords', views.JoinRecordViewSet)
 router.register('logicmodulemodels', views.LogicModuleModelViewSet)
-router.register('relationships', views.RelationshiplViewSet)
+router.register('relationships', views.RelationshipViewSet)
 
 urlpatterns = router.urls

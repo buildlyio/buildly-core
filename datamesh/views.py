@@ -16,7 +16,7 @@ class LogicModuleModelViewSet(viewsets.ModelViewSet):
     serializer_class = LogicModuleModelSerializer
 
 
-class RelationshiplViewSet(viewsets.ModelViewSet):
+class RelationshipViewSet(viewsets.ModelViewSet):
     queryset = Relationship.objects.all()
     serializer_class = RelationshipSerializer
 
@@ -26,11 +26,4 @@ class JoinRecordViewSet(OrganizationQuerySetMixin, viewsets.ModelViewSet):
     queryset = JoinRecord.objects.all()
     serializer_class = JoinRecordSerializer
     filter_backends = (DjangoFilterBackend,)
-    filter_class = JoinRecordFilter
-    filter_fields = (
-        'relationship__key',
-        'record_id',
-        'record_uuid',
-        'related_record_id',
-        'related_record_uuid',
-    )
+    filterset_class = JoinRecordFilter
