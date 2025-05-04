@@ -69,7 +69,7 @@ LOGGING = {
     },
 }
 
-HUBSPOT_API_KEY = os.environ['HUBSPOT_API_KEY']
+HUBSPOT_API_KEY = os.getenv('HUBSPOT_API_KEY', '')
 
 SECRET_KEY = os.environ['SECRET_KEY']
 TOKEN_SECRET_KEY = os.environ['TOKEN_SECRET_KEY']
