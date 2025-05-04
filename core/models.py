@@ -500,14 +500,14 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
-        blank=null,
+        blank=True,
         null=True,
         related_name='user_subscription'
     )
     created_by = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
-        blank=null,
+        blank=True,
         null=True,
         related_name='created_subscription'
     )
