@@ -13,8 +13,6 @@ from django.utils import timezone
 import requests
 import logging
 
-from pyasn1.compat.octets import null
-
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
