@@ -148,9 +148,11 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 
 # Swagger settings - for generate_swagger management command
 
-SWAGGER_SETTINGS = {
-    'DEFAULT_INFO': 'gateway.urls.swagger_info',
-}
+SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
+
+ORGANIZATION_TYPES = ['Developer', 'Product']
+
+EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 12))
 
 HUBSPOT_API_KEY = ""
 
