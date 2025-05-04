@@ -12,4 +12,9 @@ class JoinRecordFilter(django_filters.FilterSet):
 
     class Meta:
         model = JoinRecord
-        fields = ('record_id', 'record_uuid', 'related_record_id', 'related_record_uuid')
+        fields = (
+            'record_id',
+            'record_uuid',
+            'related_record_id',
+            'related_record_uuid',
+        )

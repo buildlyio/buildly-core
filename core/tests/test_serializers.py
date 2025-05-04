@@ -1,8 +1,11 @@
 import pytest
 
-from core.serializers import OrganizationSerializer, CoreGroupSerializer, CoreUserSerializer
+from core.serializers import (
+    OrganizationSerializer,
+    CoreGroupSerializer,
+    CoreUserSerializer,
+)
 from core.tests.fixtures import core_group, org, org_member
-
 
 @pytest.mark.django_db()
 def test_org_serializer(request_factory, org):
@@ -34,16 +37,15 @@ def test_core_groups_serializer(request_factory, core_group):
     request = request_factory.get('')
     serializer = CoreGroupSerializer(core_group, context={'request': request})
     data = serializer.data
-    keys = ['id',
-            'uuid',
-            'name',
-            'is_global',
-            'is_org_level',
-            'permissions',
-            'organization',
-            'workflowlevel1s',
-            'workflowlevel2s',
-            ]
+    keys = [
+        'id',
+        'uuid',
+        'name',
+        'is_global',
+        'is_org_level',
+        'permissions',
+        'organization',
+    ]
     assert set(data.keys()) == set(keys)
     assert isinstance(data['organization'], str)
 

@@ -3,7 +3,14 @@ import secrets
 
 from oauth2_provider.models import RefreshToken
 from rest_framework.reverse import reverse
-
+from core.tests.fixtures import (
+    auth_api_client,
+    auth_superuser_api_client,
+    oauth_application,
+    oauth_access_token,
+    oauth_refresh_token,
+    superuser,
+)
 from core.tests.fixtures import auth_api_client, auth_superuser_api_client, oauth_application, oauth_access_token, \
     oauth_refresh_token, superuser
 
@@ -12,7 +19,9 @@ from core.tests.fixtures import auth_api_client, auth_superuser_api_client, oaut
 class TestRefreshTokenListView:
     ENDPOINT_BASE_URL = reverse('refreshtoken-list')
 
-    def test_list_refreshtoken_superuser(self, auth_superuser_api_client, oauth_refresh_token, superuser):
+    def test_list_refreshtoken_superuser(
+        self, auth_superuser_api_client, oauth_refresh_token, superuser
+    ):
         """
         Superusers are able to list all the objects
         """
@@ -32,8 +41,13 @@ class TestRefreshTokenListView:
 class TestRefreshTokenCreateView:
     ENDPOINT_BASE_URL = reverse('refreshtoken-list')
 
-    def test_create_refreshtoken_superuser(self, auth_superuser_api_client, oauth_application, oauth_access_token,
-                                           superuser):
+    def test_create_refreshtoken_superuser(
+        self,
+        auth_superuser_api_client,
+        oauth_application,
+        oauth_access_token,
+        superuser,
+    ):
         """
         Nobody is able to create new access tokens
         """
@@ -41,7 +55,7 @@ class TestRefreshTokenCreateView:
             'token': secrets.token_urlsafe(8),
             'user': superuser,
             'application': oauth_application,
-            'access_token': oauth_access_token
+            'access_token': oauth_access_token,
         }
 
         response = auth_superuser_api_client.post(self.ENDPOINT_BASE_URL, data)
@@ -52,13 +66,17 @@ class TestRefreshTokenCreateView:
 class TestRefreshTokenRetrieveViews:
     ENDPOINT_BASE_URL = reverse('refreshtoken-list')
 
-    def test_retrieve_unexisting_refreshtoken(self, auth_superuser_api_client, superuser):
+    def test_retrieve_unexisting_refreshtoken(
+        self, auth_superuser_api_client, superuser
+    ):
         url = f'{self.ENDPOINT_BASE_URL}1111/'
 
         response = auth_superuser_api_client.get(url)
         assert response.status_code == 404
 
-    def test_retrieve_refreshtoken_superuser(self, auth_superuser_api_client, oauth_refresh_token, superuser):
+    def test_retrieve_refreshtoken_superuser(
+        self, auth_superuser_api_client, oauth_refresh_token, superuser
+    ):
         """
         Superusers are able to retrieve any access token
         """
@@ -68,7 +86,9 @@ class TestRefreshTokenRetrieveViews:
         assert response.status_code == 200
         assert response.data['token'] == oauth_refresh_token.token
 
-    def test_retrieve_refreshtoken_normaluser(self, auth_api_client, oauth_refresh_token):
+    def test_retrieve_refreshtoken_normaluser(
+        self, auth_api_client, oauth_refresh_token
+    ):
         """
         Normal users are not able to retrieve any access token
         """
@@ -82,15 +102,15 @@ class TestRefreshTokenRetrieveViews:
 class TestRefreshTokenUpdateView:
     ENDPOINT_BASE_URL = reverse('refreshtoken-list')
 
-    def test_update_refreshtoken_superuser(self, auth_superuser_api_client, oauth_refresh_token, superuser):
+    def test_update_refreshtoken_superuser(
+        self, auth_superuser_api_client, oauth_refresh_token, superuser
+    ):
         """
         Nobody is able to update access tokens
         """
         url = f'{self.ENDPOINT_BASE_URL}{oauth_refresh_token.pk}/'
 
-        data = {
-            'token': secrets.token_urlsafe(8)
-        }
+        data = {'token': secrets.token_urlsafe(8)}
         response = auth_superuser_api_client.put(url, data)
         assert response.status_code == 405
 
@@ -105,7 +125,9 @@ class TestRefreshTokenDeleteView:
         response = auth_superuser_api_client.delete(url)
         assert response.status_code == 404
 
-    def test_delete_refreshtoken_superuser(self, auth_superuser_api_client, oauth_refresh_token, superuser):
+    def test_delete_refreshtoken_superuser(
+        self, auth_superuser_api_client, oauth_refresh_token, superuser
+    ):
         """
         Superusers are able to delete any access token
         """
@@ -131,7 +153,9 @@ class TestRefreshTokenDeleteView:
 class TestRefreshTokenFilterView:
     ENDPOINT_BASE_URL = reverse('refreshtoken-list')
 
-    def test_filter_refreshtoken_by_user_username(self, auth_superuser_api_client, oauth_refresh_token, superuser):
+    def test_filter_refreshtoken_by_user_username(
+        self, auth_superuser_api_client, oauth_refresh_token, superuser
+    ):
         """
         Superusers can filter access tokens by users' username
         """

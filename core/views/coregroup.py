@@ -12,6 +12,7 @@ class CoreGroupViewSet(viewsets.ModelViewSet):
     It's used for creating groups of Core Users inside an organization and defining model level permissions
     for this group
     """
+
     queryset = CoreGroup.objects.all()
     serializer_class = CoreGroupSerializer
     permission_classes = (IsOrgMember,)

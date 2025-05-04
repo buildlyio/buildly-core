@@ -15,8 +15,9 @@ from rest_framework import serializers
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 
 from core.email_utils import send_email, send_email_body
+from core.helpers.oauth import EmailVerificationToken
 
-from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
+from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, OrganizationType, PERMISSIONS_ORG_ADMIN, \
     TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon, Referral, ROLE_ORGANIZATION_ADMIN
 
 
@@ -106,7 +107,7 @@ class CoreGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreGroup
-        read_only_fields = ('uuid', 'workflowlevel1s', 'workflowlevel2s')
+        read_only_fields = ('uuid',)
         fields = (
             'id', 'uuid',
             'name',
@@ -114,8 +115,6 @@ class CoreGroupSerializer(serializers.ModelSerializer):
             'is_org_level',
             'permissions',
             'organization',
-            'workflowlevel1s',
-            'workflowlevel2s'
         )
 
 
@@ -240,6 +239,7 @@ class CoreUserWritableSerializer(CoreUserSerializer):
         coreuser.core_groups.add(*core_groups)
 
         # create or update an invitation
+        EmailVerificationToken().send_verification_email(self.context['request'], coreuser)
         reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)
         reg_location = reg_location + '{}'
         token = urlsafe_base64_encode(force_bytes(coreuser.core_user_uuid))
@@ -338,7 +338,6 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         resetpass_url = urljoin(settings.FRONTEND_URL, settings.RESETPASS_CONFIRM_URL_PATH)
-        resetpass_url = resetpass_url + '{uid}/{token}/'
 
         email = self.validated_data["email"]
 
@@ -347,7 +346,7 @@ class CoreUserResetPasswordSerializer(serializers.Serializer):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             context = {
-                'password_reset_link': resetpass_url.format(uid=uid, token=token),
+                'password_reset_link': f'{resetpass_url}{uid}/{token}/',
                 'user': user,
             }
 
@@ -381,7 +380,7 @@ class CoreUserResetPasswordCheckSerializer(serializers.Serializer):
     def validate(self, attrs):
         # Decode the uidb64 to uid to get User object
         try:
-            uid = force_text(urlsafe_base64_decode(attrs['uid']))
+            uid = force_str(urlsafe_base64_decode(attrs['uid']))
             self.user = CoreUser.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, CoreUser.DoesNotExist):
             raise serializers.ValidationError({'uid': ['Invalid value']})
@@ -608,6 +607,12 @@ class PartnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Partner
+        fields = '__all__'
+
+
+class OrganizationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationType
         fields = '__all__'
 
 

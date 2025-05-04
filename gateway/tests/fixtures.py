@@ -23,8 +23,6 @@ def datamesh():
 @pytest.fixture
 def aggregator(logic_module):
     configuration = {
-        'apis': {
-            logic_module.endpoint_name: f'{logic_module.endpoint}/swagger.json'
-        }
+        'apis': {logic_module.endpoint_name: f'{logic_module.endpoint}/swagger.json'}
     }
     return SwaggerAggregator(configuration)

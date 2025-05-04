@@ -91,7 +91,7 @@ After that you should see a Buildly Core instance running in your Minikube dashb
 	Deploy Buildly to Kubernetes clusters
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-	The first thing you need to do is clone `Buildly Core <https://buildly.io/buildly-core/>`_ source code. Also follow the instructions in :ref:`connect service to buildly` but also make sure it includes a `docker-compose` file for this tutorial.
+	The first thing you need to do is clone `Buildly Core <https://buildly.io/buildly-core/>`_ source code. Also follow the instructions in :ref:`connect service to buildly` but also make sure it includes a `docker compose` file for this tutorial.
 
 	Run the following command to clone Buildly Core repository:
 
@@ -100,7 +100,7 @@ After that you should see a Buildly Core instance running in your Minikube dashb
 	git clone https://github.com/buildlyio/buildly-core.git
 
 
-	Now, you need to navigate to the Buildly Core folder and change the image of `Buildly <https://buildly.io/buildly-core/>`_ in the `docker-compose.yml` file, with your prefered text editor, to `Image: localhost:5000/buildly`.
+	Now, you need to navigate to the Buildly Core folder and change the image of `Buildly <https://buildly.io/buildly-core/>`_ in the `docker compose.yml` file, with your prefered text editor, to `Image: localhost:5000/buildly`.
 
 	Run the following command to deploy it to your `Minikube <https://minikube.sigs.k8s.io/>`_ cluster:
 

@@ -5,7 +5,11 @@ from django.test.client import RequestFactory
 from django.utils import timezone
 
 import factories
-from oauth2_provider.models import get_application_model, get_access_token_model, get_refresh_token_model
+from oauth2_provider.models import (
+    get_application_model,
+    get_access_token_model,
+    get_refresh_token_model,
+)
 
 from core.jwt_utils import payload_enricher
 from core.models import ROLE_ORGANIZATION_ADMIN
@@ -17,10 +21,12 @@ Application = get_application_model()
 
 
 class JWTUtilsTest(TestCase):
-
     def setUp(self) -> None:
         self.rf = RequestFactory()
+        self.organization = factories.Organization.create()
         self.core_user = factories.CoreUser()
+        self.core_user.organization = self.organization
+        self.core_user.save()
 
         # for testing refresh token
         application = Application(
@@ -31,16 +37,17 @@ class JWTUtilsTest(TestCase):
         )
         application.save()
         access_token = AccessToken.objects.create(
-            user=self.core_user, token="1234567890",
+            user=self.core_user,
+            token="1234567890",
             application=application,
             expires=timezone.now() + datetime.timedelta(days=1),
-            scope="read write"
+            scope="read write",
         )
         RefreshToken.objects.create(
             access_token=access_token,
             user=self.core_user,
             application=application,
-            token="007"
+            token="007",
         )
 
     def test_jwt_payload_enricher(self):

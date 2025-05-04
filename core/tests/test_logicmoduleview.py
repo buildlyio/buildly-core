@@ -9,12 +9,10 @@ from rest_framework.test import APIClient
 
 from core.views.logicmodule import LogicModuleViewSet
 from core.tests.fixtures import logic_module, superuser
-
 from gateway import utils
 
 
 class LogicModuleViewsPermissionTest(TestCase):
-
     def setUp(self):
         self.client = APIClient()
         self.core_user = factories.CoreUser()
@@ -23,9 +21,8 @@ class LogicModuleViewsPermissionTest(TestCase):
         self.client.force_authenticate(user=self.core_user)
         self.response_data = {
             'id': 1,
-            'workflowlevel2_uuid': 1,
             'name': 'test',
-            'contact_uuid': 1
+            'contact_uuid': 1,
         }
 
     def make_logicmodule_request(self):
@@ -51,8 +48,9 @@ class LogicModuleViewsPermissionTest(TestCase):
 
 @pytest.mark.django_db()
 class TestLogicModuleUpdate:
-
-    def test_logic_module_update_api_specification(self, request_factory, superuser, logic_module, monkeypatch):
+    def test_logic_module_update_api_specification(
+        self, request_factory, superuser, logic_module, monkeypatch
+    ):
         mocked_url = Mock(return_value='example.com')
         test_swagger = {'name': 'example'}
         mocked_swagger = Mock()
@@ -61,7 +59,9 @@ class TestLogicModuleUpdate:
         monkeypatch.setattr(utils, 'get_swagger_url_by_logic_module', mocked_url)
         monkeypatch.setattr(utils, 'get_swagger_from_url', mocked_swagger)
 
-        request = request_factory.put(reverse('logicmodule-update-api-specification', args=(logic_module.pk,)))
+        request = request_factory.put(
+            reverse('logicmodule-update-api-specification', args=(logic_module.pk,))
+        )
         request.user = superuser
         view = LogicModuleViewSet.as_view({'put': 'update_api_specification'})
         response = view(request, pk=logic_module.pk)

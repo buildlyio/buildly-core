@@ -18,7 +18,7 @@ schema_view = get_schema_view(
     swagger_info,
     public=True,
     permission_classes=(permissions.AllowAny,),
-    generator_class=generator.OpenAPISchemaGenerator
+    generator_class=generator.OpenAPISchemaGenerator,
 )
 
 urlpatterns = [
@@ -30,7 +30,9 @@ urlpatterns = [
         r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
         r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
         r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
-        views.APIAsyncGatewayView.as_view(), name='api-gateway-async'),
+        views.APIAsyncGatewayView.as_view(),
+        name='api-gateway-async',
+    ),
     re_path(
         rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
@@ -38,10 +40,17 @@ urlpatterns = [
         r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
         r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
         r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
-        views.APIGatewayView.as_view(), name='api-gateway'),
-    re_path(r'^docs/swagger(?P<format>\.json|\.yaml)$',
-            schema_view.without_ui(cache_timeout=0),
-            name='schema-swagger-json'),
-    path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
-         name='schema-swagger-ui'),
+        views.APIGatewayView.as_view(),
+        name='api-gateway',
+    ),
+    re_path(
+        r'^docs/swagger(?P<format>\.json|\.yaml)$',
+        schema_view.without_ui(cache_timeout=0),
+        name='schema-swagger-json',
+    ),
+    path(
+        'docs/',
+        schema_view.with_ui('swagger', cache_timeout=0),
+        name='schema-swagger-ui',
+    ),
 ]

@@ -25,19 +25,16 @@ def core_user(org):
 @pytest.fixture
 def application(org):
     return factories.Application.create(
-        client_id=settings.OAUTH_CLIENT_ID,
-        client_secret=settings.OAUTH_CLIENT_SECRET
+        client_id=settings.OAUTH_CLIENT_ID, client_secret=settings.OAUTH_CLIENT_SECRET
     )
+
 
 # ------------ Tests ------------------
 
 
 class TestGenerateTokens(object):
-
     @pytest.mark.django_db()
-    def test_success(self, wsgi_request_factory, core_user,
-                                      application, monkeypatch):
-
+    def test_success(self, wsgi_request_factory, core_user, application, monkeypatch):
         def mock_create_token(*args, **kwargs):
             return {
                 'access_token': 'bZr9TVYykJnbVL1gAjq4Xhn3x1SY91',
@@ -63,7 +60,7 @@ class TestGenerateTokens(object):
             'token_type': 'Bearer',
             'scope': 'read write',
             'refresh_token': 'UDJsQxZpjVxhuOgrCMLHnc79NI5ZpU',
-            'access_token_jwt': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9'
+            'access_token_jwt': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9',
         }
 
         # remove jwt enricher
@@ -81,9 +78,9 @@ class TestGenerateTokens(object):
         assert result == final_token
 
     @pytest.mark.django_db()
-    def test_success_without_mocking_token_creation(self, wsgi_request_factory, core_user,
-                                                    application, monkeypatch):
-
+    def test_success_without_mocking_token_creation(
+        self, wsgi_request_factory, core_user, application, monkeypatch
+    ):
         def mock_generate_payload(*args, **kwargs):
             return {
                 'iss': 'BuildlyTest',
@@ -114,8 +111,9 @@ class TestGenerateTokens(object):
         assert refresh_token.token == result['refresh_token']
 
     @pytest.mark.django_db()
-    def test_without_encode_mock_success(self, wsgi_request_factory, core_user,
-                     application, monkeypatch):
+    def test_without_encode_mock_success(
+        self, wsgi_request_factory, core_user, application, monkeypatch
+    ):
         def mock_create_token(*args, **kwargs):
             return {
                 'access_token': 'bZr9TVYykJnbVL1gAjq4Xhn3x1SY91',
@@ -148,8 +146,9 @@ class TestGenerateTokens(object):
         utils.generate_access_tokens(request, core_user)
 
     @pytest.mark.django_db()
-    def test_no_func_mocks_success(self, wsgi_request_factory, core_user,
-                                   application, monkeypatch):
+    def test_no_func_mocks_success(
+        self, wsgi_request_factory, core_user, application, monkeypatch
+    ):
         # remove jwt enricher
         monkeypatch.delattr('django.conf.settings.JWT_PAYLOAD_ENRICHER')
 

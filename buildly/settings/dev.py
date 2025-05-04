@@ -39,7 +39,6 @@ ALLOWED_HOSTS = "*"
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-
 # Logging
 # https://docs.djangoproject.com/en/1.11/topics/logging/#configuring-logging
 
@@ -62,7 +61,12 @@ LOGGING = {
     },
 }
 
-
 HUBSPOT_API_KEY = ""
 
-SECRET_KEY = "asdfe32fasdf343fasdff32234@##$%fwa45tfgsdfg343"
+SECRET_KEY = "asdfe32fasdf343fasdff32234@##wa45tfgsdfg343"
+TOKEN_SECRET_KEY = os.getenv("TOKEN_SECRET_KEY")
+
+try:
+    from .local import *
+except (ModuleNotFoundError, ImportError):
+    pass

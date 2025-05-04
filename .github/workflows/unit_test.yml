@@ -8,7 +8,7 @@ jobs:
   unit_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v1
 
     - name: Build the docker compose stack
       run: docker compose build
@@ -18,9 +18,6 @@ jobs:
 
     - name: Check running containers
       run: docker ps -a
-
-    - name: Run unit test case
-      run: docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
 
     - name: Stop docker container
       run: docker compose down

@@ -1,9 +1,24 @@
-# buildly
+# Buildly Open Source RAD Core Gateway
 [![Docker Pulls](https://img.shields.io/docker/pulls/buildly/buildly.svg)](https://hub.docker.com/r/buildly/buildly/) [![Build Status](https://travis-ci.org/buildlyio/buildly-core.svg?branch=master)](https://travis-ci.org/buildlyio/buildly-core) [![Documentation Status](https://readthedocs.org/projects/buildly-core/badge/?version=latest)](https://buildly-core.readthedocs.io/en/latest/?badge=latest) [![Gitter](https://badges.gitter.im/Buildlyio/community.svg)](https://gitter.im/Buildlyio/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-A gateway and service discovery system for “micro” services. A light weight Gateway that connects all of your data services, API’s and endpoints to a single easy-to-use URL.
+A gateway and service discovery system for “micro” services. A light weight Gateway that connects all of your data services, API’s and endpoints to a single easy-to-use URL.  Based on the Rapid Application Development tools and processes, the Gateway is build to use our Business Logic Module services, or allow for open source or propreitary gateways to connect and auth through the core and data mesh for faster component based development.
 
-Public Roadmap - https://docs.google.com/spreadsheets/d/1tnmAy-tiQOVWSAigJIQ5HhdatbE3WTC00tzdwtOe2Hk
+# Buildly-Core Project Goals and Vision
+
+## Project Vision
+
+Buildly-Core is designed to be a cornerstone component for cloud-native architectures, providing a versatile gateway and service discovery system for microservices. Our vision is to simplify the integration of data services, APIs, and endpoints, offering a lightweight and easy-to-use solution that connects them all through a single, accessible URL.
+
+## Key Objectives
+
+- Simplified Integration: Streamline the integration of diverse data services, APIs, and endpoints into a unified gateway, making it easier for developers to work with microservices.
+- Lightweight and High Performance: Prioritize performance optimization to ensure that Buildy-Core remains lightweight and responsive even in high-traffic environments.
+- Service Discovery: Implement robust service discovery mechanisms to enable dynamic service registration and discovery for microservices within the architecture.
+- Security and Access Control: Implement security measures to protect against unauthorized access and ensure data and services are secure.
+- Flexibility and Scalability: Design Buildly-Core to be flexible and scalable, accommodating future growth and evolving architectural needs.
+- Documentation and Ease of Use: Provide comprehensive documentation and resources to make it easy for developers to understand and work with Buildy-Core.
+- Community Support: Foster a supportive community where developers can collaborate, seek help, and share insights and best practices.
+
 
 ## Getting Started
 
@@ -18,13 +33,13 @@ These instructions will get you a copy of the project up and running on your loc
 Build first the image:
 
 ```bash
-docker-compose build # --no-cache to force dependencies installation
+docker compose build # --no-cache to force dependencies installation
 ```
 
 To run the webserver (go to 127.0.0.1:8080):
 
 ```bash
-docker-compose up # -d for detached
+docker compose up # -d for detached
 ```
 
 User: `admin`
@@ -33,7 +48,7 @@ Password: `admin`.
 To run the webserver with pdb support:
 
 ```bash
-docker-compose run --rm --service-ports buildly
+docker compose run --rm --service-ports buildly
 ```
 
 ## Running the tests
@@ -41,13 +56,13 @@ docker-compose run --rm --service-ports buildly
 To run the tests without flake8:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
+docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --keepdb
 ```
 
 To run the tests like if it was CI with flake8:
 
 ```bash
-docker-compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
+docker compose run --entrypoint '/usr/bin/env' --rm buildly bash scripts/run-tests.sh --ci
 ```
 
 See `pytest --help` for more options.
@@ -126,15 +141,6 @@ The following tables list the configurable parameters of buildly and their defau
 | `SOCIAL_AUTH_LOGIN_REDIRECT_URL`    | Redirect the user once the auth process ended successfully | None                              |
 | `SOCIAL_AUTH_MICROSOFT_GRAPH_REDIRECT_URL` | The redirect URL for Microsoft graph Social auth | None                 |
 
-#### LDAP & Active Directory Server
-|             Parameter               |            Description             |                    Default                |
-|-------------------------------------|------------------------------------|-------------------------------------------|
-| `LDAP_ENABLE`                       | If true, enable LDAP authentication  | False |
-| `LDAP_HOST`                         | The host to use when connecting to the LDAP server | `` |
-| `LDAP_USERNAME`                     | The username to use when connecting to the LDAP server  | `` |
-| `LDAP_PASSWORD`                     | The password to use when connecting to the LDAP server | `` |
-| `LDAP_BASE_DN`                      | The base domain name for search | `` |
-| `LDAP_USERNAME_FIELD_SEARCH`        | The username field used by the LDAP server for search | `` |
 
 #### Email Server
 |             Parameter               |            Description             |                    Default                |
@@ -151,7 +157,8 @@ The following tables list the configurable parameters of buildly and their defau
 
 ## Built With
 
-* [Travis CI](https://travis-ci.org/) - Recommended CI/CD
+* GitHub Actions - Recommended CI/CD
+* [Travis CI](https://travis-ci.org/)
 
 ## Contributing
 

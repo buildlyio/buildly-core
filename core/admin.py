@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, Partner, \
+from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, OrganizationType, Partner, \
     Coupon, Referral
 
 
@@ -18,15 +18,20 @@ class CoreSitesAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class OrganizationTypeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    display = 'Organization Type'
+
+
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'create_date', 'edit_date')
+    list_display = ('name', 'organization_type', 'create_date', 'edit_date')
     display = 'Organization'
 
 
 class CoreGroupAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'organization', 'is_global', 'is_org_level', 'is_default', 'permissions')
     display = 'Core Group'
-    search_fields = ('name', 'organization__name', )
+    search_fields = ('name', 'organization__name')
 
 
 class CoreUserAdmin(UserAdmin):
@@ -38,9 +43,10 @@ class CoreUserAdmin(UserAdmin):
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
+        (_('Preferences'), {'fields': ('email_preferences', 'push_preferences')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
     )
-    filter_horizontal = ('core_groups', 'user_permissions', )
+    filter_horizontal = ('core_groups', 'user_permissions')
 
     def get_fieldsets(self, request, obj=None):
 
@@ -52,7 +58,13 @@ class CoreUserAdmin(UserAdmin):
         if not request.user.is_superuser:
             fieldsets[2][1]['fields'] = ('is_active', 'is_staff')
         else:
-            fieldsets[2][1]['fields'] = ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')
+            fieldsets[2][1]['fields'] = (
+                'is_active',
+                'is_staff',
+                'is_superuser',
+                'core_groups',
+                'user_permissions',
+            )
 
         return fieldsets
 
@@ -76,6 +88,7 @@ class ReferralAdmin(admin.ModelAdmin):
 
 admin.site.register(LogicModule, LogicModuleAdmin)
 admin.site.register(Organization, OrganizationAdmin)
+admin.site.register(OrganizationType, OrganizationTypeAdmin)
 admin.site.register(CoreGroup, CoreGroupAdmin)
 admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(CoreSites, CoreSitesAdmin)

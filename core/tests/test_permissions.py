@@ -2,7 +2,6 @@ from core.permissions import has_permission, merge_permissions
 
 
 class TestMergePermissions:
-
     def test_merge_permissions(self):
         """
         Merge no access to view only permission will result in view only
@@ -12,7 +11,6 @@ class TestMergePermissions:
 
 
 class TestHasPermission:
-
     def test_has_permission_success(self):
         result = has_permission('0100', 'GET')
         assert result

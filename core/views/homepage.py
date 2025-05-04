@@ -1,15 +1,7 @@
-import logging
-
 from django.conf import settings
 from django.http import JsonResponse
-from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic.base import TemplateView
+from django.shortcuts import render
 from django.template import RequestContext
-from django.shortcuts import render_to_response
-
-from rest_framework.reverse import reverse
-
 from social_core.exceptions import AuthFailed
 from social_core.utils import (partial_pipeline_data, setting_url,
                                user_is_active, user_is_authenticated)
@@ -17,21 +9,15 @@ from social_django.utils import psa
 
 from core.exceptions import SocialAuthFailed, SocialAuthNotConfigured
 from core.utils import generate_access_tokens
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
 
-logger = logging.getLogger(__name__)
 
+def index(request):
+    """View function for home page of site."""
 
-class IndexView(TemplateView):
-    template_name = 'index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
-        extra_context = {
-            'documentation_url': reverse('schema-swagger-ui'),
-            'api_url': reverse('schema-swagger-json', kwargs={'format': '.json'}),
-        }
-        context.update(extra_context)
-        return context
+    # Render the HTML template index.html with the data in the context variable
+    return render(request, 'index.html')
 
 
 @never_cache

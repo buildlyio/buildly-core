@@ -7,7 +7,6 @@ from aiohttp import ClientSession, StreamReader, ContentTypeError, RequestInfo
 
 
 class AiohttpResponseMock:
-
     def __init__(self, method, url, status, body, headers=None):
         self.method = method
         self.url = url
@@ -33,28 +32,28 @@ class AiohttpResponseMock:
         stream.feed_eof()
         return stream
 
-    @asyncio.coroutine
-    def read(self):
+    async def read(self):
         return self.content.read()
 
-    @asyncio.coroutine
-    def text(self, encoding='utf-8'):
+    async def text(self, encoding='utf-8'):
         return self.body.decode(encoding)
 
-    @asyncio.coroutine
-    def json(self, encoding='utf-8'):
+    async def json(self, encoding='utf-8'):
         if not getattr(self.body, "decode", False):
-            raise ContentTypeError(request_info=RequestInfo(self.url, self.method, self.headers), history=[self])
+            raise ContentTypeError(
+                request_info=RequestInfo(self.url, self.method, self.headers),
+                history=[self],
+            )
         return json.loads(self.body.decode(encoding))
 
-    @asyncio.coroutine
-    def release(self):
+    async def release(self):
         pass
 
 
-def create_aiohttp_session_mock(response_mocks: typing.Iterable[AiohttpResponseMock],
-                                loop: asyncio.AbstractEventLoop = None) -> ClientSession:
-
+def create_aiohttp_session_mock(
+    response_mocks: typing.Iterable[AiohttpResponseMock],
+    loop: asyncio.AbstractEventLoop = None,
+) -> ClientSession:
     async def _request(method, url, *args, **kwargs):
         for response in response_mocks:
             if response.match_request(method, url):

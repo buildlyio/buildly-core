@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,8 +21,10 @@ from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, Co
                               CoreUserEmailNotificationSerializer, CoreUserProfileSerializer,
                               CoreUserVerifyEmailSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
-from core.swagger import (COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
-                          DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM)
+from core.swagger import (
+    COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
+    DETAIL_RESPONSE, SUCCESS_RESPONSE, TOKEN_QUERY_PARAM
+)
 from core.jwt_utils import create_invitation_token
 from core.email_utils import send_email
 
@@ -180,7 +183,7 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             return Response({'detail': 'No token is provided.'},
                             status.HTTP_401_UNAUTHORIZED)
         try:
-            decoded = jwt.decode(token, settings.SECRET_KEY,
+            decoded = jwt.decode(token, settings.TOKEN_SECRET_KEY,
                                  algorithms='HS256')
         except jwt.DecodeError:
             return Response({'detail': 'Token is not valid.'},
@@ -239,10 +242,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         return links
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordSerializer,
-                         responses=COREUSER_RESETPASS_RESPONSE)
-    @action(methods=['POST'], detail=False)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordSerializer,
+        responses=COREUSER_RESETPASS_RESPONSE
+    )
+    @action(methods=['POST'], detail=False, url_path='reset-password')
     def reset_password(self, request, *args, **kwargs):
         """
         This endpoint is used to request password resetting.
@@ -258,10 +263,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordCheckSerializer,
-                         responses=SUCCESS_RESPONSE)
-    @action(methods=['POST'], detail=False)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordCheckSerializer,
+        responses=SUCCESS_RESPONSE
+    )
+    @action(methods=['POST'], detail=False, url_path='reset-password-check')
     def reset_password_check(self, request, *args, **kwargs):
         """
         This endpoint is used to check that token is valid.
@@ -273,10 +280,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             },
             status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(methods=['post'],
-                         request_body=CoreUserResetPasswordConfirmSerializer,
-                         responses=DETAIL_RESPONSE)
-    @action(methods=['POST'], detail=False)
+    @swagger_auto_schema(
+        methods=['post'],
+        request_body=CoreUserResetPasswordConfirmSerializer,
+        responses=DETAIL_RESPONSE
+    )
+    @action(methods=['POST'], detail=False, url_path='reset-password-confirm')
     def reset_password_confirm(self, request, *args, **kwargs):
         """
         This endpoint is used to change password if the token is valid
@@ -363,8 +372,9 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             for user in core_users:
                 email_address = user.email
                 send_email(email_address, subject, context, template_name, html_template_name)
-        except Exception as ex:
-            print('Exception: ', ex)
+        except Exception as e:  # noqa
+            pass
+
         return Response(
             {
                 'detail': 'The notification were sent successfully on email.',
