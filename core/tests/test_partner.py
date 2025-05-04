@@ -64,6 +64,14 @@ class CreatePartnerTest(TestCase):
         self.request = self.factory.get('/partner/')
         self.valid_payload = {"name": "partner name"}
 
+    def test_create_valid_partner(self):
+        data = {'name': 'partner name', }
+        request = self.factory.post(reverse('partner-list'), data, format='json')
+        request.user = factories.CoreUser(is_superuser=True, is_staff=True)
+        response = PartnerViewSet.as_view({'post': 'create'})(request)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class UpdatePartnerTest(TestCase):
     """Test module for updating an existing partner record"""

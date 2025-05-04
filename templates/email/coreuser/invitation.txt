@@ -1,6 +1,6 @@
 Invitation from Organization Admin
 
-You have been invited to join {{ organization_name }}!
+You have been invited to join {{ organization_name }} on Buildly!
 Click the button below to create your user profile.
 {{ invitation_link }}
 
@@ -9,7 +9,7 @@ Click the button below to create your user profile.
 If you have any questions about this invitation please contact {{ org_admin_name }} from {{ organization_name }}.
 
 Next steps
-Once you have registered, you will be within {{ organization_name }}'s portfolio. To see specific programs, you must request access.
+Once you have registered, you will be within {{ organization_name }}'s workspace.
 
 If you have any questions about this invitation please contact {{ org_admin_name }} from {{ organization_name }}.
 

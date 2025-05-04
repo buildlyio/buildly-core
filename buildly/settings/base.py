@@ -143,18 +143,16 @@ CORE_WEBSITE = "https://buildly.io"
 # User and Organization configuration
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
 DEFAULT_ORG = os.getenv('DEFAULT_ORG').lower() if os.getenv('DEFAULT_ORG') else None
-AUTO_APPROVE_USER = os.getenv('AUTO_APPROVE_USER', False)
+AUTO_APPROVE_USER = False if os.getenv('AUTO_APPROVE_USER') == 'False' else True
+FREE_COUPON_CODE = os.getenv('FREE_COUPON_CODE', '')
 STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
+
 
 # Swagger settings - for generate_swagger management command
 
-SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'gateway.urls.swagger_info',
+}
 
-ORGANIZATION_TYPES = ['Custodian', 'Producer']
+HUBSPOT_API_KEY = ""
 
-EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 12))
-
-try:
-    from .local import *
-except (ImportError, ModuleNotFoundError):
-    pass

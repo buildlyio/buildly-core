@@ -135,3 +135,7 @@ dmypy.json
 .coverage
 
 .codegpt
+
+.DS_store
+
+settings/dev.py
