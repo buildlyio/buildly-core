@@ -154,5 +154,5 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'gateway.urls.swagger_info',
 }
 
-HUBSPOT_API_KEY = ""
+HUBSPOT_API_KEY = os.getenv('HUBSPOT_API_KEY', '')
 
