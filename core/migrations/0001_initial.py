@@ -19,20 +19,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Consortium',
-            fields=[
-                ('consortium_uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False, verbose_name='Consortium UUID')),
-                ('name', models.CharField(blank=True, help_text='Multiple organizations form a consortium together', max_length=255, verbose_name='Consortium Name')),
-                ('organization_uuids', models.UUIDField(blank=True, null=True, verbose_name='Organization UUIDs')),
-                ('create_date', models.DateTimeField(default=django.utils.timezone.now)),
-                ('edit_date', models.DateTimeField(blank=True, null=True)),
-            ],
-            options={
-                'verbose_name_plural': 'Consortiums',
-                'ordering': ('name',),
-            },
-        ),
-        migrations.CreateModel(
             name='Industry',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
