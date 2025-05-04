@@ -27,4 +27,5 @@ EXPOSE 8080
 ENTRYPOINT ["bash", "/code/scripts/docker-entrypoint.sh"]
 
 # Specify tag name to be created on github
-LABEL version="1.0.0"
+LABEL version="1.0.1"
+

@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, \
-    Industry, LogicModule, Organization, OrganizationType, Consortium, Partner
+from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, OrganizationType, Partner, \
+    Coupon, Referral
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -35,13 +35,13 @@ class CoreGroupAdmin(admin.ModelAdmin):
 
 
 class CoreUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status','user_timezone')
+    list_display = ('username', 'first_name', 'last_name', 'email', 'organization', 'is_active', 'user_type', 'survey_status','create_date')
     display = 'Core User'
     list_filter = ('is_staff', 'organization')
     search_fields = ('first_name', 'last_name', 'username', 'title', 'organization__name', )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status','user_timezone')}),
+        (_('Personal info'), {'fields': ('title', 'first_name', 'last_name', 'email', 'contact_info', 'organization', 'user_type', 'survey_status')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'core_groups', 'user_permissions')}),
         (_('Preferences'), {'fields': ('email_preferences', 'push_preferences')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'create_date', 'edit_date')}),
@@ -73,6 +73,18 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('organization', 'type')
     display = 'Email Template'
 
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'percent_off', 'duration', 'max_redemptions', 'active')
+    list_filter = ('active', 'duration')
+    search_fields = ('code', 'name')
+
+@admin.register(Referral)
+class ReferralAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'organization', 'coupon', 'active')
+    list_filter = ('active', 'organization', 'coupon')
+    search_fields = ('code', 'name', 'organization__name', 'coupon__name')
+
 
 admin.site.register(LogicModule, LogicModuleAdmin)
 admin.site.register(Organization, OrganizationAdmin)
@@ -82,7 +94,5 @@ admin.site.register(CoreUser, CoreUserAdmin)
 admin.site.register(CoreSites, CoreSitesAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 admin.site.register(Industry)
-admin.site.register(Consortium)
 admin.site.register(Partner)
-
 

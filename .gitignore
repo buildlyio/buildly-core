@@ -136,4 +136,6 @@ dmypy.json
 
 .codegpt
 
-.DS_Store
+.DS_store
+
+settings/dev.py

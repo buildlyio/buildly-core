@@ -12,24 +12,23 @@ def test_org_serializer(request_factory, org):
     request = request_factory.get('')
     serializer = OrganizationSerializer(org, context={'request': request})
     data = serializer.data
-
-    keys = [
-        'id',
-        'organization_uuid',
-        'name',
-        'description',
-        'organization_url',
-        'create_date',
-        'edit_date',
-        'oauth_domains',
-        'date_format',
-        'phone',
-        'industries',
-        'allow_import_export',
-        'radius',
-        'organization_type',
-        'stripe_subscription_details',
-    ]
+    keys = ['id',
+            'organization_uuid',
+            'name',
+            'description',
+            'organization_url',
+            'create_date',
+            'edit_date',
+            'oauth_domains',
+            'date_format',
+            'phone',
+            'industries',
+            'unlimited_free_plan',
+            'coupon',
+            'subscriptions',
+            'subscription_active',
+            'referral_link',
+            ]
     assert set(data.keys()) == set(keys)
 
 
@@ -56,24 +55,22 @@ def test_core_user_serializer(request_factory, org_member):
     request = request_factory.get('')
     serializer = CoreUserSerializer(org_member, context={'request': request})
     data = serializer.data
-    keys = [
-        'id',
-        'core_user_uuid',
-        'first_name',
-        'last_name',
-        'email',
-        'username',
-        'is_active',
-        'title',
-        'contact_info',
-        'privacy_disclaimer_accepted',
-        'organization',
-        'core_groups',
-        'email_preferences',
-        'push_preferences',
-        'user_timezone',
-        'user_type',
-        'survey_status'
-    ]
+    keys = ['id',
+            'core_user_uuid',
+            'first_name',
+            'last_name',
+            'email',
+            'username',
+            'is_active',
+            'title',
+            'contact_info',
+            'privacy_disclaimer_accepted',
+            'organization',
+            'core_groups',
+            'user_type',
+            'survey_status',
+            'subscription_active',
+            ]
+
     assert set(data.keys()) == set(keys)
     assert isinstance(data['organization'], dict)

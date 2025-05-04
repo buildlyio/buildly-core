@@ -1,4 +1,3 @@
-from .base import *
 from .authentication import *
 from .email import *
 
@@ -35,6 +34,20 @@ DATABASES = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Database
+# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.{}'.format(os.environ['DATABASE_ENGINE']),
+        'NAME': os.environ['DATABASE_NAME'],
+        'USER': os.environ['DATABASE_USER'],
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'PORT': os.environ['DATABASE_PORT'],
+    }
+}
 
 
 # Security

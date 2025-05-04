@@ -15,7 +15,10 @@ MIDDLEWARE_CORS = [
 
 MIDDLEWARE = MIDDLEWARE_CORS + MIDDLEWARE
 
+
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ORIGIN_WHITELIST = "*"
 
 DATABASES = {
     'default': {
@@ -30,6 +33,7 @@ DEBUG = True
 # Security
 # https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
 
+ALLOWED_HOSTS = "*"
 
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
@@ -45,7 +49,7 @@ LOGGING = {
         'file': {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'class': 'logging.FileHandler',
-            'filename': 'buildly.log',
+            'filename': '/var/log/buildly.log',
         },
     },
     'loggers': {

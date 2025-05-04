@@ -62,7 +62,7 @@ done
 
 set -o xtrace  # shows what's being executed
 
-pip install -r requirements-dev.txt
+pip install -r requirements/test.txt
 
 if [ "$ci" = true ] ; then
     flake8 .
