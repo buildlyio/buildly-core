@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from core.models import CoreUser, CoreGroup, CoreSites, EmailTemplate, Industry, LogicModule, Organization, OrganizationType, Partner, \
-    Coupon, Referral
+    Coupon, Referral, Subscription
 
 
 class LogicModuleAdmin(admin.ModelAdmin):
@@ -85,6 +85,14 @@ class ReferralAdmin(admin.ModelAdmin):
     list_filter = ('active', 'organization', 'coupon')
     search_fields = ('code', 'name', 'organization__name', 'coupon__name')
 
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'organization', 'stripe_subscription_id', 'status', 'start_date', 'end_date')
+    list_filter = ('status', 'organization')
+    search_fields = ('user__username', 'organization__name')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('user', 'organization')
+
 
 admin.site.register(LogicModule, LogicModuleAdmin)
 admin.site.register(Organization, OrganizationAdmin)
@@ -95,4 +103,5 @@ admin.site.register(CoreSites, CoreSitesAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 admin.site.register(Industry)
 admin.site.register(Partner)
+admin.site.register(Subscription, SubscriptionAdmin)
 
