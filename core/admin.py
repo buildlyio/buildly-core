@@ -87,7 +87,7 @@ class ReferralAdmin(admin.ModelAdmin):
 
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'organization', 'stripe_subscription_id', 'subscription_start_date', 'subscription_end_date')
-    list_filter = ('status', 'organization')
+    list_filter = ('stripe_subscription_id', 'organization')
     search_fields = ('user__username', 'organization__name')
     def get_queryset(self, request):
         qs = super().get_queryset(request)
