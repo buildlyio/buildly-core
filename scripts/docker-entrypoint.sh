@@ -16,6 +16,9 @@ then
 fi
 
 echo $(date -u) "- Migrating"
+python manage.py dbshell <<EOF
+DELETE FROM django_migrations;
+EOF
 python manage.py makemigrations
 python manage.py migrate
 

@@ -123,6 +123,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': ['core.permissions.IsSuperUserBrowseableAPI'],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema',  # Added for OpenAPI schema
 }
 
 # Front-end application URL
