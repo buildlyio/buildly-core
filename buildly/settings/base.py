@@ -157,3 +157,4 @@ SWAGGER_SETTINGS = {
 
 HUBSPOT_API_KEY = ""
 
+ORGANIZATION_TYPES = ['Developer', 'Product']
