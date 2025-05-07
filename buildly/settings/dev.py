@@ -35,7 +35,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
-
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

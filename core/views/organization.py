@@ -109,4 +109,3 @@ class OrganizationTypeViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowOnlyOrgAdmin,)
     queryset = OrganizationType.objects.all()
     serializer_class = OrganizationTypeSerializer
-
