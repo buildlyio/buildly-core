@@ -15,7 +15,7 @@ from datamesh.handle_request import RequestHandler
 from datamesh.utils import delete_join_record
 from gateway import exceptions
 from gateway import utils
-from core.models import LogicModule, Consortium
+from core.models import LogicModule
 from gateway.clients import SwaggerClient, AsyncSwaggerClient
 from datamesh.services import DataMesh
 

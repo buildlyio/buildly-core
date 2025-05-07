@@ -99,6 +99,10 @@ $ docker run -e MYVAR1 --env MYVAR2=foo \
     buildly/buildly:<version>
 ```
 
+### API Documentation
+
+The API documentation is available at `/docs/`. It provides an interactive interface to explore and test the API endpoints. Ensure that the `drf_yasg` package is installed and properly configured in your settings.
+
 The following tables list the configurable parameters of buildly and their default values.
 
 #### Security System
@@ -106,7 +110,7 @@ The following tables list the configurable parameters of buildly and their defau
 |-------------------------------------|------------------------------------|-------------------------------------------|
 | `ALLOWED_HOSTS`                     | A list of strings representing the domain names the app can serve  | `[]`      |
 | `CORS_ORIGIN_ALLOW_ALL`             | If True, CORS_ORIGIN_WHITELIST is not used and all origins are accepted  | False |
-| `CORS_ORIGIN_WHITELIST`             | A list of origins that are authorized to make cross-site HTTP requests  | `[]` |
+| `CORS_ORIGIN_WHITELIST`             | A tuple or list of origins that are authorized to make cross-site HTTP requests  | `[]` |
 | `DEFAULT_ORG`                       | The first organization created in the database  | ``                           |
 | `SECRET_KEY`                        | Used to provide cryptographic signing, and should be set to a unique, unpredictable value | None |
 | `SUPER_USER_PASSWORD`               | Used to define the super user password when it's created for the first time | `admin` in Debug mode or None |

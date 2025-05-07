@@ -6,7 +6,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.utils import timezone
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template import Template, Context
 
@@ -144,7 +144,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
         model = CoreUser
         fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
                   'title', 'contact_info', 'privacy_disclaimer_accepted','tos_disclaimer_accepted', 'organization', 'core_groups',
-                  'invitation_token', 'user_type', 'survey_status')
+                  'invitation_token', 'user_type', 'survey_status','subscription_active')
         read_only_fields = ('core_user_uuid', 'organization',)
 
     def get_subscription_active(self, user):
@@ -624,7 +624,7 @@ class CoreUserVerifyEmailSerializer(serializers.Serializer):
     def validate(self, attrs):
         # Decode the uuid64 to uid to get User object
         try:
-            uid = force_text(urlsafe_base64_decode(attrs['token']))
+            uid = force_str(urlsafe_base64_decode(attrs['token']))
             user = CoreUser.objects.filter(core_user_uuid=uid).first()
             if user:
                 user.is_active = True

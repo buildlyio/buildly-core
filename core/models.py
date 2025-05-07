@@ -13,8 +13,6 @@ from django.utils import timezone
 import requests
 import logging
 
-from pyasn1.compat.octets import null
-
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -347,7 +345,6 @@ class CoreUser(AbstractUser):
                 {"property": "email", "value": self.email},
                 {"property": "firstname", "value": self.first_name},
                 {"property": "lastname", "value": self.last_name},
-                {"property": "phone", "value": self.phone},
                 {"property": "company", "value": self.organization.name if self.organization else ""},
                 {"property": "jobtitle", "value": self.title},
                 {"property": "user_type", "value": self.user_type},
@@ -490,7 +487,7 @@ class Subscription(models.Model):
     subscription_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     stripe_subscription_id = models.CharField(max_length=255, null=True)
     stripe_product = models.CharField(max_length=255)
-    stripe_product_info = JSONField(blank=True, null=True)
+    stripe_product_info = models.JSONField(blank=True, null=True)
     stripe_customer_id = models.CharField(max_length=255, null=True)
     stripe_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     trial_start_date = models.DateField(null=True, blank=True)
@@ -502,14 +499,14 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
-        blank=null,
+        blank=True,
         null=True,
         related_name='user_subscription'
     )
     created_by = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
-        blank=null,
+        blank=True,
         null=True,
         related_name='created_subscription'
     )

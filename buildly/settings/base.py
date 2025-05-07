@@ -115,16 +115,15 @@ if os.getenv('USE_HTTPS') == 'True':
 
 # Rest Framework
 REST_FRAMEWORK = {
-    'PAGINATE_BY': 10,
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'core.helpers.oauth.CustomJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': ('core.permissions.IsSuperUserBrowseableAPI',)
-    # ToDo: Think about `DEFAULT_PAGINATION_CLASS as env variable and
-    #       customizable values with reasonable defaults
+    'DEFAULT_PERMISSION_CLASSES': ['core.permissions.IsSuperUserBrowseableAPI'],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema',  # Added for OpenAPI schema
 }
 
 # Front-end application URL
@@ -150,9 +149,11 @@ STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 
 # Swagger settings - for generate_swagger management command
 
-SWAGGER_SETTINGS = {
-    'DEFAULT_INFO': 'gateway.urls.swagger_info',
-}
+SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
 
-HUBSPOT_API_KEY = ""
+ORGANIZATION_TYPES = ['Developer', 'Product']
+
+EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 12))
+
+HUBSPOT_API_KEY = ''
 
