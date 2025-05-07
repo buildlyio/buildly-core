@@ -9,7 +9,7 @@ jobs:
     name: Build and Push to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/drunr-demo-buildly-core
+      IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/governcrm-demo-buildly-core
     steps:
     - uses: actions/checkout@v2
 

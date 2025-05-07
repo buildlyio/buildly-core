@@ -8,11 +8,7 @@ on:
 env:
   PROJECT_ID: dev-buildly
   REGION: us
-<<<<<<< HEAD
   IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/governcrm-dev-buildly-core
-=======
-  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/drunr-dev-buildly-core
->>>>>>> buildlyio/master
 
 jobs:
   build:
@@ -47,11 +43,7 @@ jobs:
       id: Kapstan
       uses: kapstan-io/deployment-action@latest
       with: 
-<<<<<<< HEAD
         application_name: dev-buildly-core
-=======
-        application_name: buildly-core
->>>>>>> buildlyio/master
         image_repository_name: ${{ env.IMAGE_NAME }}
         image_tag: latest
         kapstan_api_key: ${{ secrets.KAPSTAN_KEY }}
