@@ -62,11 +62,7 @@ done
 
 set -o xtrace  # shows what's being executed
 
-<<<<<<< HEAD
-pip install -r requirements-dev.txt
-=======
 pip install -r requirements/test.txt
->>>>>>> buildlyio/master
 
 if [ "$ci" = true ] ; then
     flake8 .
