@@ -233,13 +233,7 @@
                   "required":false,
                   "type":"number"
                },
-               {
-                  "name":"workflowlevel2_uuid",
-                  "in":"query",
-                  "description":"Multiple values may be separated by commas.",
-                  "required":false,
-                  "type":"string"
-               },
+            
                {
                   "name":"search",
                   "in":"query",

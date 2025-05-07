@@ -146,6 +146,7 @@ AUTO_APPROVE_USER = False if os.getenv('AUTO_APPROVE_USER') == 'False' else True
 FREE_COUPON_CODE = os.getenv('FREE_COUPON_CODE', '')
 STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
 
+EMAIL_VERIFICATION_EXPIRATION = 24  # Expiration time in hours
 
 # Swagger settings - for generate_swagger management command
 
@@ -157,3 +158,4 @@ EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 1
 
 HUBSPOT_API_KEY = ''
 
+ORGANIZATION_TYPES = ['Developer', 'Product']

@@ -31,6 +31,11 @@ DATABASES = {
 DEBUG = True
 
 # Security
+
+
+ALLOWED_HOSTS = ["http://localhost:8000", "http://127.0.0.1:8000"]
+
+
 # https://docs.djangoproject.com/en/1.11/ref/settings/#secure-proxy-ssl-header
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -45,7 +50,10 @@ LOGGING = {
         'file': {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'buildly.log'),
+            'filename': os.path.join(
+                '/var/log/' if os.access('/var/log/', os.W_OK) else os.getcwd(),
+                'buildly.log'
+            ),
         },
     },
     'loggers': {
