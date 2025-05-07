@@ -34,8 +34,6 @@ DATABASES = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-<<<<<<< HEAD
-=======
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -50,7 +48,6 @@ DATABASES = {
         'PORT': os.environ['DATABASE_PORT'],
     }
 }
->>>>>>> buildlyio/master
 
 
 # Security
