@@ -416,6 +416,7 @@ class LogicModule(models.Model):
     endpoint_name = models.CharField(blank=True, null=True, max_length=255)
     docs_endpoint = models.CharField(blank=True, null=True, max_length=255)
     api_specification = JSONField(blank=True, null=True)
+    swagger_version = models.CharField(max_length=50, null=True, blank=True)
     core_groups = models.ManyToManyField(CoreGroup, verbose_name='Logic Module groups', blank=True,
                                          related_name='logic_module_set', related_query_name='logic_module')
     create_date = models.DateTimeField(null=True, blank=True)
