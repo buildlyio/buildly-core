@@ -87,6 +87,6 @@ ERROR TEMPLATES and views
 def handler404(request, exception):
     context = RequestContext(request)
     err_code = f'404: {exception}'
-    response = render('404.html', {"code": err_code}, context)
+    response = render_to_response('404.html', {"code": err_code}, context)
     response.status_code = 404
     return response

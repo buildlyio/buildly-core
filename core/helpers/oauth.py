@@ -46,7 +46,7 @@ class CustomJWTAuthentication(BaseAuthentication):
 
         return (user, token)
 
-    def authenticate_header(self, request):
+    def authenticate_header(self):
         return 'Bearer'
 
 

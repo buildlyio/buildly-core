@@ -1,3 +1,8 @@
+import stripe
+
+from datetime import datetime
+from urllib.parse import urljoin
+
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -9,14 +14,12 @@ import django_filters
 import jwt
 from drf_yasg.utils import swagger_auto_schema
 
-from core.helpers.oauth import EmailVerificationToken
-from core.models import CoreUser, Organization
-from core.serializers import (
-    CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
-    CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
-    CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer,
-    CoreUserEmailNotificationSerializer, CoreUserProfileSerializer
-)
+from core.models import CoreUser, Organization, Subscription
+from core.serializers import (CoreUserSerializer, CoreUserWritableSerializer, CoreUserInvitationSerializer,
+                              CoreUserResetPasswordSerializer, CoreUserResetPasswordCheckSerializer,
+                              CoreUserResetPasswordConfirmSerializer, CoreUserUpdateOrganizationSerializer,
+                              CoreUserEmailNotificationSerializer, CoreUserProfileSerializer,
+                              CoreUserVerifyEmailSerializer)
 from core.permissions import AllowAuthenticatedRead, AllowOnlyOrgAdmin, IsOrgMember
 from core.swagger import (
     COREUSER_INVITE_RESPONSE, COREUSER_INVITE_CHECK_RESPONSE, COREUSER_RESETPASS_RESPONSE,
@@ -63,7 +66,8 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         'reset_password_check': CoreUserResetPasswordCheckSerializer,
         'reset_password_confirm': CoreUserResetPasswordConfirmSerializer,
         'update_org': CoreUserUpdateOrganizationSerializer,
-        'notification': CoreUserEmailNotificationSerializer
+        'notification': CoreUserEmailNotificationSerializer,
+        'verify_email': CoreUserVerifyEmailSerializer,
     }
 
     def list(self, request, *args, **kwargs):
@@ -88,14 +92,42 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         Gives you the user information based on the user token sent within the request.
         """
         user = request.user
+    
+        # Check existing subscription for the user and update or create new one's if needed
+        existing_subscriptions = Subscription.objects.filter(user=user).first()
+        if settings.STRIPE_SECRET:
+            stripe.api_key = settings.STRIPE_SECRET
+            stripe.api_version = '2022-11-15'
+
+            existing_subscriptions = Subscription.objects.filter(user=user).order_by('-subscription_end_date').first()
+            if existing_subscriptions:
+                stripe_subscription = stripe.Subscription.retrieve(existing_subscriptions.stripe_subscription_id)
+                if stripe_subscription:
+                    new_start_datetime = datetime.fromtimestamp(stripe_subscription.current_period_start).date()
+                    new_end_datetime = datetime.fromtimestamp(stripe_subscription.current_period_end).date()
+            
+                    if existing_subscriptions.subscription_end_date == new_start_datetime:
+                        Subscription.objects.create(
+                            stripe_customer_id=existing_subscriptions.stripe_customer_id,
+                            stripe_subscription_id=existing_subscriptions.stripe_subscription_id,
+                            stripe_product=existing_subscriptions.stripe_product,
+                            stripe_payment_method_id=existing_subscriptions.stripe_payment_method_id,
+                            subscription_start_date=new_start_datetime,
+                            subscription_end_date=new_end_datetime,
+                            organization=existing_subscriptions.organization,
+                            user=existing_subscriptions.user,
+                            created_by=existing_subscriptions.created_by,
+                            stripe_product_info=existing_subscriptions.stripe_product_info,
+                        )
 
         serializer = self.get_serializer(instance=user, context={'request': request})
         return Response(serializer.data)
 
+
     @action(methods=['POST'], detail=False)
     def assignees(self, request, *args, **kwargs):
         user_uuids = request.data
-        final_data = dict()
+        final_data= dict()
         if user_uuids:
             users = (
                 self.get_queryset()
@@ -110,13 +142,12 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 for item in users
             }
 
+
         return Response(final_data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        methods=['post'],
-        request_body=CoreUserInvitationSerializer,
-        responses=COREUSER_INVITE_RESPONSE
-    )
+    @swagger_auto_schema(methods=['post'],
+                         request_body=CoreUserInvitationSerializer,
+                         responses=COREUSER_INVITE_RESPONSE)
     @action(methods=['POST'], detail=False)
     def invite(self, request, *args, **kwargs):
         """
@@ -349,103 +380,17 @@ class CoreUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                 'detail': 'The notification were sent successfully on email.',
             }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        methods=['post'],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={'token': openapi.Schema(type=openapi.TYPE_STRING), }
-        ),
-        responses=SUCCESS_RESPONSE
-    )
-    @action(methods=['POST'], detail=False, url_path='verify-email')
+    @swagger_auto_schema(methods=['post'],
+                         request_body=CoreUserVerifyEmailSerializer,
+                         responses=SUCCESS_RESPONSE)
+    @action(methods=['POST'], detail=False)
     def verify_email(self, request, *args, **kwargs):
         """
         This endpoint is used to verify the email address.
         """
-        token = request.data.get('token')
-        # decode token
-        try:
-            user_uuid = EmailVerificationToken().extract_user_id_from_token(token)
-        except EmailVerificationToken.InvalidTokenException:
-            user_uuid = None
-
-        if user_uuid:
-            user = CoreUser.objects.get(core_user_uuid=user_uuid)
-
-            # check if the user is already verified
-            if user.is_active:
-                return Response(
-                    {'success': False, 'code': 'email_already_verified'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # check if token is not expired
-            try:
-                _ = EmailVerificationToken().verify_email_token(token)
-
-                # activate the user
-                user.is_active = True
-                user.save()
-
-                return Response(
-                    {'success': True, 'message': 'Email verified successfully'},
-                    status=status.HTTP_200_OK
-                )
-
-            except EmailVerificationToken.TokenExpiredException as e:
-                return Response(
-                    {'success': False, 'code': e.code, 'message': e.message},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            except EmailVerificationToken.InvalidTokenException as e:
-                pass
-
+        serializer = self.get_serializer(data=request.data)
         return Response(
-            {'success': False, 'code': 'invalid_token', 'message': 'Invalid token'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    @swagger_auto_schema(
-        methods=['post'],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'email': openapi.Schema(type=openapi.TYPE_STRING),
-                'token': openapi.Schema(type=openapi.TYPE_STRING),
-            }
-        ),
-    )
-    @action(methods=['POST'], detail=False, url_path='resend-email-verification')
-    def resend_email_verification(self, request, *args, **kwargs):
-        """
-        This endpoint is used to resend the email verification link.
-        """
-        # get token from the request
-        email = request.data.get('email')
-        user = None
-
-        try:
-            user_uuid = EmailVerificationToken().extract_user_id_from_token(request.data.get('token'))
-            if user_uuid:
-                user = CoreUser.objects.get(core_user_uuid=user_uuid)
-            elif email:
-                user = CoreUser.objects.get(email=email)
-
-        except CoreUser.DoesNotExist:
-            pass
-        except EmailVerificationToken.InvalidTokenException:
-            pass
-
-        if user:
-            # send email verification link
-            EmailVerificationToken().send_verification_email(request, user)
-            return Response(
-                {'success': True, 'message': 'Verification email sent successfully'},
-                status=status.HTTP_200_OK
-            )
-
-        return Response(
-            {'success': False, 'code': 'invalid_email_or_token'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+            {
+                'success': serializer.is_valid(),
+            },
+            status=status.HTTP_200_OK)

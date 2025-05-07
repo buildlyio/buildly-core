@@ -99,6 +99,10 @@ $ docker run -e MYVAR1 --env MYVAR2=foo \
     buildly/buildly:<version>
 ```
 
+### API Documentation
+
+The API documentation is available at `/docs/`. It provides an interactive interface to explore and test the API endpoints. Ensure that the `drf_yasg` package is installed and properly configured in your settings.
+
 The following tables list the configurable parameters of buildly and their default values.
 
 #### Security System
