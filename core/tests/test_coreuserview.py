@@ -111,7 +111,6 @@ class TestCoreUserCreate:
         assert user.first_name == TEST_USER_DATA['first_name']
         assert user.last_name == TEST_USER_DATA['last_name']
         assert user.organization.name == TEST_USER_DATA['organization_name']
-        assert user.is_active
 
         # check this user is org admin
         assert user.is_org_admin
@@ -482,8 +481,12 @@ class TestResetPassword(object):
 @pytest.mark.django_db()
 class TestCoreUserRead(object):
 
-    keys = {'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
-            'contact_info','privacy_disclaimer_accepted', 'organization', 'core_groups', 'email_preferences', 'push_preferences', 'user_timezone','user_type', 'survey_status'}
+    keys = {
+        'id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active', 'title',
+        'contact_info', 'privacy_disclaimer_accepted', 'organization', 'core_groups',
+        'user_type', 'survey_status', 'subscription_active',
+    }
+
     def test_coreuser_list(self, request_factory, org_member):
         factories.CoreUser.create(
             organization=org_member.organization, username='another_user'
@@ -498,6 +501,7 @@ class TestCoreUserRead(object):
         assert response.status_code == 200
         data = response.data
         assert len(data) == 2
+        print('Keys: ', data[0].keys(), flush=True)
         assert set(data[0].keys()) == self.keys
 
     def test_coreuser_retrieve(self, request_factory, org_member):

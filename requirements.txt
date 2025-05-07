@@ -28,5 +28,4 @@ factory_boy==3.3.0
 django-oauth-toolkit==3.0.1
 django-import-export==3.3.7
 PyJWT>=2.8.0
-itsdangerous
-pyasn1
+itsdangerous==2.2.0

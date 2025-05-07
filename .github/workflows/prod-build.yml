@@ -10,7 +10,11 @@ jobs:
     name: Build and Push image to GCR
     runs-on: ubuntu-latest
     env:
+<<<<<<< HEAD
       IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/governcrm-prod-buildly-core
+=======
+      IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/drunr-prod-buildly-core
+>>>>>>> buildlyio/master
     steps:
     - uses: actions/checkout@v2
       with:

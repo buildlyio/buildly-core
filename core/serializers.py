@@ -16,8 +16,8 @@ from oauth2_provider.models import AccessToken, Application, RefreshToken
 from core.email_utils import send_email, send_email_body
 from core.helpers.oauth import EmailVerificationToken
 
-from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, PERMISSIONS_ORG_ADMIN, \
-    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, OrganizationType, Consortium
+from core.models import CoreUser, CoreGroup, EmailTemplate, LogicModule, Organization, OrganizationType, PERMISSIONS_ORG_ADMIN, \
+    TEMPLATE_RESET_PASSWORD, PERMISSIONS_VIEW_ONLY, Partner, Subscription, Coupon, Referral, ROLE_ORGANIZATION_ADMIN
 
 
 class LogicModuleSerializer(serializers.ModelSerializer):
@@ -61,21 +61,39 @@ class UUIDPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return str(super().to_representation(value))
 
 
-class OrganizationTypeSerializer(serializers.ModelSerializer):  
-    id = serializers.UUIDField(source='organization_type_uuid', read_only=True)
-
-    class Meta:
-        model = OrganizationType
-        fields = '__all__'
-        
-
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
-    organization_type = OrganizationTypeSerializer(read_only=True)
+    subscriptions = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
+    referral_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
         fields = '__all__'
+
+    def get_subscriptions(self, organization):
+        # check if user is OrgAdmin
+        if self.context.get('request') and hasattr(self.context.get('request'), 'user'):
+            try:
+                user_groups = self.context.get('request').user.core_groups.values_list('name', flat=True)
+            except AttributeError:
+                user_groups = []
+            if 'Admins' in user_groups:
+                return SubscriptionSerializer(
+                    organization.organization_subscription.all(),
+                    many=True
+                ).data
+        return []
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
+
+    def get_referral_link(self, organization):
+        if organization.organization_referrals.exists():
+            return organization.organization_referrals.first().link
+        return None
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
@@ -107,6 +125,7 @@ class CoreUserSerializer(serializers.ModelSerializer):
     core_groups = CoreGroupSerializer(read_only=True, many=True)
     invitation_token = serializers.CharField(required=False)
     organization = OrganizationSerializer(read_only=True)
+    subscription_active = serializers.SerializerMethodField()
 
     def validate_invitation_token(self, value):
         try:
@@ -122,24 +141,15 @@ class CoreUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoreUser
-        fields = (
-            'id',
-            'core_user_uuid',
-            'first_name',
-            'last_name',
-            'email',
-            'username',
-            'is_active',
-            'title',
-            'contact_info',
-            'privacy_disclaimer_accepted',
-            'organization',
-            'core_groups',
-            'invitation_token',
-            'user_type',
-            'survey_status',
-        )
+        fields = ('id', 'core_user_uuid', 'first_name', 'last_name', 'email', 'username', 'is_active',
+                  'title', 'contact_info', 'privacy_disclaimer_accepted','tos_disclaimer_accepted', 'organization', 'core_groups',
+                  'invitation_token', 'user_type', 'survey_status')
         read_only_fields = ('core_user_uuid', 'organization',)
+
+    def get_subscription_active(self, user):
+        return user.organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date(),
+        ).exists()
 
 
 class CoreUserWritableSerializer(CoreUserSerializer):
@@ -218,13 +228,61 @@ class CoreUserWritableSerializer(CoreUserSerializer):
             )
             coreuser.core_groups.add(group_org_admin)
 
+            if coupon_code or referral_code:
+                coupon = self.handle_coupon(coupon_code or referral_code, is_referral=bool(referral_code))
+                if coupon:
+                    organization.coupon = coupon
+                    organization.save(update_fields=['coupon'])
+
         # add requested groups to the user
         coreuser.core_groups.add(*core_groups)
 
         # create or update an invitation
         EmailVerificationToken().send_verification_email(self.context['request'], coreuser)
+        reg_location = urljoin(settings.FRONTEND_URL, settings.VERIFY_EMAIL_URL_PATH)
+        reg_location = reg_location + '{}'
+        token = urlsafe_base64_encode(force_bytes(coreuser.core_user_uuid))
+
+        # build the invitation link
+        verification_link = self.context['request'].build_absolute_uri(
+            reg_location.format(token)
+        )
+
+        # create the user context for the E-mail templates
+        context = {
+            'verification_link': verification_link,
+            'user': coreuser,
+        }
+        subject = 'Account verification required'  # TODO we need to make this dynamic
+        template_name = 'email/coreuser/email_verification.txt'
+        html_template_name = 'email/coreuser/email_verification.html'
+        send_email(coreuser.email, subject, context, template_name, html_template_name)
 
         return coreuser
+
+    @staticmethod
+    def handle_coupon(code, is_referral=False):
+        # check if referral link was used
+        if is_referral:
+            referral: Referral = Referral.objects.filter(code=code).first()
+            coupon = referral.coupon
+            referral.usage_count += 1
+            referral.save(update_fields=['usage_count'])
+        # check if coupon code was used
+        else:
+            coupon = Coupon.objects.filter(code=code).first()
+
+        return coupon
+
+    @staticmethod
+    def is_coupon_valid(code, is_referral=False):
+        """
+        Validate coupon code or referral code
+        """
+        if is_referral:
+            return Referral.objects.filter(code=code, active=True).exists()
+
+        return Coupon.objects.filter(code=code, active=True).exists()
 
 
 class CoreUserProfileSerializer(serializers.Serializer):
@@ -358,10 +416,23 @@ class CoreUserResetPasswordConfirmSerializer(CoreUserResetPasswordCheckSerialize
 
 class OrganizationNestedSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source='organization_uuid', read_only=True)
+    subscription = serializers.SerializerMethodField()
+    subscription_active = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
         fields = '__all__'
+
+    def get_subscription(self, organization):
+        return SubscriptionSerializer(
+            organization.organization_subscription.all(),
+            many=True
+        ).data
+
+    def get_subscription_active(self, organization):
+        return organization.organization_subscription.filter(
+            subscription_end_date__gte=timezone.now().date()
+        ).exists()
 
 
 class AccessTokenSerializer(serializers.ModelSerializer):
@@ -544,7 +615,33 @@ class OrganizationTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ConsortiumSerializer(serializers.ModelSerializer):
+class CoreUserVerifyEmailSerializer(serializers.Serializer):
+    """Serializer for checking token for resetting password
+    """
+    token = serializers.CharField()
+
+    def validate(self, attrs):
+        # Decode the uuid64 to uid to get User object
+        try:
+            uid = force_text(urlsafe_base64_decode(attrs['token']))
+            user = CoreUser.objects.filter(core_user_uuid=uid).first()
+            if user:
+                user.is_active = True
+                user.save()
+
+        except (TypeError, ValueError, OverflowError, CoreUser.DoesNotExist):
+            raise serializers.ValidationError({'token': ['Invalid value']})
+
+        return attrs
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Consortium
+        model = Subscription
         fields = '__all__'
+
+
+class CouponCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = '__all__'
+        model = Coupon

@@ -1,12 +1,13 @@
 from django.template.defaultfilters import slugify
-from factory.django import DjangoModelFactory
-from factory import SubFactory, lazy_attribute, Faker
+from django.utils import timezone
+from factory import DjangoModelFactory, SubFactory, Faker, lazy_attribute
 
 from core.models import (
     CoreUser as CoreUserM,
     CoreGroup as CoreGroupM,
     LogicModule as LogicModuleM,
     Organization as OrganizationM,
+    Subscription as SubscriptionM,
 )
 
 
@@ -16,6 +17,11 @@ class Organization(DjangoModelFactory):
         django_get_or_create = ('name',)
 
     name = 'Default Organization'
+
+
+class Subscription(DjangoModelFactory):
+    class Meta:
+        model = SubscriptionM
 
 
 class CoreGroup(DjangoModelFactory):

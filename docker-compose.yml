@@ -77,16 +77,17 @@ services:
 
       EMAIL_HOST: "smtp.sendgrid.net"
       EMAIL_HOST_USER: "apikey"
-      EMAIL_HOST_PASSWORD: "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"
+      EMAIL_HOST_PASSWORD: // put sendgrid key here
       EMAIL_PORT: "587"
       EMAIL_USE_TLS: "False"
       EMAIL_SUBJECT_PREFIX: "NO REPLY: Buildly - "
       EMAIL_BACKEND: "SMTP"
       DEFAULT_FROM_EMAIL: "admin@buildly.io"
       RESETPASS_CONFIRM_URL_PATH: "reset-password-confirm/"
-      STRIPE_SECRET: "// put stripe secret here"
+      VERIFY_EMAIL_URL_PATH: "verify-email/"
+      FREE_COUPON_CODE: "Insights@2022"
+      STRIPE_SECRET: "sk_test_ddLjeqLRWcj8znVAhMaNPu7J00evbJrikA"
       HUBSPOT_API_KEY: "// put hubspot key here"
-
 
 volumes:
   static-content:

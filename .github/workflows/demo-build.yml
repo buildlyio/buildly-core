@@ -9,7 +9,7 @@ jobs:
     name: Build and Push to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: gcr.io/spry-bricolage-298920/transparent-path/demo/buildly-core
+      IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/drunr-demo-buildly-core
     steps:
     - uses: actions/checkout@v2
 

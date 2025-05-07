@@ -184,6 +184,34 @@ class DataMesh:
             request_param[relationship.key] = params
         return relationship_list, request_param
 
+    def fetch_datamesh_relationship(self):
+        relationship_list = []
+        request_param = {}
+
+        for relationship, is_forward_lookup in self._relationships:
+
+            if is_forward_lookup:
+                related_model = relationship.related_model
+            else:
+                related_model = relationship.origin_model
+
+            relationship_list.append(relationship.key)
+
+            params = {
+                'pk': None,
+                'model': related_model.endpoint.strip('/'),
+                'service': related_model.logic_module_endpoint_name,
+                'related_model_pk_name': relationship.related_model.lookup_field_name,
+                'origin_model_pk_name': relationship.origin_model.lookup_field_name,
+
+                'fk_field_name': relationship.fk_field_name,
+                'is_forward_lookup': is_forward_lookup,
+                'is_local': relationship.related_model.is_local
+            }
+
+            request_param[relationship.key] = params
+        return relationship_list, request_param
+
     async def async_extend_data(self, data: Union[dict, list], client_map: Dict[str, Any]):
         """
         Async aggregation logic
