@@ -344,7 +344,6 @@ class CoreUser(AbstractUser):
                 {"property": "email", "value": self.email},
                 {"property": "firstname", "value": self.first_name},
                 {"property": "lastname", "value": self.last_name},
-                {"property": "phone", "value": self.phone},
                 {"property": "company", "value": self.organization.name if self.organization else ""},
                 {"property": "jobtitle", "value": self.title},
                 {"property": "user_type", "value": self.user_type},
