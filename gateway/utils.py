@@ -22,7 +22,7 @@ SWAGGER_LOOKUP_PATH = 'docs'
 MODEL_VIEWSETS_DICT = {
     CoreUser: CoreUserViewSet,
     Organization: OrganizationViewSet,
-    OrganizationType: OrganizationTypeViewSet,
+    OrganizationType: OrganizationTypeViewSet
 }
 
 
