@@ -73,17 +73,20 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('organization', 'type')
     display = 'Email Template'
 
+
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'percent_off', 'duration', 'max_redemptions', 'active')
     list_filter = ('active', 'duration')
     search_fields = ('code', 'name')
 
+
 @admin.register(Referral)
 class ReferralAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'organization', 'coupon', 'active')
     list_filter = ('active', 'organization', 'coupon')
     search_fields = ('code', 'name', 'organization__name', 'coupon__name')
+
 
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'organization', 'stripe_subscription_id', 'subscription_start_date', 'subscription_end_date')
