@@ -10,7 +10,7 @@ jobs:
     name: Build and Push image to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/drunr-prod-buildly-core
+      IMAGE_NAME: "${{ secrets.PROD_DOCKER_IMAGE }}"
     steps:
     - uses: actions/checkout@v2
       with:
