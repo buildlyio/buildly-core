@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: dev-buildly
   REGION: us
-  IMAGE_NAME: "${{ secrets.DEV_DOCKER_IMAGE }}"
+  IMAGE_NAME: "${{ env.DEV_DOCKER_IMAGE }}"
 
 jobs:
   build:

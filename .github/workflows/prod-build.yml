@@ -10,7 +10,7 @@ jobs:
     name: Build and Push image to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: "${{ secrets.PROD_DOCKER_IMAGE }}"
+      IMAGE_NAME: "${{ env.PROD_DOCKER_IMAGE }}"
     steps:
     - uses: actions/checkout@v2
       with:
