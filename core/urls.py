@@ -21,8 +21,6 @@ router.register(r'logicmodule', views.LogicModuleViewSet)
 router.register(r'oauth/accesstokens', views.AccessTokenViewSet)
 router.register(r'oauth/applications', views.ApplicationViewSet)
 router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
-router.register(r'organization', views.OrganizationViewSet)
-router.register(r'logicmodule', views.LogicModuleViewSet)
 router.register(r'partner', views.PartnerViewSet)
 router.register(r'subscription', views.SubscriptionViewSet)
 
@@ -34,6 +32,8 @@ urlpatterns = [
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
     path('oauth/login/', views.LoginView.as_view()),
+    path('oauth/', include(oauth2_urls, namespace='oauth2_provider')),  # OAuth endpoints
+
 ]
 
 urlpatterns += staticfiles_urlpatterns() + router.urls

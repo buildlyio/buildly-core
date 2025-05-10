@@ -7,7 +7,7 @@ from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny, IsAuthenticated)
+from rest_framework.permissions import IsAuthenticated
 
 from core.models import Subscription, Coupon
 from core.serializers import SubscriptionSerializer, CouponCodeSerializer
@@ -26,9 +26,17 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
      """
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
-    permission_classes = (AllowAny, IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            # Return an empty queryset for unauthenticated users
+            return Subscription.objects.none()
+
+        if not hasattr(self.request.user, 'organization'):
+            # Return an empty queryset if the user has no organization
+            return Subscription.objects.none()
+
         queryset = (
             super(SubscriptionViewSet, self)
             .get_queryset()
@@ -46,7 +54,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         # check if organization has a coupon
         try:
             coupon = self.request.user.organization.coupon
-        except KeyError:
+        except (AttributeError, KeyError):
             coupon = None
 
         if settings.STRIPE_SECRET:
@@ -79,7 +87,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         # validate coupon code
-        if 'coupon' in request.data and not self.is_coupon_valid():
+        if 'coupon' in request.data and not hasattr(self, 'is_coupon_valid'):
             return Response(
                 dict(
                     code='invalid_coupon',
@@ -119,7 +127,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get'],
-        permission_classes=[AllowAny],
+        permission_classes=[IsAuthenticated],
         name='Fetch all existing products',
     )
     def stripe_products(self, request, *args, **kwargs):
@@ -131,8 +139,12 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
             stripe.api_version = '2022-11-15'
-            stripe_products = stripe.Product.search(query="active:'true'", )
-            products = stripe_products.data
+            try:
+                stripe_products = stripe.Product.search(query="active:'true'")
+                products = stripe_products.data
+            except stripe.error.StripeError as e:
+                # Log the error for debugging
+                print(f"Stripe error: {e}")
 
         return Response(
             products,
@@ -143,6 +155,9 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         """
         Get stripe details
         """
+        if not self.request.user.is_authenticated or not hasattr(self.request.user, 'organization'):
+            return None
+
         data = self.request.data.copy()
         product_id = data.get('product')
         payment_method_id = data.pop('card_id', None)
@@ -185,8 +200,12 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                     stripe_payment_method_id=payment_method_id,
                     trial_start_date=timezone.now().date(),
                     trial_end_date=timezone.now().date() + relativedelta.relativedelta(months=1),
-                    subscription_start_date=timezone.now().date() + relativedelta.relativedelta(months=1),
-                    subscription_end_date=timezone.now().date() + relativedelta.relativedelta(months=2),
+                    subscription_start_date=timezone.datetime.fromtimestamp(
+                        stripe_subscription.current_period_start, timezone.utc
+                    ).date(),
+                    subscription_end_date=timezone.datetime.fromtimestamp(
+                        stripe_subscription.current_period_end, timezone.utc
+                    ).date(),
                     organization=self.request.user.organization.organization_uuid,
                 )
                 data.update(stripe_subscription_details)
@@ -213,15 +232,13 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         """
         if settings.STRIPE_SECRET:
             stripe.api_key = settings.STRIPE_SECRET
-            # stripe.api_version = '2022-11-15'
             try:
-                # stripe.Subscription.cancel(instance.stripe_subscription_id)
                 subscription = stripe.Subscription.retrieve(instance.stripe_subscription_id)
                 subscription.delete()
                 return True
-
-            except Exception as e:
-                pass
+            except stripe.error.StripeError as e:
+                # Log the error for debugging
+                print(f"Stripe error: {e}")
         return False
 
 

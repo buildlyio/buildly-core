@@ -20,7 +20,7 @@ jobs:
     - uses: butlerlogic/action-autotag@stable
       id: tag_version
       with:
-        GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
+        github_token: "${{ secrets.RELEASE_TOKEN }}"
         strategy: docker
         tag_prefix: "v"
 

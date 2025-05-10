@@ -13,8 +13,6 @@ from django.utils import timezone
 import requests
 import logging
 
-from pyasn1.compat.octets import null
-
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -161,7 +159,6 @@ class Organization(models.Model):
     stripe_subscription_details = JSONField(blank=True, null=True)
     unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
     coupon = models.ForeignKey('core.Coupon', on_delete=models.SET_NULL, blank=True, null=True)
-
 
     class Meta:
         ordering = ('name',)
@@ -347,7 +344,6 @@ class CoreUser(AbstractUser):
                 {"property": "email", "value": self.email},
                 {"property": "firstname", "value": self.first_name},
                 {"property": "lastname", "value": self.last_name},
-                {"property": "phone", "value": self.phone},
                 {"property": "company", "value": self.organization.name if self.organization else ""},
                 {"property": "jobtitle", "value": self.title},
                 {"property": "user_type", "value": self.user_type},
@@ -420,8 +416,15 @@ class LogicModule(models.Model):
     endpoint_name = models.CharField(blank=True, null=True, max_length=255)
     docs_endpoint = models.CharField(blank=True, null=True, max_length=255)
     api_specification = JSONField(blank=True, null=True)
-    core_groups = models.ManyToManyField(CoreGroup, verbose_name='Logic Module groups', blank=True,
-                                         related_name='logic_module_set', related_query_name='logic_module')
+    swagger_version = models.CharField(max_length=50, null=True, blank=True)
+    core_groups = models.ManyToManyField(
+        CoreGroup,
+        verbose_name='Logic Module groups',
+        blank=True,
+        related_name='logic_module_set',
+        related_query_name='logic_module',
+    )
+
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -490,7 +493,7 @@ class Subscription(models.Model):
     subscription_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     stripe_subscription_id = models.CharField(max_length=255, null=True)
     stripe_product = models.CharField(max_length=255)
-    stripe_product_info = JSONField(blank=True, null=True)
+    stripe_product_info = models.JSONField(blank=True, null=True)
     stripe_customer_id = models.CharField(max_length=255, null=True)
     stripe_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     trial_start_date = models.DateField(null=True, blank=True)
@@ -502,14 +505,14 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
-        blank=null,
+        blank=True,
         null=True,
         related_name='user_subscription'
     )
     created_by = models.ForeignKey(
         'core.CoreUser',
         on_delete=models.SET_NULL,
-        blank=null,
+        blank=True,
         null=True,
         related_name='created_subscription'
     )
