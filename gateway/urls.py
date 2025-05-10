@@ -22,24 +22,25 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # Exclude paths starting with 'oauth/' and other ORM-related endpoints from the gateway
     re_path(
-        rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
+        rf"^(?!o/)(?!oauth/)(?!coregroups/)(?!coreuser/)(?!organization/)(?!logicmodule/)(?!partner/)(?!subscription/)(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"
         r"async/"
-        r"(?P<service>[^/?#]+)/"  # service (timetracking)
-        r"(?P<model>[^/?#]+)/?"  # model (timeevent)
-        r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
-        r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
-        r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
+        r"(?P<service>[^/?#]+)/"
+        r"(?P<model>[^/?#]+)/?"
+        r"(?:(?P<pk>[^?#/]+)/?)?"
+        r"(?:\?(?P<query>[^#]*))?"
+        r"(?:#(?P<fragment>.*))?",
         views.APIAsyncGatewayView.as_view(),
         name='api-gateway-async',
     ),
     re_path(
-        rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
-        r"(?P<service>[^/?#]+)/"  # service (timetracking)
-        r"(?P<model>[^/?#]+)/?"  # model (timeevent)
-        r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
-        r"(?:\?(?P<query>[^#]*))?"  # queryparams (?key1=value1&key2=value2)
-        r"(?:#(?P<fragment>.*))?",  # fragment (#some-anchor)
+        rf"^(?!o/)(?!oauth/)(?!coregroups/)(?!coreuser/)(?!organization/)(?!logicmodule/)(?!partner/)(?!subscription/)(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"
+        r"(?P<service>[^/?#]+)/"
+        r"(?P<model>[^/?#]+)/?"
+        r"(?:(?P<pk>[^?#/]+)/?)?"
+        r"(?:\?(?P<query>[^#]*))?"
+        r"(?:#(?P<fragment>.*))?",
         views.APIGatewayView.as_view(),
         name='api-gateway',
     ),

@@ -90,6 +90,11 @@ WSGI_APPLICATION = 'buildly.wsgi.application'
 
 AUTH_USER_MODEL = 'core.CoreUser'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Default backend
+    # Add custom backends here if applicable
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
