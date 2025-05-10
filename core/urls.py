@@ -32,6 +32,8 @@ urlpatterns = [
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
     path('oauth/login/', views.LoginView.as_view()),
+    path('oauth/', include(oauth2_urls, namespace='oauth2_provider')),  # OAuth endpoints
+
 ]
 
 urlpatterns += staticfiles_urlpatterns() + router.urls

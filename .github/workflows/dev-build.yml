@@ -43,7 +43,7 @@ jobs:
       id: Kapstan
       uses: kapstan-io/deployment-action@latest
       with: 
-        application_name: dev-buildly-core
+        application_name: buildly-core
         image_repository_name: ${{ env.IMAGE_NAME }}
         image_tag: latest
         kapstan_api_key: ${{ secrets.KAPSTAN_KEY }}

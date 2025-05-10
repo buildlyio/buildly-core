@@ -1,4 +1,5 @@
 import logging
+from asgiref.sync import sync_to_async
 
 from django.http import HttpResponse
 from rest_framework import views
@@ -53,7 +54,8 @@ class APIGatewayView(views.APIView):
         Create a request for the defined service
         """
         try:
-            self._validate_incoming_request(request, **kwargs)
+            # Wrap the synchronous validation in sync_to_async
+            await sync_to_async(self._validate_incoming_request)(request, **kwargs)
         except exceptions.RequestValidationError as e:
             return HttpResponse(
                 content=e.content, status=e.status, content_type=e.content_type
