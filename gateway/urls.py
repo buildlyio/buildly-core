@@ -22,8 +22,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # Exclude paths starting with 'oauth/' and other ORM-related endpoints from the gateway
     re_path(
-        rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
+        rf"^(?!oauth/)(?!coregroups/)(?!coreuser/)(?!organization/)(?!logicmodule/)(?!partner/)(?!subscription/)(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject ORM-related paths and reserved names
         r"async/"
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
         r"(?P<model>[^/?#]+)/?"  # model (timeevent)
@@ -34,7 +35,7 @@ urlpatterns = [
         name='api-gateway-async',
     ),
     re_path(
-        rf"^(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject any of these
+        rf"^(?!oauth/)(?!coregroups/)(?!coreuser/)(?!organization/)(?!logicmodule/)(?!partner/)(?!subscription/)(?!{'|'.join(API_GATEWAY_RESERVED_NAMES)})"  # Reject ORM-related paths and reserved names
         r"(?P<service>[^/?#]+)/"  # service (timetracking)
         r"(?P<model>[^/?#]+)/?"  # model (timeevent)
         r"(?:(?P<pk>[^?#/]+)/?)?"  # pk (numeric or UUID)
