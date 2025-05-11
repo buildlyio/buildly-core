@@ -8,6 +8,7 @@ from oauth2_provider import urls as oauth2_urls
 from core import views
 from core.views.homepage import index
 
+
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
 
@@ -21,6 +22,8 @@ router.register(r'oauth/accesstokens', views.AccessTokenViewSet)
 router.register(r'oauth/applications', views.ApplicationViewSet)
 router.register(r'oauth/refreshtokens', views.RefreshTokenViewSet)
 router.register(r'partner', views.PartnerViewSet)
+router.register(r'subscription', views.SubscriptionViewSet)
+
 
 urlpatterns = [
     path('', index),
@@ -29,6 +32,8 @@ urlpatterns = [
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
     path('oauth/login/', views.LoginView.as_view()),
+    path('oauth/', include(oauth2_urls, namespace='oauth2_provider')),  # OAuth endpoints
+
 ]
 
 urlpatterns += staticfiles_urlpatterns() + router.urls

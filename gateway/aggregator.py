@@ -1,7 +1,9 @@
 import json
 import logging
+import hashlib
 
 from core.models import LogicModule
+from .models import SwaggerVersionHistory
 from gateway import utils
 
 logger = logging.getLogger(__name__)
@@ -18,6 +20,9 @@ class SwaggerAggregator(object):
     def get_aggregate_swagger(self) -> dict:
         """
         Get swagger files associated with the aggregates.
+        Check for changes in the API and update the LogicModule entry
+        with the new spec and version. If the version has changed,
+        log the change in a separate model.
 
         :return: a dict of swagger spec
         """
@@ -25,45 +30,67 @@ class SwaggerAggregator(object):
         if 'apis' in self.configuration:  # Check if apis is in the config file
             for endpoint_name, schema_url in self.configuration['apis'].items():
                 if endpoint_name not in swagger_apis:
-                    # Get the swagger.json
                     try:
-                        # Use stored specification of the module
-                        spec_dict = (
-                            LogicModule.objects.values_list(
-                                'api_specification', flat=True
-                            )
-                            .filter(endpoint_name=endpoint_name)
-                            .first()
-                        )
+                        # Fetch stored specification and version
+                        logic_module = LogicModule.objects.filter(endpoint_name=endpoint_name).first()
+                        stored_spec = logic_module.api_specification if logic_module else None
+                        stored_version = logic_module.swagger_version if logic_module else None
+                        stored_hash = self._get_hash(stored_spec) if stored_spec else None
 
-                        # Pull specification of the module from its service and store it
-                        if spec_dict is None:
-                            response = utils.get_swagger_from_url(schema_url)
-                            spec_dict = response.json()
-                            LogicModule.objects.filter(
-                                endpoint_name=endpoint_name
-                            ).update(api_specification=spec_dict)
+                        # Fetch the latest specification from the remote API
+                        response = utils.get_swagger_from_url(schema_url)
+                        latest_spec = response.json()
+                        latest_version = latest_spec.get('info', {}).get('version', 'unknown')
+                        latest_hash = self._get_hash(latest_spec)
+
+                        # Log the version change in a separate model
+                        if stored_version != latest_version:
+                            SwaggerVersionHistory.objects.create(
+                                endpoint_name=endpoint_name,
+                                old_version=stored_version,
+                                new_version=latest_version,
+                            )
+
+                        # Check for changes in the version or specification
+                        if stored_version != latest_version or stored_hash != latest_hash:
+                            # Update the LogicModule entry with the new spec and version
+                            LogicModule.objects.update_or_create(
+                                endpoint_name=endpoint_name,
+                                defaults={
+                                    'api_specification': latest_spec,
+                                    'swagger_version': latest_version,
+                                },
+                            )
 
                         swagger_apis[endpoint_name] = {
-                            'spec': spec_dict,
+                            'spec': latest_spec,
                             'url': schema_url,
                         }
                     except ConnectionError as error:
-                        logger.warning(error)
+                        logger.warning(f"Connection error for {schema_url}: {error}")
                     except TimeoutError as error:
-                        logger.warning(error)
-                    except ValueError:
-                        logger.info('Cannot remove {} from errors'.format(schema_url))
+                        logger.warning(f"Timeout error for {schema_url}: {error}")
+                    except ValueError as error:
+                        logger.warning(f"Invalid response from {schema_url}: {error}")
         return swagger_apis
+
+    def _get_hash(self, data: dict) -> str:
+        """
+        Generate a hash for the given data.
+
+        :param data: The data to hash.
+        :return: A SHA-256 hash of the data.
+        """
+        return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
 
     def _update_specification(self, name: str, api_name: str, api_spec: dict) -> dict:
         """
-        Update names of the specification of a service's API
+        Update names of the specification of a service's API.
 
-        :param name: of the specification that should be updated
-        :param api_name: name of the service
-        :param api_spec: specification of the service's API
-        :return: a dict with the updated specification
+        :param name: The name of the specification to update.
+        :param api_name: The name of the service.
+        :param api_spec: The specification of the service's API.
+        :return: A dict with the updated specification.
         """
         result = {}
         if name in api_spec['spec']:
@@ -76,9 +103,9 @@ class SwaggerAggregator(object):
 
     def merge_aggregates(self) -> dict:
         """
-        Merge aggregates
+        Merge aggregates.
 
-        :return: aggregate of all apis
+        :return: Aggregate of all APIs.
         """
         basic_swagger = {
             'swagger': '2.0',
@@ -100,13 +127,13 @@ class SwaggerAggregator(object):
                 )
             )
 
-            # update the definitions
+            # Update the definitions
             if 'definitions' in api_spec['spec']:
                 basic_swagger['definitions'].update(
                     self._update_specification('definitions', api, api_spec)
                 )
 
-            # update the paths to match with the gateway
+            # Update the paths to match with the gateway
             if 'paths' in api_spec['spec']:
                 if api == 'buildly':
                     basic_swagger['paths'].update(api_spec['spec']['paths'])
@@ -120,11 +147,10 @@ class SwaggerAggregator(object):
 
     def generate_operation_id(self, swagger):
         """
-        Replace the current operation id to uuid to avoid collision
+        Replace the current operation ID to avoid collision.
 
-        :param swagger: a dict with the API specification in the swagger format
+        :param swagger: A dict with the API specification in the Swagger format.
         """
-
         for path, path_spec in swagger['paths'].items():
             service_name = path.split('/')[1]
             for action, action_spec in path_spec.items():
@@ -136,9 +162,9 @@ class SwaggerAggregator(object):
 
     def generate_swagger(self):
         """
-        Generate a swagger from all the apis swagger
+        Generate a Swagger document from all the APIs' Swagger documents.
 
-        :return: a dict with all the apis swagger aggregated
+        :return: A dict with all the APIs' Swagger documents aggregated.
         """
         merged_apis = self.merge_aggregates()
         self.generate_operation_id(merged_apis)

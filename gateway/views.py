@@ -1,4 +1,5 @@
 import logging
+from asgiref.sync import sync_to_async
 
 from django.http import HttpResponse
 from rest_framework import views
@@ -30,38 +31,38 @@ class APIGatewayView(views.APIView):
         self._data = dict()
         super().__init__(*args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    async def get(self, request, *args, **kwargs):
+        return await self.make_service_request(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    async def post(self, request, *args, **kwargs):
+        return await self.make_service_request(request, *args, **kwargs)
 
-    def delete(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    async def delete(self, request, *args, **kwargs):
+        return await self.make_service_request(request, *args, **kwargs)
 
-    def put(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    async def put(self, request, *args, **kwargs):
+        return await self.make_service_request(request, *args, **kwargs)
 
-    def patch(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    async def patch(self, request, *args, **kwargs):
+        return await self.make_service_request(request, *args, **kwargs)
 
-    def options(self, request, *args, **kwargs):
-        return self.make_service_request(request, *args, **kwargs)
+    async def options(self, request, *args, **kwargs):
+        return await self.make_service_request(request, *args, **kwargs)
 
-    def make_service_request(self, request, *args, **kwargs):
+    async def make_service_request(self, request, *args, **kwargs):
         """
         Create a request for the defined service
         """
-        # validate incoming request before creating a service request
         try:
-            self._validate_incoming_request(request, **kwargs)
+            # Wrap the synchronous validation in sync_to_async
+            await sync_to_async(self._validate_incoming_request)(request, **kwargs)
         except exceptions.RequestValidationError as e:
             return HttpResponse(
                 content=e.content, status=e.status, content_type=e.content_type
             )
 
         gw_request = self.gateway_request_class(request, **kwargs)
-        gw_response = gw_request.perform()
+        gw_response = await gw_request.perform()
 
         return HttpResponse(
             content=gw_response.content,

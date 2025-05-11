@@ -1,11 +1,18 @@
+import random
+import string
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db.models import JSONField
 
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils import timezone
+
+import requests
+import logging
+
 
 ROLE_ORGANIZATION_ADMIN = 'OrgAdmin'
 ROLE_WORKFLOW_ADMIN = 'WorkflowAdmin'
@@ -150,6 +157,8 @@ class Organization(models.Model):
     radius = models.FloatField(max_length=20, blank=True, null=True, default=0.0)
     organization_type = models.ForeignKey(OrganizationType, on_delete=models.CASCADE, null=True)
     stripe_subscription_details = JSONField(blank=True, null=True)
+    unlimited_free_plan = models.BooleanField('Free unlimited features plan', default=True)
+    coupon = models.ForeignKey('core.Coupon', on_delete=models.SET_NULL, blank=True, null=True)
 
     class Meta:
         ordering = ('name',)
@@ -184,6 +193,33 @@ class Organization(models.Model):
         )
 
 
+class Referral(models.Model):
+    referral_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.SET_NULL, related_name='organization_referrals')
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    link= models.TextField(unique=True, null=True, blank=True)
+    usage_count = models.IntegerField(default=0)
+    max_usage = models.IntegerField(null=True, blank=True)
+    active = models.BooleanField(default=True)
+    coupon = models.ForeignKey('core.Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+    edit_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Referral"
+        verbose_name_plural = "Referrals"
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.code = f"INSIGHTS-REF-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
+            self.link = f'{settings.FRONTEND_URL}{settings.REGISTRATION_URL_PATH}?referral_code={self.code}'
+        super(Referral, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.code}-{self.name}'
+
+
 class CoreGroup(models.Model):
     """
     CoreGroup model defines the groups of the users with specific permissions 
@@ -193,21 +229,13 @@ class CoreGroup(models.Model):
         'CoreGroup UUID', max_length=255, default=uuid.uuid4, unique=True
     )
     name = models.CharField('Name of the role', max_length=80)
-    organization = models.ForeignKey(
-        Organization,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        help_text='Related Org to associate with',
-    )
+    organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.CASCADE,
+                                     help_text='Related Org to associate with')
     is_global = models.BooleanField('Is global group', default=False)
     is_org_level = models.BooleanField('Is organization level group', default=False)
     is_default = models.BooleanField('Is organization default group', default=False)
-    permissions = models.PositiveSmallIntegerField(
-        'Permissions',
-        default=PERMISSIONS_VIEW_ONLY,
-        help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD',
-    )
+    permissions = models.PositiveSmallIntegerField('Permissions', default=PERMISSIONS_VIEW_ONLY,
+                                                   help_text='Decimal integer from 0 to 15 converted from 4-bit binary, each bit indicates permissions for CRUD')
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -246,6 +274,11 @@ class CoreUser(AbstractUser):
         ('Product Team', 'Product Team'),
     )
 
+    USER_TYPE_CHOICES = (
+        ('Developer', 'Developer'),
+        ('Product Team', 'Product Team'),
+    )
+
     core_user_uuid = models.CharField(max_length=255, verbose_name='CoreUser UUID', default=uuid.uuid4, unique=True)
     title = models.CharField(blank=True, null=True, max_length=3, choices=TITLE_CHOICES)
     contact_info = models.CharField(blank=True, null=True, max_length=255)
@@ -264,14 +297,16 @@ class CoreUser(AbstractUser):
         related_query_name='user',
     )
     privacy_disclaimer_accepted = models.BooleanField(default=False)
+    tos_disclaimer_accepted = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     edit_date = models.DateTimeField(null=True, blank=True)
     email_preferences = JSONField(blank=True, null=True)
     push_preferences = JSONField(blank=True, null=True)
     user_timezone = models.CharField(blank=True, null=True, max_length=255)
-    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES,
-                                 default='Product Team')
     survey_status = models.BooleanField(default=False)
+    user_type = models.CharField(blank=True, null=True, max_length=50, choices=USER_TYPE_CHOICES, default='Product Team')
+    survey_status = models.BooleanField(default=False)
+    coupon_code = models.CharField(max_length=48, blank=True, null=True)
 
     REQUIRED_FIELDS = []
 
@@ -289,11 +324,33 @@ class CoreUser(AbstractUser):
         super(CoreUser, self).save()
         if is_new:
             # Add default groups
-            self.core_groups.add(
-                *CoreGroup.objects.filter(
-                    organization=self.organization, is_default=True
-                )
-            )
+            self.core_groups.add(*CoreGroup.objects.filter(organization=self.organization, is_default=True))
+            # Send user details to HubSpot
+            try:
+                self.send_to_hubspot()
+            except requests.RequestException as e:
+                # Log the error
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to send user details to HubSpot: {e}")
+
+    def send_to_hubspot(self):
+        url = "https://api.hubapi.com/contacts/v1/contact"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.HUBSPOT_API_KEY}"
+        }
+        data = {
+            "properties": [
+                {"property": "email", "value": self.email},
+                {"property": "firstname", "value": self.first_name},
+                {"property": "lastname", "value": self.last_name},
+                {"property": "company", "value": self.organization.name if self.organization else ""},
+                {"property": "jobtitle", "value": self.title},
+                {"property": "user_type", "value": self.user_type},
+            ]
+        }
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
 
     @property
     def is_org_admin(self) -> bool:
@@ -324,13 +381,8 @@ class EmailTemplate(models.Model):
     """
     Stores e-mail templates specific to organization
     """
-
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        verbose_name='Organization',
-        help_text='Related Org to associate with',
-    )
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name='Organization',
+                                     help_text='Related Org to associate with')
     subject = models.CharField('Subject', max_length=255)
     type = models.PositiveSmallIntegerField('Type of template', choices=TEMPLATE_TYPES)
     template = models.TextField(
@@ -364,6 +416,7 @@ class LogicModule(models.Model):
     endpoint_name = models.CharField(blank=True, null=True, max_length=255)
     docs_endpoint = models.CharField(blank=True, null=True, max_length=255)
     api_specification = JSONField(blank=True, null=True)
+    swagger_version = models.CharField(max_length=50, null=True, blank=True)
     core_groups = models.ManyToManyField(
         CoreGroup,
         verbose_name='Logic Module groups',
@@ -371,6 +424,7 @@ class LogicModule(models.Model):
         related_name='logic_module_set',
         related_query_name='logic_module',
     )
+
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
@@ -389,39 +443,98 @@ class LogicModule(models.Model):
         return str(self.name)
 
 
-class Consortium(models.Model):
-    """
-    The consortium instance. Allows sharing of data between 2 or more organizations
-    """
-    consortium_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, verbose_name='Consortium UUID')
-    name = models.CharField("Consortium Name", max_length=255, blank=True,
-                            help_text="Multiple organizations form a consortium together")
-    organization_uuids = models.UUIDField("Organization UUIDs", max_length=255, null=True, blank=True)
-    create_date = models.DateTimeField(default=timezone.now)
-    edit_date = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ('name',)
-        verbose_name_plural = 'Consortiums'
-
-    def save(self, *args, **kwargs):
-        if self.create_date is None:
-            self.create_date = timezone.now()
-        self.edit_date = timezone.now()
-        super(Consortium, self).save()
-
-    def __str__(self):
-        return str(self.name)
-
-
 class Partner(models.Model):
     partner_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(blank=True, null=True, max_length=255)
     create_date = models.DateTimeField(null=True, blank=True)
     edit_date = models.DateTimeField(null=True, blank=True)
 
+
+class Coupon(models.Model):
+    FOREVER = 'forever'
+    ONCE = 'once'
+    REPEATING = 'repeating'
+
+    DurationChoices = (
+        (FOREVER, 'Forever'),
+        (ONCE, 'Once'),
+        (REPEATING, 'Repeating'),
+    )
+
+    coupon_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=64)
+    code = models.CharField(max_length=24, unique=True, blank=True, null=True)
+    duration = models.CharField(choices=DurationChoices, max_length=16, default=ONCE)
+    duration_in_months = models.IntegerField(null=True, blank=True)
+    active = models.BooleanField(default=True)  # maps to valid field on stripe
+    max_redemptions = models.IntegerField(default=1)
+    percent_off = models.FloatField(default=0)
+    amount_off = models.FloatField(default=0)
+    discount_amount = models.FloatField(default=0)
+    currency = models.CharField(max_length=3, default='usd')
+    create_date = models.DateTimeField(auto_now_add=True)
+    edit_date = models.DateTimeField(auto_now=True)
+    stripe_coupon_id = models.CharField(max_length=255, null=True, blank=True)
+
     class Meta:
-        verbose_name_plural = 'Partners'
+        verbose_name = "Coupon"
+        verbose_name_plural = "Coupons"
 
     def __str__(self):
-        return f'{self.name}' or f'{self.uuid}'
+        return f'{self.code}-{self.name}'
+
+    def generate_code(self):
+        # generate code (First  letters INSIGHTS + 6 random digits (letters and numbers)
+        self.code = f"INSIGHTS-{''.join(random.choices(string.ascii_uppercase + string.digits, k=6))}"
+        self.save()
+
+
+class Subscription(models.Model):
+    subscription_uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    stripe_subscription_id = models.CharField(max_length=255, null=True)
+    stripe_product = models.CharField(max_length=255)
+    stripe_product_info = models.JSONField(blank=True, null=True)
+    stripe_customer_id = models.CharField(max_length=255, null=True)
+    stripe_payment_method_id = models.CharField(max_length=255, null=True, blank=True)
+    trial_start_date = models.DateField(null=True, blank=True)
+    trial_end_date = models.DateField(null=True, blank=True)
+    subscription_start_date = models.DateField(null=True, blank=True)
+    subscription_end_date = models.DateField(null=True, blank=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(
+        'core.CoreUser',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='user_subscription'
+    )
+    created_by = models.ForeignKey(
+        'core.CoreUser',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='created_subscription'
+    )
+    organization = models.ForeignKey(
+        'core.Organization',
+        on_delete=models.CASCADE,
+        related_name='organization_subscription'
+    )
+    cancelled = models.BooleanField(default=False)
+    cancelled_date = models.DateTimeField(null=True, blank=True)
+    coupon = models.ForeignKey(
+        'core.Coupon',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='coupon_subscription'
+    )
+
+    def __str__(self):
+        return self.stripe_subscription_id
+
+    class Meta:
+        verbose_name = "Subscription"
+        verbose_name_plural = "Subscriptions"
+        ordering = ['-create_date']

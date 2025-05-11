@@ -90,6 +90,11 @@ WSGI_APPLICATION = 'buildly.wsgi.application'
 
 AUTH_USER_MODEL = 'core.CoreUser'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Default backend
+    # Add custom backends here if applicable
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -115,16 +120,15 @@ if os.getenv('USE_HTTPS') == 'True':
 
 # Rest Framework
 REST_FRAMEWORK = {
-    'PAGINATE_BY': 10,
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'core.helpers.oauth.CustomJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': ('core.permissions.IsSuperUserBrowseableAPI',)
-    # ToDo: Think about `DEFAULT_PAGINATION_CLASS as env variable and
-    #       customizable values with reasonable defaults
+    'DEFAULT_PERMISSION_CLASSES': ['core.permissions.IsSuperUserBrowseableAPI'],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.openapi.AutoSchema',  # Added for OpenAPI schema
 }
 
 # Front-end application URL
@@ -143,18 +147,20 @@ CORE_WEBSITE = "https://buildly.io"
 # User and Organization configuration
 SUPER_USER_PASSWORD = os.getenv('SUPER_USER_PASSWORD')
 DEFAULT_ORG = os.getenv('DEFAULT_ORG').lower() if os.getenv('DEFAULT_ORG') else None
-AUTO_APPROVE_USER = os.getenv('AUTO_APPROVE_USER', False)
+AUTO_APPROVE_USER = False if os.getenv('AUTO_APPROVE_USER') == 'False' else True
+FREE_COUPON_CODE = os.getenv('FREE_COUPON_CODE', '')
 STRIPE_SECRET = os.getenv('STRIPE_SECRET', '')
+
+EMAIL_VERIFICATION_EXPIRATION = 24  # Expiration time in hours
 
 # Swagger settings - for generate_swagger management command
 
 SWAGGER_SETTINGS = {'DEFAULT_INFO': 'gateway.urls.swagger_info'}
 
-ORGANIZATION_TYPES = ['Custodian', 'Producer']
+ORGANIZATION_TYPES = ['Developer', 'Product']
 
 EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 12))
 
-try:
-    from .local import *
-except (ImportError, ModuleNotFoundError):
-    pass
+HUBSPOT_API_KEY = ''
+
+ORGANIZATION_TYPES = ['Developer', 'Product']

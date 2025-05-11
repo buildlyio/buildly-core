@@ -13,8 +13,8 @@ from rest_framework.request import Request
 
 
 from . import exceptions
-from core.models import CoreUser, LogicModule, Organization, OrganizationType, Consortium
-from core.views import CoreUserViewSet, OrganizationViewSet, OrganizationTypeViewSet, ConsortiumViewSet
+from core.models import CoreUser, LogicModule, Organization, OrganizationType
+from core.views import CoreUserViewSet, OrganizationViewSet, OrganizationTypeViewSet
 
 SWAGGER_LOOKUP_FIELD = 'swagger'
 SWAGGER_LOOKUP_FORMAT = 'json'
@@ -22,8 +22,7 @@ SWAGGER_LOOKUP_PATH = 'docs'
 MODEL_VIEWSETS_DICT = {
     CoreUser: CoreUserViewSet,
     Organization: OrganizationViewSet,
-    OrganizationType: OrganizationTypeViewSet,
-    Consortium: ConsortiumViewSet,
+    OrganizationType: OrganizationTypeViewSet
 }
 
 

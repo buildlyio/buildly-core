@@ -2,12 +2,7 @@
 
 set -e
 
-echo $(date -u) "- Migrating"
-python manage.py makemigrations
-python manage.py migrate
-
-echo $(date -u) "- Load Initial Data"
-python manage.py loadinitialdata
+bash scripts/tcp-port-wait.sh $DATABASE_HOST $DATABASE_PORT
 
 # export env variable from file
 if [ -e /JWT_PRIVATE_KEY_RSA_BUILDLY ]
@@ -19,6 +14,13 @@ if [ -e /JWT_PUBLIC_KEY_RSA_BUILDLY ]
 then
   export JWT_PUBLIC_KEY_RSA_BUILDLY=`cat /JWT_PUBLIC_KEY_RSA_BUILDLY`
 fi
+
+echo $(date -u) "- Migrating"
+python manage.py makemigrations
+python manage.py migrate
+
+echo $(date -u) "- Load Initial Data"
+python manage.py loadinitialdata
 
 echo $(date -u) "- Collect Static"
 python manage.py collectstatic --no-input

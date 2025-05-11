@@ -10,7 +10,7 @@ jobs:
     name: Build and Push image to GCR
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/governcrm-prod-buildly-core
+      IMAGE_NAME: ${{ vars.PROD_DOCKER_IMAGE }}
     steps:
     - uses: actions/checkout@v2
       with:
@@ -20,7 +20,7 @@ jobs:
     - uses: butlerlogic/action-autotag@stable
       id: tag_version
       with:
-        GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
+        github_token: "${{ secrets.RELEASE_TOKEN }}"
         strategy: docker
         tag_prefix: "v"
 
