@@ -61,7 +61,7 @@ MIDDLEWARE_DJANGO = [
 
 MIDDLEWARE_CSRF = ['core.middleware.DisableCsrfCheck']
 
-EXCEPTION_MIDDLEWARE = ['core.middleware.ExceptionMiddleware']
+EXCEPTION_MIDDLEWARE = ['core.middleware.AsyncSessionAuthBlockMiddleware', 'core.middleware.ExceptionMiddleware']
 
 MIDDLEWARE = MIDDLEWARE_DJANGO + MIDDLEWARE_CSRF + EXCEPTION_MIDDLEWARE
 
