@@ -36,6 +36,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'rest_framework_simplejwt.token_blacklist',
     # OAuth2
     'oauth2_provider',
+    'oauth2_provider_jwt',
     # swagger
     'drf_yasg',
     # health check
@@ -166,3 +167,14 @@ EMAIL_VERIFICATION_EXPIRATION = int(os.getenv('EMAIL_VERIFICATION_EXPIRATION', 1
 HUBSPOT_API_KEY = ''
 
 ORGANIZATION_TYPES = ['Developer', 'Product']
+
+OAUTH2_PROVIDER = {
+    "ACCESS_TOKEN_MODEL": "oauth2_provider_jwt.AccessToken",
+    "REFRESH_TOKEN_MODEL": "oauth2_provider_jwt.RefreshToken",
+}
+OAUTH2_PROVIDER_JWT = {
+    "JWT_ISSUER": "Buildly",
+    "JWT_SECRET_KEY": os.getenv('SECRET_KEY', ''),  # or use JWT_PRIVATE_KEY/JWT_PUBLIC_KEY for RS256
+    "JWT_ALGORITHM": "HS256",
+    "JWT_EXPIRATION_DELTA": 3600,
+}
