@@ -1,5 +1,4 @@
 import logging
-from asgiref.sync import sync_to_async
 
 from django.http import HttpResponse
 from rest_framework import views
@@ -21,7 +20,7 @@ class APIGatewayView(views.APIView):
 
     permission_classes = (IsAuthenticated, AllowLogicModuleGroup)
     schema = None
-    gateway_request_class = GatewayRequest
+    gateway_request_class = AsyncGatewayRequest
 
     def __init__(self, *args, **kwargs):
         self._logic_modules = dict()
@@ -29,39 +28,37 @@ class APIGatewayView(views.APIView):
         self._data = dict()
         super().__init__(*args, **kwargs)
 
-    async def get(self, request, *args, **kwargs):
-        return await self.make_service_request(request, *args, **kwargs)
+    def get(self, request, *args, **kwargs):
+        return self.make_service_request(request, *args, **kwargs)
 
-    async def post(self, request, *args, **kwargs):
-        return await self.make_service_request(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        return self.make_service_request(request, *args, **kwargs)
 
-    async def delete(self, request, *args, **kwargs):
-        return await self.make_service_request(request, *args, **kwargs)
+    def delete(self, request, *args, **kwargs):
+        return self.make_service_request(request, *args, **kwargs)
 
-    async def put(self, request, *args, **kwargs):
-        return await self.make_service_request(request, *args, **kwargs)
+    def put(self, request, *args, **kwargs):
+        return self.make_service_request(request, *args, **kwargs)
 
-    async def patch(self, request, *args, **kwargs):
-        return await self.make_service_request(request, *args, **kwargs)
+    def patch(self, request, *args, **kwargs):
+        return self.make_service_request(request, *args, **kwargs)
 
-    async def options(self, request, *args, **kwargs):
-        return await self.make_service_request(request, *args, **kwargs)
+    def options(self, request, *args, **kwargs):
+        return self.make_service_request(request, *args, **kwargs)
 
     async def make_service_request(self, request, *args, **kwargs):
         """
         Create a request for the defined service
         """
         try:
-            # Wrap the synchronous validation in sync_to_async
-            await sync_to_async(self._validate_incoming_request)(request, **kwargs)
+            self._validate_incoming_request(request, **kwargs)
         except exceptions.RequestValidationError as e:
             return HttpResponse(
                 content=e.content, status=e.status, content_type=e.content_type
             )
 
         gw_request = self.gateway_request_class(request, **kwargs)
-        # Run the sync perform method in a thread to avoid SynchronousOnlyOperation
-        gw_response = await sync_to_async(gw_request.perform, thread_sensitive=False)()
+        gw_response = gw_request.perform()
 
         return HttpResponse(
             content=gw_response.content,
@@ -78,11 +75,3 @@ class APIGatewayView(views.APIView):
             and kwargs.get('pk') is None
         ):
             raise exceptions.RequestValidationError('The object ID is missing.', 400)
-
-
-class APIAsyncGatewayView(APIGatewayView):
-    """
-    Async version of APIGatewayView
-    """
-
-    gateway_request_class = AsyncGatewayRequest
