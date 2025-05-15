@@ -8,6 +8,8 @@ import aiohttp
 
 from bravado_core.spec import Spec
 
+from asgiref.sync import sync_to_async
+
 from django.http.request import QueryDict
 from rest_framework.request import Request
 
@@ -199,93 +201,126 @@ class GatewayRequest(BaseGatewayRequest):
 
 class AsyncGatewayRequest(BaseGatewayRequest):
     """
-    Allows to perform asynchronous requests to underlying services with asyncio and aiohttp package
+    Async version of GatewayRequest that is safe to use in async contexts.
+    All ORM/database calls are wrapped with sync_to_async.
     """
 
-    def perform(self) -> GatewayResponse:
-        """
-        Override base class's method for asynchronous execution. Wraps async method.
-        """
-        result = {}
-        asyncio.run(self.async_perform(result))
-        if 'response' not in result:
-            raise exceptions.GatewayError(
-                'Error performing asynchronous gateway request'
-            )
-        return result['response']
+    async def perform(self) -> GatewayResponse:
+        # Example: wrap any sync client or ORM calls with sync_to_async
+        content, status_code, headers = await sync_to_async(self._client_request, thread_sensitive=False)()
 
-    async def async_perform(self, result: dict):
-        try:
-            spec = await self._get_swagger_spec(self.url_kwargs['service'])
-        except exceptions.ServiceDoesNotExist as e:
-            return GatewayResponse(
-                e.content, e.status, {'Content-Type': e.content_type}
-            )
-
-        # create a client for performing data requests
-        client = AsyncSwaggerClient(spec, self.request)
-
-        # perform a service data request
-        content, status_code, headers = await client.request(**self.url_kwargs)
-
-        # aggregate/join with the JoinRecord-models
-        if (
-            'join' in self.request.query_params
-            and status_code == 200
-            and type(content) in [dict, list]
-        ):
+        # Handle join/extend logic
+        if ("join" in self.request.query_params or "extend" in self.request.query_params) and status_code in [200, 201] and type(content) in [dict, list]:
             try:
-                await self._join_response_data(resp_data=content)
+                await self._join_response_data(resp_data=content, query_params=self.request.query_params)
             except exceptions.ServiceDoesNotExist as e:
                 logger.error(e.content)
+
+        if 'join' in self.request.query_params and self.request.method == 'DELETE' and status_code == 204:
+            await sync_to_async(delete_join_record)(pk=self.url_kwargs['pk'], previous_pk=None)
 
         if type(content) in [dict, list]:
             content = json.dumps(content, cls=utils.GatewayJSONEncoder)
 
-        result['response'] = GatewayResponse(content, status_code, headers)
+        return GatewayResponse(content, status_code, headers)
+
+    async def _client_request(self):
+        # This wraps the sync client.request call
+        return self.client.request(**self.url_kwargs)
 
     async def _get_swagger_spec(self, endpoint_name: str) -> Spec:
-        """ Gets swagger spec asynchronously and adds it to specs cache """
-        logic_module = self._get_logic_module(endpoint_name)
+        """Get Swagger spec of specified service, async-safe."""
+        logic_module = await self._get_logic_module(endpoint_name)
         schema_url = utils.get_swagger_url_by_logic_module(logic_module)
 
         if schema_url not in self._specs:
-            # Use stored specification of the module
-            spec_dict = logic_module.api_specification
+            try:
+                # Use stored specification of the module
+                spec_dict = logic_module.api_specification
 
-            # Pull specification of the module from its service and store it
-            if spec_dict is None:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(schema_url) as response:
-                        try:
-                            spec_dict = await response.json()
-                        except aiohttp.ContentTypeError:
-                            raise exceptions.GatewayError(
-                                f'Failed to parse swagger schema from {schema_url}. Should be JSON.'
-                            )
+                # Pull specification of the module from its service and store it
+                if spec_dict is None:
+                    response = await sync_to_async(utils.get_swagger_from_url)(schema_url)
+                    spec_dict = response.json()
                     logic_module.api_specification = spec_dict
-                    logic_module.save()
+                    await sync_to_async(logic_module.save)()
+
+            except URLError:
+                raise URLError(f'Make sure that {schema_url} is accessible.')
+
             swagger_spec = Spec.from_dict(spec_dict, config=self.SWAGGER_CONFIG)
             self._specs[schema_url] = swagger_spec
+
         return self._specs[schema_url]
 
-    async def _join_response_data(self, resp_data: Union[dict, list]) -> None:
+    async def _get_logic_module(self, service_name: str):
+        if service_name not in self._logic_modules:
+            try:
+                self._logic_modules[service_name] = await sync_to_async(
+                    LogicModule.objects.get
+                )(endpoint_name=service_name)
+            except LogicModule.DoesNotExist:
+                raise exceptions.ServiceDoesNotExist(
+                    f'Service \"{service_name}\" not found.'
+                )
+        return self._logic_modules[service_name]
+
+    async def _join_response_data(self, resp_data: Union[dict, list], query_params: str) -> None:
         """
-        Aggregates data from the requested service and from related services asynchronously.
+        Aggregates data from the requested service and from related services.
         Uses DataMesh relationship model for this.
         """
         self.request._request.GET = QueryDict(mutable=True)
 
-        if isinstance(resp_data, dict):
-            if 'results' in resp_data:
-                # In case of pagination take 'results' as a items data
-                resp_data = resp_data.get('results', None)
+        # Handle paginated results
+        if isinstance(resp_data, dict) and 'results' in resp_data:
+            resp_data = resp_data.get('results', None)
 
-        datamesh = self.get_datamesh()
-        tasks = []
-        for service in datamesh.related_logic_modules:
-            tasks.append(self._get_swagger_spec(service))
-        specs = await asyncio.gather(*tasks)
-        clients = map(lambda x: AsyncSwaggerClient(x, self.request), specs)
-        client_map = dict(zip(datamesh.related_logic_modules, clients))
-        await datamesh.async_extend_data(resp_data, client_map)
+        # Get async DataMesh instance
+        datamesh = await DataMesh.async_create(
+            logic_module_endpoint=self.url_kwargs['service'],
+            model_endpoint=self._extract_model_endpoint(),
+            access_validator=utils.ObjectAccessValidator(self.request)
+        )
+        client_map = {}
+
+        # POST/PUT/PATCH: handle relationship data via async RequestHandler
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            self.datamesh_relationship, self.request_param = await sync_to_async(datamesh.fetch_datamesh_relationship)()
+            self.request_method = self.request.method
+
+            request_kwargs = {
+                'query_params': query_params,
+                'request_param': self.request_param,
+                'datamesh_relationship': self.datamesh_relationship,
+                'resp_data': resp_data,
+                'request_method': self.request.method,
+                'request': self.request
+            }
+
+            # Async RequestHandler not implemented, so run in thread
+            request_handler = RequestHandler()
+            response = await sync_to_async(request_handler.retrieve_relationship_data, thread_sensitive=False)(request_kwargs=request_kwargs)
+
+            # clear and update datamesh get response
+            if hasattr(resp_data, 'clear') and hasattr(resp_data, 'update'):
+                resp_data.clear()
+                resp_data.update(response)
+        else:
+            # GET: build client_map and extend data async
+            for service in datamesh.related_logic_modules:
+                spec = await self._get_swagger_spec(service)
+                client_map[service] = SwaggerClient(spec, self.request)
+
+            await datamesh.async_extend_data(resp_data, client_map)
+
+    def _extract_model_endpoint(self):
+        """
+        Helper to extract the model endpoint from the request path.
+        """
+        logic_module = self.url_kwargs['service']
+        path = self.request.path
+        padding = path.index(f'/{logic_module}')
+        endpoint = path[len(f'/{logic_module}') + padding:]
+        endpoint = endpoint[:endpoint.index('/', 1) + 1]
+        return endpoint
