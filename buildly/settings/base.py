@@ -33,6 +33,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
     # OAuth2
     'oauth2_provider',
     # swagger

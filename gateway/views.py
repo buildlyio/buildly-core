@@ -10,9 +10,7 @@ from gateway import exceptions
 from gateway.permissions import AllowLogicModuleGroup
 from gateway.request import GatewayRequest, AsyncGatewayRequest
 
-
 logger = logging.getLogger(__name__)
-
 
 class APIGatewayView(views.APIView):
     """
@@ -62,7 +60,8 @@ class APIGatewayView(views.APIView):
             )
 
         gw_request = self.gateway_request_class(request, **kwargs)
-        gw_response = await gw_request.perform()
+        # Run the sync perform method in a thread to avoid SynchronousOnlyOperation
+        gw_response = await sync_to_async(gw_request.perform, thread_sensitive=False)()
 
         return HttpResponse(
             content=gw_response.content,
@@ -76,7 +75,7 @@ class APIGatewayView(views.APIView):
         """
         if (
             request.META['REQUEST_METHOD'] in ['PUT', 'PATCH', 'DELETE']
-            and kwargs['pk'] is None
+            and kwargs.get('pk') is None
         ):
             raise exceptions.RequestValidationError('The object ID is missing.', 400)
 
