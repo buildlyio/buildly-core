@@ -20,7 +20,7 @@ class APIGatewayView(views.APIView):
 
     permission_classes = (IsAuthenticated, AllowLogicModuleGroup)
     schema = None
-    gateway_request_class = AsyncGatewayRequest
+    gateway_request_class = GatewayRequest
 
     def __init__(self, *args, **kwargs):
         self._logic_modules = dict()
