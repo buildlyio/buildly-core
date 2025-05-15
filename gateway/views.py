@@ -46,7 +46,7 @@ class APIGatewayView(views.APIView):
     def options(self, request, *args, **kwargs):
         return self.make_service_request(request, *args, **kwargs)
 
-    async def make_service_request(self, request, *args, **kwargs):
+    def make_service_request(self, request, *args, **kwargs):
         """
         Create a request for the defined service
         """
