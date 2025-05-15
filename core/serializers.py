@@ -67,6 +67,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
     subscriptions = serializers.SerializerMethodField()
     subscription_active = serializers.SerializerMethodField()
     referral_link = serializers.SerializerMethodField()
+    organization_type = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
@@ -95,6 +96,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
         if organization.organization_referrals.exists():
             return organization.organization_referrals.first().link
         return None
+
+    def get_organization_type(self, organization):
+        return organization.organization_type.name if organization.organization_type else None
 
 
 class CoreGroupSerializer(serializers.ModelSerializer):
