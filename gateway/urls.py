@@ -31,7 +31,7 @@ urlpatterns = [
         r"(?:(?P<pk>[^?#/]+)/?)?"
         r"(?:\?(?P<query>[^#]*))?"
         r"(?:#(?P<fragment>.*))?",
-        views.APIAsyncGatewayView.as_view(),
+        views.APIGatewayView.as_view(),
         name='api-gateway-async',
     ),
     re_path(
