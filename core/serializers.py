@@ -150,6 +150,8 @@ class CoreUserSerializer(serializers.ModelSerializer):
         read_only_fields = ('core_user_uuid', 'organization',)
 
     def get_subscription_active(self, user):
+        if user.organization is None:
+            return False
         return user.organization.organization_subscription.filter(
             subscription_end_date__gte=timezone.now().date(),
         ).exists()
