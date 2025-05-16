@@ -12,8 +12,6 @@ from django.template import Template, Context
 
 from rest_framework import serializers
 
-from oauth2_provider.models import AccessToken, Application, RefreshToken
-
 from core.email_utils import send_email, send_email_body
 from core.helpers.oauth import EmailVerificationToken
 

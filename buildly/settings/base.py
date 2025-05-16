@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 # Base dir path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,9 +35,6 @@ INSTALLED_APPS_THIRD_PARTIES = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
-    # OAuth2
-    'oauth2_provider',
-    'oauth2_provider_jwt',
     # swagger
     'drf_yasg',
     # health check
@@ -126,7 +124,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
@@ -168,13 +166,12 @@ HUBSPOT_API_KEY = ''
 
 ORGANIZATION_TYPES = ['Developer', 'Product']
 
-OAUTH2_PROVIDER = {
-    "ACCESS_TOKEN_MODEL": "oauth2_provider_jwt.AccessToken",
-    "REFRESH_TOKEN_MODEL": "oauth2_provider_jwt.RefreshToken",
-}
-OAUTH2_PROVIDER_JWT = {
-    "JWT_ISSUER": "Buildly",
-    "JWT_SECRET_KEY": os.getenv('SECRET_KEY', ''),  # or use JWT_PRIVATE_KEY/JWT_PUBLIC_KEY for RS256
-    "JWT_ALGORITHM": "HS256",
-    "JWT_EXPIRATION_DELTA": 3600,
+SIMPLE_JWT = {
+    "ALGORITHM": "HS256",  # Or "RS256" if you want asymmetric keys
+    "SIGNING_KEY": os.getenv('SECRET_KEY', ''),  # Or your RS256 private key
+    "VERIFYING_KEY": "",  # Only needed for RS256
+    "ISSUER": "Buildly",
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # Add other options as needed
 }

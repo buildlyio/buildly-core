@@ -46,8 +46,7 @@ To run the web server with Python debugger support:
 Configuring the API authentication
 --------------------------------
 
-All clients will interact with our API using the OAuth2 protocol, in order to configure it, go to 
-`admin/oauth2_provider/application/` and add your new application there.
+
 
 Generating RSA keys
 -------------------
