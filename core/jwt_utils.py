@@ -18,6 +18,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
         # Add custom claims
         token['core_user_uuid'] = str(user.core_user_uuid)
+        token['username'] = user.username
         if user.organization:
             token['organization_uuid'] = str(user.organization.organization_uuid)
         else:
