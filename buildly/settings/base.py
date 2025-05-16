@@ -6,7 +6,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 DEBUG = False if os.getenv('DEBUG') == 'False' else True
 
-ALLOWED_HOSTS = ["http://localhost:8000", "127.0.0.1"]
+ALLOWED_HOSTS = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Application definition
