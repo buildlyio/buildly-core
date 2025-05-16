@@ -11,9 +11,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-
+from core.jwt_utils import CustomTokenObtainPairSerializer
 admin.autodiscover()
 admin.site.site_header = 'Buildly Administration'
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
 
 router = routers.SimpleRouter()
 
@@ -31,7 +35,7 @@ urlpatterns = [
     path('health_check/', include('health_check.urls')),
     path('datamesh/', include('datamesh.urls')),
     path('', include('gateway.urls')),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     # path('oauth/login/', views.LoginView.as_view()),

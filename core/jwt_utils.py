@@ -9,7 +9,23 @@ from gateway.exceptions import PermissionDenied
 
 logger = logging.getLogger(__name__)
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+# New SimpleJWT serializer
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Add custom claims
+        token['core_user_uuid'] = str(user.core_user_uuid)
+        if user.organization:
+            token['organization_uuid'] = str(user.organization.organization_uuid)
+        else:
+            token['organization_uuid'] = None
+        return token
+
+
+# old payload not in use
 def payload_enricher(request):
     if request.POST.get('username'):
         username = request.POST.get('username')
