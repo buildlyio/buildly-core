@@ -96,7 +96,7 @@ Specify each parameter using `-e`, `--env`, and `--env-file` flags to set simple
 ```bash
 $ docker run -e MYVAR1 --env MYVAR2=foo \
     --env-file ./env.list \
-    buildly/buildly:<version>
+    buildly/buildly:v1.3.0
 ```
 
 ### API Documentation
