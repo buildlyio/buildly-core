@@ -164,6 +164,13 @@ The following tables list the configurable parameters of buildly and their defau
 * GitHub Actions - Recommended CI/CD
 * [Travis CI](https://travis-ci.org/)
 
+## Community
+
+Join our community for discussions, support, and collaboration:
+
+* **Discord Server**: Join our [Discord community](https://discord.com/channels/908423956908896386/908424004916895804) for real-time discussions and support
+* **Community Collaboration**: Visit [collab.buildly.io](https://collab.buildly.io) for additional community training, engagement, and to connect with technical co-founders and resources
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](https://github.com/buildlyio/docs/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
